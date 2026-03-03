@@ -442,6 +442,12 @@ namespace Engine
 
       // start of draw stuff
 
+      // Clear the full window to black so letterbox/pillarbox bars are visible
+      Engine::Graphics::clear_letterbox_bars(
+        Engine::WindowManager::get_width(),
+        Engine::WindowManager::get_height()
+      );
+
       // Begin post-processing scene capture (redirects to PP FBO if enabled)
       Engine::Graphics::begin_post_processing();
 

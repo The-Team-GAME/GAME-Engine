@@ -30,6 +30,7 @@
 #include "Events/WindowEvents.h"
 #include "EventManager/EventManager.h"
 #include "GUI/ViewportPanel.h"
+#include "GUI/ViewportToolbar.h"
 #include "HotReloadManager.h"
 #include "Graphics/Renderer.h"
 
@@ -96,6 +97,9 @@ namespace ImGuiManager {
     }
 
     ImGui::StyleColorsDark();
+
+    // Load icon fonts before backend init (atlas must be built before first frame)
+    ViewportToolbar::init();
 
     ImGui_ImplGlfw_InitForOpenGL(Engine::WindowManager::get_window(), true);
     ImGui_ImplOpenGL3_Init();

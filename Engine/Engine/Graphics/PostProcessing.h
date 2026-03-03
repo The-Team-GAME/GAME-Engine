@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 #include "../Precompiled.h"
+#include "../EngineExport.h"
 
 namespace Engine::Graphics::PostProcessing {
 
@@ -121,8 +122,8 @@ namespace Engine::Graphics::PostProcessing {
   // Settings
   //-------------------------------------------------------------------------
 
-  Settings& get_settings();
-  void set_settings(const Settings& settings);
+  ENGINE_API Settings& get_settings();
+  ENGINE_API void set_settings(const Settings& settings);
 
   //-------------------------------------------------------------------------
   // LUT management

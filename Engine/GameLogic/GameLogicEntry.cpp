@@ -12,6 +12,7 @@
 
 #include "pch.h"
 #include "../Engine/HotReloadManager.h"
+#include "../Engine/Random.h"
 
 // Game states
 #include "GameStates/EmptyState.h"
@@ -116,21 +117,39 @@ static void register_collision_callbacks()
 
         // Spawn Impact VFX
         if (attack->impact_vfx_texture.texture_handle) {
-          auto vfx = Engine::ECS::create_entity()
-            .add_component<Components::Transform2D>(
-              transform->position.x,
-              transform->position.y,
-              0.0f,
-              128.0f,
-              128.0f
-            )
-            .add_component<Components::Parent>(enemy_entity.get_id())
-            .add_component<Components::Texture>(attack->impact_vfx_texture)
-            .add_component<Components::TextureAtlas>(64, 64, 1, 4, 4)
-            .add_component<Components::Animation>(0, 3, 0.05f, false)
-            .add_component<Components::Lifetime>(0.2f)
-            .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-            .add_to_layer("effect");
+          auto* collider = enemy_entity.get_component<Components::BoxCollider>();
+          float width = 64.0f;
+          float height = 64.0f;
+          Vec2D offset = { 0, 0 };
+
+          if (collider) {
+            width = collider->width;
+            height = collider->height;
+            offset = collider->offset;
+          }
+
+          // Spawn multiple VFX at random spots within the hitbox
+          int vfx_count = 1;
+          for (int i = 0; i < vfx_count; ++i) {
+            float rand_x = Engine::Random::random_range(-width * 0.4f, width * 0.4f);
+            float rand_y = Engine::Random::random_range(-height * 0.4f, height * 0.4f);
+
+            auto vfx = Engine::ECS::create_entity()
+              .add_component<Components::Transform2D>(
+                transform->position.x + offset.x + rand_x,
+                transform->position.y + offset.y + rand_y,
+                0.0f,
+                128.0f,
+                128.0f
+              )
+              .add_component<Components::Parent>(enemy_entity.get_id())
+              .add_component<Components::Texture>(attack->impact_vfx_texture)
+              .add_component<Components::TextureAtlas>(64, 64, 1, 4, 4)
+              .add_component<Components::Animation>(0, 3, 0.05f, false)
+              .add_component<Components::Lifetime>(0.2f)
+              .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+              .add_to_layer("effect");
+          }
         }
       }
       else {
@@ -161,6 +180,9 @@ static void register_collision_callbacks()
         // Decrease HP by 1 per hit
         health->damage(1);
         Log::info("Player took damage! HP: {}/{}", health->value, health->max);
+
+        // Trigger red vignette flash
+        Engine::Systems::DamageVignette::trigger(0.8f);
 
         Engine::Systems::Physics2DSystem::add_force(*rigid, attack->knockback);
 

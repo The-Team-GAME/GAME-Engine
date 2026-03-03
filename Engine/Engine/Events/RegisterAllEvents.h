@@ -34,15 +34,42 @@ namespace Engine {
       // Register the graphics resize system 
       Engine::EventManager::add_event_listener<Engine::Events::WindowResizeEvent>([](const Engine::Events::WindowResizeEvent& event)
         {
-          Engine::Graphics::set_viewport({ 0, 0, event.width, event.height });
+          // Determine whether we're rendering directly to the window
+#ifdef GAME_BUILD
+          bool direct_to_window = true;
+#else
+          bool direct_to_window = !Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode;
+#endif
 
-          // When rendering directly to the window (panel viewport disabled),
-          // update virtual resolution to match the window's aspect ratio so
-          // the game doesn't stretch on non-16:9 screens / fullscreen.
-          if (!Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode) {
-            float aspect = static_cast<float>(event.width) / static_cast<float>(event.height > 0 ? event.height : 1);
-            Engine::Graphics::set_virtual_resolution(900.0f * aspect, 900.0f);
-            Engine::Graphics::resize_post_processing(event.width, event.height);
+          if (direct_to_window) {
+            // Letterbox / pillarbox: fit a 16:9 rectangle inside the window
+            // so the game content is never stretched on non-16:9 screens.
+            constexpr float target_aspect = 16.0f / 9.0f;
+            float window_aspect = static_cast<float>(event.width) / static_cast<float>(event.height > 0 ? event.height : 1);
+
+            int vp_x, vp_y, vp_w, vp_h;
+            if (window_aspect > target_aspect) {
+              // Window is wider than 16:9 -> pillarbox (black bars on sides)
+              vp_h = event.height;
+              vp_w = static_cast<int>(event.height * target_aspect);
+              vp_x = (event.width - vp_w) / 2;
+              vp_y = 0;
+            }
+            else {
+              // Window is taller than 16:9 -> letterbox (black bars top/bottom)
+              vp_w = event.width;
+              vp_h = static_cast<int>(event.width / target_aspect);
+              vp_x = 0;
+              vp_y = (event.height - vp_h) / 2;
+            }
+
+            Engine::Graphics::set_viewport({ vp_x, vp_y, vp_w, vp_h });
+            Engine::Graphics::set_virtual_resolution(1600.0f, 900.0f);
+            Engine::Graphics::resize_post_processing(vp_w, vp_h);
+          }
+          else {
+            // Panel viewport mode: let the viewport panel handle its own sizing
+            Engine::Graphics::set_viewport({ 0, 0, event.width, event.height });
           }
         }
       );
@@ -81,8 +108,10 @@ namespace Engine {
 
               if (gizmo && transform) {
                 if (event.start_dragging) {
-                  // Calculate drag offset from current mouse position
-                  const auto mouse = Engine::Input::get_mouse_world_position();
+                  // UI entities use screen-space coordinates (not affected by camera)
+                  const auto mouse = entity.has_component<Components::UI>()
+                    ? Engine::Input::get_mouse_position()
+                    : Engine::Input::get_mouse_world_position();
                   gizmo->drag_offset = Math::Vec2D(mouse.x - transform->position.x, mouse.y - transform->position.y);
                   gizmo->is_dragging = true;
 

@@ -20,6 +20,19 @@
 
 namespace TilemapPanel {
 
+  // Tool modes for the tilemap editor (shown in ViewportToolbar when tilemap mode is active)
+  enum class ToolMode {
+    Paintbrush,
+    BoxFill,
+    Picker,
+    Eraser,
+    Select
+  };
+
+  // Get/set the current tilemap tool mode (used by ViewportToolbar)
+  ToolMode get_tool_mode();
+  void set_tool_mode(ToolMode mode);
+
   /*=================================================================================
   Function Brief:
   Initializes the tilemap panel by loading saved tilemaps from project settings.
