@@ -72,32 +72,94 @@ namespace ResourcePicker {
     ImGui::SetNextWindowSize(ImVec2(900, 600), ImGuiCond_FirstUseEver);
 
     if (ImGui::BeginPopupModal(popup_id, nullptr, 0)) {
-      // Header with title and stats
-      ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[0]); // Use default/larger font if available
+
+      // ---- Persistent state ----
+      struct TextureEntry {
+        std::string full_path;    // absolute path used for loading
+        std::string display_path; // relative path returned on selection
+        std::string filename;
+        Engine::Graphics::Texture texture = nullptr;
+      };
+
+      static std::vector<TextureEntry> texture_entries;
+      static bool needs_scan = true;
+      static Engine::Graphics::Texture hovered_texture = nullptr;
+      static Engine::Graphics::Texture selected_preview = nullptr;
+
+      // ---- Scan assets/images directory ----
+      if (needs_scan) {
+        texture_entries.clear();
+        hovered_texture = nullptr;
+        selected_preview = nullptr;
+
+        // Always include the built-in unit rect first
+        if (auto rect = Engine::Graphics::get_rect_texture()) {
+          TextureEntry e;
+          e.full_path    = rect->path;
+          e.display_path = rect->path;
+          e.filename     = "[unit rect]";
+          e.texture      = rect;
+          texture_entries.push_back(std::move(e));
+        }
+
+        // Recursively scan the images sub-folder
+        namespace fs = std::filesystem;
+        std::string images_dir = Engine::Resources::resource_path + "images";
+        if (fs::exists(images_dir)) {
+          const char* valid_exts[] = { ".png", ".jpg", ".jpeg", ".bmp", ".tga", ".gif", nullptr };
+          try {
+            for (const auto& fse : fs::recursive_directory_iterator(
+              images_dir, fs::directory_options::skip_permission_denied)) {
+              if (!fse.is_regular_file()) continue;
+
+              std::string ext = fse.path().extension().string();
+              std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+              bool valid = false;
+              for (int ei = 0; valid_exts[ei]; ++ei) {
+                if (ext == valid_exts[ei]) { valid = true; break; }
+              }
+              if (!valid) continue;
+
+              TextureEntry te;
+              te.full_path    = fse.path().string();
+              te.filename     = fse.path().filename().string();
+              te.display_path = Engine::Resources::get_relative_path(te.full_path);
+              // Load now (uses cache if already present; non-persistent)
+              te.texture = Engine::Resources::load_texture(te.full_path, false, false);
+              texture_entries.push_back(std::move(te));
+            }
+          }
+          catch (...) {}
+        }
+
+        needs_scan = false;
+      }
+
+      // ---- Header ----
+      ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[0]);
       ImGui::Text("Texture Browser");
       ImGui::PopFont();
-
-      auto textures = get_all_loaded_textures();
       ImGui::SameLine();
-      ImGui::TextDisabled("(%zu assets)", textures.size());
+      ImGui::TextDisabled("(%zu assets)", texture_entries.size());
+      ImGui::SameLine();
+      if (ImGui::SmallButton("Refresh")) { needs_scan = true; }
 
       ImGui::Separator();
 
-      if (textures.empty()) {
+      if (texture_entries.empty()) {
         ImGui::Dummy(ImVec2(0, 50));
         ImGui::Indent(300);
-        ImGui::TextColored(ImVec4(0.8f, 0.6f, 0.2f, 1.0f), "No textures loaded");
+        ImGui::TextColored(ImVec4(0.8f, 0.6f, 0.2f, 1.0f), "No textures found in assets/images/");
         ImGui::Unindent(300);
         ImGui::Dummy(ImVec2(0, 50));
         ImGui::Separator();
-        if (ImGui::Button("Close", ImVec2(120, 0))) {
-          ImGui::CloseCurrentPopup();
-        }
+        if (ImGui::Button("Close", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
         ImGui::EndPopup();
         return false;
       }
 
-      // Toolbar - Search and Controls
+      // ---- Toolbar ----
       ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8, 4));
       ImGui::PushItemWidth(250);
       static char search_buffer[256] = "";
@@ -111,8 +173,7 @@ namespace ResourcePicker {
 
       ImGui::SameLine();
 
-      // Sort options
-      static int sort_mode = 0; // 0=Name, 1=Size(Dimensions), 2=Width, 3=Height
+      static int sort_mode = 0; // 0=Name, 1=Dimensions, 2=Width, 3=Height
       ImGui::PushItemWidth(120);
       const char* sort_items[] = { "Name", "Dimensions", "Width", "Height" };
       ImGui::Combo("##sort", &sort_mode, sort_items, IM_ARRAYSIZE(sort_items));
@@ -120,13 +181,11 @@ namespace ResourcePicker {
 
       ImGui::SameLine();
 
-      // Thumbnail size slider
       static float thumb_size = 128.0f;
       ImGui::PushItemWidth(150);
       ImGui::SliderFloat("##thumbsize", &thumb_size, 64.0f, 256.0f, "Size: %.0f");
       ImGui::PopItemWidth();
 
-      // Filter by dimensions
       ImGui::SameLine();
       static bool filter_by_dimensions = false;
       ImGui::Checkbox("Filter Size", &filter_by_dimensions);
@@ -143,87 +202,87 @@ namespace ResourcePicker {
 
       ImGui::Separator();
 
-      // Sort textures based on selected mode
-      std::vector<Engine::Graphics::Texture> sorted_textures = textures;
+      // ---- Build sorted index list (index 0 = unit rect, always stays first) ----
+      std::vector<int> sorted_indices(texture_entries.size());
+      for (int i = 0; i < static_cast<int>(texture_entries.size()); ++i) sorted_indices[i] = i;
+
+      auto get_tex = [&](int i) -> const Engine::Graphics::Texture& {
+        return texture_entries[i].texture;
+      };
+
+      // Sort everything after index 0
+      auto sort_begin = sorted_indices.begin() + (texture_entries.size() > 1 ? 1 : 0);
       switch (sort_mode) {
       case 0: // Name
-        std::sort(sorted_textures.begin() + 1, sorted_textures.end(),
-          [](const Engine::Graphics::Texture& a, const Engine::Graphics::Texture& b) {
-            std::filesystem::path pa(a->path), pb(b->path);
-            return pa.filename().string() < pb.filename().string();
-          });
+        std::sort(sort_begin, sorted_indices.end(),
+          [&](int a, int b) { return texture_entries[a].filename < texture_entries[b].filename; });
         break;
-      case 1: // Dimensions (total pixels)
-        std::sort(sorted_textures.begin() + 1, sorted_textures.end(),
-          [](const Engine::Graphics::Texture& a, const Engine::Graphics::Texture& b) {
-            return (a->width * a->height) > (b->width * b->height);
-          });
+      case 1: // Dimensions (total pixels, loaded entries first)
+        std::sort(sort_begin, sorted_indices.end(), [&](int a, int b) {
+          const auto& ta = get_tex(a); const auto& tb = get_tex(b);
+          if (!ta && !tb) return false;
+          if (!ta) return false; if (!tb) return true;
+          return (ta->width * ta->height) > (tb->width * tb->height);
+        });
         break;
       case 2: // Width
-        std::sort(sorted_textures.begin() + 1, sorted_textures.end(),
-          [](const Engine::Graphics::Texture& a, const Engine::Graphics::Texture& b) {
-            return a->width > b->width;
-          });
+        std::sort(sort_begin, sorted_indices.end(), [&](int a, int b) {
+          const auto& ta = get_tex(a); const auto& tb = get_tex(b);
+          if (!ta && !tb) return false;
+          if (!ta) return false; if (!tb) return true;
+          return ta->width > tb->width;
+        });
         break;
       case 3: // Height
-        std::sort(sorted_textures.begin() + 1, sorted_textures.end(),
-          [](const Engine::Graphics::Texture& a, const Engine::Graphics::Texture& b) {
-            return a->height > b->height;
-          });
+        std::sort(sort_begin, sorted_indices.end(), [&](int a, int b) {
+          const auto& ta = get_tex(a); const auto& tb = get_tex(b);
+          if (!ta && !tb) return false;
+          if (!ta) return false; if (!tb) return true;
+          return ta->height > tb->height;
+        });
         break;
       }
 
-      // Main content area - split into grid and preview panel
+      // ---- Main content: grid + preview panel ----
       float preview_panel_width = 250.0f;
 
-      // Scrollable grid region
       ImGui::BeginChild("TextureGrid", ImVec2(-preview_panel_width - 10, -40), true,
         ImGuiWindowFlags_HorizontalScrollbar);
 
-      static Engine::Graphics::Texture hovered_texture = nullptr;
-      static Engine::Graphics::Texture selected_preview = nullptr;
-
-      // Calculate dynamic columns based on thumb size
       float available_width = ImGui::GetContentRegionAvail().x;
       int dynamic_columns = std::max(1, static_cast<int>(available_width / (thumb_size + 20)));
 
       int column = 0;
       int rendered_count = 0;
 
-      for (const auto& texture : sorted_textures) {
-        std::filesystem::path fs_path(texture->path);
-        std::string filename = fs_path.filename().string();
+      for (int idx : sorted_indices) {
+        const TextureEntry& entry   = texture_entries[idx];
+        const Engine::Graphics::Texture& texture = entry.texture;
 
-        // Search filter - search in full path
+        // Search filter
         if (!search_str.empty()) {
-          std::string path_lower = texture->path;
+          std::string path_lower = entry.full_path;
           std::transform(path_lower.begin(), path_lower.end(), path_lower.begin(),
             [](char c) { return static_cast<char>(std::tolower(static_cast<int>(c))); });
-          if (path_lower.find(search_str) == std::string::npos) {
-            continue;
-          }
+          if (path_lower.find(search_str) == std::string::npos) continue;
         }
 
-        // Dimension filter
-        if (filter_by_dimensions) {
-          if (static_cast<int>(texture->width) < min_width ||
-            static_cast<int>(texture->height) < min_height) {
-            continue;
-          }
+        // Dimension filter (only for loaded textures)
+        if (filter_by_dimensions && texture) {
+          if (static_cast<int>(texture->width)  < min_width ||
+              static_cast<int>(texture->height) < min_height) continue;
         }
 
         rendered_count++;
 
-        // Item background
-        ImVec2 item_pos = ImGui::GetCursorScreenPos();
+        ImVec2 item_pos  = ImGui::GetCursorScreenPos();
         ImVec2 item_size(thumb_size + 10, thumb_size + 60);
 
-        bool is_current = (texture->path == current_path);
-        bool is_selected = (selected_preview == texture);
+        bool is_current  = (entry.display_path == current_path || entry.full_path == current_path);
+        bool is_selected = (texture && selected_preview == texture);
 
         ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
-        // Background highlight
         if (is_current || is_selected) {
           draw_list->AddRectFilled(item_pos,
             ImVec2(item_pos.x + item_size.x, item_pos.y + item_size.y),
@@ -231,13 +290,11 @@ namespace ResourcePicker {
         }
 
         ImGui::BeginGroup();
-        ImGui::PushID(texture.get());
+        ImGui::PushID(idx);
 
-        // Create clickable area
         ImGui::InvisibleButton("##texarea", item_size);
-        bool is_hovered = ImGui::IsItemHovered();
-        bool is_clicked = ImGui::IsItemClicked(0);
-        bool is_double_clicked = ImGui::IsItemClicked(0) && ImGui::IsMouseDoubleClicked(0);
+        bool is_hovered       = ImGui::IsItemHovered();
+        bool is_double_clicked = is_hovered && ImGui::IsMouseDoubleClicked(0);
 
         if (is_hovered) {
           hovered_texture = texture;
@@ -246,70 +303,71 @@ namespace ResourcePicker {
             IM_COL32(100, 150, 255, 200), 3.0f, 0, 2.0f);
         }
 
-        if (is_clicked) {
+        if (ImGui::IsItemClicked(0)) {
           selected_preview = texture;
         }
 
         if (is_double_clicked) {
-          selected_path = texture->path;
+          selected_path  = entry.display_path;
           selection_made = true;
           ImGui::CloseCurrentPopup();
         }
 
-        // Draw texture preview centered
-        float aspect = static_cast<float>(texture->width) / static_cast<float>(texture->height);
-        ImVec2 img_size;
-        if (aspect > 1.0f) {
-          img_size = ImVec2(thumb_size, thumb_size / aspect);
+        // Draw thumbnail
+        if (texture && texture->id != 0) {
+          float aspect   = static_cast<float>(texture->width) / static_cast<float>(texture->height);
+          ImVec2 img_size = (aspect > 1.0f)
+            ? ImVec2(thumb_size, thumb_size / aspect)
+            : ImVec2(thumb_size * aspect, thumb_size);
+
+          ImVec2 img_pos(
+            item_pos.x + (item_size.x - img_size.x) * 0.5f,
+            item_pos.y + 5);
+
+          draw_list->AddRectFilled(img_pos,
+            ImVec2(img_pos.x + img_size.x, img_pos.y + img_size.y),
+            IM_COL32(80, 80, 80, 255));
+          draw_list->AddImage(texture->id, img_pos,
+            ImVec2(img_pos.x + img_size.x, img_pos.y + img_size.y));
+          draw_list->AddRect(img_pos,
+            ImVec2(img_pos.x + img_size.x, img_pos.y + img_size.y),
+            IM_COL32(100, 100, 100, 255), 0.0f, 0, 1.0f);
+
+          std::string disp = entry.filename.length() > 18
+            ? entry.filename.substr(0, 15) + "..." : entry.filename;
+          std::string dims = std::to_string(texture->width) + "x" + std::to_string(texture->height);
+
+          draw_list->AddText(ImVec2(item_pos.x + 5, img_pos.y + img_size.y + 8),
+            IM_COL32(220, 220, 220, 255), disp.c_str());
+          draw_list->AddText(ImVec2(item_pos.x + 5, img_pos.y + img_size.y + 24),
+            IM_COL32(150, 150, 150, 255), dims.c_str());
         }
         else {
-          img_size = ImVec2(thumb_size * aspect, thumb_size);
+          // Placeholder for failed/unloaded textures
+          ImVec2 ph_pos(item_pos.x + 5, item_pos.y + 5);
+          draw_list->AddRectFilled(ph_pos,
+            ImVec2(ph_pos.x + thumb_size, ph_pos.y + thumb_size),
+            IM_COL32(60, 40, 40, 200));
+
+          std::string disp = entry.filename.length() > 18
+            ? entry.filename.substr(0, 15) + "..." : entry.filename;
+          draw_list->AddText(ImVec2(item_pos.x + 5, ph_pos.y + thumb_size + 8),
+            IM_COL32(180, 100, 100, 255), disp.c_str());
+          draw_list->AddText(ImVec2(item_pos.x + 5, ph_pos.y + thumb_size + 24),
+            IM_COL32(150, 80, 80, 255), "(load failed)");
         }
-
-        ImVec2 img_pos = ImVec2(
-          item_pos.x + (item_size.x - img_size.x) * 0.5f,
-          item_pos.y + 5
-        );
-
-        // Checkerboard background for transparency
-        draw_list->AddRectFilled(img_pos,
-          ImVec2(img_pos.x + img_size.x, img_pos.y + img_size.y),
-          IM_COL32(80, 80, 80, 255));
-
-        draw_list->AddImage(texture->id, img_pos,
-          ImVec2(img_pos.x + img_size.x, img_pos.y + img_size.y));
-
-        // Border around image
-        draw_list->AddRect(img_pos,
-          ImVec2(img_pos.x + img_size.x, img_pos.y + img_size.y),
-          IM_COL32(100, 100, 100, 255), 0.0f, 0, 1.0f);
-
-        // Text label
-        ImVec2 text_pos = ImVec2(item_pos.x + 5, img_pos.y + img_size.y + 8);
-        draw_list->AddText(text_pos, IM_COL32(220, 220, 220, 255),
-          filename.length() > 18 ? (filename.substr(0, 15) + "...").c_str() : filename.c_str());
-
-        // Dimensions label
-        std::string dims = std::to_string(texture->width) + "x" + std::to_string(texture->height);
-        ImVec2 dims_pos = ImVec2(item_pos.x + 5, text_pos.y + 16);
-        draw_list->AddText(dims_pos, IM_COL32(150, 150, 150, 255), dims.c_str());
 
         ImGui::PopID();
         ImGui::EndGroup();
 
-        // Grid layout
         column++;
-        if (column < dynamic_columns) {
-          ImGui::SameLine();
-        }
-        else {
-          column = 0;
-        }
+        if (column < dynamic_columns) ImGui::SameLine();
+        else column = 0;
       }
 
       ImGui::EndChild();
 
-      // Preview panel
+      // ---- Preview panel ----
       ImGui::SameLine();
       ImGui::BeginChild("PreviewPanel", ImVec2(preview_panel_width, -40), true);
 
@@ -321,48 +379,41 @@ namespace ResourcePicker {
       if (preview_tex) {
         std::filesystem::path fs_path(preview_tex->path);
 
-        // Large preview
-        float preview_w = preview_panel_width - 20;
+        float preview_w      = preview_panel_width - 20;
         float preview_aspect = static_cast<float>(preview_tex->width) / static_cast<float>(preview_tex->height);
-        ImVec2 large_preview_size;
-        if (preview_aspect > 1.0f) {
-          large_preview_size = ImVec2(preview_w, preview_w / preview_aspect);
-        }
-        else {
-          large_preview_size = ImVec2(preview_w * preview_aspect, preview_w);
-        }
+        ImVec2 large_preview_size = (preview_aspect > 1.0f)
+          ? ImVec2(preview_w, preview_w / preview_aspect)
+          : ImVec2(preview_w * preview_aspect, preview_w);
 
         ImGui::Image(preview_tex->id, large_preview_size);
-
         ImGui::Spacing();
         ImGui::Separator();
         ImGui::Spacing();
 
-        // Details
         ImGui::TextWrapped("%s", fs_path.filename().string().c_str());
         ImGui::Spacing();
-
         ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Dimensions:");
         ImGui::Text("%d x %d", preview_tex->width, preview_tex->height);
         ImGui::Spacing();
-
-        float aspect_ratio = static_cast<float>(preview_tex->width) / static_cast<float>(preview_tex->height);
         ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Aspect Ratio:");
-        ImGui::Text("%.3f", aspect_ratio);
+        ImGui::Text("%.3f", static_cast<float>(preview_tex->width) / static_cast<float>(preview_tex->height));
         ImGui::Spacing();
-
         ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Path:");
         ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + preview_panel_width - 20);
         ImGui::TextWrapped("%s", preview_tex->path.c_str());
         ImGui::PopTextWrapPos();
-
         ImGui::Spacing();
         ImGui::Separator();
         ImGui::Spacing();
 
-        // Select button
         if (ImGui::Button("Select This", ImVec2(-1, 30))) {
-          selected_path = preview_tex->path;
+          // Find the display_path for this texture
+          for (const auto& e : texture_entries) {
+            if (e.texture == preview_tex) {
+              selected_path = e.display_path;
+              break;
+            }
+          }
           selection_made = true;
           ImGui::CloseCurrentPopup();
         }
@@ -374,15 +425,13 @@ namespace ResourcePicker {
 
       ImGui::EndChild();
 
-      // Bottom bar
+      // ---- Bottom bar ----
       ImGui::Separator();
-      ImGui::Text("%d / %zu textures", rendered_count, textures.size());
+      ImGui::Text("%d / %zu textures", rendered_count, texture_entries.size());
       ImGui::SameLine(ImGui::GetWindowWidth() - 250);
       ImGui::TextDisabled("Double-click to select");
       ImGui::SameLine(ImGui::GetWindowWidth() - 130);
-      if (ImGui::Button("Close", ImVec2(120, 0))) {
-        ImGui::CloseCurrentPopup();
-      }
+      if (ImGui::Button("Close", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
 
       ImGui::EndPopup();
     }
@@ -395,181 +444,277 @@ namespace ResourcePicker {
     int current_size, int grid_columns, float preview_size) {
     bool selection_made = false;
 
-    ImGui::SetNextWindowSize(ImVec2(600, 400), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(700, 500), ImGuiCond_FirstUseEver);
 
-    if (ImGui::BeginPopupModal(popup_id, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-      ImGui::Text("Select a Font");
+    if (ImGui::BeginPopupModal(popup_id, nullptr, 0)) {
+
+      // ---- Persistent state ----
+      struct FontEntry {
+        std::string full_path;
+        std::string display_path;  // relative path returned on selection
+        std::string filename;
+        Engine::Graphics::Font font = nullptr;  // loaded at preview_px size
+        int loaded_at_size = 0;
+      };
+
+      static std::vector<FontEntry> font_entries;
+      static bool needs_scan = true;
+      static int preview_px = 32;   // size used to render the "ABC" preview
+      static int export_size = 32;  // size the caller receives on selection
+      static int highlighted = -1;
+
+      // ---- Scan fonts directory ----
+      if (needs_scan) {
+        font_entries.clear();
+        highlighted = -1;
+
+        namespace fs = std::filesystem;
+        std::string fonts_dir = Engine::Resources::resource_path + "fonts";
+        if (fs::exists(fonts_dir)) {
+          const char* valid_exts[] = { ".ttf", ".otf", nullptr };
+          try {
+            for (const auto& fse : fs::recursive_directory_iterator(
+              fonts_dir, fs::directory_options::skip_permission_denied)) {
+              if (!fse.is_regular_file()) continue;
+
+              std::string ext = fse.path().extension().string();
+              std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+              bool valid = false;
+              for (int ei = 0; valid_exts[ei]; ++ei) {
+                if (ext == valid_exts[ei]) { valid = true; break; }
+              }
+              if (!valid) continue;
+
+              FontEntry fe;
+              fe.full_path    = fse.path().string();
+              fe.filename     = fse.path().filename().string();
+              fe.display_path = Engine::Resources::get_relative_path(fe.full_path);
+              // Load at chosen preview size (non-persistent)
+              fe.font = Engine::Resources::load_font(fe.full_path, static_cast<unsigned int>(preview_px), false, false);
+              fe.loaded_at_size = preview_px;
+              font_entries.push_back(std::move(fe));
+            }
+          }
+          catch (...) {}
+        }
+
+        // Sort alphabetically by filename
+        std::sort(font_entries.begin(), font_entries.end(),
+          [](const FontEntry& a, const FontEntry& b) { return a.filename < b.filename; });
+
+        needs_scan = false;
+      }
+
+      // ---- Header ----
+      ImGui::Text("Font Browser");
+      ImGui::SameLine();
+      ImGui::TextDisabled("(%zu fonts)", font_entries.size());
+      ImGui::SameLine();
+      if (ImGui::SmallButton("Refresh")) { needs_scan = true; }
+
       ImGui::Separator();
 
-      // Get all loaded fonts
-      auto fonts = get_all_loaded_fonts();
-
-      // Debug: Show count
-      ImGui::Text("Loaded fonts: %zu", fonts.size());
-
-      if (fonts.empty()) {
-        ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.0f, 1.0f), "No fonts loaded");
+      if (font_entries.empty()) {
+        ImGui::Dummy(ImVec2(0, 40));
+        ImGui::Indent(200);
+        ImGui::TextColored(ImVec4(0.8f, 0.6f, 0.2f, 1.0f), "No font files found in assets/fonts/");
+        ImGui::Unindent(200);
+        ImGui::Dummy(ImVec2(0, 40));
         ImGui::Separator();
-        if (ImGui::Button("Close")) {
-          ImGui::CloseCurrentPopup();
-        }
+        if (ImGui::Button("Close", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
         ImGui::EndPopup();
         return false;
       }
 
-      // Search filter
+      // ---- Toolbar ----
+      ImGui::PushItemWidth(250);
       static char search_buffer[256] = "";
-      ImGui::InputText("Search", search_buffer, sizeof(search_buffer));
+      ImGui::InputTextWithHint("##fontsearch", "Search fonts...", search_buffer, sizeof(search_buffer));
+      ImGui::PopItemWidth();
+
       std::string search_str(search_buffer);
       std::transform(search_str.begin(), search_str.end(), search_str.begin(),
         [](char c) { return static_cast<char>(std::tolower(static_cast<int>(c))); });
 
+      ImGui::SameLine();
+
+      // Preview size (used to render "ABC" thumbnails)
+      ImGui::PushItemWidth(140);
+      int prev_preview_px = preview_px;
+      ImGui::SliderInt("Preview px##fprev", &preview_px, 12, 72);
+      ImGui::PopItemWidth();
+      if (preview_px != prev_preview_px) {
+        // Reload fonts at new preview size
+        for (auto& fe : font_entries) {
+          fe.font = Engine::Resources::load_font(fe.full_path, static_cast<unsigned int>(preview_px), false, false);
+          fe.loaded_at_size = preview_px;
+        }
+      }
+
+      ImGui::SameLine();
+
+      // Export / output size
+      ImGui::PushItemWidth(110);
+      ImGui::InputInt("Size##fsize", &export_size, 1, 8);
+      ImGui::PopItemWidth();
+      if (export_size < 4) export_size = 4;
+      if (export_size > 256) export_size = 256;
+
       ImGui::Separator();
 
-      // Scrollable region for grid
-      ImGui::BeginChild("FontGrid", ImVec2(0, -30), true);
+      // ---- Scrollable grid ----
+      ImGui::BeginChild("FontGrid", ImVec2(0, -50), true);
 
       int column = 0;
       int rendered_count = 0;
 
-      for (const auto& font : fonts) {
-        // Extract filename from path for display
-        std::filesystem::path fs_path(font->path);
-        std::string filename = fs_path.filename().string();
+      for (int fi = 0; fi < static_cast<int>(font_entries.size()); ++fi) {
+        FontEntry& entry = font_entries[fi];
 
-        // Filter by search
+        // Search filter
         if (!search_str.empty()) {
-          std::string path_lower = font->path;
-          std::transform(path_lower.begin(), path_lower.end(), path_lower.begin(),
+          std::string lower = entry.full_path;
+          std::transform(lower.begin(), lower.end(), lower.begin(),
             [](char c) { return static_cast<char>(std::tolower(static_cast<int>(c))); });
-          if (path_lower.find(search_str) == std::string::npos) {
-            continue;
-          }
+          if (lower.find(search_str) == std::string::npos) continue;
         }
 
         rendered_count++;
-        ImGui::BeginGroup();
 
-        // Highlight if currently selected
-        bool is_current = (font->path == current_path && font->font_size == static_cast<unsigned int>(current_size));
-        if (is_current) {
-          ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.6f, 1.0f, 0.8f));
-          ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.4f, 0.7f, 1.0f, 1.0f));
-          ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.8f, 1.0f, 1.0f));
+        bool is_current     = (entry.display_path == current_path || entry.full_path == current_path);
+        bool is_highlighted = (fi == highlighted);
+
+        ImVec2 item_pos  = ImGui::GetCursorScreenPos();
+        ImVec2 item_size(preview_size + 10, preview_size + 38);
+
+        ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+        // Highlight background
+        if (is_current || is_highlighted) {
+          draw_list->AddRectFilled(item_pos,
+            ImVec2(item_pos.x + item_size.x, item_pos.y + item_size.y),
+            is_current ? IM_COL32(60, 120, 200, 100) : IM_COL32(80, 80, 80, 120), 3.0f);
         }
 
-        // Create a button with "ABC" text preview using the actual font
-        std::string button_id = "##font_" + std::to_string(reinterpret_cast<uintptr_t>(font.get()));
-        ImVec2 button_size(preview_size, preview_size);
+        ImGui::BeginGroup();
+        ImGui::PushID(fi);
 
-        // Draw button background
-        ImVec2 button_pos = ImGui::GetCursorScreenPos();
-        if (ImGui::InvisibleButton(button_id.c_str(), button_size)) {
-          selected_path = font->path;
-          selected_size = font->font_size;
+        // Dark card background
+        draw_list->AddRectFilled(item_pos,
+          ImVec2(item_pos.x + item_size.x, item_pos.y + item_size.y),
+          IM_COL32(35, 35, 35, 255), 4.0f);
+
+        ImGui::InvisibleButton("##fontbtn", item_size);
+        bool is_hovered       = ImGui::IsItemHovered();
+        bool is_double_clicked = is_hovered && ImGui::IsMouseDoubleClicked(0);
+
+        if (ImGui::IsItemClicked(0)) {
+          highlighted = fi;
+        }
+
+        if (is_double_clicked) {
+          selected_path = entry.display_path;
+          selected_size = export_size;
           selection_made = true;
           ImGui::CloseCurrentPopup();
         }
 
-        // Draw "ABC" text centered in the button using the font's texture atlas
-        ImDrawList* draw_list = ImGui::GetWindowDrawList();
-
-        // Calculate scale factor to fit text in preview
-        float base_char_height = static_cast<float>(font->font_size);
-        float base_char_width = base_char_height * 0.6f; // Approximate width per character
-        float base_total_width = base_char_width * 3; // "ABC" = 3 characters
-
-        // Scale down if necessary to fit in preview (with some padding)
-        float max_preview_dimension = preview_size * 0.8f; // Use 80% of preview size for padding
-        float scale = 1.0f;
-        if (base_char_height > max_preview_dimension || base_total_width > max_preview_dimension) {
-          float height_scale = max_preview_dimension / base_char_height;
-          float width_scale = max_preview_dimension / base_total_width;
-          scale = std::min(height_scale, width_scale);
-        }
-
-        float char_height = base_char_height * scale;
-        float total_width = base_total_width * scale;
-
-        // Center the text
-        ImVec2 text_pos = ImVec2(
-          button_pos.x + (preview_size - total_width) * 0.5f,
-          button_pos.y + (preview_size - char_height) * 0.5f
-        );
-
-        // Draw "ABC" using individual glyphs from the font
-        const char* preview_text = "ABC";
-        float cursor_x = text_pos.x;
-        for (int i = 0; preview_text[i] != '\0'; ++i) {
-          auto glyph_it = font->glyphs.find(preview_text[i]);
-          if (glyph_it != font->glyphs.end()) {
-            const auto& glyph = glyph_it->second;
-
-            // Calculate glyph position and size with scaling
-            ImVec2 glyph_pos(
-              cursor_x + glyph.bearing.x * scale,
-              text_pos.y + (char_height - glyph.bearing.y * scale)
-            );
-            ImVec2 glyph_size(
-              static_cast<float>(glyph.size.x) * scale,
-              static_cast<float>(glyph.size.y) * scale
-            );
-
-            // Draw the glyph
-            draw_list->AddImage(
-              (ImTextureID)(intptr_t)font->texture_atlas.id,
-              glyph_pos,
-              ImVec2(glyph_pos.x + glyph_size.x, glyph_pos.y + glyph_size.y),
-              ImVec2(glyph.tex_coords[3].x, glyph.tex_coords[3].y), // top-left
-              ImVec2(glyph.tex_coords[1].x, glyph.tex_coords[1].y), // bottom-right
-              IM_COL32(255, 255, 255, 255)
-            );
-
-            cursor_x += (glyph.advance >> 6) * scale; // Advance is in 1/64 pixels, scaled
-          }
-        }
-
-        if (is_current) {
-          ImGui::PopStyleColor(3);
-        }
-
-        // Tooltip with details
-        if (ImGui::IsItemHovered()) {
+        if (is_hovered) {
+          draw_list->AddRect(item_pos,
+            ImVec2(item_pos.x + item_size.x, item_pos.y + item_size.y),
+            IM_COL32(100, 150, 255, 200), 3.0f, 0, 2.0f);
           ImGui::BeginTooltip();
-          ImGui::Text("%s", filename.c_str());
-          ImGui::Text("Size: %dpx", font->font_size);
-          ImGui::Text("Atlas: %dx%d", font->texture_atlas.width, font->texture_atlas.height);
-          ImGui::Text("Path: %s", font->path.c_str());
+          ImGui::Text("%s", entry.filename.c_str());
+          ImGui::Text("Path: %s", entry.display_path.c_str());
           ImGui::EndTooltip();
         }
 
-        // Label under preview
-        ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + preview_size);
-        ImGui::TextWrapped("%s", filename.c_str());
-        ImGui::PopTextWrapPos();
-        ImGui::Text("%dpx", font->font_size);
+        // Draw "ABC" preview
+        if (entry.font) {
+          float base_h = static_cast<float>(entry.font->font_size);
+          float base_w = base_h * 1.8f; // 3 chars × ~0.6× width
+          float max_dim = preview_size * 0.85f;
+          float scale = 1.0f;
+          if (base_h > max_dim || base_w > max_dim) {
+            scale = std::min(max_dim / base_h, max_dim / base_w);
+          }
 
-        ImGui::EndGroup();
+          float ch    = base_h * scale;
+          float tw    = base_w * scale;
+          ImVec2 tp(
+            item_pos.x + (item_size.x - tw)  * 0.5f,
+            item_pos.y + (preview_size - ch) * 0.5f + 5
+          );
 
-        // Grid layout
-        column++;
-        if (column < grid_columns) {
-          ImGui::SameLine();
+          const char* preview_text = "Abc";
+          float cx = tp.x;
+          for (int i = 0; preview_text[i] != '\0'; ++i) {
+            auto git = entry.font->glyphs.find(preview_text[i]);
+            if (git == entry.font->glyphs.end()) continue;
+            const auto& g = git->second;
+
+            ImVec2 gp(cx + g.bearing.x * scale,
+              tp.y + (ch - g.bearing.y * scale));
+            ImVec2 gs(static_cast<float>(g.size.x) * scale,
+              static_cast<float>(g.size.y) * scale);
+
+            draw_list->AddImage(
+              (ImTextureID)(intptr_t)entry.font->texture_atlas.id,
+              gp, ImVec2(gp.x + gs.x, gp.y + gs.y),
+              ImVec2(g.tex_coords[3].x, g.tex_coords[3].y),
+              ImVec2(g.tex_coords[1].x, g.tex_coords[1].y),
+              IM_COL32(255, 255, 255, 255));
+
+            cx += (g.advance >> 6) * scale;
+          }
         }
         else {
-          column = 0;
+          // Placeholder for failed loads
+          ImVec2 ph(item_pos.x + 4, item_pos.y + 4);
+          draw_list->AddRectFilled(ph,
+            ImVec2(ph.x + preview_size + 2, ph.y + preview_size),
+            IM_COL32(60, 30, 30, 200));
+          draw_list->AddText(ImVec2(ph.x + 4, ph.y + preview_size * 0.4f),
+            IM_COL32(180, 80, 80, 255), "N/A");
         }
+
+        // Filename label
+        std::string disp = entry.filename.length() > 14
+          ? entry.filename.substr(0, 11) + "..." : entry.filename;
+        draw_list->AddText(
+          ImVec2(item_pos.x + 5, item_pos.y + preview_size + 10),
+          IM_COL32(210, 210, 210, 255), disp.c_str());
+
+        ImGui::PopID();
+        ImGui::EndGroup();
+
+        column++;
+        if (column < grid_columns) ImGui::SameLine();
+        else column = 0;
       }
 
       ImGui::EndChild();
 
-      // Debug: Show how many were rendered
-      ImGui::Text("Rendered: %d", rendered_count);
-
+      // ---- Bottom bar ----
       ImGui::Separator();
-      if (ImGui::Button("Close", ImVec2(120, 0))) {
+      ImGui::Text("%d / %zu fonts", rendered_count, font_entries.size());
+      ImGui::SameLine();
+      ImGui::TextDisabled(" | Double-click or use button below to select");
+
+      ImGui::SameLine(ImGui::GetWindowWidth() - 250);
+      bool has_sel = (highlighted >= 0 && highlighted < static_cast<int>(font_entries.size()));
+      if (!has_sel) ImGui::BeginDisabled();
+      if (ImGui::Button("Select", ImVec2(110, 0)) && has_sel) {
+        selected_path = font_entries[highlighted].display_path;
+        selected_size = export_size;
+        selection_made = true;
         ImGui::CloseCurrentPopup();
       }
+      if (!has_sel) ImGui::EndDisabled();
+
+      ImGui::SameLine();
+      if (ImGui::Button("Close", ImVec2(110, 0))) { ImGui::CloseCurrentPopup(); }
 
       ImGui::EndPopup();
     }
