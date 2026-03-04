@@ -290,6 +290,7 @@ namespace PlayerStateCallbacks
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
     player_comp->dash.set_timer();
+    player_comp->damage_immune = true;
 
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
@@ -325,6 +326,7 @@ namespace PlayerStateCallbacks
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
     player_comp->dash.reset_cooldown();
+    player_comp->damage_immune = false;
   }
 #pragma endregion
 
@@ -387,10 +389,10 @@ namespace PlayerStateCallbacks
   }
 
   inline void attack1_on_update(Engine::ECS::Entity entity) {
-    auto* state_machine = entity.get_component<Components::StateMachine>();
-    auto* animation = entity.get_component<Components::Animation>();
-
-    if (!animation) return;
+    Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
+    Components::Animation* animation = entity.get_component<Components::Animation>();
+    assert(state_machine);
+    assert(animation);
 
     // Check if player pressed attack again during this combo window
     if (Engine::Input::is_pressed(Engine::KeyCode::J) && !animation->has_ended()) {
@@ -399,17 +401,9 @@ namespace PlayerStateCallbacks
         state_machine->change_state("Attack2");
       }
     }
-
     // Transition to idle when attack animation completes
-    if (animation->has_ended()) {
-      auto* transform = entity.get_component<Components::Transform2D>();
-      auto* flip = entity.get_component<Components::Flip>();
-      // offset slightly forward because attack texture is wider than idle texture
-      if (transform && flip) {
-        transform->position.x += (flip->value.x < 0) ? 20.0f : -20.0f;
-      }
-
-      // Force so that we don't display the attack texture after offset is applied
+    if (animation->has_ended()) 
+    {
       state_machine->change_state("Idle");
     }
   }
@@ -439,10 +433,10 @@ namespace PlayerStateCallbacks
   }
 
   inline void attack2_on_update(Engine::ECS::Entity entity) {
-    auto* state_machine = entity.get_component<Components::StateMachine>();
-    auto* animation = entity.get_component<Components::Animation>();
-
-    if (!animation) return;
+    Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
+    Components::Animation* animation = entity.get_component<Components::Animation>();
+    assert(state_machine);
+    assert(animation);
 
     // Check if player pressed attack again during this combo window
     if (Engine::Input::is_pressed(Engine::KeyCode::J) && !animation->has_ended()) {
@@ -451,17 +445,9 @@ namespace PlayerStateCallbacks
         state_machine->change_state("Attack3");
       }
     }
-
     // Transition to idle when attack animation completes
-    if (animation->has_ended()) {
-      auto* transform = entity.get_component<Components::Transform2D>();
-      auto* flip = entity.get_component<Components::Flip>();
-      // offset slightly forward because attack texture is wider than idle texture
-      if (transform && flip) {
-        transform->position.x += (flip->value.x < 0) ? 20.0f : -20.0f;
-      }
-
-      // Force so that we don't display the attack texture after offset is applied
+    if (animation->has_ended()) 
+    {
       state_machine->change_state("Idle");
     }
   }
@@ -491,20 +477,15 @@ namespace PlayerStateCallbacks
   }
 
   inline void attack3_on_update(Engine::ECS::Entity entity) {
-    auto* state_machine = entity.get_component<Components::StateMachine>();
-    auto* animation = entity.get_component<Components::Animation>();
+    Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
+    Components::Animation* animation = entity.get_component<Components::Animation>();
+    assert(state_machine);
+    assert(animation);
 
     // No combo after this - it's the finisher
     // Just wait for animation to complete
-    if (animation && animation->has_ended()) {
-      auto* transform = entity.get_component<Components::Transform2D>();
-      auto* flip = entity.get_component<Components::Flip>();
-      // offset slightly forward because attack texture is wider than idle texture
-      if (transform && flip) {
-        transform->position.x += (flip->value.x < 0) ? 20.0f : -20.0f;
-      }
-
-      // Force so that we don't display the attack texture after offset is applied
+    if (animation->has_ended()) 
+    {
       state_machine->change_state("Idle");
     }
   }
@@ -568,14 +549,19 @@ namespace PlayerStateCallbacks
   inline void uppercut_on_update(ECS::Entity entity)
   {
     Components::Player* player_comp = entity.get_component<Components::Player>();
+    Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
     assert(player_comp);
+    assert(box);
 
+    // Exit Condition 1
     if (player_comp->uppercut.timer_end())
     {
       Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
       assert(sm);
       sm->change_state("PostUppercut");
     }
+    // Exit Condition 2
+
     player_comp->uppercut.timer -= Time::get_fixed_dt();
   }
 
@@ -730,6 +716,14 @@ namespace PlayerStateCallbacks
   inline void post_smash_on_enter([[maybe_unused]] ECS::Entity entity)
   {
     Log::info("Player: Entered Post Smash state");
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    //=========================================================================//
+    ECS::Entity hitbox = create_hitbox(entity, player_comp->smash_data);
+
+    Components::Attack* attack = hitbox.get_component<Components::Attack>();
+    assert(attack);
+    /*attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactBlue_Spritesheet.png");*/
   }
 
   inline void post_smash_on_update(ECS::Entity entity)

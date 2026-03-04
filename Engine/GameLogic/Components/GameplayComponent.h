@@ -74,19 +74,6 @@ namespace Components
 
   struct Player
   {
-    /*struct AttackData
-    {
-      f32 hitbox_offset_x = 80.0f;
-      f32 hitbox_offset_y = 0.0f;
-      f32 hitbox_width = 100.0f;
-      f32 hitbox_height = 128.0f;
-      f32 dash_speed = 1000.0f;
-      s32 damage = 10;
-      f32 heartrate_cost = 5.0f;
-      Math::Vec2D knockback = Math::Vec2D(300.0f, 0.f);
-    };*/
-
-    //mass
     float mass = 50.0f;
 
     // Movement speeds (going to add to force instead of velocity as of 22/01/26)
@@ -107,43 +94,14 @@ namespace Components
     Action uppercut { .05f, 5.f, 2500.f, 0 };
     Action smash    { 0.f, 7.f, 2500.f, 0.f };
 
-    AttackData attack1_data{ 80.0f, 0.0f, 100.0f, 128.0f, 0.48f, 1.0f, Vec2D(300.0f, 0.0f) };
-    AttackData attack2_data{ 80.0f, 0.0f, 100.0f, 128.0f, 0.24f, 1.0f, Vec2D(300.0f, 0.0f) };
-    AttackData attack3_data{ 80.0f, 0.0f, 120.0f, 128.0f, 0.6f, 3.0f, Vec2D(3000.0f, 0.0f) };
+    // hitbox_offset_x hitbox_offset_y hitbox_width hitbox_height life_time dmg knockback
+    AttackData pre_uppercut_data{ 80.0f, 0.0f, 80.0f, 64.0f, 0.1f, 5.0f, Vec2D(200.0f, 0.0f) };
+    AttackData uppercut_data  { 40.0f, 0.0f, 100.0f, 64.0f, 0.1f, 5.0f, Vec2D(0.0f, 1000.0f)};
+    AttackData smash_data     { 0.0f, 48.0f, 384.0f, 32.0f, 0.1f, 5.0f, Vec2D(200.0f, 0.0f) };
+    AttackData attack1_data   { 40.0f, 0.0f, 100.0f, 64.0f, 0.1f, 1.0f, Vec2D(200.0f, 0.0f) };
+    AttackData attack2_data   { 40.0f, 0.0f, 100.0f, 64.0f, 0.1f, 1.0f, Vec2D(200.0f, 0.0f) };
+    AttackData attack3_data   { 40.0f, 0.0f, 100.0f, 64.0f, 0.1f, 3.0f, Vec2D(200.0f, 0.0f) };
 
-    // Attacks
-    //AttackData attack1 = {
-    //  80.0f,                       // hitbox_offset_x
-    //  0.0f,                        // hitbox_offset_y
-    //  100.0f,                      // hitbox_width
-    //  128.0f,                      // hitbox_height
-    //  1000.0f,                     // dash_speed
-    //  1,                          // damage
-    //  5.0f,                        // heartrate_cost
-    //  Math::Vec2D(300.0f, 0.f)     // knockback
-    //};
-
-    //AttackData attack2 = {
-    //  80.0f,                       // hitbox_offset_x
-    //  0.0f,                        // hitbox_offset_y
-    //  100.0f,                      // hitbox_width
-    //  128.0f,                      // hitbox_height
-    //  1000.0f,                     // dash_speed
-    //  1,                          // damage
-    //  5.0f,                        // heartrate_cost
-    //  Math::Vec2D(300.0f, 0.f)     // knockback
-    //};
-
-    //AttackData attack3 = {
-    //  80.0f,                       // hitbox_offset_x
-    //  0.0f,                        // hitbox_offset_y
-    //  120.0f,                      // hitbox_width
-    //  128.0f,                      // hitbox_height
-    //  2000.0f,                     // dash_speed
-    //  3,                           // damage
-    //  8.0f,                        // heartrate_cost
-    //  Math::Vec2D(3000.0f, 0.f)    // knockback
-    //};
   };
 
   struct Enemy
