@@ -137,6 +137,32 @@ namespace PlayerStateCallbacks
     }
   }
 
+  ECS::Entity create_hitbox(ECS::Entity parent, Components::AttackData& atk_data)
+  {
+    Components::Transform2D* xform = parent.get_component<Components::Transform2D>();
+    Components::Flip* flip = parent.get_component<Components::Flip>();
+    assert(xform);
+    assert(flip);
+    ECS::Entity hitbox = Engine::ECS::create_entity()
+      .add_component<Components::Attack>(atk_data.dmg)
+      .add_component<Components::Transform2D>( 
+        xform->position.x + flip->value.x * atk_data.hitbox_offset_x,
+        xform->position.y + atk_data.hitbox_offset_y,
+        0.0f, atk_data.hitbox_width, atk_data.hitbox_height )
+      .add_component<Components::RigidBody>(true, false)
+      .add_component<Components::BoxCollider>(atk_data.hitbox_width, atk_data.hitbox_height, false)
+      .add_component<Components::Parent>(parent.get_id())
+      .add_component<Components::Lifetime>(atk_data.life_time) // Attack1 duration: 6 frames × 0.08f
+      .remove_from_layer("default")
+      .add_to_layer("damage_enemy");
+
+    Components::Attack* attack = hitbox.get_component<Components::Attack>();
+    assert(attack);
+    attack->knockback = atk_data.knockback * flip->value.x;
+    // Knockback Y is always positive (up) in our config, but physics needs negative for up
+    attack->knockback.y = -std::abs(attack->knockback.y);
+    return hitbox;
+  }
 #pragma region idle state;
   // ========================================================================
   // Idle State Callbacks
@@ -267,28 +293,25 @@ namespace PlayerStateCallbacks
 
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
+    Components::Flip* flip = entity.get_component<Components::Flip>();
+    assert(flip);
+
     rigid->apply_force = false;
-    rigid->velocity.zero();
-    rigid->force.zero();
+    rigid->velocity.x = flip->value.x * player_comp->dash.speed;
     terminal_vel_placeholder = rigid->x_terminal_velocity;
     rigid->x_terminal_velocity = player_comp->dash.speed;
   }
 
   inline void dash_on_update(ECS::Entity entity)
   {
-    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     Components::Player* player_comp = entity.get_component<Components::Player>();
-    Components::Flip* flip = entity.get_component<Components::Flip>();
-    assert(rigid);
     assert(player_comp);
-    assert(flip);
     if (player_comp->dash.timer_end())
     {
       Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
       assert(state_machine);
       state_machine->change_state("Idle");
     }
-    rigid->velocity.x = flip->value.x * player_comp->dash.speed;
     player_comp->dash.timer -= Time::get_fixed_dt();
   }
 
@@ -346,55 +369,21 @@ namespace PlayerStateCallbacks
   // ========================================================================
 
   inline void attack1_on_enter(Engine::ECS::Entity entity) {
-    auto* rigid = entity.get_component<Components::RigidBody>();
-    auto* flip = entity.get_component<Components::Flip>();
-    auto* player_comp = entity.get_component<Components::Player>();
-
-    // Apply forward movement during attack
-    if (rigid && flip && player_comp) {
-      rigid->velocity.x = (flip->value.x < 0) ? -player_comp->attack1.dash_speed : player_comp->attack1.dash_speed;
-    }
-
-    // Create attack hitbox entity
-    auto* transform = entity.get_component<Components::Transform2D>();
-
-    if (transform && player_comp) {
-      float offset_x = (flip && flip->value.x < 0) ? -player_comp->attack1.hitbox_offset_x : player_comp->attack1.hitbox_offset_x;
-      float offset_y = player_comp->attack1.hitbox_offset_y;
-
-      auto hitbox = Engine::ECS::create_entity()
-        .add_component<Components::Tag<"PlayerAttackHitbox">>()
-        .add_component<Components::Attack>(player_comp->attack1.damage)
-        .add_component<Components::Transform2D>(
-          transform->position.x + offset_x,
-          transform->position.y + offset_y,
-          0.0f,
-          player_comp->attack1.hitbox_width,
-          player_comp->attack1.hitbox_height
-        )
-        .add_component<Components::RigidBody>(true, false)
-        .add_component<Components::BoxCollider>(player_comp->attack1.hitbox_width, player_comp->attack1.hitbox_height, false)
-        .add_component<Components::Parent>(entity.get_id())
-        .add_component<Components::Lifetime>(0.48f) // Attack1 duration: 6 frames × 0.08f
-        .remove_from_layer("default")
-        .add_to_layer("damage_enemy");
-
-      // Apply knockback direction based on facing
-      auto* attack = hitbox.get_component<Components::Attack>();
-      if (attack) {
-        attack->knockback = player_comp->attack1.knockback;
-        if (flip && flip->value.x < 0) {
-          attack->knockback.x = -attack->knockback.x;
-        }
-        // Knockback Y is always positive (up) in our config, but physics needs negative for up
-        attack->knockback.y = -std::abs(attack->knockback.y);
-
-        // Assign impact VFX texture
-        attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactBlue_Spritesheet.png");
-      }
-    }
-
     Log::info("Player: Attack 1 (First Punch)");
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    Components::Flip* flip = entity.get_component<Components::Flip>();
+    assert(player_comp);
+    assert(rigid);
+    assert(flip);
+
+    rigid->velocity.x = flip->value.x * player_comp->dash.speed;
+    //=========================================================================//
+    ECS::Entity hitbox = create_hitbox(entity, player_comp->attack1_data);
+
+    Components::Attack* attack = hitbox.get_component<Components::Attack>();
+    assert(attack);
+    attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactBlue_Spritesheet.png");
   }
 
   inline void attack1_on_update(Engine::ECS::Entity entity) {
@@ -432,55 +421,21 @@ namespace PlayerStateCallbacks
   // ========================================================================
 
   inline void attack2_on_enter(Engine::ECS::Entity entity) {
-    auto* rigid = entity.get_component<Components::RigidBody>();
-    auto* flip = entity.get_component<Components::Flip>();
-    auto* player_comp = entity.get_component<Components::Player>();
-
-    // Apply forward movement during attack
-    if (rigid && flip && player_comp) {
-      rigid->velocity.x = (flip->value.x < 0) ? -player_comp->attack2.dash_speed : player_comp->attack2.dash_speed;
-    }
-
-    // Create attack hitbox entity
-    auto* transform = entity.get_component<Components::Transform2D>();
-
-    if (transform && player_comp) {
-      float offset_x = (flip && flip->value.x < 0) ? -player_comp->attack2.hitbox_offset_x : player_comp->attack2.hitbox_offset_x;
-      float offset_y = player_comp->attack2.hitbox_offset_y;
-
-      auto hitbox = Engine::ECS::create_entity()
-        .add_component<Components::Tag<"PlayerAttackHitbox">>()
-        .add_component<Components::Attack>(player_comp->attack2.damage)
-        .add_component<Components::Transform2D>(
-          transform->position.x + offset_x,
-          transform->position.y + offset_y,
-          0.0f,
-          player_comp->attack2.hitbox_width,
-          player_comp->attack2.hitbox_height
-        )
-        .add_component<Components::RigidBody>(true, false)
-        .add_component<Components::BoxCollider>(player_comp->attack2.hitbox_width, player_comp->attack2.hitbox_height, false)
-        .add_component<Components::Parent>(entity.get_id())
-        .add_component<Components::Lifetime>(0.24f) // Attack2 duration: 3 frames × 0.08f
-        .remove_from_layer("default")
-        .add_to_layer("damage_enemy");
-
-      // Apply knockback direction based on facing
-      auto* attack = hitbox.get_component<Components::Attack>();
-      if (attack) {
-        attack->knockback = player_comp->attack2.knockback;
-        if (flip && flip->value.x < 0) {
-          attack->knockback.x = -attack->knockback.x;
-        }
-        // Knockback Y is always positive (up) in our config, but physics needs negative for up
-        attack->knockback.y = -std::abs(attack->knockback.y);
-
-        // Assign impact VFX texture
-        attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactBluePink_Spritesheet.png");
-      }
-    }
-
     Log::info("Player: Attack 2 (Second Punch)");
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    Components::Flip* flip = entity.get_component<Components::Flip>();
+    assert(player_comp);
+    assert(rigid);
+    assert(flip);
+
+    rigid->velocity.x = flip->value.x * player_comp->dash.speed;
+    //=========================================================================//
+    ECS::Entity hitbox = create_hitbox(entity, player_comp->attack2_data);
+
+    Components::Attack* attack = hitbox.get_component<Components::Attack>();
+    assert(attack);
+    attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactBlue_Spritesheet.png");
   }
 
   inline void attack2_on_update(Engine::ECS::Entity entity) {
@@ -518,55 +473,21 @@ namespace PlayerStateCallbacks
   // ========================================================================
 
   inline void attack3_on_enter(Engine::ECS::Entity entity) {
-    auto* rigid = entity.get_component<Components::RigidBody>();
-    auto* flip = entity.get_component<Components::Flip>();
-    auto* player_comp = entity.get_component<Components::Player>();
-
-    // Apply forward movement during attack
-    if (rigid && flip && player_comp) {
-      rigid->velocity.x = (flip->value.x < 0) ? -player_comp->attack3.dash_speed : player_comp->attack3.dash_speed;
-    }
-
-    // Create attack hitbox entity
-    auto* transform = entity.get_component<Components::Transform2D>();
-
-    if (transform && player_comp) {
-      float offset_x = (flip && flip->value.x < 0) ? -player_comp->attack3.hitbox_offset_x : player_comp->attack3.hitbox_offset_x;
-      float offset_y = player_comp->attack3.hitbox_offset_y;
-
-      auto hitbox = Engine::ECS::create_entity()
-        .add_component<Components::Tag<"PlayerAttackHitbox">>()
-        .add_component<Components::Attack>(player_comp->attack3.damage)
-        .add_component<Components::Transform2D>(
-          transform->position.x + offset_x,
-          transform->position.y + offset_y,
-          0.0f,
-          player_comp->attack3.hitbox_width,
-          player_comp->attack3.hitbox_height
-        )
-        .add_component<Components::RigidBody>(true, false)
-        .add_component<Components::BoxCollider>(player_comp->attack3.hitbox_width, player_comp->attack3.hitbox_height, false)
-        .add_component<Components::Parent>(entity.get_id())
-        .add_component<Components::Lifetime>(0.6f) // Attack3 duration: 10 frames × 0.06f
-        .remove_from_layer("default")
-        .add_to_layer("damage_enemy");
-
-      // Apply knockback direction based on facing
-      auto* attack = hitbox.get_component<Components::Attack>();
-      if (attack) {
-        attack->knockback = player_comp->attack3.knockback;
-        if (flip && flip->value.x < 0) {
-          attack->knockback.x = -attack->knockback.x;
-        }
-        // Knockback Y is always positive (up) in our config, but physics needs negative for up
-        attack->knockback.y = -std::abs(attack->knockback.y);
-
-        // Assign impact VFX texture
-        attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactPink_Spritesheet.png");
-      }
-    }
-
     Log::info("Player: Attack 3 (Third Punch - Finisher!)");
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    Components::Flip* flip = entity.get_component<Components::Flip>();
+    assert(player_comp);
+    assert(rigid);
+    assert(flip);
+
+    rigid->velocity.x = flip->value.x * player_comp->dash.speed;
+    //=========================================================================//
+    ECS::Entity hitbox = create_hitbox(entity, player_comp->attack3_data);
+
+    Components::Attack* attack = hitbox.get_component<Components::Attack>();
+    assert(attack);
+    attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactBlue_Spritesheet.png");
   }
 
   inline void attack3_on_update(Engine::ECS::Entity entity) {

@@ -29,9 +29,11 @@ namespace Components
     bool no_cooldown = false;
 
     f32 speed;
+    f32 x_terminal_vel;
+    f32 y_terminal_vel;
     f32 impulse;
 
-    Action(f32 dur, f32 cd, f32 spd = 0.f, f32 imp = 0.f)
+    Action(f32 dur = 0.f, f32 cd = 0.f, f32 spd = 0.f, f32 imp = 0.f)
       : duration(dur), cooldown(cd), speed(spd), impulse(imp) {}
 
     void set_timer() // starts the countdown for the states that run on a timer
@@ -55,9 +57,24 @@ namespace Components
     }
   };
 
+  struct AttackData
+  {
+    f32 hitbox_offset_x;
+    f32 hitbox_offset_y;
+    f32 hitbox_width;
+    f32 hitbox_height;
+    f32 life_time;
+    f32 dmg;
+    Vec2D knockback;
+
+    AttackData(f32 offset_x = 0.0f, f32 offset_y = 0.0f, f32 width = 0.0f, f32 height = 0.0f, f32 dur = 0.f, f32 damage = 0.0f, Vec2D kb = Vec2D())
+      : hitbox_offset_x(offset_x), hitbox_offset_y(offset_y), hitbox_width(width), hitbox_height(height), life_time(dur), dmg(damage), knockback(kb) {
+    }
+  };
+
   struct Player
   {
-    struct AttackData
+    /*struct AttackData
     {
       f32 hitbox_offset_x = 80.0f;
       f32 hitbox_offset_y = 0.0f;
@@ -67,8 +84,7 @@ namespace Components
       s32 damage = 10;
       f32 heartrate_cost = 5.0f;
       Math::Vec2D knockback = Math::Vec2D(300.0f, 0.f);
-    };
-
+    };*/
 
     //mass
     float mass = 50.0f;
@@ -84,42 +100,50 @@ namespace Components
     // duration, cooldown, speed, impluse
     Action dash{ 0.2f,5.f, 1250.f };
     Action stunned{ 1.f, 0.f, 0.f, -5000.f };
-    Action uppercut{ .05f, 5.f, 2500.f, 0 };
-    Action smash{ 0.f, 7.f, 2500.f, 0.f };
+
+    Action attack1  { 0.f, 0.f, 1000.f, 0.f };
+    Action attack2  { 0.f, 0.f, 1000.f, 0.f };
+    Action attack3  { 0.f, 0.f, 1000.f, 0.f };
+    Action uppercut { .05f, 5.f, 2500.f, 0 };
+    Action smash    { 0.f, 7.f, 2500.f, 0.f };
+
+    AttackData attack1_data{ 80.0f, 0.0f, 100.0f, 128.0f, 0.48f, 1.0f, Vec2D(300.0f, 0.0f) };
+    AttackData attack2_data{ 80.0f, 0.0f, 100.0f, 128.0f, 0.24f, 1.0f, Vec2D(300.0f, 0.0f) };
+    AttackData attack3_data{ 80.0f, 0.0f, 120.0f, 128.0f, 0.6f, 3.0f, Vec2D(3000.0f, 0.0f) };
 
     // Attacks
-    AttackData attack1 = {
-      80.0f,                       // hitbox_offset_x
-      0.0f,                        // hitbox_offset_y
-      100.0f,                      // hitbox_width
-      128.0f,                      // hitbox_height
-      1000.0f,                     // dash_speed
-      1,                          // damage
-      5.0f,                        // heartrate_cost
-      Math::Vec2D(300.0f, 0.f)     // knockback
-    };
+    //AttackData attack1 = {
+    //  80.0f,                       // hitbox_offset_x
+    //  0.0f,                        // hitbox_offset_y
+    //  100.0f,                      // hitbox_width
+    //  128.0f,                      // hitbox_height
+    //  1000.0f,                     // dash_speed
+    //  1,                          // damage
+    //  5.0f,                        // heartrate_cost
+    //  Math::Vec2D(300.0f, 0.f)     // knockback
+    //};
 
-    AttackData attack2 = {
-      80.0f,                       // hitbox_offset_x
-      0.0f,                        // hitbox_offset_y
-      100.0f,                      // hitbox_width
-      128.0f,                      // hitbox_height
-      1000.0f,                     // dash_speed
-      1,                          // damage
-      5.0f,                        // heartrate_cost
-      Math::Vec2D(300.0f, 0.f)     // knockback
-    };
+    //AttackData attack2 = {
+    //  80.0f,                       // hitbox_offset_x
+    //  0.0f,                        // hitbox_offset_y
+    //  100.0f,                      // hitbox_width
+    //  128.0f,                      // hitbox_height
+    //  1000.0f,                     // dash_speed
+    //  1,                          // damage
+    //  5.0f,                        // heartrate_cost
+    //  Math::Vec2D(300.0f, 0.f)     // knockback
+    //};
 
-    AttackData attack3 = {
-      80.0f,                       // hitbox_offset_x
-      0.0f,                        // hitbox_offset_y
-      120.0f,                      // hitbox_width
-      128.0f,                      // hitbox_height
-      2000.0f,                     // dash_speed
-      3,                           // damage
-      8.0f,                        // heartrate_cost
-      Math::Vec2D(3000.0f, 0.f)    // knockback
-    };
+    //AttackData attack3 = {
+    //  80.0f,                       // hitbox_offset_x
+    //  0.0f,                        // hitbox_offset_y
+    //  120.0f,                      // hitbox_width
+    //  128.0f,                      // hitbox_height
+    //  2000.0f,                     // dash_speed
+    //  3,                           // damage
+    //  8.0f,                        // heartrate_cost
+    //  Math::Vec2D(3000.0f, 0.f)    // knockback
+    //};
   };
 
   struct Enemy
@@ -308,8 +332,9 @@ namespace Components
 
 
 
-REFLECT_FIELDS(Components::Player::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, dash_speed, damage, heartrate_cost, knockback)
-REFLECT_FIELDS(Components::Action, no_cooldown, duration, timer, cooldown, cd_timer, speed, impulse)
+//REFLECT_FIELDS(Components::Player::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, dash_speed, damage, heartrate_cost, knockback)
+REFLECT_FIELDS(Components::Action, no_cooldown, duration, timer, cooldown, cd_timer, speed, x_terminal_vel, y_terminal_vel, impulse)
+REFLECT_FIELDS(Components::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, dmg, knockback)
 
 
 REGISTER_COMPONENT(Components::Player, damage_immune, walk_speed, jump_force, dash, stunned, attack1, attack2, attack3, uppercut, smash)

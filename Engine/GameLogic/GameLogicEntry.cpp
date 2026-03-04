@@ -251,17 +251,17 @@ static void register_upgrade_applicators()
 
       if (type == Engine::FileIO::UpgradeType::Flat) {
         int flat = static_cast<int>(value);
-        player->attack1.damage += flat;
-        player->attack2.damage += flat;
-        player->attack3.damage += flat;
+        player->attack1_data.dmg += flat;
+        player->attack2_data.dmg += flat;
+        player->attack3_data.dmg += flat;
       }
       else {
-        player->attack1.damage = static_cast<s32>(static_cast<float>(player->attack1.damage) * value);
-        player->attack2.damage = static_cast<s32>(static_cast<float>(player->attack2.damage) * value);
-        player->attack3.damage = static_cast<s32>(static_cast<float>(player->attack3.damage) * value);
+        player->attack1_data.dmg = static_cast<s32>(static_cast<float>(player->attack1_data.dmg) * value);
+        player->attack2_data.dmg = static_cast<s32>(static_cast<float>(player->attack2_data.dmg) * value);
+        player->attack3_data.dmg = static_cast<s32>(static_cast<float>(player->attack3_data.dmg) * value);
       }
       Log::info("[UpgradeApplicator] damage applied — atk1:{} atk2:{} atk3:{}",
-        player->attack1.damage, player->attack2.damage, player->attack3.damage);
+        player->attack1_data.dmg, player->attack2_data.dmg, player->attack3_data.dmg);
     });
 
   // "speed" — modifies walk_speed on the Player component
