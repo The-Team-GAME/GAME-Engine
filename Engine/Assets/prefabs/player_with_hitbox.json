@@ -7,8 +7,8 @@
                         "half_height": 51.89607238769531,
                         "half_width": 19.197696685791016,
                         "pos": {
-                            "x": 535.0325317382813,
-                            "y": 1165.615966796875
+                            "x": -65.03306579589844,
+                            "y": 716.9810791015625
                         }
                     },
                     "height": 103.79214477539063,
@@ -35,8 +35,8 @@
             {
                 "data": {
                     "position": {
-                        "x": 535.3904418945313,
-                        "y": 1153.5120849609375
+                        "x": -65.39098358154297,
+                        "y": 704.8771362304688
                     },
                     "rotation": 0.04699169844388962,
                     "scale": {
@@ -49,7 +49,7 @@
             {
                 "data": {
                     "value": {
-                        "x": 1.0,
+                        "x": -1.0,
                         "y": 1.0
                     }
                 },
@@ -72,7 +72,7 @@
             },
             {
                 "data": {
-                    "drawIndex": 13,
+                    "drawIndex": 18,
                     "tex_coords_list": [
                         [
                             {
@@ -591,14 +591,14 @@
                         0.10000000149011612
                     ],
                     "is_looping": true,
-                    "startTime": 591.9739379882813,
+                    "startTime": 335.647705078125,
                     "totalDuration": 2.3999998569488525
                 },
                 "type": "Components::Animation"
             },
             {
                 "data": {
-                    "path": "sounds/SFX/Player/Player Swing.wav"
+                    "path": "sounds/SFX/Player/Player Footstep.wav"
                 },
                 "type": "Components::Sound"
             },
@@ -646,7 +646,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 591.9739379882813,
+                                        "startTime": 335.647705078125,
                                         "totalDuration": 0.7199999094009399
                                     },
                                     "collider_data": {
@@ -663,7 +663,7 @@
                                         "y": 128.0
                                     },
                                     "texture": {
-                                        "path": "images/BroSpriteSheets/Bro_onehit_spritesheet.png"
+                                        "path": "images/BroSpriteSheets/bro_attack_onehit.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -887,7 +887,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 591.9739379882813,
+                                        "startTime": 335.647705078125,
                                         "totalDuration": 0.559999942779541
                                     },
                                     "collider_data": {
@@ -904,7 +904,7 @@
                                         "y": 128.0
                                     },
                                     "texture": {
-                                        "path": "images/BroSpriteSheets/Bro_twohit_spritesheet.png"
+                                        "path": "images/BroSpriteSheets/bro_attack_twohit.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -1188,7 +1188,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": false,
-                                        "startTime": 591.9739379882813,
+                                        "startTime": 335.647705078125,
                                         "totalDuration": 0.30000001192092896
                                     },
                                     "collider_data": null,
@@ -1197,7 +1197,7 @@
                                         "y": 192.0
                                     },
                                     "texture": {
-                                        "path": "images/BroSpriteSheets/Bro_Uppercut_spritesheet.png"
+                                        "path": "images/BroSpriteSheets/bro_attack_uppercut.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -1399,7 +1399,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 591.9739379882813,
+                                        "startTime": 335.647705078125,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": {
@@ -1416,7 +1416,7 @@
                                         "y": 128.0
                                     },
                                     "texture": {
-                                        "path": "images/BroSpriteSheets/Bro_dash_spritesheet.png"
+                                        "path": "images/BroSpriteSheets/bro_movement_dash.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -1655,7 +1655,7 @@
                                             0.5
                                         ],
                                         "is_looping": true,
-                                        "startTime": 591.9739379882813,
+                                        "startTime": 335.647705078125,
                                         "totalDuration": 2.1499998569488525
                                     },
                                     "collider_data": {
@@ -1672,7 +1672,7 @@
                                         "y": 128.0
                                     },
                                     "texture": {
-                                        "path": "images/BroSpriteSheets/Bro_death_spritesheet.png"
+                                        "path": "images/BroSpriteSheets/bro_death.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -1953,7 +1953,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": false,
-                                        "startTime": 591.9739379882813,
+                                        "startTime": 335.647705078125,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": null,
@@ -1962,7 +1962,7 @@
                                         "y": 128.0
                                     },
                                     "texture": {
-                                        "path": "images/BroSpriteSheets/Bro_Threehit_spritesheet.png"
+                                        "path": "images/BroSpriteSheets/bro_attack_threehit.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -2313,175 +2313,24 @@
                             "second": {
                                 "animation": {
                                     "animation": {
-                                        "atlas_indices": [
-                                            2
-                                        ],
-                                        "before_times": [
-                                            0.0
-                                        ],
-                                        "durations": [
-                                            0.15000000596046448
-                                        ],
+                                        "atlas_indices": [],
+                                        "before_times": [],
+                                        "durations": [],
                                         "is_looping": true,
-                                        "startTime": 591.9739379882813,
-                                        "totalDuration": 0.15000000596046448
+                                        "startTime": 335.647705078125,
+                                        "totalDuration": 0.0
                                     },
                                     "collider_data": null,
                                     "scale": {
                                         "x": 128.0,
-                                        "y": 192.0
+                                        "y": 128.0
                                     },
                                     "texture": {
-                                        "path": "images/BroSpriteSheets/Bro_Uppercut_spritesheet.png"
+                                        "path": "images/BroSpriteSheets/bro_attack_uppercut.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
-                                        "tex_coords_list": [
-                                            [
-                                                {
-                                                    "x": 0.0,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.125,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.125,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.0,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.125,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.25,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.25,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.125,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.25,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.375,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.375,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.25,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.375,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.5,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.5,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.375,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.5,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.625,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.625,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.5,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.625,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.75,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.75,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.625,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.75,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.875,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.875,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.75,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.875,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 1.0,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 1.0,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.875,
-                                                    "y": 0.0
-                                                }
-                                            ]
-                                        ]
+                                        "tex_coords_list": []
                                     }
                                 },
                                 "audio": null,
@@ -2513,7 +2362,7 @@
                                             1.0
                                         ],
                                         "is_looping": true,
-                                        "startTime": 591.9739379882813,
+                                        "startTime": 335.647705078125,
                                         "totalDuration": 1.0
                                     },
                                     "collider_data": null,
@@ -2522,7 +2371,7 @@
                                         "y": 128.0
                                     },
                                     "texture": {
-                                        "path": "images/BroSpriteSheets/Bro_jump_spritesheet.png"
+                                        "path": "images/BroSpriteSheets/bro_movement_jump.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -2802,7 +2651,7 @@
                                             0.05000000074505806
                                         ],
                                         "is_looping": false,
-                                        "startTime": 591.9739379882813,
+                                        "startTime": 335.647705078125,
                                         "totalDuration": 0.20000000298023224
                                     },
                                     "collider_data": {
@@ -2819,7 +2668,7 @@
                                         "y": 128.0
                                     },
                                     "texture": {
-                                        "path": "images/BroSpriteSheets/Bro_jump_spritesheet.png"
+                                        "path": "images/BroSpriteSheets/bro_movement_jump.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -3171,7 +3020,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 591.9739379882813,
+                                        "startTime": 335.647705078125,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": {
@@ -3188,7 +3037,7 @@
                                         "y": 128.0
                                     },
                                     "texture": {
-                                        "path": "images/BroSpriteSheets/Bro_idle_spritesheet.png"
+                                        "path": "images/BroSpriteSheets/bro_movement_idle.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -3666,7 +3515,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": false,
-                                        "startTime": 591.9739379882813,
+                                        "startTime": 335.647705078125,
                                         "totalDuration": 0.4000000059604645
                                     },
                                     "collider_data": null,
@@ -3675,7 +3524,7 @@
                                         "y": 128.0
                                     },
                                     "texture": {
-                                        "path": "images/BroSpriteSheets/Bro_Downsmashend_spritesheet.png"
+                                        "path": "images/BroSpriteSheets/bro_attack_downsmashending.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -3790,7 +3639,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": false,
-                                        "startTime": 591.9739379882813,
+                                        "startTime": 335.647705078125,
                                         "totalDuration": 0.30000001192092896
                                     },
                                     "collider_data": null,
@@ -3799,7 +3648,7 @@
                                         "y": 192.0
                                     },
                                     "texture": {
-                                        "path": "images/BroSpriteSheets/Bro_Uppercut_spritesheet.png"
+                                        "path": "images/BroSpriteSheets/bro_attack_uppercut.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -3989,7 +3838,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": false,
-                                        "startTime": 591.9739379882813,
+                                        "startTime": 335.647705078125,
                                         "totalDuration": 0.4000000059604645
                                     },
                                     "collider_data": null,
@@ -3998,7 +3847,7 @@
                                         "y": 128.0
                                     },
                                     "texture": {
-                                        "path": "images/BroSpriteSheets/Bro_Downsmash_spritesheet.png"
+                                        "path": "images/BroSpriteSheets/bro_attack_downsmash.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -4242,7 +4091,7 @@
                                             0.05000000074505806
                                         ],
                                         "is_looping": false,
-                                        "startTime": 591.9739379882813,
+                                        "startTime": 335.647705078125,
                                         "totalDuration": 0.20000000298023224
                                     },
                                     "collider_data": null,
@@ -4251,7 +4100,7 @@
                                         "y": 128.0
                                     },
                                     "texture": {
-                                        "path": "images/BroSpriteSheets/Bro_Downsmash_spritesheet.png"
+                                        "path": "images/BroSpriteSheets/bro_attack_downsmash.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -4474,7 +4323,28 @@
                         {
                             "first": "UppercutFalling",
                             "second": {
-                                "animation": null,
+                                "animation": {
+                                    "animation": {
+                                        "atlas_indices": [],
+                                        "before_times": [],
+                                        "durations": [],
+                                        "is_looping": true,
+                                        "startTime": 335.647705078125,
+                                        "totalDuration": 0.0
+                                    },
+                                    "collider_data": null,
+                                    "scale": {
+                                        "x": 128.0,
+                                        "y": 128.0
+                                    },
+                                    "texture": {
+                                        "path": "images/BroSpriteSheets/bro_attack_uppercut.png"
+                                    },
+                                    "texture_atlas": {
+                                        "drawIndex": -1,
+                                        "tex_coords_list": []
+                                    }
+                                },
                                 "audio": null,
                                 "fmod_audio": null,
                                 "name": "UppercutFalling",
@@ -4525,7 +4395,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 591.9739379882813,
+                                        "startTime": 335.647705078125,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": {
@@ -4542,7 +4412,7 @@
                                         "y": 128.0
                                     },
                                     "texture": {
-                                        "path": "images/BroSpriteSheets/Bro_run_spritesheet.png"
+                                        "path": "images/BroSpriteSheets/bro_movement_run.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -4741,7 +4611,7 @@
                     "use_gravity": true,
                     "velocity": {
                         "x": 0.0,
-                        "y": 65.64551544189453
+                        "y": 50.000003814697266
                     },
                     "x_terminal_velocity": 500.0,
                     "y_terminal_velocity": 1500.0
@@ -4751,11 +4621,11 @@
             {
                 "data": {
                     "local_offset": {
-                        "x": 535.3904418945313,
-                        "y": 1153.5120849609375
+                        "x": -65.39098358154297,
+                        "y": 704.8771362304688
                     },
                     "offset_initialized": true,
-                    "parent_id": 992,
+                    "parent_id": 18,
                     "prev_parent_pos": {
                         "x": 0.0,
                         "y": 0.0
