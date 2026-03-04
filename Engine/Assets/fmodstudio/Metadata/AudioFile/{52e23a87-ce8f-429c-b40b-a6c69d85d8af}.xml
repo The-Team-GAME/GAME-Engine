@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{52e23a87-ce8f-429c-b40b-a6c69d85d8af}">
+		<property name="assetPath">
+			<value>Johnson_Carpet_Footsteps_6.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>1.2373242630385488</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{6705423e-ca5e-45ab-9fba-198807b0541c}</destination>
+		</relationship>
+	</object>
+</objects>

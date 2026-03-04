@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{de7c303c-ab85-4517-8589-f81794bb8df9}">
+		<property name="assetPath">
+			<value>Footsteps_Metal_Jump-Land_Far-Small_3.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>1</value>
+		</property>
+		<property name="length">
+			<value>0.62399092970521541</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{6705423e-ca5e-45ab-9fba-198807b0541c}</destination>
+		</relationship>
+	</object>
+</objects>
