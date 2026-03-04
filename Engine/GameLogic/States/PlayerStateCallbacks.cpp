@@ -508,6 +508,13 @@ namespace PlayerStateCallbacks
     assert(rigid);
     rigid->apply_force = false;
     rigid->velocity.zero();
+
+    //=========================================================================//
+    ECS::Entity hitbox = create_hitbox(entity, player_comp->uppercut_data);
+
+    //Components::Attack* attack = hitbox.get_component<Components::Attack>();
+    //assert(attack);
+    //attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactBlue_Spritesheet.png");
   }
 
   inline void pre_uppercut_on_update(ECS::Entity entity)
@@ -721,9 +728,9 @@ namespace PlayerStateCallbacks
     //=========================================================================//
     ECS::Entity hitbox = create_hitbox(entity, player_comp->smash_data);
 
-    Components::Attack* attack = hitbox.get_component<Components::Attack>();
+    /*Components::Attack* attack = hitbox.get_component<Components::Attack>();
     assert(attack);
-    /*attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactBlue_Spritesheet.png");*/
+    attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactBlue_Spritesheet.png");*/
   }
 
   inline void post_smash_on_update(ECS::Entity entity)
