@@ -195,7 +195,7 @@ namespace Components
 
     // Dash parameters (serialized/configurable)
     float dash_speed = 1000.0f;
-    float dash_cooldown = 3.0f;      // Cooldown time before dash can be used again
+    float dash_cooldown = 1.0f;      // Cooldown time before dash can be used again
     float dash_windup_duration = 1.0f;  // Time for the warning rectangle to extend
     float dash_indicator_height = 100.0f; // Height of the warning rectangle
 
@@ -207,10 +207,10 @@ namespace Components
 
     // Attack hitbox parameters
     float hitbox_offset_x = 80.0f;
-    float hitbox_offset_y = 0.0f;
+    float hitbox_offset_y = 120.0f;
     float hitbox_width = 120.0f;
     float hitbox_height = 128.0f;
-    int damage = 15;
+    int damage = 1;
     Math::Vec2D knockback = Math::Vec2D(500.0f, -100.0f);
 
     // Detection ranges
@@ -219,7 +219,7 @@ namespace Components
     float close_attack_range = 180.0f;
     float dash_attack_range = 400.0f;
 
-    // Runtime state (NOT serialized - exceed 20 field limit)
+    // Runtime state
     float last_dash_time = -3.0f;        // Initialize to allow immediate first dash
     float last_attack_time = -3.0f;      // Last attack timestamp (negative allows first attack immediately)
     float dash_windup_start_time = 0.0f; // When dash windup started
