@@ -43,6 +43,8 @@
 #include "Lua/LuaComponentBindings.h"
 #include "HotReloadManager.h"
 #include "GUI/TilemapPanel.h"
+#include "Firebase/FirebaseManager.h"
+#include "Firebase/FirebaseLuaBindings.h"
 
 namespace Engine
 {
@@ -137,11 +139,17 @@ namespace Engine
     Engine::Audio::set_bgm_volume(game_settings.bgm_volume);
     Engine::Audio::set_sfx_volume(game_settings.sfx_volume);
 
+    // Initialize Firebase Cloud Firestore
+    if (!Engine::Firebase::init()) {
+      Log::warning("Firebase initialization failed, cloud features disabled");
+    }
+
     // Initialize Lua manager
     if (!Engine::LuaManager::init()) {
       throw std::runtime_error("Failed to initialize Lua manager");
     }
 
+    Engine::Firebase::LuaBindings::register_bindings(); // Firebase "Cloud" table for Lua
     Engine::LuaBindings::register_all_bindings(); // For lua bindings
     Engine::LuaManager::load_script("Assets/scripts/LazyMonkeyStateCallbacks.lua");
 
@@ -266,6 +274,7 @@ namespace Engine
 
       Engine::Audio::update();
       Engine::AudioSystem::update();  // Update FMOD Studio system
+      Engine::Firebase::update();     // Poll async HTTP futures, dispatch callbacks
       ImGuiManager::begin();
 
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
@@ -525,6 +534,7 @@ namespace Engine
 #ifndef GAME_BUILD
     ViewportPanel::exit();
 #endif
+    Engine::Firebase::shutdown();   // Shutdown Firebase / WinHTTP
     Engine::Audio::exit();
     Engine::AudioSystem::shutdown();  // Shutdown FMOD Studio system
     Engine::Resources::exit();

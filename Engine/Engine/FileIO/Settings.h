@@ -134,6 +134,20 @@ namespace Engine
       std::vector<RarityTier> rarities{};         // Rarity tiers with drop weights
       std::vector<UpgradeDefinition> upgrades{};  // All available upgrades
     };
+
+    // ==================================================================================
+    // Firebase Cloud Firestore Settings
+    // ==================================================================================
+
+    // Configuration for connecting to a Firebase Cloud Firestore project.
+    // Game developers fill in their Firebase project details in firebase_settings.json.
+    // The database_url is auto-derived from project_id if left empty.
+    struct FirebaseSettings
+    {
+      std::string project_id = "";     // Firebase project ID (e.g. "my-game-12345")
+      std::string api_key = "";        // Firebase Web API key
+      std::string database_url = "";   // Optional override (defaults to "https://firestore.googleapis.com")
+    };
   }
 }
 
@@ -146,3 +160,4 @@ REFLECT_ENUM(Engine::FileIO::UpgradeType, Flat, Multiplier)
 REFLECT_FIELDS(Engine::FileIO::RarityTier, name, drop_rate)
 REFLECT_FIELDS(Engine::FileIO::UpgradeDefinition, id, display_name, rarity, stat_name, type, value, max_level)
 REFLECT_FIELDS(Engine::FileIO::UpgradeSettings, base_point_threshold, threshold_scaling, rarities, upgrades)
+REFLECT_FIELDS(Engine::FileIO::FirebaseSettings, project_id, api_key, database_url)

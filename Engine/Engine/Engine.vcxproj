@@ -199,6 +199,8 @@ msbuild "$(SolutionDir)Engine\GameLogic\GameLogic.vcxproj" /p:Configuration=$(Co
   <ItemGroup>
     <ClCompile Include="Audio\AudioSystem.cpp" />
     <ClCompile Include="Audio\AudioSystemExample.cpp" />
+    <ClCompile Include="Firebase\FirebaseHTTP.cpp" />
+    <ClCompile Include="Firebase\FirebaseManager.cpp" />
     <ClCompile Include="ECS\PrefabMergeUtils.cpp" />
     <ClCompile Include="FileIO\ColliderMeshFileIO.cpp" />
     <ClCompile Include="GUI\ColliderEditorPanel.cpp" />
@@ -275,6 +277,10 @@ msbuild "$(SolutionDir)Engine\GameLogic\GameLogic.vcxproj" /p:Configuration=$(Co
   <ItemGroup>
     <ClInclude Include="Audio\AudioSystem.h" />
     <ClInclude Include="Audio\GameAudio.h" />
+    <ClInclude Include="Firebase\FirebaseTypes.h" />
+    <ClInclude Include="Firebase\FirebaseHTTP.h" />
+    <ClInclude Include="Firebase\FirebaseManager.h" />
+    <ClInclude Include="Firebase\FirebaseLuaBindings.h" />
     <ClInclude Include="HotReloadManager.h" />
     <ClInclude Include="ECS\PrefabMergeUtils.h" />
     <ClInclude Include="FileIO\ColliderMeshFileIO.h" />
