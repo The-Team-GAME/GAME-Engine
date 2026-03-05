@@ -35,6 +35,7 @@
 #include "LogConsolePanel.h"
 #include "PostProcessingPanel.h"
 #include "UpgradePanel.h"
+#include "FirebasePanel.h"
 
 void register_all_panels()
 {
@@ -57,4 +58,5 @@ void register_all_panels()
   ImGuiManager::register_panel("Log Console", LogConsolePanel);
   ImGuiManager::register_panel("Post Processing", PostProcessingPanel);
   ImGuiManager::register_panel("Upgrades", UpgradePanel);
+  ImGuiManager::register_panel("Firebase", FirebasePanel::draw_panel);
 }
