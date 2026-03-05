@@ -82,7 +82,7 @@ namespace Engine
             else if (!entity.has_component<Components::Gizmo>())
               Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(best_entity, true);
           }
-          else if (Engine::Input::get_mouse_position_if_in_viewport().has_value() && !ctrl_held) {
+          else if (!ImGui::GetIO().WantCaptureMouse && !ctrl_held) {
             Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
           }
         }
@@ -122,7 +122,7 @@ namespace Engine
             else if (!entity.has_component<Components::Gizmo>())
               Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(best_entity, true);
           }
-          else if (Engine::Input::get_mouse_position_if_in_viewport().has_value() && !ctrl_held) {
+          else if (!ImGui::GetIO().WantCaptureMouse && !ctrl_held) {
             Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
           }
         }
@@ -299,7 +299,7 @@ namespace Engine
             default: break;
             }
           }
-          else {
+          else if (!ImGui::GetIO().WantCaptureMouse) {
             Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
             return;
           }
@@ -719,7 +719,7 @@ namespace Engine
             apply_move_delta(mm_snaps, mouse_screen, mouse_world, mm_start_mouse_screen, mm_start_mouse_world);
 
           // Click empty space to deselect
-          if (just_pressed && !any_entity_under_mouse && !ctrl && !mm_dragging)
+          if (just_pressed && !ImGui::GetIO().WantCaptureMouse && !any_entity_under_mouse && !ctrl && !mm_dragging)
             Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
 
           return;
@@ -794,7 +794,7 @@ namespace Engine
           }
 
           // Click empty space to deselect
-          if (just_pressed && !any_entity_under_mouse &&
+          if (just_pressed && !ImGui::GetIO().WantCaptureMouse && !any_entity_under_mouse &&
             ma_hover == MAAxis::None && !ctrl && !ma_dragging)
             Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
 
@@ -908,7 +908,7 @@ namespace Engine
           }
 
           // Click empty space to deselect
-          if (just_pressed && !any_entity_under_mouse &&
+          if (just_pressed && !ImGui::GetIO().WantCaptureMouse && !any_entity_under_mouse &&
             !over_ring && !ctrl && !mr_dragging)
             Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
 
@@ -1045,7 +1045,7 @@ namespace Engine
         }
 
         // Click empty space to deselect
-        if (just_pressed && !any_entity_under_mouse &&
+        if (just_pressed && !ImGui::GetIO().WantCaptureMouse && !any_entity_under_mouse &&
           ms_hover == MSHandle::None && !ctrl && !ms_dragging)
           Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
       }
