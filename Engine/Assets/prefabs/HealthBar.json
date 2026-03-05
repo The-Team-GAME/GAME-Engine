@@ -40,13 +40,13 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 38.63215255737305,
+                                        "startTime": 329.5436706542969,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": null,
                                     "scale": {
-                                        "x": 256.0,
-                                        "y": 192.0
+                                        "x": 384.0,
+                                        "y": 288.0
                                     },
                                     "texture": {
                                         "path": "images/health_states.png"
@@ -842,13 +842,13 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 38.63215255737305,
+                                        "startTime": 329.5436706542969,
                                         "totalDuration": 0.7000000476837158
                                     },
                                     "collider_data": null,
                                     "scale": {
-                                        "x": 256.0,
-                                        "y": 192.0
+                                        "x": 384.0,
+                                        "y": 288.0
                                     },
                                     "texture": {
                                         "path": "images/health_states.png"
@@ -1644,13 +1644,13 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 38.63215255737305,
+                                        "startTime": 329.5436706542969,
                                         "totalDuration": 0.7000000476837158
                                     },
                                     "collider_data": null,
                                     "scale": {
-                                        "x": 256.0,
-                                        "y": 192.0
+                                        "x": 384.0,
+                                        "y": 288.0
                                     },
                                     "texture": {
                                         "path": "images/health_states.png"
@@ -2446,13 +2446,13 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 38.63215255737305,
+                                        "startTime": 329.5436706542969,
                                         "totalDuration": 0.7000000476837158
                                     },
                                     "collider_data": null,
                                     "scale": {
-                                        "x": 256.0,
-                                        "y": 192.0
+                                        "x": 384.0,
+                                        "y": 288.0
                                     },
                                     "texture": {
                                         "path": "images/health_states.png"
@@ -3248,13 +3248,13 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 38.63215255737305,
+                                        "startTime": 329.5436706542969,
                                         "totalDuration": 0.7000000476837158
                                     },
                                     "collider_data": null,
                                     "scale": {
-                                        "x": 256.0,
-                                        "y": 192.0
+                                        "x": 384.0,
+                                        "y": 288.0
                                     },
                                     "texture": {
                                         "path": "images/health_states.png"
@@ -4032,13 +4032,13 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 38.63215255737305,
+                                        "startTime": 329.5436706542969,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": null,
                                     "scale": {
-                                        "x": 256.0,
-                                        "y": 192.0
+                                        "x": 384.0,
+                                        "y": 288.0
                                     },
                                     "texture": {
                                         "path": "images/health_states.png"
@@ -4816,13 +4816,13 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 38.63215255737305,
+                                        "startTime": 329.5436706542969,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": null,
                                     "scale": {
-                                        "x": 256.0,
-                                        "y": 192.0
+                                        "x": 384.0,
+                                        "y": 288.0
                                     },
                                     "texture": {
                                         "path": "images/health_states.png"
@@ -5600,13 +5600,13 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 38.63215255737305,
+                                        "startTime": 329.5436706542969,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": null,
                                     "scale": {
-                                        "x": 256.0,
-                                        "y": 192.0
+                                        "x": 384.0,
+                                        "y": 288.0
                                     },
                                     "texture": {
                                         "path": "images/health_states.png"
@@ -6384,13 +6384,13 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 38.63215255737305,
+                                        "startTime": 329.5436706542969,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": null,
                                     "scale": {
-                                        "x": 256.0,
-                                        "y": 192.0
+                                        "x": 384.0,
+                                        "y": 288.0
                                     },
                                     "texture": {
                                         "path": "images/health_states.png"
@@ -7186,13 +7186,13 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 38.63215255737305,
+                                        "startTime": 329.5436706542969,
                                         "totalDuration": 0.7000000476837158
                                     },
                                     "collider_data": null,
                                     "scale": {
-                                        "x": 256.0,
-                                        "y": 192.0
+                                        "x": 384.0,
+                                        "y": 288.0
                                     },
                                     "texture": {
                                         "path": "images/health_states.png"
@@ -7970,13 +7970,13 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 38.63215255737305,
+                                        "startTime": 329.5436706542969,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": null,
                                     "scale": {
-                                        "x": 256.0,
-                                        "y": 192.0
+                                        "x": 384.0,
+                                        "y": 288.0
                                     },
                                     "texture": {
                                         "path": "images/health_states.png"
@@ -9501,7 +9501,7 @@
                         0.10000000149011612
                     ],
                     "is_looping": true,
-                    "startTime": 38.63215255737305,
+                    "startTime": 329.5436706542969,
                     "totalDuration": 0.10000000149011612
                 },
                 "type": "Components::Animation"
@@ -9509,21 +9509,36 @@
             {
                 "data": {
                     "position": {
-                        "x": 800.0,
-                        "y": 450.0
+                        "x": 234.7437744140625,
+                        "y": 155.4780731201172
                     },
                     "rotation": 0.0,
                     "scale": {
-                        "x": 256.0,
-                        "y": 192.0
+                        "x": 384.0,
+                        "y": 288.0
                     }
                 },
                 "type": "Components::Transform2D"
+            },
+            {
+                "data": {
+                    "local_offset": {
+                        "x": 234.7437744140625,
+                        "y": 155.4780731201172
+                    },
+                    "offset_initialized": true,
+                    "parent_id": 8,
+                    "prev_parent_pos": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "type": "Components::Parent"
             }
         ],
         "filepath": "prefabs/HealthBar.json",
         "layers": [
-            "main_menu_6"
+            "main_menu_3"
         ],
         "uuid": "d42be486-9cba-40c4f-a363-62ecdbd1e076"
     },

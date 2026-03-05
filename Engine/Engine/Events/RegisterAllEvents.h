@@ -88,6 +88,25 @@ namespace Engine {
       // Register entity selection event to sync gizmo system
       Engine::EventManager::add_event_listener<Engine::Events::SelectEntityEvent>([](const Engine::Events::SelectEntityEvent& event)
         {
+          if (event.add_to_selection) {
+            // Ctrl+Click: toggle gizmo on just this entity, leave others untouched
+            if (event.entity_id != Engine::ECS::INVALID_ENTITY) {
+              auto entity = Engine::ECS::get_entity(event.entity_id);
+              if (entity.is_valid()) {
+                if (entity.has_component<Components::Gizmo>()) {
+                  entity.remove_component<Components::Gizmo>();
+                }
+                else if (entity.has_component<Components::Transform2D>()) {
+                  entity.add_component<Components::Gizmo>(
+                    Math::Vec4D(0.0f, 1.0f, 0.0f, 1.0f), // Green outline
+                    2.0f                                   // Thickness
+                  );
+                }
+              }
+            }
+            return;
+          }
+
           // Remove Gizmo from all entities first
           Engine::ECS::for_each_entity_with<Components::Gizmo>([](Engine::ECS::Entity entity) {
             entity.remove_component<Components::Gizmo>();
