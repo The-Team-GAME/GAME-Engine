@@ -71,9 +71,9 @@ inline void CameraPanel()
         auto* camera = entity.get_component<Components::Camera>();
         if (!camera) continue;
 
-        // Build entity label with camera name
-        std::string entity_label = camera->name;
-        if (entity_label.empty() || entity_label == "Camera") {
+        // Build entity label with entity name
+        std::string entity_label = entity.get_name();
+        if (entity_label.empty()) {
           entity_label = "Entity " + std::to_string(entity.get_id());
         }
         else {
@@ -98,7 +98,8 @@ inline void CameraPanel()
     // Create new camera button
     if (ImGui::Button("Create New Camera")) {
       Engine::ECS::Entity new_entity = Engine::ECS::create_entity();
-      new_entity.add_component<Components::Camera>("New Camera", false);
+      new_entity.add_component<Components::Camera>(false);
+      new_entity.set_name("New Camera");
       new_entity.add_component<Components::Transform2D>(0.0f, 0.0f, 0.0f, 1.0f, 1.0f);
       selected_camera_id = static_cast<s32>(new_entity.get_id());
     }
@@ -159,13 +160,13 @@ inline void CameraPanel()
         ImGui::SetTooltip("Only one camera can be active at a time.\nActivating this will deactivate others.");
       }
 
-      // Camera name
+      // Entity name
       ImGui::Text("Name:");
       char name_buffer[256];
-      strncpy_s(name_buffer, camera->name.c_str(), sizeof(name_buffer) - 1);
+      strncpy_s(name_buffer, entity.get_name().c_str(), sizeof(name_buffer) - 1);
       name_buffer[sizeof(name_buffer) - 1] = '\0';
       if (ImGui::InputText("##Name", name_buffer, sizeof(name_buffer))) {
-        camera->name = name_buffer;
+        entity.set_name(name_buffer);
       }
 
       ImGui::Separator();
