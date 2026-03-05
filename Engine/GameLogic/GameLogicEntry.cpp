@@ -163,9 +163,10 @@ static void register_collision_callbacks()
     {
       Log::info("Player took damage!");
 
-      auto* attack = attack_entity.get_component<Components::Attack>();
-      auto* health = player_entity.get_component<Components::Health>();
-      auto* rigid = player_entity.get_component<Components::RigidBody>();
+      Components::Attack* attack = attack_entity.get_component<Components::Attack>();
+      Components::Health* health = player_entity.get_component<Components::Health>();
+      Components::RigidBody* rigid = player_entity.get_component<Components::RigidBody>();
+      Components::Player* player_comp = player_entity.get_component<Components::Player>();
 
       if (!attack) {
         Log::error("Error: Attack component missing from enemy attack hitbox, on entity {}", attack_entity.get_id());
@@ -173,7 +174,7 @@ static void register_collision_callbacks()
       }
 
       if (health && rigid) {
-        if (!attack->should_apply_damage(player_entity)) {
+        if (!attack->should_apply_damage(player_entity) || player_comp->damage_immune) {
           return;
         }
 
@@ -192,10 +193,12 @@ static void register_collision_callbacks()
         Log::info("Player knocked back! Force applied: ({}, {})", attack->knockback.x, attack->knockback.y);
 
         // Trigger death state immediately when HP reaches 0
-        if (health->is_dead()) {
+        if (health->is_dead()) 
+        {
           Log::info("Player is dead!");
-          auto* state_machine = player_entity.get_component<Components::StateMachine>();
-          if (state_machine && state_machine->get_current_state() != "Death") {
+          Components::StateMachine* state_machine = player_entity.get_component<Components::StateMachine>();
+          if (state_machine && state_machine->get_current_state() != "Death") 
+          {
             state_machine->change_state("Death");
           }
         }

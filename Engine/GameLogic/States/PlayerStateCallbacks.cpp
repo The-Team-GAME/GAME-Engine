@@ -137,6 +137,7 @@ namespace PlayerStateCallbacks
     }
   }
 
+  // Takes in the parent entity as well as the attack data of the attack to generate a hitbox
   ECS::Entity create_hitbox(ECS::Entity parent, Components::AttackData& atk_data)
   {
     Components::Transform2D* xform = parent.get_component<Components::Transform2D>();

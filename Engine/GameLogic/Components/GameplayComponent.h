@@ -95,7 +95,7 @@ namespace Components
     Action smash    { 0.f, 7.f, 2500.f, 0.f };
 
     // hitbox_offset_x hitbox_offset_y hitbox_width hitbox_height life_time dmg knockback
-    AttackData uppercut_data  { 60.0f, 0.0f, 100.0f, 64.0f, 1.0f, 5.0f, Vec2D(0.0f, 1000.0f)};
+    AttackData uppercut_data  { 60.0f, 0.0f, 100.0f, 128.0f, 1.0f, 5.0f, Vec2D(0.0f, 1000.0f)};
     AttackData smash_data     { 0.0f, 48.0f, 384.0f, 32.0f, 0.1f, 5.0f, Vec2D(200.0f, 0.0f) };
     AttackData attack1_data   { 60.0f, 0.0f, 100.0f, 64.0f, 0.1f, 1.0f, Vec2D(200.0f, 0.0f) };
     AttackData attack2_data   { 60.0f, 0.0f, 100.0f, 64.0f, 0.1f, 1.0f, Vec2D(200.0f, 0.0f) };
