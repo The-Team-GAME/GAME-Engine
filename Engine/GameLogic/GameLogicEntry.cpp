@@ -163,9 +163,10 @@ static void register_collision_callbacks()
     {
       Log::info("Player took damage!");
 
-      auto* attack = attack_entity.get_component<Components::Attack>();
-      auto* health = player_entity.get_component<Components::Health>();
-      auto* rigid = player_entity.get_component<Components::RigidBody>();
+      Components::Attack* attack = attack_entity.get_component<Components::Attack>();
+      Components::Health* health = player_entity.get_component<Components::Health>();
+      Components::RigidBody* rigid = player_entity.get_component<Components::RigidBody>();
+      Components::Player* player_comp = player_entity.get_component<Components::Player>();
 
       if (!attack) {
         Log::error("Error: Attack component missing from enemy attack hitbox, on entity {}", attack_entity.get_id());
@@ -173,7 +174,7 @@ static void register_collision_callbacks()
       }
 
       if (health && rigid) {
-        if (!attack->should_apply_damage(player_entity)) {
+        if (!attack->should_apply_damage(player_entity) || player_comp->damage_immune) {
           return;
         }
 
@@ -192,10 +193,12 @@ static void register_collision_callbacks()
         Log::info("Player knocked back! Force applied: ({}, {})", attack->knockback.x, attack->knockback.y);
 
         // Trigger death state immediately when HP reaches 0
-        if (health->is_dead()) {
+        if (health->is_dead()) 
+        {
           Log::info("Player is dead!");
-          auto* state_machine = player_entity.get_component<Components::StateMachine>();
-          if (state_machine && state_machine->get_current_state() != "Death") {
+          Components::StateMachine* state_machine = player_entity.get_component<Components::StateMachine>();
+          if (state_machine && state_machine->get_current_state() != "Death") 
+          {
             state_machine->change_state("Death");
           }
         }
@@ -250,34 +253,18 @@ static void register_upgrade_applicators()
       if (!player) return;
 
       if (type == Engine::FileIO::UpgradeType::Flat) {
-        // Treat `value` as a float increment and round up so that
-        // small fractional buffs (e.g. +0.25) still have an effect
-        // on integer damage values.
-        auto apply_flat = [value](s32& dmg) {
-          float new_damage = static_cast<float>(dmg) + value;
-          dmg = static_cast<s32>(std::ceil(new_damage));
-        };
-
-        apply_flat(player->attack1.damage);
-        apply_flat(player->attack2.damage);
-        apply_flat(player->attack3.damage);
+        int flat = static_cast<int>(value);
+        player->attack1_data.dmg += flat;
+        player->attack2_data.dmg += flat;
+        player->attack3_data.dmg += flat;
       }
       else {
-        // For multipliers (e.g. x1.2), ceil the result so that
-        // increased damage always results in at least +1 when
-        // appropriate, instead of being truncated back to the
-        // original integer value.
-        auto apply_mult = [value](s32& dmg) {
-          float new_damage = static_cast<float>(dmg) * value;
-          dmg = static_cast<s32>(std::ceil(new_damage));
-        };
-
-        apply_mult(player->attack1.damage);
-        apply_mult(player->attack2.damage);
-        apply_mult(player->attack3.damage);
+        player->attack1_data.dmg = static_cast<s32>(static_cast<float>(player->attack1_data.dmg) * value);
+        player->attack2_data.dmg = static_cast<s32>(static_cast<float>(player->attack2_data.dmg) * value);
+        player->attack3_data.dmg = static_cast<s32>(static_cast<float>(player->attack3_data.dmg) * value);
       }
       Log::info("[UpgradeApplicator] damage applied — atk1:{} atk2:{} atk3:{}",
-        player->attack1.damage, player->attack2.damage, player->attack3.damage);
+        player->attack1_data.dmg, player->attack2_data.dmg, player->attack3_data.dmg);
     });
 
   // "speed" — modifies walk_speed on the Player component
@@ -313,8 +300,8 @@ static void register_upgrade_applicators()
 
       if (type == Engine::FileIO::UpgradeType::Flat) {
         // Exception: flat health upgrade only adds 1 max HP
-        // while max is below 5; otherwise it does nothing.
-        if (health->max < 5) {
+        // while max is below 3; otherwise it does nothing.
+        if (health->max < 3) {
           health->max += 1;
           health->heal(1); // also heal the added amount
           Log::info("[UpgradeApplicator] health flat applied (+1) — HP:{}/{}", health->value, health->max);

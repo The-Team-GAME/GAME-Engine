@@ -29,10 +29,11 @@ namespace Engine {
     // ======================= */
     struct SelectEntityEvent {
       Engine::ECS::EntityID entity_id;
-      bool start_dragging = false; // If true, start dragging immediately
+      bool start_dragging = false;    // If true, start dragging immediately
+      bool add_to_selection = false;  // If true, toggle this entity into/out of multi-selection
 
-      SelectEntityEvent(Engine::ECS::EntityID id, bool drag = false)
-        : entity_id(id), start_dragging(drag) {
+      SelectEntityEvent(Engine::ECS::EntityID id, bool drag = false, bool add = false)
+        : entity_id(id), start_dragging(drag), add_to_selection(add) {
       }
     };
 
