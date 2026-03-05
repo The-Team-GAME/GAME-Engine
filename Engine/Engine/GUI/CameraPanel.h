@@ -19,6 +19,7 @@
 #include "../ECS/ECS.h"
 #include "../Components/GraphicsComponents.h"
 #include "../Components/SpatialComponents.h"
+#include "../Components/HierarchyComponents.h"
 #include "../Graphics/Renderer.h"
 #include "../Systems/GraphicsSystem.h"
 #include <vector>
@@ -28,6 +29,7 @@ inline void CameraPanel()
   static s32 selected_camera_id = -1;
   static float test_shake_amplitude = 42.0f;
   static float test_shake_duration = 0.16f;
+  static char parent_search_buf[256] = "";  // Search filter for parent picker
 
   ImGui::Begin("Camera Control");
 
@@ -167,6 +169,86 @@ inline void CameraPanel()
       name_buffer[sizeof(name_buffer) - 1] = '\0';
       if (ImGui::InputText("##Name", name_buffer, sizeof(name_buffer))) {
         entity.set_name(name_buffer);
+      }
+
+      ImGui::Separator();
+
+      // --- Follow Target (Parent) ---
+      if (ImGui::CollapsingHeader("Follow Target", ImGuiTreeNodeFlags_DefaultOpen))
+      {
+        ImGui::TextDisabled("Camera will track this entity's position.");
+
+        // Show current parent
+        bool has_parent = entity.has_component<Components::Parent>();
+        if (has_parent)
+        {
+          auto* par = entity.get_component<Components::Parent>();
+          Engine::ECS::Entity parent_entity = Engine::ECS::get_entity(static_cast<s32>(par->parent_id));
+          std::string parent_label = parent_entity.is_valid() ? parent_entity.get_name() : "(invalid)";
+          if (parent_label.empty())
+            parent_label = "Entity " + std::to_string(par->parent_id);
+          ImGui::Text("Current: ");
+          ImGui::SameLine();
+          ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%s (ID %u)", parent_label.c_str(), par->parent_id);
+          if (ImGui::Button("Clear Follow Target"))
+          {
+            entity.remove_component<Components::Parent>();
+          }
+        }
+        else
+        {
+          ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "Current: None");
+        }
+
+        ImGui::Spacing();
+        ImGui::Text("Set Follow Target:");
+        ImGui::SetNextItemWidth(-1.0f);
+        ImGui::InputTextWithHint("##ParentSearch", "Search entities...", parent_search_buf, sizeof(parent_search_buf));
+
+        // Collect all non-camera entities as candidates
+        std::vector<Engine::ECS::Entity> all_entities;
+        Engine::ECS::for_each_entity([&](Engine::ECS::Entity e) {
+          if (e.get_id() != entity.get_id())
+            all_entities.push_back(e);
+        });
+
+        std::string search_lower = parent_search_buf;
+        for (auto& c : search_lower) c = static_cast<char>(tolower(static_cast<unsigned char>(c)));
+
+        ImGui::BeginChild("##ParentList", ImVec2(0, 140), true);
+        for (const auto& candidate : all_entities)
+        {
+          std::string cname = candidate.get_name();
+          std::string display = cname.empty() ? "Entity " + std::to_string(candidate.get_id())
+                                              : cname + " (ID " + std::to_string(candidate.get_id()) + ")";
+
+          // Filter by search
+          if (!search_lower.empty())
+          {
+            std::string display_lower = display;
+            for (auto& c : display_lower) c = static_cast<char>(tolower(static_cast<unsigned char>(c)));
+            if (display_lower.find(search_lower) == std::string::npos)
+              continue;
+          }
+
+          bool is_current_parent = has_parent &&
+            entity.get_component<Components::Parent>()->parent_id == static_cast<Engine::ECS::EntityID>(candidate.get_id());
+
+          if (is_current_parent)
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 1.0f, 0.4f, 1.0f));
+
+          if (ImGui::Selectable(display.c_str(), is_current_parent))
+          {
+            if (entity.has_component<Components::Parent>())
+              entity.remove_component<Components::Parent>();
+            entity.add_component<Components::Parent>(static_cast<Engine::ECS::EntityID>(candidate.get_id()));
+            parent_search_buf[0] = '\0';
+          }
+
+          if (is_current_parent)
+            ImGui::PopStyleColor();
+        }
+        ImGui::EndChild();
       }
 
       ImGui::Separator();
