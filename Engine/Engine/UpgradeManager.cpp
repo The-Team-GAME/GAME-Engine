@@ -104,7 +104,8 @@ namespace Engine
         for (int i = 0; i < static_cast<int>(settings.upgrades.size()); ++i)
         {
             if (is_upgrade_eligible(i))
-                return false;
+             
+            return false;
         }
         return true;
     }

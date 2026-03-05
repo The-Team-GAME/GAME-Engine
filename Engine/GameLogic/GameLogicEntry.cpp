@@ -250,15 +250,31 @@ static void register_upgrade_applicators()
       if (!player) return;
 
       if (type == Engine::FileIO::UpgradeType::Flat) {
-        int flat = static_cast<int>(value);
-        player->attack1.damage += flat;
-        player->attack2.damage += flat;
-        player->attack3.damage += flat;
+        // Treat `value` as a float increment and round up so that
+        // small fractional buffs (e.g. +0.25) still have an effect
+        // on integer damage values.
+        auto apply_flat = [value](s32& dmg) {
+          float new_damage = static_cast<float>(dmg) + value;
+          dmg = static_cast<s32>(std::ceil(new_damage));
+        };
+
+        apply_flat(player->attack1.damage);
+        apply_flat(player->attack2.damage);
+        apply_flat(player->attack3.damage);
       }
       else {
-        player->attack1.damage = static_cast<s32>(static_cast<float>(player->attack1.damage) * value);
-        player->attack2.damage = static_cast<s32>(static_cast<float>(player->attack2.damage) * value);
-        player->attack3.damage = static_cast<s32>(static_cast<float>(player->attack3.damage) * value);
+        // For multipliers (e.g. x1.2), ceil the result so that
+        // increased damage always results in at least +1 when
+        // appropriate, instead of being truncated back to the
+        // original integer value.
+        auto apply_mult = [value](s32& dmg) {
+          float new_damage = static_cast<float>(dmg) * value;
+          dmg = static_cast<s32>(std::ceil(new_damage));
+        };
+
+        apply_mult(player->attack1.damage);
+        apply_mult(player->attack2.damage);
+        apply_mult(player->attack3.damage);
       }
       Log::info("[UpgradeApplicator] damage applied — atk1:{} atk2:{} atk3:{}",
         player->attack1.damage, player->attack2.damage, player->attack3.damage);
@@ -297,8 +313,8 @@ static void register_upgrade_applicators()
 
       if (type == Engine::FileIO::UpgradeType::Flat) {
         // Exception: flat health upgrade only adds 1 max HP
-        // while max is below 3; otherwise it does nothing.
-        if (health->max < 3) {
+        // while max is below 5; otherwise it does nothing.
+        if (health->max < 5) {
           health->max += 1;
           health->heal(1); // also heal the added amount
           Log::info("[UpgradeApplicator] health flat applied (+1) — HP:{}/{}", health->value, health->max);
@@ -595,7 +611,7 @@ extern "C" __declspec(dllexport) void UnregisterGameLogic()
   Engine::ECS::unregister_component<Components::Player>();
   Engine::ECS::unregister_component<Components::LazyMonkey>();
   Engine::ECS::unregister_component<Components::TurretMonkey>();
-  Engine::ECS::unregister_component<Components::GamerMonkey>();
+  Engine::ECS::unregister_component<Components::SlingshotMonkey>();
   Engine::ECS::unregister_component<Components::SprayCanMonkey>();
   Engine::ECS::unregister_component<Components::Attack>();
   Engine::ECS::unregister_component<Components::PendingKnockback>();
