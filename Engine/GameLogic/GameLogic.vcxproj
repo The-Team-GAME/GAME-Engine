@@ -175,7 +175,6 @@
     <ClCompile Include="States\GamerMonkeyStateCallbacks.cpp" />
     <ClCompile Include="States\HealthBarStateCallbacks.cpp" />
     <ClCompile Include="States\LazyMonkeyStateCallbacks.cpp" />
-    <ClCompile Include="States\PlayerProfileStateCallbacks.cpp" />
     <ClCompile Include="States\PlayerStateCallbacks.cpp" />
     <ClCompile Include="States\SkillCooldownStateCallbacks.cpp" />
     <ClCompile Include="States\SprayCanMonkeyStateCallbacks.cpp" />

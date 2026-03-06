@@ -39,6 +39,12 @@ namespace PlayerStateCallbacks
     Components::Flip* flip = entity.get_component<Components::Flip>();
     Components::Health* health = entity.get_component<Components::Health>();
 
+    if (!state_machine || !player_rigid || !player_comp || !flip || !health)
+    {
+      Log::error("PlayerStateCallbacks: Missing required components on entity {}", entity.get_id());
+      return;
+    }
+
     // Death Condition
     // if (health && health->is_dead())
     // {
