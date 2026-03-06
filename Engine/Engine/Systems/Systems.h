@@ -51,6 +51,7 @@ void register_engine_systems()
   Engine::ECS::add_system<Engine::Systems::GizmoSelectionSystem>();
   Engine::ECS::add_system<Engine::Systems::GizmoTextSelectionSystem>();
   Engine::ECS::add_system<Engine::Systems::GizmoManipulationSystem>();
+  Engine::ECS::add_system<Engine::Systems::GizmoMultiScaleSystem>();
 #endif
 
   // Effect systems
@@ -91,6 +92,7 @@ void unregister_engine_systems()
   Engine::ECS::remove_system<Engine::Systems::TrailSystem>();
 
 #ifndef GAME_BUILD
+  Engine::ECS::remove_system<Engine::Systems::GizmoMultiScaleSystem>();
   Engine::ECS::remove_system<Engine::Systems::GizmoManipulationSystem>();
   Engine::ECS::remove_system<Engine::Systems::GizmoTextSelectionSystem>();
   Engine::ECS::remove_system<Engine::Systems::GizmoSelectionSystem>();

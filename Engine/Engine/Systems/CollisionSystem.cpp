@@ -105,6 +105,7 @@ void col2D::update()
         // skip other_entity if they dont collide
         continue;
       }
+      // added in this part for ease of finding where the player penetrates but i dont want to refactor the code just incase there are issues
 #pragma endregion
 
       /*===============================
@@ -112,6 +113,7 @@ void col2D::update()
       ===============================*/
       // There should be no case where 2 static objects (walls collide)
       // If there is then ill cross the bridge when i come to it
+      // Entity should be the movable object
       if (!box->resolve_collisions && other_box->resolve_collisions)
       {
         Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
@@ -122,12 +124,6 @@ void col2D::update()
         {
           xform->position += collision.mtv * 0.95f;
         }
-
-        // The new plan:
-        // 1. After collision i'm gona cancel out the velocity of the object parallel to the direction of the collision as a way to kill the momenthum of the object
-        // 2. After the momentum is killed, i will apply a normal force to specifically cancel out the force from gravity in the next frame
-        // 3. After that, i will calculate and apply friction to the object to prevent it from sliding across surfaces
-
 
         /*======================================
         / Killing the moving object's momemtum /
