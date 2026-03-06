@@ -40,14 +40,11 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 255.08334350585938,
+                                        "startTime": 197.57205200195313,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": null,
-                                    "scale": {
-                                        "x": 256.0,
-                                        "y": 192.0
-                                    },
+                                    "scale": null,
                                     "texture": {
                                         "path": "images/health_face.png"
                                     },
@@ -1541,14 +1538,11 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 255.08334350585938,
+                                        "startTime": 197.57205200195313,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": null,
-                                    "scale": {
-                                        "x": 256.0,
-                                        "y": 192.0
-                                    },
+                                    "scale": null,
                                     "texture": {
                                         "path": "images/health_face.png"
                                     },
@@ -2970,14 +2964,11 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 255.08334350585938,
+                                        "startTime": 197.57205200195313,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": null,
-                                    "scale": {
-                                        "x": 256.0,
-                                        "y": 192.0
-                                    },
+                                    "scale": null,
                                     "texture": {
                                         "path": "images/health_face.png"
                                     },
@@ -4399,14 +4390,11 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 255.08334350585938,
+                                        "startTime": 197.57205200195313,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": null,
-                                    "scale": {
-                                        "x": 256.0,
-                                        "y": 192.0
-                                    },
+                                    "scale": null,
                                     "texture": {
                                         "path": "images/health_face.png"
                                     },
@@ -5828,14 +5816,11 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 255.08334350585938,
+                                        "startTime": 197.57205200195313,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": null,
-                                    "scale": {
-                                        "x": 256.0,
-                                        "y": 192.0
-                                    },
+                                    "scale": null,
                                     "texture": {
                                         "path": "images/health_face.png"
                                     },
@@ -7275,14 +7260,11 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 255.08334350585938,
+                                        "startTime": 197.57205200195313,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": null,
-                                    "scale": {
-                                        "x": 256.0,
-                                        "y": 192.0
-                                    },
+                                    "scale": null,
                                     "texture": {
                                         "path": "images/health_face.png"
                                     },
@@ -8050,7 +8032,7 @@
             },
             {
                 "data": {
-                    "drawIndex": 14,
+                    "drawIndex": 17,
                     "tex_coords_list": [
                         [
                             {
@@ -8875,7 +8857,7 @@
                         0.10000000149011612
                     ],
                     "is_looping": true,
-                    "startTime": 255.08334350585938,
+                    "startTime": 197.57205200195313,
                     "totalDuration": 2.3999998569488525
                 },
                 "type": "Components::Animation"
@@ -8883,13 +8865,13 @@
             {
                 "data": {
                     "position": {
-                        "x": 165.31854248046875,
-                        "y": 107.69985961914063
+                        "x": 234.54930114746094,
+                        "y": 158.04949951171875
                     },
                     "rotation": 0.0,
                     "scale": {
-                        "x": 256.0,
-                        "y": 192.0
+                        "x": 384.0,
+                        "y": 288.0
                     }
                 },
                 "type": "Components::Transform2D"
@@ -8897,11 +8879,11 @@
             {
                 "data": {
                     "local_offset": {
-                        "x": 165.31854248046875,
-                        "y": 107.69985961914063
+                        "x": 234.54930114746094,
+                        "y": 158.04949951171875
                     },
                     "offset_initialized": true,
-                    "parent_id": 8,
+                    "parent_id": 2283,
                     "prev_parent_pos": {
                         "x": 0.0,
                         "y": 0.0
