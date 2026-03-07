@@ -150,6 +150,7 @@ namespace Components
     bool has_started_ = false;        // Track if the state machine has started running
     std::vector<std::string> state_history_; // Track previous states
     std::string current_fmod_instance_; // Track current FMOD instance name
+    std::string current_fmod_event_path_; // Track the event path of the running instance (editor change detection)
 
     // Property animation playback state (non-serialized)
     float property_anim_elapsed_ = 0.0f;
@@ -256,14 +257,30 @@ namespace Components
       auto& current_state = states[current_state_name];
       current_state.invoke_on_update(entity);
 
-      // If the current state has looping audio, restart the instance if it has stopped
-      // Also update 3D position every frame so moving entities pan correctly
-      if (!current_fmod_instance_.empty() && current_state.audio.has_value() && current_state.audio->loop) {
-        if (auto* t = entity.get_component<Transform2D>()) {
-          Engine::AudioSystem::setEventInstancePosition(current_fmod_instance_, t->position);
-        }
-        if (!Engine::AudioSystem::isEventInstancePlaying(current_fmod_instance_)) {
-          Engine::AudioSystem::startEventInstance(current_fmod_instance_);
+      // If the current state has looping audio:
+      //   - Detect if the event path was changed in the editor and restart with the new event
+      //   - Keep 3D position in sync every frame
+      //   - Restart if the instance stopped (loop support)
+      if (current_state.audio.has_value() && current_state.audio->loop) {
+        const std::string& desired_path = current_state.audio->event_path;
+        if (!desired_path.empty()) {
+          // Editor changed the path mid-state — stop/release old, apply new
+          if (current_fmod_event_path_ != desired_path) {
+            if (!current_fmod_instance_.empty()) {
+              Engine::AudioSystem::stopEventInstance(current_fmod_instance_, true);
+              Engine::AudioSystem::releaseEventInstance(current_fmod_instance_);
+              current_fmod_instance_.clear();
+            }
+            current_fmod_instance_ = apply_fmod_state_audio(current_state.audio.value());
+          }
+          else if (!current_fmod_instance_.empty()) {
+            if (auto* t = entity.get_component<Transform2D>()) {
+              Engine::AudioSystem::setEventInstancePosition(current_fmod_instance_, t->position);
+            }
+            if (!Engine::AudioSystem::isEventInstancePlaying(current_fmod_instance_)) {
+              Engine::AudioSystem::startEventInstance(current_fmod_instance_);
+            }
+          }
         }
       }
 
@@ -448,6 +465,7 @@ namespace Components
           Engine::AudioSystem::stopEventInstance(current_fmod_instance_, true);
           Engine::AudioSystem::releaseEventInstance(current_fmod_instance_);
           current_fmod_instance_.clear();
+          current_fmod_event_path_.clear();
         }
       }
 
@@ -649,10 +667,15 @@ namespace Components
 
       // If looping, create persistent instance
       if (fmod_audio.loop) {
+        // Always release any pre-existing instance with this name so editor path changes take effect
+        Engine::AudioSystem::stopEventInstance(instance_name, true);
+        Engine::AudioSystem::releaseEventInstance(instance_name);
+
         Engine::AudioSystem::createEventInstance(instance_name, fmod_audio.event_path);
         Engine::AudioSystem::setEventInstancePosition(instance_name, entity_pos);
         Engine::AudioSystem::setEventInstanceVolume(instance_name, fmod_audio.volume);
         Engine::AudioSystem::startEventInstance(instance_name);
+        current_fmod_event_path_ = fmod_audio.event_path;
         return instance_name;
       }
       else {
