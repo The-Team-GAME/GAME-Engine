@@ -267,12 +267,12 @@ static void register_upgrade_applicators()
         player->attack1_data.dmg, player->attack2_data.dmg, player->attack3_data.dmg);
     });
 
-  // "speed" — modifies walk_speed on the Player component
-  mgr.register_stat_applicator("speed",
+  // "movement speed" — modifies walk_speed on the Player component
+  mgr.register_stat_applicator("movement speed",
     [](Engine::FileIO::UpgradeType type, float value) {
       auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
       if (!player_entity.is_valid()) {
-        Log::warning("[UpgradeApplicator] No player entity found for 'speed'");
+        Log::warning("[UpgradeApplicator] No player entity found for 'movement speed'");
         return;
       }
       auto* player = player_entity.get_component<Components::Player>();
@@ -298,23 +298,50 @@ static void register_upgrade_applicators()
       auto* health = player_entity.get_component<Components::Health>();
       if (!health) return;
 
+      constexpr int kMaxHP = 5;
+
       if (type == Engine::FileIO::UpgradeType::Flat) {
-        // Exception: flat health upgrade only adds 1 max HP
-        // while max is below 3; otherwise it does nothing.
-        if (health->max < 3) {
-          health->max += 1;
-          health->heal(1); // also heal the added amount
-          Log::info("[UpgradeApplicator] health flat applied (+1) — HP:{}/{}", health->value, health->max);
-        }
-        else {
-          Log::info("[UpgradeApplicator] health flat ignored (max >= 3) — HP:{}/{}", health->value, health->max);
-        }
+        // Flat upgrades heal, and may raise max HP but never above kMaxHP.
+        int inc = static_cast<int>(value + 0.5f);
+        if (inc <= 0) inc = 1;
+
+        int old_value = health->value;
+        int old_max = health->max;
+
+        int new_max = std::min(kMaxHP, old_max + inc);
+        int max_gain = new_max - old_max;
+        health->max = new_max;
+
+        // Heal by the same increment; Health::heal already clamps to max.
+        health->heal(inc);
+
+        Log::info(
+          "[UpgradeApplicator] health flat applied (+{}) — HP: {}/{} -> {}/{} (max_gain {})",
+          inc,
+          old_value, old_max,
+          health->value, health->max,
+          max_gain
+        );
       }
       else {
+        int old_value = health->value;
         int old_max = health->max;
-        health->max = static_cast<int>(static_cast<float>(health->max) * value);
-        int gained = health->max - old_max;
-        if (gained > 0) health->heal(gained);
+
+        int scaled_max = static_cast<int>(static_cast<float>(health->max) * value);
+        int new_max = std::min(kMaxHP, scaled_max);
+        int gained = new_max - old_max;
+        health->max = new_max;
+        if (gained > 0) {
+          health->heal(gained);
+        }
+
+        Log::info(
+          "[UpgradeApplicator] health multiplier applied (x{}) — HP: {}/{} -> {}/{} (gained {})",
+          value,
+          old_value, old_max,
+          health->value, health->max,
+          gained
+        );
       }
     });
 
