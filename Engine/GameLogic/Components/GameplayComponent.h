@@ -23,9 +23,9 @@ namespace Components
   struct Action
   {
     f32 duration;
-    f32 timer;
+    f32 timer = 0.f;
     f32 cooldown;
-    f32 cd_timer;
+    f32 cd_timer = 0.f;
     bool no_cooldown = false;
 
     f32 speed;
@@ -33,8 +33,8 @@ namespace Components
     f32 y_terminal_vel;
     f32 impulse;
 
-    Action(f32 dur = 0.f, f32 cd = 0.f, f32 spd = 0.f, f32 imp = 0.f)
-      : duration(dur), cooldown(cd), speed(spd), impulse(imp) {}
+    Action(f32 dur = 0.f, f32 cd = 0.f, f32 spd = 0.f, f32 imp = 0.f, f32 x_vel = 0.f, f32 y_vel = 0.f)
+      : duration(dur), cooldown(cd), speed(spd), impulse(imp) , x_terminal_vel(x_vel), y_terminal_vel(y_vel) {}
 
     void set_timer() // starts the countdown for the states that run on a timer
     {

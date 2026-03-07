@@ -202,6 +202,12 @@ static void register_collision_callbacks()
             state_machine->change_state("Death");
           }
         }
+        else
+        {
+          Components::StateMachine* sm = player_entity.get_component<Components::StateMachine>();
+          assert(sm);
+          sm->change_state("Stunned");
+        }
       }
       else {
         Log::error("Error: Health or RigidBody component missing from player!");
@@ -259,9 +265,9 @@ static void register_upgrade_applicators()
         player->attack3_data.dmg += flat;
       }
       else {
-        player->attack1_data.dmg = static_cast<s32>(static_cast<float>(player->attack1_data.dmg) * value);
-        player->attack2_data.dmg = static_cast<s32>(static_cast<float>(player->attack2_data.dmg) * value);
-        player->attack3_data.dmg = static_cast<s32>(static_cast<float>(player->attack3_data.dmg) * value);
+        player->attack1_data.dmg = static_cast<f32>(static_cast<s32>(player->attack1_data.dmg) * value);
+        player->attack2_data.dmg = static_cast<f32>(static_cast<s32>(player->attack2_data.dmg) * value);
+        player->attack3_data.dmg = static_cast<f32>(static_cast<s32>(player->attack3_data.dmg) * value);
       }
       Log::info("[UpgradeApplicator] damage applied — atk1:{} atk2:{} atk3:{}",
         player->attack1_data.dmg, player->attack2_data.dmg, player->attack3_data.dmg);

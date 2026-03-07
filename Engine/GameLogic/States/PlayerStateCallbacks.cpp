@@ -353,7 +353,7 @@ namespace PlayerStateCallbacks
 
   inline void stunned_on_update(ECS::Entity entity)
   {
-    Components::Player* player_comp = entity.get_component<Components::Player>();
+    /*Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
     if (player_comp->stunned.timer_end())
     {
@@ -361,14 +361,21 @@ namespace PlayerStateCallbacks
       assert(sm);
       sm->change_state("Idle");
     }
-    player_comp->stunned.timer -= Time::get_fixed_dt();
+    player_comp->stunned.timer -= Time::get_fixed_dt();*/
+    Components::Animation* animation = entity.get_component<Components::Animation>();
+    assert(animation);
+    if (animation->has_ended()) {
+      Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
+      assert(sm);
+      sm->change_state("Idle");
+    }
   }
 
   inline void stunned_on_exit([[maybe_unused]] ECS::Entity entity)
   {
     Log::info("Player: Exited Stunned state");
     Components::Player* player_comp = entity.get_component<Components::Player>();
-    player_comp->damage_immune = true;
+    player_comp->damage_immune = false;
   }
 #pragma endregion
 
@@ -563,9 +570,7 @@ namespace PlayerStateCallbacks
   inline void uppercut_on_update(ECS::Entity entity)
   {
     Components::Player* player_comp = entity.get_component<Components::Player>();
-    Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
     assert(player_comp);
-    assert(box);
 
     // Exit Condition 1
     if (player_comp->uppercut.timer_end())
@@ -777,7 +782,8 @@ namespace PlayerStateCallbacks
   inline void death_on_update(ECS::Entity entity)
   {
     Components::Animation* animation = entity.get_component<Components::Animation>();
-    if (animation && animation->has_ended()) {
+    assert(animation);
+    if (animation->has_ended()) {
       // Engine::ECS::destroy_entity(entity);
       Log::info("Player: Destroyed after death animation.");
       Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
@@ -819,5 +825,6 @@ REGISTER_STATE_MACHINE_BLUEPRINT(Player, "Idle",
   STATE("Smash", PlayerStateCallbacks::smash_on_enter, PlayerStateCallbacks::smash_on_update, PlayerStateCallbacks::smash_on_exit)
   STATE("PostSmash", PlayerStateCallbacks::post_smash_on_enter, PlayerStateCallbacks::post_smash_on_update, PlayerStateCallbacks::post_smash_on_exit)
 
+  STATE("Stunned", PlayerStateCallbacks::stunned_on_enter, PlayerStateCallbacks::stunned_on_update, PlayerStateCallbacks::stunned_on_exit)
   STATE("Death", PlayerStateCallbacks::death_on_enter, PlayerStateCallbacks::death_on_update, PlayerStateCallbacks::death_on_exit)
 )
