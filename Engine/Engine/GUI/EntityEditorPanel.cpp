@@ -25,6 +25,7 @@
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
+#include <unordered_set>
 #include <map>
 #include <algorithm>
 #include "../Components/SpatialComponents.h"
@@ -40,8 +41,14 @@
 
 namespace {
   // Shared state for entity selection
-  s32 selected_entity_id = -1;
+  s32 selected_entity_id = -1;               // primary selection (shown in inspector)
+  std::unordered_set<Engine::ECS::EntityID> selected_entity_ids; // multi-selection set
+  std::vector<Engine::ECS::Prefab> entity_clipboard; // copy/paste clipboard
   bool selection_initialized = false;
+
+  // Shift+Click range select state
+  Engine::ECS::EntityID last_clicked_entity_id = Engine::ECS::INVALID_ENTITY;
+  std::vector<Engine::ECS::EntityID> flat_entity_order; // rebuilt each frame
 
   // Rename state
   Engine::ECS::EntityID rename_entity_id = Engine::ECS::INVALID_ENTITY;
@@ -64,9 +71,61 @@ namespace {
 
     Engine::EventManager::add_event_listener<Engine::Events::SelectEntityEvent>(
       [](const Engine::Events::SelectEntityEvent& event) {
+        if (event.add_to_selection) {
+          // Ctrl+Click from viewport: toggle entity in multi-selection
+          if (event.entity_id != Engine::ECS::INVALID_ENTITY) {
+            if (selected_entity_ids.count(event.entity_id)) {
+              // Deselect
+              selected_entity_ids.erase(event.entity_id);
+              if (selected_entity_id == static_cast<s32>(event.entity_id)) {
+                if (!selected_entity_ids.empty()) {
+                  selected_entity_id = static_cast<s32>(*selected_entity_ids.begin());
+                }
+                else {
+                  selected_entity_id = -1;
+                }
+              }
+            }
+            else {
+              // Add to selection
+              selected_entity_ids.insert(event.entity_id);
+              selected_entity_id = static_cast<s32>(event.entity_id);
+            }
+          }
+          return;
+        }
+        // Normal (exclusive) selection from viewport or other sources
         selected_entity_id = static_cast<s32>(event.entity_id);
+        selected_entity_ids.clear();
+        if (event.entity_id != Engine::ECS::INVALID_ENTITY) {
+          selected_entity_ids.insert(event.entity_id);
+        }
       }
     );
+  }
+
+  // Helper: Shift+Click range select — selects all entities between two IDs in flat_entity_order
+  void select_range(Engine::ECS::EntityID from_id, Engine::ECS::EntityID to_id) {
+    if (to_id == Engine::ECS::INVALID_ENTITY) return;
+    // If no prior anchor, treat it as a plain click on to_id
+    if (from_id == Engine::ECS::INVALID_ENTITY) {
+      Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(to_id);
+      return;
+    }
+    int idx_from = -1, idx_to = -1;
+    for (int i = 0; i < static_cast<int>(flat_entity_order.size()); ++i) {
+      if (flat_entity_order[i] == from_id) idx_from = i;
+      if (flat_entity_order[i] == to_id) idx_to = i;
+    }
+    if (idx_from == -1 || idx_to == -1) return;
+    int lo = std::min(idx_from, idx_to);
+    int hi = std::max(idx_from, idx_to);
+    // Clear all selections first, then add the range via events so
+    // both the panel state and the Gizmo components stay in sync.
+    Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
+    for (int i = lo; i <= hi; ++i) {
+      Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(flat_entity_order[i], false, true);
+    }
   }
 
   // Helper to render a single entity node in the tree
@@ -85,8 +144,8 @@ namespace {
       entity_label += " [Level: " + level_comp->level_path + "]";
     }
 
-    // Check if this entity is selected
-    bool is_selected = (selected_entity_id == static_cast<s32>(entity.get_id()));
+    // Check if this entity is selected (multi-selection)
+    bool is_selected = selected_entity_ids.count(entity.get_id()) > 0;
 
     ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
     if (is_selected) {
@@ -103,26 +162,44 @@ namespace {
       entity_label.c_str()
     );
 
-    // Handle selection
+    // Handle selection (Ctrl+Click toggles, Shift+Click range, plain click replaces)
     if (ImGui::IsItemClicked()) {
-      selected_entity_id = static_cast<s32>(entity.get_id());
-      Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(entity.get_id());
+      Engine::ECS::EntityID id = entity.get_id();
+      if (ImGui::GetIO().KeyCtrl) {
+        // Toggle via event — listener handles both state and Gizmo component
+        Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(id, false, true);
+        last_clicked_entity_id = id;
+      }
+      else if (ImGui::GetIO().KeyShift) {
+        select_range(last_clicked_entity_id, id);
+        // don't update last_clicked_entity_id on shift-click (anchor stays)
+      }
+      else {
+        Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(id);
+        last_clicked_entity_id = id;
+      }
     }
 
     // Right-click context menu
     if (ImGui::BeginPopupContextItem()) {
-      if (ImGui::MenuItem("Delete Entity")) {
-        // Send delete event (handles undo/redo and marking dirty)
-        Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(entity.get_id(), true);
-
-        // Clear selection if this entity was selected
-        if (selected_entity_id == static_cast<s32>(entity.get_id())) {
-          selected_entity_id = -1;
-          Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
+      if (ImGui::MenuItem("Copy")) {
+        entity_clipboard.clear();
+        for (Engine::ECS::EntityID sel_id : selected_entity_ids) {
+          Engine::ECS::Entity sel_e = Engine::ECS::get_entity(sel_id);
+          if (sel_e.is_valid()) entity_clipboard.push_back(Engine::ECS::entity_to_prefab(sel_e));
         }
+        // If nothing multi-selected, copy just this entity
+        if (entity_clipboard.empty()) {
+          entity_clipboard.push_back(Engine::ECS::entity_to_prefab(entity));
+        }
+      }
+      if (ImGui::MenuItem("Delete Entity")) {
+        Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(entity.get_id(), true);
       }
       if (ImGui::MenuItem("Clone Entity")) {
         Engine::ECS::Entity cloned = Engine::ECS::clone_entity(entity);
+        selected_entity_ids.clear();
+        selected_entity_ids.insert(cloned.get_id());
         selected_entity_id = static_cast<s32>(cloned.get_id());
         Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(cloned.get_id());
 
@@ -130,13 +207,11 @@ namespace {
         Engine::ECS::EntityID cloned_id = cloned.get_id();
         Engine::ECS::Prefab cloned_prefab = Engine::ECS::entity_to_prefab(cloned);
         Engine::UndoManager::record(
-          // Do: Recreate the cloned entity
           [cloned_id, cloned_prefab]() {
             Engine::ECS::instantiate_prefab_with_id(cloned_prefab, cloned_id);
             Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(cloned_id);
             Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
           },
-          // Undo: Delete the cloned entity
           [cloned_id]() {
             Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(cloned_id, false);
             Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
@@ -253,8 +328,8 @@ namespace {
       entity_label += " [Level: " + level_comp->level_path + "]";
     }
 
-    // Check if this entity is selected
-    bool is_selected = (selected_entity_id == static_cast<s32>(entity.get_id()));
+    // Check if this entity is selected (multi-selection)
+    bool is_selected = selected_entity_ids.count(entity.get_id()) > 0;
 
     ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
     if (is_selected) {
@@ -274,10 +349,20 @@ namespace {
       entity_label.c_str()
     );
 
-    // Handle selection
+    // Handle selection (Ctrl+Click toggles, Shift+Click range, plain click replaces)
     if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-      selected_entity_id = static_cast<s32>(entity.get_id());
-      Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(entity.get_id());
+      Engine::ECS::EntityID id = entity.get_id();
+      if (ImGui::GetIO().KeyCtrl) {
+        Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(id, false, true);
+        last_clicked_entity_id = id;
+      }
+      else if (ImGui::GetIO().KeyShift) {
+        select_range(last_clicked_entity_id, id);
+      }
+      else {
+        Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(id);
+        last_clicked_entity_id = id;
+      }
     }
 
     // Drag source - allow dragging this entity
@@ -306,15 +391,30 @@ namespace {
 
     // Right-click context menu
     if (ImGui::BeginPopupContextItem()) {
+      if (ImGui::MenuItem("Copy")) {
+        entity_clipboard.clear();
+        for (Engine::ECS::EntityID sel_id : selected_entity_ids) {
+          Engine::ECS::Entity sel_e = Engine::ECS::get_entity(sel_id);
+          if (sel_e.is_valid()) entity_clipboard.push_back(Engine::ECS::entity_to_prefab(sel_e));
+        }
+        if (entity_clipboard.empty()) {
+          entity_clipboard.push_back(Engine::ECS::entity_to_prefab(entity));
+        }
+      }
       if (ImGui::MenuItem("Delete Entity")) {
         Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(entity.get_id(), true);
+        selected_entity_ids.erase(entity.get_id());
         if (selected_entity_id == static_cast<s32>(entity.get_id())) {
-          selected_entity_id = -1;
-          Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
+          selected_entity_id = selected_entity_ids.empty() ? -1 : static_cast<s32>(*selected_entity_ids.begin());
+          Engine::ECS::EntityID new_primary = (selected_entity_id == -1)
+            ? Engine::ECS::INVALID_ENTITY : static_cast<Engine::ECS::EntityID>(selected_entity_id);
+          Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(new_primary);
         }
       }
       if (ImGui::MenuItem("Clone Entity")) {
         Engine::ECS::Entity cloned = Engine::ECS::clone_entity(entity);
+        selected_entity_ids.clear();
+        selected_entity_ids.insert(cloned.get_id());
         selected_entity_id = static_cast<s32>(cloned.get_id());
         Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(cloned.get_id());
 
@@ -458,6 +558,62 @@ void EntityEditorPanel()
 
   ImGui::Begin("Entity Editor");
 
+  // Ctrl+C / Ctrl+V copy-paste (only when this window is focused)
+  if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
+    // Ctrl+C: copy all selected entities to clipboard
+    if (ImGui::GetIO().KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_C, false) && !selected_entity_ids.empty()) {
+      entity_clipboard.clear();
+      for (Engine::ECS::EntityID sel_id : selected_entity_ids) {
+        Engine::ECS::Entity sel_e = Engine::ECS::get_entity(sel_id);
+        if (sel_e.is_valid()) entity_clipboard.push_back(Engine::ECS::entity_to_prefab(sel_e));
+      }
+    }
+    // Ctrl+V: paste clipboard entities
+    if (ImGui::GetIO().KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_V, false) && !entity_clipboard.empty()) {
+      selected_entity_ids.clear();
+      selected_entity_id = -1;
+
+      // Collect all pasted entity IDs and their prefabs for a single undo entry
+      struct PasteEntry { Engine::ECS::EntityID id; Engine::ECS::Prefab prefab; };
+      std::vector<PasteEntry> paste_entries;
+
+      for (auto& prefab : entity_clipboard) {
+        Engine::ECS::Entity pasted = Engine::ECS::instantiate_prefab(prefab);
+        if (pasted.is_valid()) {
+          Engine::ECS::EntityID pasted_id = pasted.get_id();
+          selected_entity_ids.insert(pasted_id);
+          selected_entity_id = static_cast<s32>(pasted_id);
+          paste_entries.push_back({ pasted_id, prefab });
+        }
+      }
+
+      // Record ONE undo entry for the entire paste operation
+      if (!paste_entries.empty()) {
+        Engine::UndoManager::record(
+          [paste_entries]() { // redo: re-create all pasted entities
+            for (auto& pe : paste_entries) {
+              Engine::ECS::instantiate_prefab_with_id(pe.prefab, pe.id);
+            }
+            if (!paste_entries.empty())
+              Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(paste_entries.back().id);
+            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+          },
+          [paste_entries]() { // undo: delete all pasted entities
+            for (auto& pe : paste_entries) {
+              Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(pe.id, false);
+            }
+            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+          }
+        );
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+      }
+
+      if (selected_entity_id != -1) {
+        Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(static_cast<Engine::ECS::EntityID>(selected_entity_id));
+      }
+    }
+  }
+
   // Section 1: Entity List (changes based on mode)
   if (ImGui::CollapsingHeader("Entities", ImGuiTreeNodeFlags_DefaultOpen))
   {
@@ -481,6 +637,13 @@ void EntityEditorPanel()
     ImGui::BeginChild("EntityList", ImVec2(0, 200), true);
 
     auto allEntities = Engine::ECS::get_all_entities();
+
+    // Build flat entity order for Shift+Click range select
+    flat_entity_order.clear();
+    for (auto& entity : allEntities) {
+      if (!entity.has_component<Components::Internal>())
+        flat_entity_order.push_back(entity.get_id());
+    }
 
     if (current_view_mode == EntityViewMode::Layer) {
       // Layer view - group by layers
@@ -583,7 +746,7 @@ void EntityEditorPanel()
           continue;
         }
 
-        bool isSelected = (selected_entity_id == static_cast<int>(entity.get_id()));
+        bool isSelected = selected_entity_ids.count(entity.get_id()) > 0;
         const std::string& fname = Engine::ECS::get_entity_name(entity);
         std::string label = fname.empty()
           ? "Entity " + std::to_string(entity.get_id())
@@ -593,10 +756,20 @@ void EntityEditorPanel()
           label += " [Level: " + level_comp->level_path + "]";
         }
 
-        if (ImGui::Selectable(label.c_str(), isSelected))
+        if (ImGui::Selectable(label.c_str(), isSelected, ImGuiSelectableFlags_None))
         {
-          selected_entity_id = static_cast<int>(entity.get_id());
-          Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(entity.get_id());
+          Engine::ECS::EntityID id = entity.get_id();
+          if (ImGui::GetIO().KeyCtrl) {
+            Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(id, false, true);
+            last_clicked_entity_id = id;
+          }
+          else if (ImGui::GetIO().KeyShift) {
+            select_range(last_clicked_entity_id, id);
+          }
+          else {
+            Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(id);
+            last_clicked_entity_id = id;
+          }
         }
       }
     }
@@ -607,6 +780,8 @@ void EntityEditorPanel()
     if (ImGui::Button("Create New Entity"))
     {
       auto newEntity = Engine::ECS::create_entity();
+      selected_entity_ids.clear();
+      selected_entity_ids.insert(newEntity.get_id());
       selected_entity_id = static_cast<int>(newEntity.get_id());
       Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(newEntity.get_id());
 
@@ -631,15 +806,26 @@ void EntityEditorPanel()
 
     ImGui::SameLine();
 
-    // Delete selected entity
-    if (selected_entity_id != -1 && ImGui::Button("Delete Selected"))
+    // Delete selected entities (all multi-selected)
+    if (!selected_entity_ids.empty() && ImGui::Button("Delete Selected"))
     {
-      // Send delete event (handles undo/redo and marking dirty)
-      Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(selected_entity_id, true);
-
-      // Clear selection
+      std::vector<Engine::ECS::EntityID> to_delete(selected_entity_ids.begin(), selected_entity_ids.end());
+      for (Engine::ECS::EntityID del_id : to_delete) {
+        Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(del_id, true);
+      }
+      selected_entity_ids.clear();
       selected_entity_id = -1;
       Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
+    }
+
+    // Show multi-selection count hint
+    if (selected_entity_ids.size() > 1) {
+      ImGui::SameLine();
+      ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "%zu selected  (Ctrl+C to copy)", selected_entity_ids.size());
+    }
+    else if (!entity_clipboard.empty()) {
+      ImGui::SameLine();
+      ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "[%zu in clipboard]", entity_clipboard.size());
     }
   }
 
@@ -652,7 +838,8 @@ void EntityEditorPanel()
 
     if (!entity.is_valid())
     {
-      selected_entity_id = -1;
+      selected_entity_ids.erase(static_cast<Engine::ECS::EntityID>(selected_entity_id));
+      selected_entity_id = selected_entity_ids.empty() ? -1 : static_cast<s32>(*selected_entity_ids.begin());
       ImGui::End();
       return;
     }
@@ -908,6 +1095,8 @@ void EntityEditorPanel()
     if (ImGui::Button("Clone This Entity"))
     {
       auto clonedEntity = Engine::ECS::clone_entity(entity);
+      selected_entity_ids.clear();
+      selected_entity_ids.insert(clonedEntity.get_id());
       selected_entity_id = static_cast<int>(clonedEntity.get_id());
       Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(clonedEntity.get_id());
 

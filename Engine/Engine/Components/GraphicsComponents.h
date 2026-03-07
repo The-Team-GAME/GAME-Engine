@@ -410,7 +410,6 @@ namespace Components
 
   struct Camera
   {
-    std::string name = "Camera";
     bool is_active = false;  // Whether this camera is currently active
 
     bool is_smooth = true;  // Whether this camera uses smooth movement (enabled by default)
@@ -434,9 +433,9 @@ namespace Components
     // Use this to frame the player off-center (e.g. look ahead vertically in a platformer)
     Math::Vec2D target_offset = { 0.0f, 0.0f };
 
-    Camera() : name("Camera"), is_active(false) {}
-    Camera(const std::string& cam_name, bool active = false, bool smooth = true)
-      : name(cam_name), is_active(active), is_smooth(smooth) {
+    Camera() : is_active(false) {}
+    Camera(bool active, bool smooth = true)
+      : is_active(active), is_smooth(smooth) {
     }
   };
 
@@ -587,7 +586,7 @@ namespace Components
 
 REFLECT_ENUM(Components::TextAlignment, Left, Center, Right);
 REGISTER_COMPONENT(Components::Text, content, font_scale, line_spacing, alignment)
-REGISTER_COMPONENT(Components::Camera, name, is_active, is_smooth, smooth_factor, smooth_factor_direction_change, rotation_smooth, zoom_smooth, look_ahead_distance, look_ahead_smooth, dead_zone_radius, target_offset)
+REGISTER_COMPONENT(Components::Camera, is_active, is_smooth, smooth_factor, smooth_factor_direction_change, rotation_smooth, zoom_smooth, look_ahead_distance, look_ahead_smooth, dead_zone_radius, target_offset)
 REGISTER_COMPONENT(Components::Distortion, intensity, speed, mesh_intensity)
 REGISTER_COMPONENT(Components::Flip, value)
 REGISTER_COMPONENT(Components::UI)

@@ -19,6 +19,44 @@
 namespace GamerMonkeyStateCallbacks
 {
   // ========================================================================
+  // Updates knockback from current propulsion velocity
+  // ========================================================================
+  inline void update_propulsion_knockback(Engine::ECS::Entity entity) {
+    auto* attack = entity.get_component<Components::Attack>();
+    auto* gamer_monkey = entity.get_component<Components::GamerMonkey>();
+    auto* rigid = entity.get_component<Components::RigidBody>();
+    auto* flip = entity.get_component<Components::Flip>();
+
+    if (!attack || !gamer_monkey) return;
+
+    // Keep attack damage synced with GamerMonkey config
+    attack->damage = gamer_monkey->damage;
+
+    const float base_x = std::abs(gamer_monkey->knockback.x);
+    const float base_y = std::abs(gamer_monkey->knockback.y);
+
+    float dir_x = 1.0f;
+    float propulsion_x = 0.0f;
+    float upward_propulsion = 0.0f;
+
+    if (rigid) {
+      propulsion_x = std::abs(rigid->velocity.x);
+      if (std::abs(rigid->velocity.x) > 0.01f) {
+        dir_x = (rigid->velocity.x >= 0.0f) ? 1.0f : -1.0f;
+      }
+      upward_propulsion = std::max(0.0f, -rigid->velocity.y);
+    }
+    else if (flip) {
+      dir_x = (flip->value.x >= 0.0f) ? 1.0f : -1.0f;
+    }
+
+    // Horizontal knockback follows propulsion, but never weaker than base tuning.
+    attack->knockback.x = dir_x * std::max(base_x, propulsion_x);
+    // Add some upward contribution from current vertical propulsion.
+    attack->knockback.y = -(base_y + upward_propulsion * 0.35f);
+  }
+
+  // ========================================================================
   // Idle State Callbacks
   // ========================================================================
 
@@ -60,15 +98,11 @@ namespace GamerMonkeyStateCallbacks
 
       // If player is within chase range, decide whether to dash or chase
       if (distance < Gamer_monkey->chase_range) {
-        // If player is far (beyond close attack range) and dash is ready, do dash windup
-        if (distance > Gamer_monkey->close_attack_range && dash_ready) {
+        // Dash is the main attack: whenever dash is ready, go dash.
+        if (dash_ready) {
           state_machine->change_state("DashWindup");
         }
-        // Otherwise just chase normally
-        else if (distance > Gamer_monkey->close_attack_range) {
-          state_machine->change_state("Chasing");
-        }
-        // If very close, go straight to chasing (will attack)
+        // While dash is on cooldown, chase and use close-range attack logic.
         else {
           state_machine->change_state("Chasing");
         }
@@ -262,14 +296,12 @@ namespace GamerMonkeyStateCallbacks
     // Make the monkey itself deal damage on collision while dashing
     if (!entity.has_component<Components::Attack>()) {
       entity.add_component<Components::Attack>(Gamer_monkey->damage);
-      auto* attack = entity.get_component<Components::Attack>();
-      if (attack && flip) {
-        attack->knockback = Gamer_monkey->knockback;
-        if (flip->value.x < 0) {
-          attack->knockback.x = -attack->knockback.x;
-        }
-        attack->knockback.y = -std::abs(attack->knockback.y);
-      }
+    }
+    auto* attack = entity.get_component<Components::Attack>();
+    if (attack) {
+      attack->damage = Gamer_monkey->damage;
+      attack->hit_entities.clear();
+      update_propulsion_knockback(entity);
     }
     entity.add_to_layer("damage_player");
 
@@ -300,6 +332,9 @@ namespace GamerMonkeyStateCallbacks
     if (std::abs(dx) > 10.0f) {
       rigid->velocity.x = (dx >= 0.0f ? Gamer_monkey->dash_speed : -Gamer_monkey->dash_speed);
     }
+
+    // Keep knockback synced to propulsion while dashing.
+    update_propulsion_knockback(entity);
 
     float velocity_dir = (rigid->velocity.x >= 0.0f) ? 1.0f : -1.0f;
 
@@ -370,10 +405,30 @@ namespace GamerMonkeyStateCallbacks
       if (player_transform) {
         float dx = player_transform->position.x - Gamer_monkey_transform->position.x;
         float distance = std::abs(dx); // Only horizontal distance for sidescrolling
+        float small_gap_threshold = Gamer_monkey->close_attack_range;
+        bool dash_ready = (current_time - Gamer_monkey->last_dash_time) >= Gamer_monkey->dash_cooldown;
 
-        // Chase player horizontally using physics (force-based)
-        if (distance > Gamer_monkey->close_attack_range) {
-          float desired_vx = (dx > 0 ? Gamer_monkey->chase_speed : -Gamer_monkey->chase_speed);
+        // If dash is back up, immediately swap back to dash attack.
+        if (dash_ready && distance > 20.0f && distance <= Gamer_monkey->chase_range) {
+          state_machine->change_state("DashWindup");
+          return;
+        }
+
+        // While waiting for dash cooldown: if near enough, use close-range attack.
+        if (!dash_ready && distance <= small_gap_threshold &&
+          (current_time - Gamer_monkey->last_attack_time) >= Gamer_monkey->attack_cooldown) {
+          state_machine->change_state("Windup");
+          return;
+        }
+
+        // Chase player horizontally using physics (force-based).
+        // For small gaps, keep chasing with reduced speed to close the distance precisely.
+        if (distance > 20.0f) {
+          float chase_speed = (distance <= small_gap_threshold)
+            ? (Gamer_monkey->chase_speed * 0.6f)
+            : Gamer_monkey->chase_speed;
+
+          float desired_vx = (dx > 0 ? chase_speed : -chase_speed);
           float dt = Engine::Time::get_fixed_dt();
           float delta_v = desired_vx - rigid->velocity.x;
           float force_x = (delta_v / dt) * rigid->mass; // F = m * dv/dt
@@ -384,30 +439,14 @@ namespace GamerMonkeyStateCallbacks
           }
         }
         else {
-          // Stop moving when close enough to attack
+          // Stop jittering when essentially touching target X
           rigid->velocity.x = 0.0f;
-        }
-
-        // If player moves out of normal chase detection but is still within
-        // extended range, switch to dash windup for a long-range approach (if cooldown is ready)
-        if (distance > Gamer_monkey->detection_range && distance <= Gamer_monkey->chase_range) {
-          bool dash_ready = (current_time - Gamer_monkey->last_dash_time) >= Gamer_monkey->dash_cooldown;
-          if (dash_ready) {
-            state_machine->change_state("DashWindup");
-            return;
-          }
-          // If dash is on cooldown, continue chasing normally
         }
 
         // Return to idle if player is completely out of range
         if (distance > Gamer_monkey->chase_range) {
           state_machine->change_state("Idle");
-        }
-
-        // If close enough and cooldown has elapsed, go to windup before attacking
-        if (distance < Gamer_monkey->close_attack_range &&
-          (current_time - Gamer_monkey->last_attack_time) >= Gamer_monkey->attack_cooldown) {
-          state_machine->change_state("Windup");
+          return;
         }
       }
     }
@@ -488,24 +527,29 @@ namespace GamerMonkeyStateCallbacks
 
     // Make the monkey itself the hitbox
     if (Gamer_monkey && flip) {
-      // Add Attack component to the monkey
+      // Add Attack component to the monkey if missing
       // Note: We use the monkey's own collider for the attack hitbox now
-      entity.add_component<Components::Attack>(Gamer_monkey->damage);
+      if (!entity.has_component<Components::Attack>()) {
+        entity.add_component<Components::Attack>(Gamer_monkey->damage);
+      }
       auto* attack = entity.get_component<Components::Attack>();
 
       if (attack) {
-        // Apply knockback direction based on facing
-        attack->knockback = Gamer_monkey->knockback;
-        if (flip->value.x < 0) {
-          attack->knockback.x = -attack->knockback.x;
-        }
-        // Knockback Y is always positive (up) in our config, but physics needs negative for up
-        attack->knockback.y = -std::abs(attack->knockback.y);
+        attack->damage = Gamer_monkey->damage;
+        attack->hit_entities.clear();
       }
+
+      // Knockback follows current propulsion
+      update_propulsion_knockback(entity);
 
       // Add to damage_player layer so it collides with player
       // We KEEP the enemy layer so it still collides with ground
       entity.add_to_layer("damage_player");
+    }
+
+    // Mark attack start time so we keep hitbox active briefly even if animation data is missing.
+    if (Gamer_monkey) {
+      Gamer_monkey->last_attack_time = Engine::Time::get_time();
     }
 
     Log::info("Gamer Monkey: Entered Attacking state");
@@ -515,9 +559,20 @@ namespace GamerMonkeyStateCallbacks
   inline void attacking_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* animation = entity.get_component<Components::Animation>();
+    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
 
-    // Transition back to chasing when attack animation completes
-    if (animation && animation->has_ended()) {
+    // Keep knockback synced to propulsion during the leap/contact window.
+    update_propulsion_knockback(entity);
+
+    // Keep attack active for a short minimum window, then transition back.
+    float elapsed = 0.0f;
+    if (Gamer_monkey) {
+      elapsed = Engine::Time::get_time() - Gamer_monkey->last_attack_time;
+    }
+    bool animation_done = (animation == nullptr) || animation->has_ended();
+
+    // Transition back to chasing when attack animation completes and minimum active window has passed.
+    if (animation_done && elapsed >= 0.15f) {
       state_machine->change_state("Chasing");
     }
   }

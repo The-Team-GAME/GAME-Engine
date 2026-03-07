@@ -718,28 +718,38 @@ namespace ImGuiWidgets {
                 ImGui::Spacing();
               }
 
-              // ---- Per-state scale ----
+              // ---- Per-state scale override (optional) ----
               ImGui::Separator();
               auto scale_it = state_anim_obj.find("scale");
-              // Auto-populate scale from entity's Transform2D if null/missing
-              if (scale_it == state_anim_obj.end() || !scale_it->second.isObject()) {
-                Math::Vec2D default_scale(1.0f, 1.0f);
-                if (entity.is_valid() && entity.has_component<Components::Transform2D>()) {
-                  default_scale = entity.get_component<Components::Transform2D>()->scale;
+              bool scale_enabled = (scale_it != state_anim_obj.end() && scale_it->second.isObject());
+              std::string scale_check_label = "Override Scale##scale_check_" + state_name;
+              if (ImGui::Checkbox(scale_check_label.c_str(), &scale_enabled)) {
+                if (scale_enabled) {
+                  // Enable: populate from entity's Transform2D (or default 1,1)
+                  Math::Vec2D default_scale(1.0f, 1.0f);
+                  if (entity.is_valid() && entity.has_component<Components::Transform2D>()) {
+                    default_scale = entity.get_component<Components::Transform2D>()->scale;
+                  }
+                  state_anim_obj["scale"] = ReflectionLibrary::to_generic_value(default_scale);
+                  scale_it = state_anim_obj.find("scale");
                 }
-                state_anim_obj["scale"] = ReflectionLibrary::to_generic_value(default_scale);
-                scale_it = state_anim_obj.find("scale");
+                else {
+                  // Disable: set to null
+                  state_anim_obj["scale"] = ReflectionLibrary::GenericValue();
+                }
                 local_modified = true;
               }
-              {
+              if (scale_enabled && scale_it != state_anim_obj.end() && scale_it->second.isObject()) {
+                ImGui::Indent();
                 ReflectionLibrary::Object& scale_obj = scale_it->second.getObject();
                 float scale_vals[2] = {
                   scale_obj.count("x") && scale_obj["x"].isDouble() ? static_cast<float>(scale_obj["x"].getDouble()) : 1.0f,
                   scale_obj.count("y") && scale_obj["y"].isDouble() ? static_cast<float>(scale_obj["y"].getDouble()) : 1.0f
                 };
                 ImGui::Text("Scale:");
+                ImGui::SameLine();
                 std::string scale_label = "##scale_" + state_name;
-                if (ImGui::DragFloat2(scale_label.c_str(), scale_vals, 1.0f, 0.0f, 0.0f, "%.1f")) {
+                if (ImGui::DragFloat2(scale_label.c_str(), scale_vals, 0.01f, 0.0f, 0.0f, "%.3f")) {
                   scale_obj["x"] = ReflectionLibrary::GenericValue(static_cast<double>(scale_vals[0]));
                   scale_obj["y"] = ReflectionLibrary::GenericValue(static_cast<double>(scale_vals[1]));
                   local_modified = true;
@@ -759,6 +769,7 @@ namespace ImGuiWidgets {
                 if (ImGui::IsItemHovered()) {
                   ImGui::SetTooltip("Reset to entity's Transform2D scale");
                 }
+                ImGui::Unindent();
               }
 
               // Edit Collider button

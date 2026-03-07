@@ -277,8 +277,8 @@ namespace Components
     // If a object has resolve_collisions set to true,that means that other objects that 
     // collide into the current object needs to be snapped out of the current object
     bool resolve_collisions = false;
+    bool collided = false;
     ColliderType type = ColliderType::AABB;
-
     // AABB data (for fast axis-aligned checks)
     AABB aabb;
     f32 width;
@@ -332,4 +332,4 @@ namespace Components
 REFLECT_ENUM(Components::ColliderType, AABB, OBB, POLYGON)
 REFLECT_FIELDS(AABB, pos, half_width, half_height)
 REFLECT_FIELDS(Polygon, vertices, position, rotation)
-REGISTER_COMPONENT(Components::BoxCollider, resolve_collisions, type, width, height, radius, polygon, aabb, offset, kinetic_friction)
+REGISTER_COMPONENT(Components::BoxCollider, resolve_collisions, collided, type, width, height, radius, polygon, aabb, offset, kinetic_friction)

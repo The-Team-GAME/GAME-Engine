@@ -23,6 +23,7 @@
 #include "../Resources.h"
 #include "../Path.h"
 #include "../Components/SpatialComponents.h"
+#include "../Components/GraphicsComponents.h"
 #include "ComponentManager.h"
 #include "../Random.h"
 #include "../Graphics/Renderer.h"
@@ -271,7 +272,10 @@ namespace Engine {
       }
 
       // Set Transform2D position to center of screen if entity has Transform2D
-      if (entity.has_component<Components::Transform2D>()) {
+      // but NOT if entity has a Components::UI tag — UI entities use screen-space
+      // coordinates and should keep their original copied position.
+      if (entity.has_component<Components::Transform2D>()
+        && !entity.has_component<Components::UI>()) {
         auto* transform = entity.get_component<Components::Transform2D>();
         if (transform) {
           // Get virtual resolution (screen center in virtual coordinates)
