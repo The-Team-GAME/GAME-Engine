@@ -802,6 +802,7 @@ namespace PlayerStateCallbacks
     SceneManager::load_scene(scene);
   }
 #pragma endregion
+
 } // namespace PlayerStateCallbacks
 
 // Register blueprint + all player state callbacks
