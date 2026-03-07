@@ -22,6 +22,7 @@
 #include "../ResourcePicker.h"
 #include "../../Resources.h"
 #include "../../Components/Components.h"
+#include "../../Components/AnimatorComponents.h"
 #include "../../Path.h"
 #include <unordered_map>
 #include <algorithm>
@@ -899,6 +900,64 @@ namespace ImGuiWidgets {
               std::string add_fmod_label = "Add FMOD Audio##" + state_name;
               if (ImGui::Button(add_fmod_label.c_str(), ImVec2(-1, 0))) {
                 state_obj["fmod_audio"] = ReflectionLibrary::to_generic_value(Components::FMODStateAudio{});
+                local_modified = true;
+              }
+            }
+
+            // ================================================================
+            // Property Animation per state
+            // ================================================================
+            ImGui::Separator();
+            auto prop_anim_it = state_obj.find("property_animation");
+            bool has_prop_anim = (prop_anim_it != state_obj.end() && !prop_anim_it->second.isNull());
+            if (has_prop_anim) {
+              ImGui::Text("Property Animation:");
+              ImGui::Indent();
+
+              // Show summary
+              auto* clip_obj_ptr = &prop_anim_it->second;
+              if (clip_obj_ptr->isObject()) {
+                auto& clip_obj = clip_obj_ptr->getObject();
+                auto tracks_it2 = clip_obj.find("tracks");
+                int num_tracks = 0;
+                if (tracks_it2 != clip_obj.end() && tracks_it2->second.isArray()) {
+                  num_tracks = static_cast<int>(tracks_it2->second.getArray().size());
+                }
+                auto dur_it = clip_obj.find("duration");
+                float dur = (dur_it != clip_obj.end() && dur_it->second.isDouble()) ? static_cast<float>(dur_it->second.getDouble()) : 1.0f;
+                auto loop_it2 = clip_obj.find("is_looping");
+                bool loop2 = (loop_it2 != clip_obj.end() && loop_it2->second.isBool()) ? loop_it2->second.getBool() : false;
+                ImGui::TextColored(ImVec4(0.6f, 0.9f, 0.6f, 1.0f), "%d tracks, %.2fs%s", num_tracks, dur, loop2 ? ", looping" : "");
+              }
+
+              // Edit button
+              std::string edit_prop_anim_label = "Edit Property Animation##" + state_name;
+              if (ImGui::Button(edit_prop_anim_label.c_str(), ImVec2(-1, 0))) {
+                extern void AnimatorTimeline_Open(Engine::ECS::Entity entity, const std::string & state_name);
+                AnimatorTimeline_Open(entity, state_name);
+              }
+
+              // Remove button
+              ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.15f, 0.15f, 1.0f));
+              ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
+              std::string remove_prop_anim_label = "Remove Property Animation##" + state_name;
+              if (ImGui::Button(remove_prop_anim_label.c_str(), ImVec2(-1, 0))) {
+                prop_anim_it->second = ReflectionLibrary::GenericValue(); // null => nullopt
+                local_modified = true;
+              }
+              ImGui::PopStyleColor(2);
+
+              ImGui::Unindent();
+            }
+            else {
+              ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No property animation for this state");
+              ImGui::Spacing();
+              std::string add_prop_anim_label = "Add Property Animation##" + state_name;
+              if (ImGui::Button(add_prop_anim_label.c_str(), ImVec2(-1, 0))) {
+                Components::PropertyAnimationClip default_clip{};
+                default_clip.duration = 1.0f;
+                auto clip_gv = ReflectionLibrary::to_generic_value(default_clip);
+                state_obj["property_animation"] = std::move(clip_gv);
                 local_modified = true;
               }
             }

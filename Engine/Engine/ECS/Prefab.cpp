@@ -21,6 +21,7 @@
 #include "../Reflection/ReflectionLibrary.h"
 #include "PrefabMergeUtils.h"
 #include "../Resources.h"
+#include "../Path.h"
 #include "../Components/SpatialComponents.h"
 #include "../Components/GraphicsComponents.h"
 #include "ComponentManager.h"
@@ -619,7 +620,13 @@ namespace Engine {
       for (const auto& [path, weak_prefab] : Engine::Resources::prefab_cache) {
         auto shared_prefab_impl = weak_prefab.lock();
         if (shared_prefab_impl && shared_prefab_impl->get_prefab_id() == prefab_id) {
-          return shared_prefab_impl->get_prefab_filepath();
+          // Prefer the filepath stored on the impl
+          const std::string& impl_path = shared_prefab_impl->get_prefab_filepath();
+          if (!impl_path.empty()) {
+            return impl_path;
+          }
+          // Fallback: derive relative path from cache key (which is the full path)
+          return Engine::Path(path).to_relative(Engine::Resources::resource_path).to_string();
         }
       }
 
