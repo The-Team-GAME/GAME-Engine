@@ -73,6 +73,7 @@ namespace TilemapPanel {
 
     // Painting state
     bool enable_tilemap_mode = false;
+    bool erase_all_layers = false; // When true, eraser deletes from all layers simultaneously
 
     ToolMode current_tool = ToolMode::Paintbrush;
 
@@ -311,6 +312,60 @@ namespace TilemapPanel {
       [captured_grid_x, captured_grid_y, captured_tile, captured_layer]() {
         Math::Vec2D restore_pos = TilemapManager::grid_to_world(captured_grid_x, captured_grid_y);
         TilemapManager::place_tile(restore_pos, captured_layer, captured_tile.atlas_index, captured_tile.tile_index);
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+      }
+    );
+  }
+
+  void delete_tile_at_position_all_layers(const Math::Vec2D& world_pos) {
+    int grid_x, grid_y;
+    TilemapManager::world_to_grid(world_pos, grid_x, grid_y);
+
+    // Collect tiles that actually exist at this grid cell across all layers
+    struct LayerTile {
+      std::string layer_name;
+      Engine::Graphics::Tile tile;
+    };
+    std::vector<LayerTile> found_tiles;
+
+    for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
+      std::string layer_name;
+      auto layers = entity.get_layers();
+      for (Engine::ECS::LayerID lid = 0; lid < Engine::ECS::MAX_LAYERS; ++lid) {
+        if (layers.test(lid)) {
+          layer_name = Engine::ECS::get_layer_name(lid);
+          break;
+        }
+      }
+      if (layer_name.empty()) continue;
+
+      auto* tilemap = entity.get_component<Components::TileMap>();
+      if (!tilemap) continue;
+
+      Engine::Graphics::Tile t = tilemap->get_tile(grid_x, grid_y);
+      if (t.is_valid()) {
+        found_tiles.push_back({ layer_name, t });
+      }
+    }
+
+    if (found_tiles.empty()) return;
+
+    int captured_grid_x = grid_x;
+    int captured_grid_y = grid_y;
+    std::vector<LayerTile> captured_tiles = found_tiles;
+
+    Engine::UndoManager::execute(
+      [captured_grid_x, captured_grid_y, captured_tiles, world_pos]() {
+        for (const auto& lt : captured_tiles) {
+          TilemapManager::delete_tile(world_pos, lt.layer_name);
+        }
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+      },
+      [captured_grid_x, captured_grid_y, captured_tiles]() {
+        Math::Vec2D restore_pos = TilemapManager::grid_to_world(captured_grid_x, captured_grid_y);
+        for (const auto& lt : captured_tiles) {
+          TilemapManager::place_tile(restore_pos, lt.layer_name, lt.tile.atlas_index, lt.tile.tile_index);
+        }
         Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
       }
     );
@@ -650,7 +705,12 @@ namespace TilemapPanel {
           pick_tile_at_position(world_pos);
         }
         else if (active_tool == ToolMode::Eraser) {
-          delete_tile_at_position(world_pos);
+          if (erase_all_layers) {
+            delete_tile_at_position_all_layers(world_pos);
+          }
+          else {
+            delete_tile_at_position(world_pos);
+          }
         }
         else if (active_tool == ToolMode::Select) {
           if (!select_dragging && !move_dragging) {
@@ -1161,6 +1221,14 @@ namespace TilemapPanel {
       ImGui::SameLine();
       if (ImGui::RadioButton("Eraser (D)", &tool_index, static_cast<int>(ToolMode::Eraser))) {
         set_tool_mode(ToolMode::Eraser);
+      }
+      if (current_tool == ToolMode::Eraser) {
+        ImGui::Indent();
+        ImGui::Checkbox("Erase All Layers", &erase_all_layers);
+        if (ImGui::IsItemHovered()) {
+          ImGui::SetTooltip("When enabled, erasing removes tiles from every layer at that grid position");
+        }
+        ImGui::Unindent();
       }
 
       if (ImGui::RadioButton("Select (M)", &tool_index, static_cast<int>(ToolMode::Select))) {
