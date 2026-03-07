@@ -296,10 +296,8 @@ void BasicState::draw()
     { 1.0f, 1.0f, 1.0f, 1.0f }
   );
 
-  static auto move_sound = Engine::Resources::load_sound("sounds/SFX/Player/Player Footstep.wav");
-
   if (Engine::Input::is_pressed(Engine::KeyCode::S)) {
-    Engine::Audio::play_sound(move_sound, 0.5f, false);
+    Engine::AudioSystem::playEvent("event:/SFX/PlayerFootstep");
   }
 }
 

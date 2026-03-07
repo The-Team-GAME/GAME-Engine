@@ -26,8 +26,6 @@
 #include "WindowManager.h"
 #include "Perf.h"
 #include "InputManager.h"
-#include "Audio/AudioPlayer.h"
-#include "Audio/AudioPlayerInternal.h"
 #include "Audio/AudioSystem.h"
 #include "Lua/LuaManager.h"
 #include "Resources.h"
@@ -103,11 +101,6 @@ namespace Engine
     // NOTE: Prefab/asset loading is deferred until after GameLogic.dll is loaded
     // (see EntryPoint.cpp) so that GameLogic components are registered first.
 
-    // Initialize audio manager
-    if (!Engine::Audio::init()) {
-      throw std::runtime_error("Failed to initialize audio manager");
-    }
-
     // Initialize FMOD Studio system
     if (!Engine::AudioSystem::init()) {
       throw std::runtime_error("Failed to initialize FMOD Studio audio system");
@@ -133,9 +126,9 @@ namespace Engine
     // Apply VSync setting
     WindowManager::set_vsync(game_settings.vsync);
 
-    // Apply audio volumes
-    Engine::Audio::set_bgm_volume(game_settings.bgm_volume);
-    Engine::Audio::set_sfx_volume(game_settings.sfx_volume);
+    // Apply audio volumes via FMOD Studio buses
+    Engine::AudioSystem::setBGMVolume(game_settings.bgm_volume);
+    Engine::AudioSystem::setSFXVolume(game_settings.sfx_volume);
 
     // Initialize Lua manager
     if (!Engine::LuaManager::init()) {
@@ -264,7 +257,6 @@ namespace Engine
       // Update window title with FPS
       WindowManager::update_title();
 
-      Engine::Audio::update();
       Engine::AudioSystem::update();  // Update FMOD Studio system
       ImGuiManager::begin();
 
@@ -525,8 +517,7 @@ namespace Engine
 #ifndef GAME_BUILD
     ViewportPanel::exit();
 #endif
-    Engine::Audio::exit();
-    Engine::AudioSystem::shutdown();  // Shutdown FMOD Studio system
+    Engine::AudioSystem::shutdown();
     Engine::Resources::exit();
     Engine::Graphics::exit_post_processing();
     Engine::Graphics::exit();

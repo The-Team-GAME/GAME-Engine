@@ -40544,7 +40544,7 @@
                         "data": {
                             "local_offset": {
                                 "x": -822.16162109375,
-                                "y": -579.8350219726563
+                                "y": -579.8350219726562
                             },
                             "offset_initialized": true,
                             "parent_id": 3723,
@@ -43995,7 +43995,7 @@
                     {
                         "data": {
                             "position": {
-                                "x": 205.00991821289063,
+                                "x": 205.00991821289062,
                                 "y": 182.99024963378906
                             },
                             "rotation": 0.0,
@@ -95628,12 +95628,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -95669,10 +95663,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -95826,10 +95820,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -95993,10 +95987,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -96175,10 +96169,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -96320,10 +96314,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -96457,10 +96451,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -96941,12 +96935,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -96982,10 +96970,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -97139,10 +97127,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -97306,10 +97294,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -97488,10 +97476,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -97633,10 +97621,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -97770,10 +97758,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -98254,12 +98242,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -98295,10 +98277,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -98452,10 +98434,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -98619,10 +98601,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -98801,10 +98783,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -98946,10 +98928,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -99083,10 +99065,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -99576,12 +99558,6 @@
                             }
                         },
                         "type": "Components::Transform2D"
-                    },
-                    {
-                        "data": {
-                            "path": "sounds/SFX/Monkey/Monkey VO/Monkey-2_2_Attack.wav"
-                        },
-                        "type": "Components::Sound"
                     },
                     {
                         "data": {
@@ -101480,7 +101456,7 @@
                             "radius": 1000.0,
                             "resolve_collisions": false,
                             "type": "AABB",
-                            "width": 142.49893188476563
+                            "width": 142.49893188476562
                         },
                         "type": "Components::BoxCollider"
                     },
@@ -101666,12 +101642,6 @@
                             }
                         },
                         "type": "Components::Transform2D"
-                    },
-                    {
-                        "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
                     },
                     {
                         "data": {
@@ -103026,12 +102996,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -103067,10 +103031,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -103224,10 +103188,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -103391,10 +103355,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -103573,10 +103537,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -103718,10 +103682,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -103855,10 +103819,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -104348,12 +104312,6 @@
                             }
                         },
                         "type": "Components::Transform2D"
-                    },
-                    {
-                        "data": {
-                            "path": "sounds/SFX/Monkey/Monkey VO/Monkey-2_2_Attack.wav"
-                        },
-                        "type": "Components::Sound"
                     },
                     {
                         "data": {
@@ -106423,12 +106381,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -106464,10 +106416,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -106621,10 +106573,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -106788,10 +106740,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -106970,10 +106922,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -107115,10 +107067,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -107252,10 +107204,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -107544,7 +107496,7 @@
                                 "half_width": 100.0,
                                 "pos": {
                                     "x": 7308.4716796875,
-                                    "y": 963.2190551757813
+                                    "y": 963.2190551757812
                                 }
                             },
                             "collided": false,
@@ -107736,7 +107688,7 @@
                         "data": {
                             "position": {
                                 "x": 7308.4716796875,
-                                "y": 963.2190551757813
+                                "y": 963.2190551757812
                             },
                             "rotation": 0.0,
                             "scale": {
@@ -107745,12 +107697,6 @@
                             }
                         },
                         "type": "Components::Transform2D"
-                    },
-                    {
-                        "data": {
-                            "path": "sounds/SFX/Monkey/Monkey VO/Monkey-2_2_Attack.wav"
-                        },
-                        "type": "Components::Sound"
                     },
                     {
                         "data": {
@@ -109832,12 +109778,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey VO/Monkey-2_2_Attack.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "TurretMonkey",
                             "current_state_name": "Turret",
                             "property_anim_playing": false,
@@ -111733,7 +111673,7 @@
                             "radius": 1000.0,
                             "resolve_collisions": false,
                             "type": "AABB",
-                            "width": 142.49893188476563
+                            "width": 142.49893188476562
                         },
                         "type": "Components::BoxCollider"
                     },
@@ -111919,12 +111859,6 @@
                             }
                         },
                         "type": "Components::Transform2D"
-                    },
-                    {
-                        "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
                     },
                     {
                         "data": {
@@ -113288,7 +113222,7 @@
                         "data": {
                             "position": {
                                 "x": 13473.248046875,
-                                "y": 579.5847778320313
+                                "y": 579.5847778320312
                             },
                             "rotation": 0.0,
                             "scale": {
@@ -113297,12 +113231,6 @@
                             }
                         },
                         "type": "Components::Transform2D"
-                    },
-                    {
-                        "data": {
-                            "path": ""
-                        },
-                        "type": "Components::Sound"
                     },
                     {
                         "data": {
@@ -113344,7 +113272,7 @@
                                                 "totalDuration": 1.5
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -113528,7 +113456,7 @@
                                                 "totalDuration": 1.1029999256134033
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -114048,7 +113976,7 @@
                                                 "totalDuration": 1.5
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -114257,7 +114185,7 @@
                                                 "totalDuration": 1.0000001192092896
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": 22.63067626953125,
                                                     "y": 48.24726104736328
@@ -114756,7 +114684,7 @@
                                                 "totalDuration": 0.0
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -115255,7 +115183,7 @@
                                                 "totalDuration": 0.0
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -115345,7 +115273,7 @@
                                                 "totalDuration": 1.3000001907348633
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -116130,12 +116058,6 @@
                     },
                     {
                         "data": {
-                            "path": ""
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "GamerMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -116174,7 +116096,7 @@
                                                 "totalDuration": 1.5
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -116358,7 +116280,7 @@
                                                 "totalDuration": 1.1029999256134033
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -116878,7 +116800,7 @@
                                                 "totalDuration": 1.5
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -117087,7 +117009,7 @@
                                                 "totalDuration": 1.0000001192092896
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": 22.63067626953125,
                                                     "y": 48.24726104736328
@@ -117586,7 +117508,7 @@
                                                 "totalDuration": 0.0
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -118085,7 +118007,7 @@
                                                 "totalDuration": 0.0
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -118175,7 +118097,7 @@
                                                 "totalDuration": 1.3000001907348633
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -118939,12 +118861,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -118980,10 +118896,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -119137,10 +119053,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -119304,10 +119220,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -119486,10 +119402,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -119631,10 +119547,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -119768,10 +119684,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -120252,12 +120168,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -120293,10 +120203,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -120450,10 +120360,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -120617,10 +120527,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -120799,10 +120709,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -120944,10 +120854,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -121081,10 +120991,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -121394,7 +121304,7 @@
                             "radius": 1000.0,
                             "resolve_collisions": false,
                             "type": "AABB",
-                            "width": 142.49893188476563
+                            "width": 142.49893188476562
                         },
                         "type": "Components::BoxCollider"
                     },
@@ -128997,7 +128907,7 @@
                             "radius": 1000.0,
                             "resolve_collisions": false,
                             "type": "AABB",
-                            "width": 142.49893188476563
+                            "width": 142.49893188476562
                         },
                         "type": "Components::BoxCollider"
                     },
@@ -130537,12 +130447,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -130578,10 +130482,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -130735,10 +130639,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -130902,10 +130806,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -131084,10 +130988,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -131229,10 +131133,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -131366,10 +131270,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -131850,12 +131754,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -131891,10 +131789,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -132048,10 +131946,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -132215,10 +132113,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -132397,10 +132295,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -132542,10 +132440,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -132679,10 +132577,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -133163,12 +133061,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -133204,10 +133096,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -133361,10 +133253,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -133528,10 +133420,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -133710,10 +133602,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -133855,10 +133747,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -133992,10 +133884,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -134476,12 +134368,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -134517,10 +134403,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -134674,10 +134560,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -134841,10 +134727,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -135023,10 +134909,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -135168,10 +135054,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -135305,10 +135191,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -135789,12 +135675,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -135830,10 +135710,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -135987,10 +135867,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -136154,10 +136034,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -136336,10 +136216,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -136481,10 +136361,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -136618,10 +136498,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -137102,12 +136982,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -137143,10 +137017,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -137300,10 +137174,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -137467,10 +137341,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -137649,10 +137523,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -137794,10 +137668,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -137931,10 +137805,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -138415,12 +138289,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -138456,10 +138324,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -138613,10 +138481,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -138780,10 +138648,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -138962,10 +138830,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -139107,10 +138975,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -139244,10 +139112,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -139557,7 +139425,7 @@
                             "radius": 1000.0,
                             "resolve_collisions": false,
                             "type": "AABB",
-                            "width": 142.49893188476563
+                            "width": 142.49893188476562
                         },
                         "type": "Components::BoxCollider"
                     },
@@ -141118,12 +140986,6 @@
                     },
                     {
                         "data": {
-                            "path": ""
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "GamerMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -141162,7 +141024,7 @@
                                                 "totalDuration": 1.5
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -141346,7 +141208,7 @@
                                                 "totalDuration": 1.1029999256134033
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -141866,7 +141728,7 @@
                                                 "totalDuration": 1.5
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -142075,7 +141937,7 @@
                                                 "totalDuration": 1.0000001192092896
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": 22.63067626953125,
                                                     "y": 48.24726104736328
@@ -142574,7 +142436,7 @@
                                                 "totalDuration": 0.0
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -143073,7 +142935,7 @@
                                                 "totalDuration": 0.0
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -143163,7 +143025,7 @@
                                                 "totalDuration": 1.3000001907348633
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -143756,7 +143618,7 @@
                             "radius": 1000.0,
                             "resolve_collisions": false,
                             "type": "AABB",
-                            "width": 142.49893188476563
+                            "width": 142.49893188476562
                         },
                         "type": "Components::BoxCollider"
                     },
@@ -145296,12 +145158,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -145337,10 +145193,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -145494,10 +145350,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -145661,10 +145517,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -145843,10 +145699,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -145988,10 +145844,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -146125,10 +145981,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -146609,12 +146465,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -146650,10 +146500,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -146807,10 +146657,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -146974,10 +146824,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -147156,10 +147006,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -147301,10 +147151,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -147438,10 +147288,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -150021,12 +149871,6 @@
                     },
                     {
                         "data": {
-                            "path": ""
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "GamerMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -150065,7 +149909,7 @@
                                                 "totalDuration": 1.5
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -150249,7 +150093,7 @@
                                                 "totalDuration": 1.1029999256134033
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -150769,7 +150613,7 @@
                                                 "totalDuration": 1.5
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -150978,7 +150822,7 @@
                                                 "totalDuration": 1.0000001192092896
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": 22.63067626953125,
                                                     "y": 48.24726104736328
@@ -151477,7 +151321,7 @@
                                                 "totalDuration": 0.0
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -151976,7 +151820,7 @@
                                                 "totalDuration": 0.0
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -152066,7 +151910,7 @@
                                                 "totalDuration": 1.3000001907348633
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -152830,12 +152674,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -152871,10 +152709,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -153028,10 +152866,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -153195,10 +153033,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -153377,10 +153215,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -153522,10 +153360,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -153659,10 +153497,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -154143,12 +153981,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -154184,10 +154016,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -154341,10 +154173,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -154508,10 +154340,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -154690,10 +154522,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -154835,10 +154667,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -154972,10 +154804,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -155456,12 +155288,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -155497,10 +155323,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -155654,10 +155480,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -155821,10 +155647,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -156003,10 +155829,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -156148,10 +155974,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -156285,10 +156111,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -156790,12 +156616,6 @@
                     },
                     {
                         "data": {
-                            "path": ""
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "GamerMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -156834,7 +156654,7 @@
                                                 "totalDuration": 1.5
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -157018,7 +156838,7 @@
                                                 "totalDuration": 1.1029999256134033
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -157538,7 +157358,7 @@
                                                 "totalDuration": 1.5
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -157747,7 +157567,7 @@
                                                 "totalDuration": 1.0000001192092896
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": 22.63067626953125,
                                                     "y": 48.24726104736328
@@ -158246,7 +158066,7 @@
                                                 "totalDuration": 0.0
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -158745,7 +158565,7 @@
                                                 "totalDuration": 0.0
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -158835,7 +158655,7 @@
                                                 "totalDuration": 1.3000001907348633
                                             },
                                             "collider_data": {
-                                                "height": 155.70388793945313,
+                                                "height": 155.70388793945312,
                                                 "offset": {
                                                     "x": -1.8863530158996582,
                                                     "y": 48.24726104736328
@@ -159599,12 +159419,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -159640,10 +159454,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -159797,10 +159611,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -159964,10 +159778,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -160146,10 +159960,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -160291,10 +160105,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -160428,10 +160242,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -160912,12 +160726,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -160953,10 +160761,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -161110,10 +160918,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -161277,10 +161085,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -161459,10 +161267,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -161604,10 +161412,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -161741,10 +161549,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -162212,7 +162020,7 @@
                     {
                         "data": {
                             "position": {
-                                "x": 800.5569458007813,
+                                "x": 800.5569458007812,
                                 "y": 706.1807861328125
                             },
                             "rotation": 0.0,
@@ -162222,12 +162030,6 @@
                             }
                         },
                         "type": "Components::Transform2D"
-                    },
-                    {
-                        "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
                     },
                     {
                         "data": {
@@ -162266,10 +162068,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -162423,10 +162225,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -162590,10 +162392,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -162772,10 +162574,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -162917,10 +162719,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -163054,10 +162856,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -163265,7 +163067,7 @@
                     {
                         "data": {
                             "local_offset": {
-                                "x": 800.5569458007813,
+                                "x": 800.5569458007812,
                                 "y": 705.9030151367188
                             },
                             "offset_initialized": true,
@@ -163538,12 +163340,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -163579,10 +163375,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -163736,10 +163532,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -163903,10 +163699,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -164085,10 +163881,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -164230,10 +164026,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -164367,10 +164163,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -166929,12 +166725,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -166970,10 +166760,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -167127,10 +166917,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -167294,10 +167084,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -167476,10 +167266,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -167621,10 +167411,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -167758,10 +167548,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -168071,7 +167861,7 @@
                             "radius": 1000.0,
                             "resolve_collisions": false,
                             "type": "AABB",
-                            "width": 142.49893188476563
+                            "width": 142.49893188476562
                         },
                         "type": "Components::BoxCollider"
                     },
@@ -169611,12 +169401,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -169652,10 +169436,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -169809,10 +169593,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -169976,10 +169760,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -170158,10 +169942,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -170303,10 +170087,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -170440,10 +170224,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -170753,7 +170537,7 @@
                             "radius": 1000.0,
                             "resolve_collisions": false,
                             "type": "AABB",
-                            "width": 142.49893188476563
+                            "width": 142.49893188476562
                         },
                         "type": "Components::BoxCollider"
                     },
@@ -174200,7 +173984,7 @@
                             "radius": 1000.0,
                             "resolve_collisions": false,
                             "type": "AABB",
-                            "width": 142.49893188476563
+                            "width": 142.49893188476562
                         },
                         "type": "Components::BoxCollider"
                     },
@@ -177818,12 +177602,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -177859,10 +177637,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -178016,10 +177794,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -178183,10 +177961,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -178365,10 +178143,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -178510,10 +178288,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -178647,10 +178425,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -178960,7 +178738,7 @@
                             "radius": 1000.0,
                             "resolve_collisions": false,
                             "type": "AABB",
-                            "width": 142.49893188476563
+                            "width": 142.49893188476562
                         },
                         "type": "Components::BoxCollider"
                     },
@@ -180500,12 +180278,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -180541,10 +180313,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -180698,10 +180470,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -180865,10 +180637,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -181047,10 +180819,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -181192,10 +180964,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -181329,10 +181101,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -181813,12 +181585,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "LazyMonkey",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -181854,10 +181620,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -182011,10 +181777,10 @@
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -182178,10 +181944,10 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -182360,10 +182126,10 @@
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -182505,10 +182271,10 @@
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -182642,10 +182408,10 @@
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
-                                                "height": 77.00601196289063,
+                                                "height": 77.00601196289062,
                                                 "offset": {
                                                     "x": 4.979158401489258,
-                                                    "y": 24.698989868164063
+                                                    "y": 24.698989868164062
                                                 },
                                                 "vertices": [],
                                                 "width": 65.30345153808594
@@ -185016,7 +184782,7 @@
                                 }
                             },
                             "collided": false,
-                            "height": 103.79214477539063,
+                            "height": 103.79214477539062,
                             "kinetic_friction": 0.800000011920929,
                             "offset": {
                                 "x": -0.3579139709472656,
@@ -185603,12 +185369,6 @@
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Player/Player Footstep.wav"
-                        },
-                        "type": "Components::Sound"
-                    },
-                    {
-                        "data": {
                             "blueprint_id": "Player",
                             "current_state_name": "Idle",
                             "property_anim_playing": false,
@@ -185656,7 +185416,7 @@
                                                 "totalDuration": 0.7199999094009399
                                             },
                                             "collider_data": {
-                                                "height": 103.79214477539063,
+                                                "height": 103.79214477539062,
                                                 "offset": {
                                                     "x": -0.3579139709472656,
                                                     "y": 12.103927612304688
@@ -187671,7 +187431,7 @@
                                             "collider_data": {
                                                 "height": 100.340576171875,
                                                 "offset": {
-                                                    "x": -2.5599136352539063,
+                                                    "x": -2.5599136352539062,
                                                     "y": 13.8297119140625
                                                 },
                                                 "vertices": [],
@@ -188039,7 +187799,7 @@
                                                 "totalDuration": 2.3999998569488525
                                             },
                                             "collider_data": {
-                                                "height": 103.79214477539063,
+                                                "height": 103.79214477539062,
                                                 "offset": {
                                                     "x": -0.3579139709472656,
                                                     "y": 12.103927612304688
@@ -189681,7 +189441,7 @@
                                                 "height": 99.98263549804688,
                                                 "offset": {
                                                     "x": 7.578609466552734,
-                                                    "y": 14.008682250976563
+                                                    "y": 14.008682250976562
                                                 },
                                                 "vertices": [],
                                                 "width": 39.03034210205078
@@ -189970,7 +189730,7 @@
                             },
                             "damage_immune": false,
                             "dash": {
-                                "cd_timer": -0.000009987503290176392,
+                                "cd_timer": -9.987503290176392e-06,
                                 "cooldown": 5.0,
                                 "duration": 0.20000000298023224,
                                 "impulse": 0.0,
@@ -189980,7 +189740,7 @@
                             },
                             "jump_force": -600000.0,
                             "smash": {
-                                "cd_timer": -0.00003669038414955139,
+                                "cd_timer": -3.669038414955139e-05,
                                 "cooldown": 7.0,
                                 "duration": 0.0,
                                 "impulse": 0.0,
@@ -190009,7 +189769,7 @@
                                 "timer": 1.0
                             },
                             "uppercut": {
-                                "cd_timer": -0.000009987503290176392,
+                                "cd_timer": -9.987503290176392e-06,
                                 "cooldown": 5.0,
                                 "duration": 0.4000000059604645,
                                 "impulse": 0.0,
@@ -210158,7 +209918,7 @@
                     {
                         "data": {
                             "position": {
-                                "x": 189.23049926757813,
+                                "x": 189.23049926757812,
                                 "y": 119.80421447753906
                             },
                             "rotation": 0.0,

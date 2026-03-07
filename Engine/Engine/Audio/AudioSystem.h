@@ -85,8 +85,15 @@ namespace Engine {
     // Global controls
     // ------------------------------------------------------------
     ENGINE_API void pauseAll(bool pause);
+    ENGINE_API void stopAll(bool immediate = false);
     ENGINE_API void setMasterVolume(float volume);
     ENGINE_API float getMasterVolume();
+
+    // Bus-based volume controls (maps to FMOD Studio buses)
+    ENGINE_API void setBGMVolume(float volume);
+    ENGINE_API void setSFXVolume(float volume);
+    ENGINE_API float getBGMVolume();
+    ENGINE_API float getSFXVolume();
 
     // ------------------------------------------------------------
     // Utility

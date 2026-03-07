@@ -31,8 +31,6 @@
 #include <queue>
 #include "SpatialComponents.h"
 #include "../Resources.h"
-#include "../Audio/AudioPlayer.h"
-#include "../Audio/AudioPlayerInternal.h"
 #include "AudioComponents.h"
 #include "AnimatorComponents.h"
 #include "StateMachineBlueprintRegistry.h"
@@ -40,15 +38,11 @@
 namespace Components
 {
   // ============================================================================
-  // State Audio Definition
+  // State Audio Definition (FMOD Studio)
   // ============================================================================
 
-  struct StateAudio {
-    Components::Sound sound;
-    f32 volume = 1.0f;
-    bool loop = false;
-    bool stop_on_exit = true;
-  };
+  // StateAudio is now an alias for FMODStateAudio
+  using StateAudio = FMODStateAudio;
 
   // ============================================================================
   // State Animation Definition
@@ -93,10 +87,8 @@ namespace Components
 
     // Optional animation data for this state
     std::optional<StateAnimation> animation;
-    // Optional audio data for this state (OLD SYSTEM - kept for backwards compatibility)
-    std::optional<StateAudio> audio;
-    // Optional FMOD audio data for this state (NEW SYSTEM - preferred)
-    std::optional<FMODStateAudio> fmod_audio;
+    // Optional audio data for this state
+    std::optional<FMODStateAudio> audio;
     // Optional property animation clip for this state (animates component fields over time)
     std::optional<PropertyAnimationClip> property_animation;
 
@@ -106,12 +98,10 @@ namespace Components
     // Callbacks are left empty — sync_with_blueprint() fills them in from the blueprint.
     State(const std::string& state_name,
       std::optional<StateAnimation> state_animation = std::nullopt,
-      std::optional<StateAudio> state_audio = std::nullopt,
-      std::optional<FMODStateAudio> fmod_state_audio = std::nullopt)
+      std::optional<FMODStateAudio> state_audio = std::nullopt)
       : name(state_name)
       , animation(state_animation)
       , audio(state_audio)
-      , fmod_audio(fmod_state_audio)
     {
     }
 
@@ -159,8 +149,7 @@ namespace Components
     bool is_first_frame_ = false;     // Track if we just entered current state
     bool has_started_ = false;        // Track if the state machine has started running
     std::vector<std::string> state_history_; // Track previous states
-    Engine::Audio::ChannelHandle current_audio_channel_ = Engine::Audio::INVALID_CHANNEL; // Track currently playing audio (OLD SYSTEM)
-    std::string current_fmod_instance_; // Track current FMOD instance name (NEW SYSTEM)
+    std::string current_fmod_instance_; // Track current FMOD instance name
 
     // Property animation playback state (non-serialized)
     float property_anim_elapsed_ = 0.0f;
@@ -443,24 +432,11 @@ namespace Components
           state_history_.erase(state_history_.begin());
         }
 
-        // Handle OLD audio system stop
-        if (current_audio_channel_ != Engine::Audio::INVALID_CHANNEL) {
-          bool should_stop = true;
-          if (old_state.audio.has_value()) {
-            should_stop = old_state.audio->stop_on_exit;
-          }
-
-          if (should_stop) {
-            Engine::Audio::stop_channel(current_audio_channel_);
-          }
-          current_audio_channel_ = Engine::Audio::INVALID_CHANNEL;
-        }
-
-        // Handle NEW FMOD audio system stop
+        // Handle FMOD audio system stop
         if (!current_fmod_instance_.empty()) {
           bool should_stop = true;
-          if (old_state.fmod_audio.has_value()) {
-            should_stop = old_state.fmod_audio->stop_on_state_exit;
+          if (old_state.audio.has_value()) {
+            should_stop = old_state.audio->stop_on_state_exit;
           }
 
           if (should_stop) {
@@ -486,12 +462,9 @@ namespace Components
         apply_state_animation(new_state_obj.animation.value());
       }
 
-      // Priority: Use FMOD audio if available, otherwise fall back to old audio system
-      if (new_state_obj.fmod_audio.has_value()) {
-        current_fmod_instance_ = apply_fmod_state_audio(new_state_obj.fmod_audio.value());
-      }
-      else if (new_state_obj.audio.has_value()) {
-        current_audio_channel_ = apply_state_audio(new_state_obj.audio.value());
+      // Apply FMOD audio if available
+      if (new_state_obj.audio.has_value()) {
+        current_fmod_instance_ = apply_fmod_state_audio(new_state_obj.audio.value());
       }
     }
 
@@ -543,27 +516,6 @@ namespace Components
           box->aabb.half_height = box->height / 2.0f;
         }
       }
-    }
-
-    // Apply the audio data (OLD SYSTEM)
-    Engine::Audio::ChannelHandle apply_state_audio(const StateAudio& audio) {
-      if (!owner_entity_) return Engine::Audio::INVALID_CHANNEL;
-
-      // Get or add Sound component
-      Sound* sound_comp = owner_entity_->get_component<Sound>();
-      if (!sound_comp) {
-        Log::warning("Sound component not found for entity {}", owner_entity_->get_id());
-        owner_entity_->add_component<Sound>();
-
-        sound_comp = owner_entity_->get_component<Sound>();
-
-      }
-
-      // Update Sound component data
-      sound_comp->sound_handle = audio.sound.sound_handle;
-
-      // Play the sound via the component
-      return sound_comp->play(audio.volume, audio.loop);
     }
 
   public:
@@ -703,7 +655,6 @@ namespace Components
 } // namespace Components
 
 REFLECT_FIELDS(Components::ColliderData, width, height, offset, vertices)
-REFLECT_FIELDS(Components::State, name, on_enter_callback, on_update_callback, on_exit_callback, animation, audio, fmod_audio, property_animation)
+REFLECT_FIELDS(Components::State, name, on_enter_callback, on_update_callback, on_exit_callback, animation, audio, property_animation)
 REFLECT_FIELDS(Components::StateAnimation, texture, texture_atlas, animation, scale, collider_data)
-REFLECT_FIELDS(Components::StateAudio, sound, volume, loop, stop_on_exit)
 REGISTER_COMPONENT(Components::StateMachine, states, current_state_name, blueprint_id, property_anim_playing)
