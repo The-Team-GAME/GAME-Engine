@@ -40,7 +40,11 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
+<<<<<<< Updated upstream
                                         "startTime": 1065.4827880859375,
+=======
+                                        "startTime": 1369.677978515625,
+>>>>>>> Stashed changes
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -731,7 +735,11 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
+<<<<<<< Updated upstream
                                         "startTime": 1065.4827880859375,
+=======
+                                        "startTime": 1369.677978515625,
+>>>>>>> Stashed changes
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -1422,7 +1430,11 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
+<<<<<<< Updated upstream
                                         "startTime": 1065.4827880859375,
+=======
+                                        "startTime": 1369.677978515625,
+>>>>>>> Stashed changes
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -2113,7 +2125,11 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
+<<<<<<< Updated upstream
                                         "startTime": 1065.4827880859375,
+=======
+                                        "startTime": 1369.677978515625,
+>>>>>>> Stashed changes
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -2804,7 +2820,11 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
+<<<<<<< Updated upstream
                                         "startTime": 1065.4827880859375,
+=======
+                                        "startTime": 1369.677978515625,
+>>>>>>> Stashed changes
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -3495,7 +3515,11 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
+<<<<<<< Updated upstream
                                         "startTime": 1065.4827880859375,
+=======
+                                        "startTime": 1369.677978515625,
+>>>>>>> Stashed changes
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -4186,7 +4210,11 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
+<<<<<<< Updated upstream
                                         "startTime": 1065.4827880859375,
+=======
+                                        "startTime": 1369.677978515625,
+>>>>>>> Stashed changes
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -4877,7 +4905,11 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
+<<<<<<< Updated upstream
                                         "startTime": 1065.4827880859375,
+=======
+                                        "startTime": 1369.677978515625,
+>>>>>>> Stashed changes
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -5568,7 +5600,11 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
+<<<<<<< Updated upstream
                                         "startTime": 1065.4827880859375,
+=======
+                                        "startTime": 1369.677978515625,
+>>>>>>> Stashed changes
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -6337,7 +6373,11 @@
                                             0.02500000037252903
                                         ],
                                         "is_looping": false,
+<<<<<<< Updated upstream
                                         "startTime": 1065.4827880859375,
+=======
+                                        "startTime": 1369.677978515625,
+>>>>>>> Stashed changes
                                         "totalDuration": 0.6749998927116394
                                     },
                                     "collider_data": null,
@@ -7028,7 +7068,11 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": true,
+<<<<<<< Updated upstream
                                         "startTime": 1065.4827880859375,
+=======
+                                        "startTime": 1369.677978515625,
+>>>>>>> Stashed changes
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -8376,7 +8420,11 @@
                         0.07999999821186066
                     ],
                     "is_looping": true,
+<<<<<<< Updated upstream
                     "startTime": 1065.4827880859375,
+=======
+                    "startTime": 1369.677978515625,
+>>>>>>> Stashed changes
                     "totalDuration": 0.07999999821186066
                 },
                 "type": "Components::Animation"
@@ -8402,7 +8450,11 @@
                         "y": 187.71054077148438
                     },
                     "offset_initialized": true,
+<<<<<<< Updated upstream
                     "parent_id": 5927,
+=======
+                    "parent_id": 7115,
+>>>>>>> Stashed changes
                     "prev_parent_pos": {
                         "x": 0.0,
                         "y": 0.0
