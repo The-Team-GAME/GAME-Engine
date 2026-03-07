@@ -45,19 +45,6 @@ namespace PlayerStateCallbacks
       return;
     }
 
-    // Death Condition
-    // if (health && health->is_dead())
-    // {
-    //   state_machine->change_state("Death");
-    //   return;
-    // }
-
-    // Checking for falling
-    if (!default_state && !player_rigid->on_ground)
-    {
-      state_machine->change_state("Falling");
-    }
-
     // Handling cooldowns
     if (!player_comp->dash.ready())
     {
@@ -136,9 +123,8 @@ namespace PlayerStateCallbacks
     }
 #pragma endregion
     // If no valid inputs
-    if (!default_state && state_machine->current_state_name != "Idle")
+    if (!default_state)
     {
-      std::cout << "current state is: " << state_machine->current_state_name << std::endl;
       state_machine->change_state("Idle");
     }
   }
@@ -192,23 +178,29 @@ namespace PlayerStateCallbacks
   inline void walking_on_enter([[maybe_unused]] Engine::ECS::Entity entity)
   {
     Log::info("Player: Entered Walking state");
-
+    default_state = true;
   }
 
   inline void walking_on_update(Engine::ECS::Entity entity)
   {
     // we set an exit criteria for the walking state instead of reseting it every frame as the animation sequence needs the state to be constant for this to work
+    Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
+    assert(sm);
     if (!Input::is_held(KeyCode::A) && !Input::is_held(KeyCode::D))
     {
-      Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
-      state_machine->change_state("Idle");
+      sm->change_state("Idle");
+    }
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    if (!rigid->on_ground)
+    {
+      sm->change_state("Falling");
     }
     take_input(entity);
   }
 
   inline void walking_on_exit([[maybe_unused]] Engine::ECS::Entity entity)
   {
-    // Empty by design
+    default_state = false;
   }
 #pragma endregion
 

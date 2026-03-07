@@ -281,9 +281,9 @@ namespace Components
     ColliderType type = ColliderType::AABB;
     // AABB data (for fast axis-aligned checks)
     AABB aabb;
-    f32 width;
-    f32 height;
-    f32 radius;
+    f32 width = 0.f;
+    f32 height = 0.f;
+    f32 radius = 0.f;
     // Polygon data (for rotated/custom shapes)
     Polygon polygon;
 
@@ -292,7 +292,7 @@ namespace Components
 
     // For friction, 1 is no friction and 0 is 100% energy loss
     // Used when an object is at rest to make it harder to start moving (used when objects are on a slope)
-    f32 static_friction;
+    f32 static_friction = 1.f;
     // Used when an object is moving, acts against the direction the object is moving
     f32 kinetic_friction = 1.f;
 
