@@ -35,6 +35,15 @@
             },
             {
                 "data": {
+                    "value": {
+                        "x": -1.0,
+                        "y": 1.0
+                    }
+                },
+                "type": "Components::Flip"
+            },
+            {
+                "data": {
                     "position": {
                         "x": 334.1012268066406,
                         "y": 1153.903076171875
@@ -46,15 +55,6 @@
                     }
                 },
                 "type": "Components::Transform2D"
-            },
-            {
-                "data": {
-                    "value": {
-                        "x": -1.0,
-                        "y": 1.0
-                    }
-                },
-                "type": "Components::Flip"
             },
             {
                 "data": {
@@ -193,7 +193,7 @@
                         0.15000000596046448
                     ],
                     "is_looping": true,
-                    "startTime": 201.99049377441406,
+                    "startTime": 367.76263427734375,
                     "totalDuration": 0.75
                 },
                 "type": "Components::Animation"
@@ -208,7 +208,165 @@
                 "data": {
                     "blueprint_id": "LazyMonkey",
                     "current_state_name": "Idle",
+                    "property_anim_playing": false,
                     "states": [
+                        {
+                            "first": "Idle",
+                            "second": {
+                                "animation": {
+                                    "animation": {
+                                        "atlas_indices": [
+                                            0,
+                                            1,
+                                            2,
+                                            3,
+                                            4
+                                        ],
+                                        "before_times": [
+                                            0.0,
+                                            0.15000000596046448,
+                                            0.30000001192092896,
+                                            0.45000001788139343,
+                                            0.6000000238418579
+                                        ],
+                                        "durations": [
+                                            0.15000000596046448,
+                                            0.15000000596046448,
+                                            0.15000000596046448,
+                                            0.15000000596046448,
+                                            0.15000000596046448
+                                        ],
+                                        "is_looping": true,
+                                        "startTime": 451.1782531738281,
+                                        "totalDuration": 0.75
+                                    },
+                                    "collider_data": {
+                                        "height": 77.00601196289063,
+                                        "offset": {
+                                            "x": 4.979158401489258,
+                                            "y": 24.698989868164063
+                                        },
+                                        "vertices": [],
+                                        "width": 65.30345153808594
+                                    },
+                                    "scale": {
+                                        "x": 128.0,
+                                        "y": 128.0
+                                    },
+                                    "texture": {
+                                        "path": "images/LazyMonkeySpriteSheets/LazyMonkey_Idle_Spritesheet.png"
+                                    },
+                                    "texture_atlas": {
+                                        "drawIndex": -1,
+                                        "tex_coords_list": [
+                                            [
+                                                {
+                                                    "x": 0.0,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.20000000298023224,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.20000000298023224,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.0,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.20000000298023224,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.4000000059604645,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.4000000059604645,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.20000000298023224,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.4000000059604645,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.6000000238418579,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.6000000238418579,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.4000000059604645,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.6000000238418579,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.800000011920929,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.800000011920929,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.6000000238418579,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.800000011920929,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 1.0,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 1.0,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.800000011920929,
+                                                    "y": 0.0
+                                                }
+                                            ]
+                                        ]
+                                    }
+                                },
+                                "audio": null,
+                                "fmod_audio": null,
+                                "name": "Idle",
+                                "on_enter_callback": {
+                                    "name": "LazyMonkeyStateCallbacks::idle_on_enter"
+                                },
+                                "on_exit_callback": {
+                                    "name": ""
+                                },
+                                "on_update_callback": {
+                                    "name": "LazyMonkeyStateCallbacks::idle_on_update"
+                                },
+                                "property_animation": null
+                            }
+                        },
                         {
                             "first": "Attacking",
                             "second": {
@@ -236,7 +394,7 @@
                                             0.5
                                         ],
                                         "is_looping": true,
-                                        "startTime": 201.99049377441406,
+                                        "startTime": 451.1782531738281,
                                         "totalDuration": 1.0
                                     },
                                     "collider_data": {
@@ -369,163 +527,8 @@
                                 },
                                 "on_update_callback": {
                                     "name": "LazyMonkeyStateCallbacks::attacking_on_update"
-                                }
-                            }
-                        },
-                        {
-                            "first": "Idle",
-                            "second": {
-                                "animation": {
-                                    "animation": {
-                                        "atlas_indices": [
-                                            0,
-                                            1,
-                                            2,
-                                            3,
-                                            4
-                                        ],
-                                        "before_times": [
-                                            0.0,
-                                            0.15000000596046448,
-                                            0.30000001192092896,
-                                            0.45000001788139343,
-                                            0.6000000238418579
-                                        ],
-                                        "durations": [
-                                            0.15000000596046448,
-                                            0.15000000596046448,
-                                            0.15000000596046448,
-                                            0.15000000596046448,
-                                            0.15000000596046448
-                                        ],
-                                        "is_looping": true,
-                                        "startTime": 201.99049377441406,
-                                        "totalDuration": 0.75
-                                    },
-                                    "collider_data": {
-                                        "height": 77.00601196289063,
-                                        "offset": {
-                                            "x": 4.979158401489258,
-                                            "y": 24.698989868164063
-                                        },
-                                        "vertices": [],
-                                        "width": 65.30345153808594
-                                    },
-                                    "scale": {
-                                        "x": 128.0,
-                                        "y": 128.0
-                                    },
-                                    "texture": {
-                                        "path": "images/LazyMonkeySpriteSheets/LazyMonkey_Idle_Spritesheet.png"
-                                    },
-                                    "texture_atlas": {
-                                        "drawIndex": -1,
-                                        "tex_coords_list": [
-                                            [
-                                                {
-                                                    "x": 0.0,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.20000000298023224,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.20000000298023224,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.0,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.20000000298023224,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.4000000059604645,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.4000000059604645,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.20000000298023224,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.4000000059604645,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.6000000238418579,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.6000000238418579,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.4000000059604645,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.6000000238418579,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.800000011920929,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.800000011920929,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.6000000238418579,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.800000011920929,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 1.0,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 1.0,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.800000011920929,
-                                                    "y": 0.0
-                                                }
-                                            ]
-                                        ]
-                                    }
                                 },
-                                "audio": null,
-                                "fmod_audio": null,
-                                "name": "Idle",
-                                "on_enter_callback": {
-                                    "name": "LazyMonkeyStateCallbacks::idle_on_enter"
-                                },
-                                "on_exit_callback": {
-                                    "name": ""
-                                },
-                                "on_update_callback": {
-                                    "name": "LazyMonkeyStateCallbacks::idle_on_update"
-                                }
+                                "property_animation": null
                             }
                         },
                         {
@@ -558,7 +561,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 201.99049377441406,
+                                        "startTime": 451.1782531738281,
                                         "totalDuration": 0.6000000238418579
                                     },
                                     "collider_data": {
@@ -709,278 +712,8 @@
                                 },
                                 "on_update_callback": {
                                     "name": "LazyMonkeyStateCallbacks::chasing_on_update"
-                                }
-                            }
-                        },
-                        {
-                            "first": "Hit",
-                            "second": {
-                                "animation": {
-                                    "animation": {
-                                        "atlas_indices": [
-                                            2
-                                        ],
-                                        "before_times": [
-                                            0.0
-                                        ],
-                                        "durations": [
-                                            0.4000000059604645
-                                        ],
-                                        "is_looping": true,
-                                        "startTime": 201.99049377441406,
-                                        "totalDuration": 0.4000000059604645
-                                    },
-                                    "collider_data": {
-                                        "height": 77.00601196289063,
-                                        "offset": {
-                                            "x": 4.979158401489258,
-                                            "y": 24.698989868164063
-                                        },
-                                        "vertices": [],
-                                        "width": 65.30345153808594
-                                    },
-                                    "scale": {
-                                        "x": 128.0,
-                                        "y": 128.0
-                                    },
-                                    "texture": {
-                                        "path": "images/LazyMonkeySpriteSheets/LazyMonkey_Damaged_Spritesheet.png"
-                                    },
-                                    "texture_atlas": {
-                                        "drawIndex": -1,
-                                        "tex_coords_list": [
-                                            [
-                                                {
-                                                    "x": 0.0,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.3333333432674408,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.3333333432674408,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.0,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.3333333432674408,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.6666666865348816,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.6666666865348816,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.3333333432674408,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.6666666865348816,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 1.0,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 1.0,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.6666666865348816,
-                                                    "y": 0.0
-                                                }
-                                            ]
-                                        ]
-                                    }
                                 },
-                                "audio": {
-                                    "loop": false,
-                                    "sound": {
-                                        "path": "sounds/SFX/Monkey/Monkey VO/Monkey-1_8_Hurt.wav"
-                                    },
-                                    "stop_on_exit": false,
-                                    "volume": 0.6000000238418579
-                                },
-                                "fmod_audio": null,
-                                "name": "Hit",
-                                "on_enter_callback": {
-                                    "name": "LazyMonkeyStateCallbacks::hit_on_enter"
-                                },
-                                "on_exit_callback": {
-                                    "name": "LazyMonkeyStateCallbacks::hit_on_exit"
-                                },
-                                "on_update_callback": {
-                                    "name": "LazyMonkeyStateCallbacks::hit_on_update"
-                                }
-                            }
-                        },
-                        {
-                            "first": "Windup",
-                            "second": {
-                                "animation": {
-                                    "animation": {
-                                        "atlas_indices": [
-                                            0,
-                                            1,
-                                            2,
-                                            3,
-                                            4
-                                        ],
-                                        "before_times": [
-                                            0.0,
-                                            0.15000000596046448,
-                                            0.30000001192092896,
-                                            0.45000001788139343,
-                                            0.6000000238418579
-                                        ],
-                                        "durations": [
-                                            0.15000000596046448,
-                                            0.15000000596046448,
-                                            0.15000000596046448,
-                                            0.15000000596046448,
-                                            0.15000000596046448
-                                        ],
-                                        "is_looping": true,
-                                        "startTime": 201.99049377441406,
-                                        "totalDuration": 0.75
-                                    },
-                                    "collider_data": {
-                                        "height": 77.00601196289063,
-                                        "offset": {
-                                            "x": 4.979158401489258,
-                                            "y": 24.698989868164063
-                                        },
-                                        "vertices": [],
-                                        "width": 65.30345153808594
-                                    },
-                                    "scale": {
-                                        "x": 128.0,
-                                        "y": 128.0
-                                    },
-                                    "texture": {
-                                        "path": "images/LazyMonkeySpriteSheets/LazyMonkey_Idle_Spritesheet.png"
-                                    },
-                                    "texture_atlas": {
-                                        "drawIndex": -1,
-                                        "tex_coords_list": [
-                                            [
-                                                {
-                                                    "x": 0.0,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.20000000298023224,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.20000000298023224,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.0,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.20000000298023224,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.4000000059604645,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.4000000059604645,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.20000000298023224,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.4000000059604645,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.6000000238418579,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.6000000238418579,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.4000000059604645,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.6000000238418579,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.800000011920929,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.800000011920929,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.6000000238418579,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.800000011920929,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 1.0,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 1.0,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.800000011920929,
-                                                    "y": 0.0
-                                                }
-                                            ]
-                                        ]
-                                    }
-                                },
-                                "audio": null,
-                                "fmod_audio": null,
-                                "name": "Windup",
-                                "on_enter_callback": {
-                                    "name": "LazyMonkeyStateCallbacks::windup_on_enter"
-                                },
-                                "on_exit_callback": {
-                                    "name": ""
-                                },
-                                "on_update_callback": {
-                                    "name": "LazyMonkeyStateCallbacks::windup_on_update"
-                                }
+                                "property_animation": null
                             }
                         },
                         {
@@ -1019,7 +752,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": false,
-                                        "startTime": 201.99049377441406,
+                                        "startTime": 451.1782531738281,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": {
@@ -1199,7 +932,286 @@
                                 },
                                 "on_update_callback": {
                                     "name": "LazyMonkeyStateCallbacks::death_on_update"
-                                }
+                                },
+                                "property_animation": null
+                            }
+                        },
+                        {
+                            "first": "Windup",
+                            "second": {
+                                "animation": {
+                                    "animation": {
+                                        "atlas_indices": [
+                                            0,
+                                            1,
+                                            2,
+                                            3,
+                                            4
+                                        ],
+                                        "before_times": [
+                                            0.0,
+                                            0.15000000596046448,
+                                            0.30000001192092896,
+                                            0.45000001788139343,
+                                            0.6000000238418579
+                                        ],
+                                        "durations": [
+                                            0.15000000596046448,
+                                            0.15000000596046448,
+                                            0.15000000596046448,
+                                            0.15000000596046448,
+                                            0.15000000596046448
+                                        ],
+                                        "is_looping": true,
+                                        "startTime": 451.1782531738281,
+                                        "totalDuration": 0.75
+                                    },
+                                    "collider_data": {
+                                        "height": 77.00601196289063,
+                                        "offset": {
+                                            "x": 4.979158401489258,
+                                            "y": 24.698989868164063
+                                        },
+                                        "vertices": [],
+                                        "width": 65.30345153808594
+                                    },
+                                    "scale": {
+                                        "x": 128.0,
+                                        "y": 128.0
+                                    },
+                                    "texture": {
+                                        "path": "images/LazyMonkeySpriteSheets/LazyMonkey_Idle_Spritesheet.png"
+                                    },
+                                    "texture_atlas": {
+                                        "drawIndex": -1,
+                                        "tex_coords_list": [
+                                            [
+                                                {
+                                                    "x": 0.0,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.20000000298023224,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.20000000298023224,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.0,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.20000000298023224,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.4000000059604645,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.4000000059604645,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.20000000298023224,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.4000000059604645,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.6000000238418579,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.6000000238418579,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.4000000059604645,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.6000000238418579,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.800000011920929,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.800000011920929,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.6000000238418579,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.800000011920929,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 1.0,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 1.0,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.800000011920929,
+                                                    "y": 0.0
+                                                }
+                                            ]
+                                        ]
+                                    }
+                                },
+                                "audio": null,
+                                "fmod_audio": null,
+                                "name": "Windup",
+                                "on_enter_callback": {
+                                    "name": "LazyMonkeyStateCallbacks::windup_on_enter"
+                                },
+                                "on_exit_callback": {
+                                    "name": ""
+                                },
+                                "on_update_callback": {
+                                    "name": "LazyMonkeyStateCallbacks::windup_on_update"
+                                },
+                                "property_animation": null
+                            }
+                        },
+                        {
+                            "first": "Hit",
+                            "second": {
+                                "animation": {
+                                    "animation": {
+                                        "atlas_indices": [
+                                            2
+                                        ],
+                                        "before_times": [
+                                            0.0
+                                        ],
+                                        "durations": [
+                                            0.4000000059604645
+                                        ],
+                                        "is_looping": true,
+                                        "startTime": 451.1782531738281,
+                                        "totalDuration": 0.4000000059604645
+                                    },
+                                    "collider_data": {
+                                        "height": 77.00601196289063,
+                                        "offset": {
+                                            "x": 4.979158401489258,
+                                            "y": 24.698989868164063
+                                        },
+                                        "vertices": [],
+                                        "width": 65.30345153808594
+                                    },
+                                    "scale": {
+                                        "x": 128.0,
+                                        "y": 128.0
+                                    },
+                                    "texture": {
+                                        "path": "images/LazyMonkeySpriteSheets/LazyMonkey_Damaged_Spritesheet.png"
+                                    },
+                                    "texture_atlas": {
+                                        "drawIndex": -1,
+                                        "tex_coords_list": [
+                                            [
+                                                {
+                                                    "x": 0.0,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.3333333432674408,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.3333333432674408,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.0,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.3333333432674408,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.6666666865348816,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.6666666865348816,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.3333333432674408,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.6666666865348816,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 1.0,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 1.0,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.6666666865348816,
+                                                    "y": 0.0
+                                                }
+                                            ]
+                                        ]
+                                    }
+                                },
+                                "audio": {
+                                    "loop": false,
+                                    "sound": {
+                                        "path": "sounds/SFX/Monkey/Monkey VO/Monkey-1_8_Hurt.wav"
+                                    },
+                                    "stop_on_exit": false,
+                                    "volume": 0.6000000238418579
+                                },
+                                "fmod_audio": {
+                                    "event_path": "event:/SFX/PlayerPunch",
+                                    "loop": false,
+                                    "stop_on_state_exit": true,
+                                    "volume": 1.0
+                                },
+                                "name": "Hit",
+                                "on_enter_callback": {
+                                    "name": "LazyMonkeyStateCallbacks::hit_on_enter"
+                                },
+                                "on_exit_callback": {
+                                    "name": "LazyMonkeyStateCallbacks::hit_on_exit"
+                                },
+                                "on_update_callback": {
+                                    "name": "LazyMonkeyStateCallbacks::hit_on_update"
+                                },
+                                "property_animation": null
                             }
                         }
                     ]
