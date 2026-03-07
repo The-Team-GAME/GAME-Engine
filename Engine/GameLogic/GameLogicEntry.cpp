@@ -163,9 +163,10 @@ static void register_collision_callbacks()
     {
       Log::info("Player took damage!");
 
-      auto* attack = attack_entity.get_component<Components::Attack>();
-      auto* health = player_entity.get_component<Components::Health>();
-      auto* rigid = player_entity.get_component<Components::RigidBody>();
+      Components::Attack* attack = attack_entity.get_component<Components::Attack>();
+      Components::Health* health = player_entity.get_component<Components::Health>();
+      Components::RigidBody* rigid = player_entity.get_component<Components::RigidBody>();
+      Components::Player* player_comp = player_entity.get_component<Components::Player>();
 
       if (!attack) {
         Log::error("Error: Attack component missing from enemy attack hitbox, on entity {}", attack_entity.get_id());
@@ -173,7 +174,7 @@ static void register_collision_callbacks()
       }
 
       if (health && rigid) {
-        if (!attack->should_apply_damage(player_entity)) {
+        if (!attack->should_apply_damage(player_entity) || player_comp->damage_immune) {
           return;
         }
 
@@ -192,12 +193,20 @@ static void register_collision_callbacks()
         Log::info("Player knocked back! Force applied: ({}, {})", attack->knockback.x, attack->knockback.y);
 
         // Trigger death state immediately when HP reaches 0
-        if (health->is_dead()) {
+        if (health->is_dead()) 
+        {
           Log::info("Player is dead!");
-          auto* state_machine = player_entity.get_component<Components::StateMachine>();
-          if (state_machine && state_machine->get_current_state() != "Death") {
+          Components::StateMachine* state_machine = player_entity.get_component<Components::StateMachine>();
+          if (state_machine && state_machine->get_current_state() != "Death") 
+          {
             state_machine->change_state("Death");
           }
+        }
+        else
+        {
+          Components::StateMachine* sm = player_entity.get_component<Components::StateMachine>();
+          assert(sm);
+          sm->change_state("Stunned");
         }
       }
       else {
@@ -251,17 +260,17 @@ static void register_upgrade_applicators()
 
       if (type == Engine::FileIO::UpgradeType::Flat) {
         int flat = static_cast<int>(value);
-        player->attack1.damage += flat;
-        player->attack2.damage += flat;
-        player->attack3.damage += flat;
+        player->attack1_data.dmg += flat;
+        player->attack2_data.dmg += flat;
+        player->attack3_data.dmg += flat;
       }
       else {
-        player->attack1.damage = static_cast<s32>(static_cast<float>(player->attack1.damage) * value);
-        player->attack2.damage = static_cast<s32>(static_cast<float>(player->attack2.damage) * value);
-        player->attack3.damage = static_cast<s32>(static_cast<float>(player->attack3.damage) * value);
+        player->attack1_data.dmg = static_cast<f32>(static_cast<s32>(player->attack1_data.dmg) * value);
+        player->attack2_data.dmg = static_cast<f32>(static_cast<s32>(player->attack2_data.dmg) * value);
+        player->attack3_data.dmg = static_cast<f32>(static_cast<s32>(player->attack3_data.dmg) * value);
       }
       Log::info("[UpgradeApplicator] damage applied — atk1:{} atk2:{} atk3:{}",
-        player->attack1.damage, player->attack2.damage, player->attack3.damage);
+        player->attack1_data.dmg, player->attack2_data.dmg, player->attack3_data.dmg);
     });
 
   // "speed" — modifies walk_speed on the Player component

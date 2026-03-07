@@ -277,13 +277,13 @@ namespace Components
     // If a object has resolve_collisions set to true,that means that other objects that 
     // collide into the current object needs to be snapped out of the current object
     bool resolve_collisions = false;
+    bool collided = false;
     ColliderType type = ColliderType::AABB;
-
     // AABB data (for fast axis-aligned checks)
     AABB aabb;
-    f32 width;
-    f32 height;
-    f32 radius;
+    f32 width = 0.f;
+    f32 height = 0.f;
+    f32 radius = 0.f;
     // Polygon data (for rotated/custom shapes)
     Polygon polygon;
 
@@ -292,7 +292,7 @@ namespace Components
 
     // For friction, 1 is no friction and 0 is 100% energy loss
     // Used when an object is at rest to make it harder to start moving (used when objects are on a slope)
-    f32 static_friction;
+    f32 static_friction = 1.f;
     // Used when an object is moving, acts against the direction the object is moving
     f32 kinetic_friction = 1.f;
 
@@ -332,4 +332,4 @@ namespace Components
 REFLECT_ENUM(Components::ColliderType, AABB, OBB, POLYGON)
 REFLECT_FIELDS(AABB, pos, half_width, half_height)
 REFLECT_FIELDS(Polygon, vertices, position, rotation)
-REGISTER_COMPONENT(Components::BoxCollider, resolve_collisions, type, width, height, radius, polygon, aabb, offset, kinetic_friction)
+REGISTER_COMPONENT(Components::BoxCollider, resolve_collisions, collided, type, width, height, radius, polygon, aabb, offset, kinetic_friction)

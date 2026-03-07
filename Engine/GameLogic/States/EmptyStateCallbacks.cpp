@@ -1,0 +1,5 @@
+#include "pch.h"
+
+REGISTER_STATE_MACHINE_BLUEPRINT(EmptyState, "Default",
+  STATE("Default", NO_CALLBACK, NO_CALLBACK, NO_CALLBACK)
+)

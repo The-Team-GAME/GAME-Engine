@@ -27,6 +27,7 @@
     <ClCompile Include="Graphics\PostProcessing.cpp" />
     <ClCompile Include="Graphics\CubeLUT.cpp" />
     <ClCompile Include="GUI\ColliderEditorPanel.cpp" />
+    <ClCompile Include="GUI\AnimatorTimelinePanel.cpp" />
     <ClCompile Include="GUI\FrameAnimationEditorPanel.cpp" />
     <ClCompile Include="GUI\TextureAtlasEditorPanel.cpp" />
     <ClCompile Include="GUI\SelectiveLevelSavePanel.cpp" />
@@ -118,6 +119,7 @@
     <ClInclude Include="Graphics\RendererInternal.h" />
     <ClInclude Include="Graphics\Renderer.h" />
     <ClInclude Include="GUI\ColliderEditorPanel.h" />
+    <ClInclude Include="GUI\AnimatorTimelinePanel.h" />
     <ClInclude Include="GUI\FPSOverlay.h" />
     <ClInclude Include="GUI\FrameAnimationEditorPanel.h" />
     <ClInclude Include="GUI\TextureAtlasEditorPanel.h" />

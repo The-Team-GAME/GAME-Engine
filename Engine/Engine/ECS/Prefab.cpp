@@ -21,7 +21,9 @@
 #include "../Reflection/ReflectionLibrary.h"
 #include "PrefabMergeUtils.h"
 #include "../Resources.h"
+#include "../Path.h"
 #include "../Components/SpatialComponents.h"
+#include "../Components/GraphicsComponents.h"
 #include "ComponentManager.h"
 #include "../Random.h"
 #include "../Graphics/Renderer.h"
@@ -270,7 +272,10 @@ namespace Engine {
       }
 
       // Set Transform2D position to center of screen if entity has Transform2D
-      if (entity.has_component<Components::Transform2D>()) {
+      // but NOT if entity has a Components::UI tag — UI entities use screen-space
+      // coordinates and should keep their original copied position.
+      if (entity.has_component<Components::Transform2D>()
+        && !entity.has_component<Components::UI>()) {
         auto* transform = entity.get_component<Components::Transform2D>();
         if (transform) {
           // Get virtual resolution (screen center in virtual coordinates)
@@ -615,11 +620,24 @@ namespace Engine {
       for (const auto& [path, weak_prefab] : Engine::Resources::prefab_cache) {
         auto shared_prefab_impl = weak_prefab.lock();
         if (shared_prefab_impl && shared_prefab_impl->get_prefab_id() == prefab_id) {
-          return shared_prefab_impl->get_prefab_filepath();
+          // Prefer the filepath stored on the impl
+          const std::string& impl_path = shared_prefab_impl->get_prefab_filepath();
+          if (!impl_path.empty()) {
+            return impl_path;
+          }
+          // Fallback: derive relative path from cache key (which is the full path)
+          return Engine::Path(path).to_relative(Engine::Resources::resource_path).to_string();
         }
       }
 
       return ""; // Prefab not found in cache
+    }
+
+    void unbind_prefab_instance(Entity entity) {
+      if (!entity.is_valid()) return;
+
+      auto& containers = Internal::get_containers();
+      containers.prefab_instances.erase(entity.get_id());
     }
 
 

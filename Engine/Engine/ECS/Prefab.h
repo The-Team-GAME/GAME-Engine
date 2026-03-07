@@ -720,5 +720,19 @@ namespace Engine {
     ==================================================================================*/
     ENGINE_API std::string get_prefab_path(Entity entity);
 
+    /*=================================================================================
+    Function Brief:
+    Unbinds an entity from its source prefab, making it a standalone entity.
+    The entity keeps all its current component data but will no longer receive
+    updates when the source prefab is modified.
+
+    Parameters:
+    entity - The entity to unbind from its prefab.
+
+    Where to call it:
+    When a user wants to detach an entity from its prefab in the editor.
+    ==================================================================================*/
+    ENGINE_API void unbind_prefab_instance(Entity entity);
+
   } // namespace ECS
 } // namespace Engine
