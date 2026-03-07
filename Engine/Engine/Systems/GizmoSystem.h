@@ -143,7 +143,7 @@ namespace Engine
         Math::Vec2D text_size = Engine::Graphics::measure_text(font->font_handle, text->content, text_scale);
 
         return (mouse.x >= tr->position.x) && (mouse.x <= tr->position.x + text_size.x) &&
-               (mouse.y >= tr->position.y) && (mouse.y <= tr->position.y + text_size.y);
+          (mouse.y >= tr->position.y) && (mouse.y <= tr->position.y + text_size.y);
       }
     };
 
@@ -596,9 +596,9 @@ namespace Engine
 
       // ---- Visual config ----
       static constexpr float ms_handle_size = GizmoUtil::kHandleSize;
-      const Math::Vec4D ms_handle_color       = { 0.1f, 0.8f, 1.0f, 1.0f };
+      const Math::Vec4D ms_handle_color = { 0.1f, 0.8f, 1.0f, 1.0f };
       const Math::Vec4D ms_handle_hover_color = { 1.0f, 0.9f, 0.1f, 1.0f };
-      const Math::Vec4D ms_rect_color         = { 1.0f, 1.0f, 0.0f, 1.0f };
+      const Math::Vec4D ms_rect_color = { 1.0f, 1.0f, 0.0f, 1.0f };
 
       // ---- Helper: record undo for position-only changes ----
       void record_move_undo(const std::vector<MoveSnap>& snaps) {
@@ -609,7 +609,7 @@ namespace Engine
           if (!ent.is_valid() || !ent.has_component<Components::Transform2D>()) continue;
           auto* t = ent.get_component<Components::Transform2D>();
           if (std::abs(t->position.x - s.pos.x) > GizmoUtil::kEpsilon ||
-              std::abs(t->position.y - s.pos.y) > GizmoUtil::kEpsilon) {
+            std::abs(t->position.y - s.pos.y) > GizmoUtil::kEpsilon) {
             finals.push_back({ s.id, s.pos, t->position });
           }
         }
@@ -637,7 +637,7 @@ namespace Engine
 
       // ---- Helper: snapshot all entities for move ----
       void snapshot_move(const Engine::ECS::SparseSet<Engine::ECS::EntityID>& ents,
-                         std::vector<MoveSnap>& out) {
+        std::vector<MoveSnap>& out) {
         out.clear();
         for (auto eid : ents) {
           Engine::ECS::Entity e(eid);
@@ -648,8 +648,8 @@ namespace Engine
 
       // ---- Helper: apply delta-move to snapped entities ----
       void apply_move_delta(const std::vector<MoveSnap>& snaps,
-                            const Math::Vec2D& mouse_screen, const Math::Vec2D& mouse_world,
-                            const Math::Vec2D& start_screen, const Math::Vec2D& start_world) {
+        const Math::Vec2D& mouse_screen, const Math::Vec2D& mouse_world,
+        const Math::Vec2D& start_screen, const Math::Vec2D& start_world) {
         for (auto& s : snaps) {
           auto ent = Engine::ECS::get_entity(s.id);
           if (!ent.is_valid()) continue;
@@ -658,7 +658,8 @@ namespace Engine
           if (s.is_ui) {
             t->position.x = s.pos.x + (mouse_screen.x - start_screen.x);
             t->position.y = s.pos.y + (mouse_screen.y - start_screen.y);
-          } else {
+          }
+          else {
             t->position.x = s.pos.x + (mouse_world.x - start_world.x);
             t->position.y = s.pos.y + (mouse_world.y - start_world.y);
           }
@@ -680,30 +681,30 @@ namespace Engine
 
         // Get both mouse coordinate spaces
         auto screen_opt = Engine::Input::get_mouse_position_if_in_viewport();
-        auto world_opt  = Engine::Input::get_mouse_world_position_if_in_viewport();
+        auto world_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
         if (!screen_opt || !world_opt) {
           if (!Engine::Input::is_held(KeyCode::MouseLeft)) reset_all_state();
           return;
         }
         auto mouse_screen = screen_opt.value();
-        auto mouse_world  = world_opt.value();
+        auto mouse_world = world_opt.value();
 
         // Check if any selected entity is under the mouse (rotation-aware)
         bool any_entity_under_mouse = GizmoUtil::is_any_entity_under_mouse(ents, mouse_screen, mouse_world);
 
         const bool just_pressed = Engine::Input::is_pressed(KeyCode::MouseLeft);
-        const bool ctrl  = Engine::Input::is_held(KeyCode::CtrlLeft)  || Engine::Input::is_held(KeyCode::CtrlRight);
+        const bool ctrl = Engine::Input::is_held(KeyCode::CtrlLeft) || Engine::Input::is_held(KeyCode::CtrlRight);
         const bool shift = Engine::Input::is_held(KeyCode::ShiftLeft) || Engine::Input::is_held(KeyCode::ShiftRight);
-        const bool held  = Engine::Input::is_held(KeyCode::MouseLeft);
+        const bool held = Engine::Input::is_held(KeyCode::MouseLeft);
 
         // ===== GrabMove mode =====
         if (mode == Components::GizmoMode::GrabMove) {
           ms_dragging = false; ms_active = MSHandle::None; mr_dragging = false; ma_dragging = false;
 
-          if (just_pressed && !ImGui::GetIO().WantCaptureMouse && any_entity_under_mouse && !ctrl) {
+          if (just_pressed && any_entity_under_mouse && !ctrl) {
             mm_dragging = true;
             mm_start_mouse_screen = mouse_screen;
-            mm_start_mouse_world  = mouse_world;
+            mm_start_mouse_world = mouse_world;
             snapshot_move(ents, mm_snaps);
           }
 
@@ -734,7 +735,7 @@ namespace Engine
           auto aabb = GizmoUtil::compute_aabb(ents);
           if (!aabb.valid) return;
           Math::Vec2D center = GizmoUtil::aabb_center(aabb);
-          Math::Vec2D sz     = GizmoUtil::aabb_size(aabb);
+          Math::Vec2D sz = GizmoUtil::aabb_size(aabb);
 
           // Arrow endpoints (right edge + extra, top edge + extra)
           const float extra = 30.0f;
@@ -761,7 +762,7 @@ namespace Engine
             ma_active = ma_hover;
             ma_dragging = true;
             ma_start_mouse_screen = mouse_screen;
-            ma_start_mouse_world  = mouse_world;
+            ma_start_mouse_world = mouse_world;
             snapshot_move(ents, ma_snaps);
           }
 
@@ -784,7 +785,8 @@ namespace Engine
               if (s.is_ui) {
                 if (ma_active == MAAxis::X) t->position.x = s.pos.x + (mouse_screen.x - ma_start_mouse_screen.x);
                 if (ma_active == MAAxis::Y) t->position.y = s.pos.y + (mouse_screen.y - ma_start_mouse_screen.y);
-              } else {
+              }
+              else {
                 if (ma_active == MAAxis::X) t->position.x = s.pos.x + (mouse_world.x - ma_start_mouse_world.x);
                 if (ma_active == MAAxis::Y) t->position.y = s.pos.y + (mouse_world.y - ma_start_mouse_world.y);
               }
@@ -793,7 +795,7 @@ namespace Engine
 
           // Click empty space to deselect
           if (just_pressed && !ImGui::GetIO().WantCaptureMouse && !any_entity_under_mouse &&
-              ma_hover == MAAxis::None && !ctrl && !ma_dragging)
+            ma_hover == MAAxis::None && !ctrl && !ma_dragging)
             Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
 
           return;
@@ -852,8 +854,8 @@ namespace Engine
               if (!e.is_valid() || !e.has_component<Components::Transform2D>()) continue;
               auto* t = e.get_component<Components::Transform2D>();
               if (std::abs(t->position.x - s.pos.x) > GizmoUtil::kEpsilon ||
-                  std::abs(t->position.y - s.pos.y) > GizmoUtil::kEpsilon ||
-                  std::abs(t->rotation - s.rotation) > GizmoUtil::kEpsilon) {
+                std::abs(t->position.y - s.pos.y) > GizmoUtil::kEpsilon ||
+                std::abs(t->rotation - s.rotation) > GizmoUtil::kEpsilon) {
                 finals.push_back({ s.id, s.pos, s.rotation, t->position, t->rotation });
               }
             }
@@ -907,7 +909,7 @@ namespace Engine
 
           // Click empty space to deselect
           if (just_pressed && !ImGui::GetIO().WantCaptureMouse && !any_entity_under_mouse &&
-              !over_ring && !ctrl && !mr_dragging)
+            !over_ring && !ctrl && !mr_dragging)
             Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
 
           return;
@@ -930,10 +932,10 @@ namespace Engine
         // ---- hover ----
         ms_hover = MSHandle::None;
         float pr = ms_handle_size * 0.6f;
-        if (GizmoUtil::point_near(mouse, tl,   pr)) ms_hover = MSHandle::TL;
+        if (GizmoUtil::point_near(mouse, tl, pr)) ms_hover = MSHandle::TL;
         else if (GizmoUtil::point_near(mouse, tr_c, pr)) ms_hover = MSHandle::TR;
-        else if (GizmoUtil::point_near(mouse, br,   pr)) ms_hover = MSHandle::BR;
-        else if (GizmoUtil::point_near(mouse, bl,   pr)) ms_hover = MSHandle::BL;
+        else if (GizmoUtil::point_near(mouse, br, pr)) ms_hover = MSHandle::BR;
+        else if (GizmoUtil::point_near(mouse, bl, pr)) ms_hover = MSHandle::BL;
 
         // ---- press ----
         if (just_pressed && ms_hover != MSHandle::None) {
@@ -966,9 +968,9 @@ namespace Engine
             if (!e.is_valid() || !e.has_component<Components::Transform2D>()) continue;
             auto* t = e.get_component<Components::Transform2D>();
             if (std::abs(t->position.x - snap.pos.x) > GizmoUtil::kEpsilon ||
-                std::abs(t->position.y - snap.pos.y) > GizmoUtil::kEpsilon ||
-                std::abs(t->scale.x - snap.scale.x) > GizmoUtil::kEpsilon ||
-                std::abs(t->scale.y - snap.scale.y) > GizmoUtil::kEpsilon) {
+              std::abs(t->position.y - snap.pos.y) > GizmoUtil::kEpsilon ||
+              std::abs(t->scale.x - snap.scale.x) > GizmoUtil::kEpsilon ||
+              std::abs(t->scale.y - snap.scale.y) > GizmoUtil::kEpsilon) {
               finals.push_back({ snap.id, snap.pos, snap.scale, t->position, t->scale });
             }
           }
@@ -1044,7 +1046,7 @@ namespace Engine
 
         // Click empty space to deselect
         if (just_pressed && !ImGui::GetIO().WantCaptureMouse && !any_entity_under_mouse &&
-            ms_hover == MSHandle::None && !ctrl && !ms_dragging)
+          ms_hover == MSHandle::None && !ctrl && !ms_dragging)
           Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
       }
 
@@ -1069,11 +1071,11 @@ namespace Engine
           auto draw_ms_handle = [&](const Math::Vec2D& c, MSHandle h) {
             Math::Vec4D col = (ms_hover == h || ms_active == h) ? ms_handle_hover_color : ms_handle_color;
             GizmoUtil::draw_rect_outline_auto(true, c, { ms_handle_size, ms_handle_size }, 0.0f, 2.0f, col);
-          };
-          draw_ms_handle(tl,   MSHandle::TL);
+            };
+          draw_ms_handle(tl, MSHandle::TL);
           draw_ms_handle(tr_c, MSHandle::TR);
-          draw_ms_handle(br,   MSHandle::BR);
-          draw_ms_handle(bl,   MSHandle::BL);
+          draw_ms_handle(br, MSHandle::BR);
+          draw_ms_handle(bl, MSHandle::BL);
         }
 
         // Rotation ring + crosshair
@@ -1107,7 +1109,7 @@ namespace Engine
         // Axis arrows
         if (mode == Components::GizmoMode::ArrowMove) {
           Math::Vec2D center = GizmoUtil::aabb_center(aabb);
-          Math::Vec2D sz     = GizmoUtil::aabb_size(aabb);
+          Math::Vec2D sz = GizmoUtil::aabb_size(aabb);
           const float extra = 30.0f;
           const float arrow_len_x = sz.x * 0.5f + extra;
           const float arrow_len_y = sz.y * 0.5f + extra;
@@ -1116,7 +1118,7 @@ namespace Engine
           // X axis arrow (right)
           {
             Math::Vec2D from{ center.x + sz.x * 0.5f, center.y };
-            Math::Vec2D to  { from.x + arrow_len_x, center.y };
+            Math::Vec2D to{ from.x + arrow_len_x, center.y };
             Math::Vec4D col = (ma_hover == MAAxis::X || ma_active == MAAxis::X) ? ms_handle_hover_color : Math::Vec4D{ 0.2f, 1.0f, 0.2f, 1.0f };
             GizmoUtil::draw_line_auto(aabb.all_ui, from, to, thick, col);
             // Arrowhead
@@ -1127,7 +1129,7 @@ namespace Engine
           // Y axis arrow (up)
           {
             Math::Vec2D from{ center.x, center.y - sz.y * 0.5f };
-            Math::Vec2D to  { center.x, from.y - arrow_len_y };
+            Math::Vec2D to{ center.x, from.y - arrow_len_y };
             Math::Vec4D col = (ma_hover == MAAxis::Y || ma_active == MAAxis::Y) ? ms_handle_hover_color : Math::Vec4D{ 1.0f, 0.2f, 0.2f, 1.0f };
             GizmoUtil::draw_line_auto(aabb.all_ui, from, to, thick, col);
             // Arrowhead

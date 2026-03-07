@@ -39,17 +39,10 @@ namespace PlayerStateCallbacks
     Components::Flip* flip = entity.get_component<Components::Flip>();
     Components::Health* health = entity.get_component<Components::Health>();
 
-    // Death Condition
-    // if (health && health->is_dead())
-    // {
-    //   state_machine->change_state("Death");
-    //   return;
-    // }
-
-    // Checking for falling
-    if (!default_state && !player_rigid->on_ground)
+    if (!state_machine || !player_rigid || !player_comp || !flip || !health)
     {
-      state_machine->change_state("Falling");
+      Log::error("PlayerStateCallbacks: Missing required components on entity {}", entity.get_id());
+      return;
     }
 
     // Handling cooldowns
@@ -130,9 +123,8 @@ namespace PlayerStateCallbacks
     }
 #pragma endregion
     // If no valid inputs
-    if (!default_state && state_machine->current_state_name != "Idle")
+    if (!default_state)
     {
-      std::cout << "current state is: " << state_machine->current_state_name << std::endl;
       state_machine->change_state("Idle");
     }
   }
@@ -164,6 +156,7 @@ namespace PlayerStateCallbacks
     attack->knockback.y = -std::abs(attack->knockback.y);
     return hitbox;
   }
+
 #pragma region idle state;
   // ========================================================================
   // Idle State Callbacks
@@ -186,23 +179,29 @@ namespace PlayerStateCallbacks
   inline void walking_on_enter([[maybe_unused]] Engine::ECS::Entity entity)
   {
     Log::info("Player: Entered Walking state");
-
+    default_state = true;
   }
 
   inline void walking_on_update(Engine::ECS::Entity entity)
   {
     // we set an exit criteria for the walking state instead of reseting it every frame as the animation sequence needs the state to be constant for this to work
+    Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
+    assert(sm);
     if (!Input::is_held(KeyCode::A) && !Input::is_held(KeyCode::D))
     {
-      Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
-      state_machine->change_state("Idle");
+      sm->change_state("Idle");
+    }
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    if (!rigid->on_ground)
+    {
+      sm->change_state("Falling");
     }
     take_input(entity);
   }
 
   inline void walking_on_exit([[maybe_unused]] Engine::ECS::Entity entity)
   {
-    // Empty by design
+    default_state = false;
   }
 #pragma endregion
 
@@ -299,6 +298,7 @@ namespace PlayerStateCallbacks
     assert(flip);
 
     rigid->apply_force = false;
+    rigid->velocity.y = 0.f;
     rigid->velocity.x = flip->value.x * player_comp->dash.speed;
     terminal_vel_placeholder = rigid->x_terminal_velocity;
     rigid->x_terminal_velocity = player_comp->dash.speed;
@@ -310,9 +310,18 @@ namespace PlayerStateCallbacks
     assert(player_comp);
     if (player_comp->dash.timer_end())
     {
-      Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
-      assert(state_machine);
-      state_machine->change_state("Idle");
+      Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
+      Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+      assert(sm);
+      assert(rigid);
+      if (rigid->on_ground)
+      {
+        sm->change_state("Idle");
+      }
+      else
+      {
+        sm->change_state("Falling");
+      }
     }
     player_comp->dash.timer -= Time::get_fixed_dt();
   }
@@ -347,7 +356,7 @@ namespace PlayerStateCallbacks
 
   inline void stunned_on_update(ECS::Entity entity)
   {
-    Components::Player* player_comp = entity.get_component<Components::Player>();
+    /*Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
     if (player_comp->stunned.timer_end())
     {
@@ -355,14 +364,21 @@ namespace PlayerStateCallbacks
       assert(sm);
       sm->change_state("Idle");
     }
-    player_comp->stunned.timer -= Time::get_fixed_dt();
+    player_comp->stunned.timer -= Time::get_fixed_dt();*/
+    Components::Animation* animation = entity.get_component<Components::Animation>();
+    assert(animation);
+    if (animation->has_ended()) {
+      Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
+      assert(sm);
+      sm->change_state("Idle");
+    }
   }
 
   inline void stunned_on_exit([[maybe_unused]] ECS::Entity entity)
   {
     Log::info("Player: Exited Stunned state");
     Components::Player* player_comp = entity.get_component<Components::Player>();
-    player_comp->damage_immune = true;
+    player_comp->damage_immune = false;
   }
 #pragma endregion
 
@@ -557,9 +573,7 @@ namespace PlayerStateCallbacks
   inline void uppercut_on_update(ECS::Entity entity)
   {
     Components::Player* player_comp = entity.get_component<Components::Player>();
-    Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
     assert(player_comp);
-    assert(box);
 
     // Exit Condition 1
     if (player_comp->uppercut.timer_end())
@@ -771,7 +785,8 @@ namespace PlayerStateCallbacks
   inline void death_on_update(ECS::Entity entity)
   {
     Components::Animation* animation = entity.get_component<Components::Animation>();
-    if (animation && animation->has_ended()) {
+    assert(animation);
+    if (animation->has_ended()) {
       // Engine::ECS::destroy_entity(entity);
       Log::info("Player: Destroyed after death animation.");
       Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
@@ -790,6 +805,7 @@ namespace PlayerStateCallbacks
     SceneManager::load_scene(scene);
   }
 #pragma endregion
+
 } // namespace PlayerStateCallbacks
 
 // Register blueprint + all player state callbacks
@@ -813,5 +829,6 @@ REGISTER_STATE_MACHINE_BLUEPRINT(Player, "Idle",
   STATE("Smash", PlayerStateCallbacks::smash_on_enter, PlayerStateCallbacks::smash_on_update, PlayerStateCallbacks::smash_on_exit)
   STATE("PostSmash", PlayerStateCallbacks::post_smash_on_enter, PlayerStateCallbacks::post_smash_on_update, PlayerStateCallbacks::post_smash_on_exit)
 
+  STATE("Stunned", PlayerStateCallbacks::stunned_on_enter, PlayerStateCallbacks::stunned_on_update, PlayerStateCallbacks::stunned_on_exit)
   STATE("Death", PlayerStateCallbacks::death_on_enter, PlayerStateCallbacks::death_on_update, PlayerStateCallbacks::death_on_exit)
 )
