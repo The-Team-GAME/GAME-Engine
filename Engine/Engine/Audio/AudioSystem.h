@@ -21,6 +21,7 @@
 #include "../EngineExport.h"
 #include <memory>
 #include <string>
+#include <vector>
 
 
 namespace Engine {
@@ -94,6 +95,12 @@ namespace Engine {
     ENGINE_API void setSFXVolume(float volume);
     ENGINE_API float getBGMVolume();
     ENGINE_API float getSFXVolume();
+
+    // ------------------------------------------------------------
+    // Event enumeration (for editor dropdowns)
+    // ------------------------------------------------------------
+    ENGINE_API std::vector<std::string> getAllEventPaths();
+    ENGINE_API std::vector<std::string> getAllBusPaths();
 
     // ------------------------------------------------------------
     // Utility

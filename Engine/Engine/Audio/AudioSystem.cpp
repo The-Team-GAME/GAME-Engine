@@ -4,6 +4,7 @@
 #include <fmod.hpp>
 #include <fmod_errors.h>
 #include <unordered_map>
+#include <algorithm>
 #include <iostream>
 #include <string>
 
@@ -653,6 +654,75 @@ namespace Engine {
       float vol = 1.0f;
       getBusVolume("bus:/SFX", vol);
       return vol;
+    }
+
+    // ------------------------------------------------------------
+    // Event Enumeration (for editor dropdowns)
+    // ------------------------------------------------------------
+    ::std::vector<::std::string> getAllEventPaths()
+    {
+      ::std::vector<::std::string> paths;
+      if (!gStudioSystem)
+        return paths;
+
+      for (auto& [bankPath, bank] : gBanks)
+      {
+        int eventCount = 0;
+        bank->getEventCount(&eventCount);
+        if (eventCount <= 0)
+          continue;
+
+        ::std::vector<FMOD::Studio::EventDescription*> events(eventCount);
+        int retrieved = 0;
+        if (FMOD_Check(bank->getEventList(events.data(), eventCount, &retrieved), "getEventList"))
+        {
+          for (int i = 0; i < retrieved; ++i)
+          {
+            char pathBuf[512];
+            int pathLen = 0;
+            if (events[i]->getPath(pathBuf, sizeof(pathBuf), &pathLen) == FMOD_OK)
+            {
+              paths.emplace_back(pathBuf);
+            }
+          }
+        }
+      }
+
+      ::std::sort(paths.begin(), paths.end());
+      return paths;
+    }
+
+    ::std::vector<::std::string> getAllBusPaths()
+    {
+      ::std::vector<::std::string> paths;
+      if (!gStudioSystem)
+        return paths;
+
+      for (auto& [bankPath, bank] : gBanks)
+      {
+        int busCount = 0;
+        bank->getBusCount(&busCount);
+        if (busCount <= 0)
+          continue;
+
+        ::std::vector<FMOD::Studio::Bus*> buses(busCount);
+        int retrieved = 0;
+        if (FMOD_Check(bank->getBusList(buses.data(), busCount, &retrieved), "getBusList"))
+        {
+          for (int i = 0; i < retrieved; ++i)
+          {
+            char pathBuf[512];
+            int pathLen = 0;
+            if (buses[i]->getPath(pathBuf, sizeof(pathBuf), &pathLen) == FMOD_OK)
+            {
+              paths.emplace_back(pathBuf);
+            }
+          }
+        }
+      }
+
+      ::std::sort(paths.begin(), paths.end());
+      return paths;
     }
 
     // ------------------------------------------------------------
