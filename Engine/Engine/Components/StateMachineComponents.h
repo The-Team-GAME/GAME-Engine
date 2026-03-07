@@ -256,6 +256,13 @@ namespace Components
       auto& current_state = states[current_state_name];
       current_state.invoke_on_update(entity);
 
+      // If the current state has looping audio, restart the instance if it has stopped
+      if (!current_fmod_instance_.empty() && current_state.audio.has_value() && current_state.audio->loop) {
+        if (!Engine::AudioSystem::isEventInstancePlaying(current_fmod_instance_)) {
+          Engine::AudioSystem::startEventInstance(current_fmod_instance_);
+        }
+      }
+
       // Evaluate property animation for current state
       evaluate_property_animation(entity, Engine::Time::get_fixed_dt());
 
