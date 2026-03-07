@@ -55,7 +55,6 @@ namespace Components
     ::std::string event_path;      // FMOD event path
     bool loop = false;           // If true, creates persistent instance
     float volume = 1.0f;
-    bool stop_on_state_exit = true;  // Stop when state exits
 
     FMODStateAudio() = default;
     FMODStateAudio(const ::std::string& path, bool should_loop = false, float vol = 1.0f)
@@ -110,4 +109,4 @@ namespace Components
 // Register components for reflection
 REGISTER_COMPONENT(Components::FMODEvent, event_path)
 REGISTER_COMPONENT(Components::FMODEventInstance, event_path, instance_name, auto_play, is_playing)
-REGISTER_COMPONENT(Components::FMODStateAudio, event_path, loop, volume, stop_on_state_exit)
+REGISTER_COMPONENT(Components::FMODStateAudio, event_path, loop, volume)

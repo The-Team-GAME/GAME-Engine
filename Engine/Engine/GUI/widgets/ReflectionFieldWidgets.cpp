@@ -944,15 +944,6 @@ namespace ImGuiWidgets {
                 local_modified = true;
               }
 
-              // Stop on state exit checkbox
-              auto stop_it = fmod_obj.find("stop_on_state_exit");
-              bool fmod_stop = (stop_it != fmod_obj.end() && stop_it->second.isBool()) ? stop_it->second.getBool() : true;
-              std::string stop_label = "Stop On Exit##fmod_" + state_name;
-              if (ImGui::Checkbox(stop_label.c_str(), &fmod_stop)) {
-                fmod_obj["stop_on_state_exit"] = ReflectionLibrary::GenericValue(fmod_stop);
-                local_modified = true;
-              }
-
               ImGui::Unindent();
 
               // Remove FMOD Audio button
@@ -1276,8 +1267,8 @@ namespace ImGuiWidgets {
     }
 
     if (type_hint == "Components::FMODEvent" ||
-        type_hint == "Components::FMODEventInstance" ||
-        type_hint == "Components::FMODStateAudio") {
+      type_hint == "Components::FMODEventInstance" ||
+      type_hint == "Components::FMODStateAudio") {
       return render_fmod_component_fields(field_value, modified, entity, prefab, prefab_path);
     }
 

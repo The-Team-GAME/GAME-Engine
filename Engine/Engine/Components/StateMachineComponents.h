@@ -441,15 +441,8 @@ namespace Components
 
         // Handle FMOD audio system stop
         if (!current_fmod_instance_.empty()) {
-          bool should_stop = true;
-          if (old_state.audio.has_value()) {
-            should_stop = old_state.audio->stop_on_state_exit;
-          }
-
-          if (should_stop) {
-            Engine::AudioSystem::stopEventInstance(current_fmod_instance_, true);
-            Engine::AudioSystem::releaseEventInstance(current_fmod_instance_);
-          }
+          Engine::AudioSystem::stopEventInstance(current_fmod_instance_, true);
+          Engine::AudioSystem::releaseEventInstance(current_fmod_instance_);
           current_fmod_instance_.clear();
         }
       }
