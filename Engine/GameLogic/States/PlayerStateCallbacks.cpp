@@ -156,6 +156,7 @@ namespace PlayerStateCallbacks
     attack->knockback.y = -std::abs(attack->knockback.y);
     return hitbox;
   }
+
 #pragma region idle state;
   // ========================================================================
   // Idle State Callbacks
@@ -297,6 +298,7 @@ namespace PlayerStateCallbacks
     assert(flip);
 
     rigid->apply_force = false;
+    rigid->velocity.y = 0.f;
     rigid->velocity.x = flip->value.x * player_comp->dash.speed;
     terminal_vel_placeholder = rigid->x_terminal_velocity;
     rigid->x_terminal_velocity = player_comp->dash.speed;
@@ -308,9 +310,18 @@ namespace PlayerStateCallbacks
     assert(player_comp);
     if (player_comp->dash.timer_end())
     {
-      Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
-      assert(state_machine);
-      state_machine->change_state("Idle");
+      Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
+      Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+      assert(sm);
+      assert(rigid);
+      if (rigid->on_ground)
+      {
+        sm->change_state("Idle");
+      }
+      else
+      {
+        sm->change_state("Falling");
+      }
     }
     player_comp->dash.timer -= Time::get_fixed_dt();
   }
