@@ -247,31 +247,117 @@ static void register_upgrade_applicators()
 {
   auto& mgr = Engine::UpgradeManager::instance();
 
-  // "damage" — modifies all 3 attack damages on the Player component
-  mgr.register_stat_applicator("damage",
-    [](Engine::FileIO::UpgradeType type, float value) {
+  // "base_attack_damage" — modifies only Attack1/Attack2/Attack3 damage
+  auto base_attack_damage_applicator = [](Engine::FileIO::UpgradeType type, float value) {
       auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
       if (!player_entity.is_valid()) {
-        Log::warning("[UpgradeApplicator] No player entity found for 'damage'");
+        Log::warning("[UpgradeApplicator] No player entity found for 'base_attack_damage'");
         return;
       }
       auto* player = player_entity.get_component<Components::Player>();
       if (!player) return;
 
+      auto apply_flat = [](float& dmg, int flat) {
+        dmg += static_cast<float>(flat);
+      };
+
+      auto apply_multiplier = [](float& dmg, float mult) {
+        int scaled = static_cast<int>(std::lround(dmg * mult));
+        if (scaled < 1) scaled = 1;
+        dmg = static_cast<float>(scaled);
+      };
+
       if (type == Engine::FileIO::UpgradeType::Flat) {
-        int flat = static_cast<int>(value);
-        player->attack1_data.dmg += flat;
-        player->attack2_data.dmg += flat;
-        player->attack3_data.dmg += flat;
+        int flat = static_cast<int>(std::lround(value));
+        if (flat <= 0) flat = 1;
+
+        apply_flat(player->attack1_data.dmg, flat);
+        apply_flat(player->attack2_data.dmg, flat);
+        apply_flat(player->attack3_data.dmg, flat);
       }
       else {
-        player->attack1_data.dmg = static_cast<f32>(static_cast<s32>(player->attack1_data.dmg) * value);
-        player->attack2_data.dmg = static_cast<f32>(static_cast<s32>(player->attack2_data.dmg) * value);
-        player->attack3_data.dmg = static_cast<f32>(static_cast<s32>(player->attack3_data.dmg) * value);
+        apply_multiplier(player->attack1_data.dmg, value);
+        apply_multiplier(player->attack2_data.dmg, value);
+        apply_multiplier(player->attack3_data.dmg, value);
       }
-      Log::info("[UpgradeApplicator] damage applied — atk1:{} atk2:{} atk3:{}",
+      Log::info("[UpgradeApplicator] base_attack_damage applied — atk1:{} atk2:{} atk3:{}",
         player->attack1_data.dmg, player->attack2_data.dmg, player->attack3_data.dmg);
-    });
+    };
+
+  mgr.register_stat_applicator("base_attack_damage", base_attack_damage_applicator);
+  mgr.register_stat_applicator("damage", base_attack_damage_applicator); // legacy alias
+
+  // "uppercut_damage" — modifies only Uppercut damage
+  auto uppercut_damage_applicator = [](Engine::FileIO::UpgradeType type, float value) {
+      auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+      if (!player_entity.is_valid()) {
+        Log::warning("[UpgradeApplicator] No player entity found for 'uppercut_damage'");
+        return;
+      }
+      auto* player = player_entity.get_component<Components::Player>();
+      if (!player) return;
+
+      auto apply_flat = [](float& dmg, int flat) {
+        dmg += static_cast<float>(flat);
+      };
+
+      auto apply_multiplier = [](float& dmg, float mult) {
+        int scaled = static_cast<int>(std::lround(dmg * mult));
+        if (scaled < 1) scaled = 1;
+        dmg = static_cast<float>(scaled);
+      };
+
+      if (type == Engine::FileIO::UpgradeType::Flat) {
+        int flat = static_cast<int>(std::lround(value));
+        if (flat <= 0) flat = 1;
+        apply_flat(player->uppercut_data.dmg, flat);
+      }
+      else {
+        apply_multiplier(player->uppercut_data.dmg, value);
+      }
+
+      Log::info("[UpgradeApplicator] uppercut_damage applied — uppercut:{}",
+        player->uppercut_data.dmg);
+    };
+
+  mgr.register_stat_applicator("uppercut_damage", uppercut_damage_applicator);
+  mgr.register_stat_applicator("uppercut damage", uppercut_damage_applicator); // legacy alias
+
+  // "smash_damage" — modifies only Smash damage
+  auto smash_damage_applicator = [](Engine::FileIO::UpgradeType type, float value) {
+      auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+      if (!player_entity.is_valid()) {
+        Log::warning("[UpgradeApplicator] No player entity found for 'smash_damage'");
+        return;
+      }
+      auto* player = player_entity.get_component<Components::Player>();
+      if (!player) return;
+
+      auto apply_flat = [](float& dmg, int flat) {
+        dmg += static_cast<float>(flat);
+      };
+
+      auto apply_multiplier = [](float& dmg, float mult) {
+        int scaled = static_cast<int>(std::lround(dmg * mult));
+        if (scaled < 1) scaled = 1;
+        dmg = static_cast<float>(scaled);
+      };
+
+      if (type == Engine::FileIO::UpgradeType::Flat) {
+        int flat = static_cast<int>(std::lround(value));
+        if (flat <= 0) flat = 1;
+        apply_flat(player->smash_data.dmg, flat);
+      }
+      else {
+        apply_multiplier(player->smash_data.dmg, value);
+      }
+
+      Log::info("[UpgradeApplicator] smash_damage applied — smash:{}",
+        player->smash_data.dmg);
+    };
+
+  mgr.register_stat_applicator("smash_damage", smash_damage_applicator);
+  mgr.register_stat_applicator("smash damage", smash_damage_applicator); // legacy alias
 
   // "movement speed" — modifies walk_speed on the Player component
   mgr.register_stat_applicator("movement speed",
@@ -305,10 +391,12 @@ static void register_upgrade_applicators()
       if (!health) return;
 
       constexpr int kMaxHP = 5;
+      health->max = std::clamp(health->max, 1, kMaxHP);
+      health->value = std::clamp(health->value, 0, health->max);
 
       if (type == Engine::FileIO::UpgradeType::Flat) {
-        // Flat upgrades heal, and may raise max HP but never above kMaxHP.
-        int inc = static_cast<int>(value + 0.5f);
+        // Flat upgrades increase max HP and heal by the same amount, capped at 5 HP.
+        int inc = static_cast<int>(std::lround(value));
         if (inc <= 0) inc = 1;
 
         int old_value = health->value;
@@ -318,8 +406,10 @@ static void register_upgrade_applicators()
         int max_gain = new_max - old_max;
         health->max = new_max;
 
-        // Heal by the same increment; Health::heal already clamps to max.
-        health->heal(inc);
+        // Heal by the same increment only if not already full.
+        if (health->value < health->max) {
+          health->heal(inc);
+        }
 
         Log::info(
           "[UpgradeApplicator] health flat applied (+{}) — HP: {}/{} -> {}/{} (max_gain {})",
@@ -333,11 +423,14 @@ static void register_upgrade_applicators()
         int old_value = health->value;
         int old_max = health->max;
 
-        int scaled_max = static_cast<int>(static_cast<float>(health->max) * value);
-        int new_max = std::min(kMaxHP, scaled_max);
-        int gained = new_max - old_max;
+        int new_max = static_cast<int>(std::lround(static_cast<float>(health->max) * value));
+        new_max = std::clamp(new_max, 1, kMaxHP);
+        int gained = std::max(0, new_max - old_max);
         health->max = new_max;
-        if (gained > 0) {
+        if (health->value > health->max) {
+          health->value = health->max;
+        }
+        if (gained > 0 && health->value < health->max) {
           health->heal(gained);
         }
 

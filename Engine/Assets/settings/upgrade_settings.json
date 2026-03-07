@@ -23,101 +23,92 @@
         {
             "display_name": "Base Atk Damage Up I",
             "id": "atk_dmg",
-            "max_level": 6,
+            "max_level": 8,
             "rarity": "Common",
-            "stat_name": "damage",
+            "stat_name": "base_attack_damage",
             "type": "Flat",
-            "value": 0.25
+            "value": 1.0
+        },
+        {
+            "display_name": "Base Atk Speed Up I (Copy)",
+            "id": "atk_spd",
+            "max_level": 8,
+            "rarity": "Common",
+            "stat_name": "base_attack_damage",
+            "type": "Flat",
+            "value": 1.0
         },
         {
             "display_name": "Base Atk Damage Up II",
             "id": "atk_dmg_II",
             "max_level": 4,
             "rarity": "Rare",
-            "stat_name": "damage",
+            "stat_name": "base_attack_damage",
             "type": "Flat",
-            "value": 0.4000000059604645
+            "value": 2.0
         },
         {
             "display_name": "Base Atk Damage Up III",
             "id": "atk_dmg_III",
             "max_level": 2,
             "rarity": "Epic",
-            "stat_name": "damage",
+            "stat_name": "base_attack_damage",
             "type": "Flat",
-            "value": 0.6000000238418579
-        },
-        {
-            "display_name": "Base Atk Speed Up I",
-            "id": "atk_spd",
-            "max_level": 6,
-            "rarity": "Common",
-            "stat_name": "damage",
-            "type": "Multiplier",
-            "value": 0.10000000149011612
-        },
-        {
-            "display_name": "Base Atk Speed Up II",
-            "id": "atk_spd_II",
-            "max_level": 6,
-            "rarity": "Rare",
-            "stat_name": "damage",
-            "type": "Multiplier",
-            "value": 0.20000000298023224
+            "value": 3.0
         },
         {
             "display_name": "Uppercut Damage Up",
             "id": "upp_dmg",
-            "max_level": 6,
+            "max_level": 8,
             "rarity": "Common",
-            "stat_name": "damage",
+            "stat_name": "uppercut_damage",
             "type": "Flat",
-            "value": 0.20000000298023224
+            "value": 1.0
         },
         {
             "display_name": "Uppercut Damage Up II",
             "id": "upp_dmg_II",
             "max_level": 4,
             "rarity": "Rare",
-            "stat_name": "damage",
+            "stat_name": "uppercut_damage",
             "type": "Flat",
-            "value": 0.4000000059604645
+            "value": 2.0
         },
         {
             "display_name": "Uppercut Damage Up III",
             "id": "upp_dmg_III",
             "max_level": 2,
             "rarity": "Epic",
-            "stat_name": "damage",
+            "stat_name": "uppercut_damage",
             "type": "Flat",
-            "value": 0.6000000238418579
+            "value": 3.0
         },
         {
             "display_name": "Smash Damage Up",
             "id": "smash_dmg",
-            "max_level": 6,
+            "max_level": 8,
             "rarity": "Common",
-            "stat_name": "damage",
+            "stat_name": "smash_damage",
             "type": "Flat",
-            "value": 0.20000000298023224
+            "value": 1.0
         },
         {
             "display_name": "Smash Damage Up II",
             "id": "smash_dmg_II",
             "max_level": 4,
             "rarity": "Rare",
-            "stat_name": "damage",
+            "stat_name": "smash_damage",
             "type": "Flat",
-            "value": 0.4000000059604645
+            "value": 2.0
         },
         {
             "display_name": "Smash Damage Up III",
             "id": "smash_dmg_III",
             "max_level": 2,
             "rarity": "Epic",
-            "stat_name": "damage",
+            "stat_name": "smash_damage",
             "type": "Flat",
-            "value": 0.6000000238418579
+            "value": 3.0
         },
         {
             "display_name": "Health Up",
@@ -133,34 +124,7 @@
             "id": "mult_atk_dmg",
             "max_level": 1,
             "rarity": "Legendary",
-            "stat_name": "damage",
-            "type": "Multiplier",
-            "value": 1.2000000476837158
-        },
-        {
-            "display_name": "Move Speed + 5%",
-            "id": "mult_spd",
-            "max_level": 6,
-            "rarity": "Common",
-            "stat_name": "speed",
-            "type": "Multiplier",
-            "value": 1.0499999523162842
-        },
-        {
-            "display_name": "Move Speed II + 10%",
-            "id": "mult_spd_II",
-            "max_level": 4,
-            "rarity": "Rare",
-            "stat_name": "speed",
-            "type": "Multiplier",
-            "value": 1.100000023841858
-        },
-        {
-            "display_name": "Move Speed III + 15%",
-            "id": "mult_spd_III",
-            "max_level": 2,
-            "rarity": "Epic",
-            "stat_name": "speed",
+            "stat_name": "base_attack_damage",
             "type": "Multiplier",
             "value": 1.2000000476837158
         }

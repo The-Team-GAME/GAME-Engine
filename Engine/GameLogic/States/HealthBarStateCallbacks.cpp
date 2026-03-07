@@ -12,6 +12,27 @@ static int get_player_health() {
   return hp ? hp->value : -1;
 }
 
+static int clamp_health_for_hud(int health) {
+  if (health < 0) return 0;
+  if (health > 5) return 5;
+  return health;
+}
+
+static void change_to_static_hp_state(Engine::ECS::Entity entity, int health) {
+  auto* sm = entity.get_component<Components::StateMachine>();
+  if (!sm) return;
+
+  const int clamped = clamp_health_for_hud(health);
+  switch (clamped) {
+  case 5: sm->change_state("5HP"); break;
+  case 4: sm->change_state("4HP"); break;
+  case 3: sm->change_state("3HP"); break;
+  case 2: sm->change_state("2HP"); break;
+  case 1: sm->change_state("1HP"); break;
+  default: sm->change_state("0HP"); break;
+  }
+}
+
 // ========================================================================
 // Static HP state update — check if player health dropped, start transition
 // ========================================================================
@@ -21,11 +42,13 @@ static int get_player_health() {
 // `trans_state`  = the transition state to go to when health drops
 #define DEFINE_HP_STATE_UPDATE(hp_val, trans_state)                          \
   inline void hp_##hp_val##_update(Engine::ECS::Entity entity) {            \
-    int health = get_player_health();                                       \
+    int health = clamp_health_for_hud(get_player_health());                 \
     if (health < 0) return;                                                 \
     if (health < hp_val) {                                                  \
       auto* sm = entity.get_component<Components::StateMachine>();          \
       if (sm) sm->change_state(trans_state);                                \
+    } else if (health > hp_val) {                                           \
+      change_to_static_hp_state(entity, health);                            \
     }                                                                       \
   }
 
@@ -35,8 +58,12 @@ DEFINE_HP_STATE_UPDATE(3, "3HP_to_2HP")
 DEFINE_HP_STATE_UPDATE(2, "2HP_to_1HP")
 DEFINE_HP_STATE_UPDATE(1, "1HP_to_0HP")
 
-// 0HP is the terminal state — no further transitions
-inline void hp_0_update([[maybe_unused]] Engine::ECS::Entity entity) {}
+inline void hp_0_update(Engine::ECS::Entity entity) {
+  int health = clamp_health_for_hud(get_player_health());
+  if (health > 0) {
+    change_to_static_hp_state(entity, health);
+  }
+}
 
 // ========================================================================
 // Transition state update — wait for animation to end, then go to next state
