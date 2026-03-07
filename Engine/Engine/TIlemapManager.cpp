@@ -276,6 +276,7 @@ namespace TilemapManager {
       // Create collision-only entity (no rendering components)
       auto entity = Engine::ECS::create_entity()
         .add_component<Components::TileCollider>() // Marker component to identify tile collision entities
+        .add_component<Components::Internal>()     // Hide from entity editor
         .add_component<Components::Transform2D>(center_world, 0.0f, scale)
         .add_component<Components::RigidBody>(true, false) // is_static = true, no gravity
         .add_component<Components::BoxCollider>(scale.x, scale.y, true); // resolve_collisions = true
@@ -335,6 +336,7 @@ namespace TilemapManager {
             // Create AABB collision entity
             auto entity = Engine::ECS::create_entity()
               .add_component<Components::TileCollider>()
+              .add_component<Components::Internal>() // Hide from entity editor
               .add_component<Components::Transform2D>(final_center, 0.0f, scale)
               .add_component<Components::RigidBody>(true, false)
               .add_component<Components::BoxCollider>(box_width, box_height, true);
@@ -359,6 +361,7 @@ namespace TilemapManager {
               // Create Polygon collision entity
               auto entity = Engine::ECS::create_entity()
                 .add_component<Components::TileCollider>()
+                .add_component<Components::Internal>() // Hide from entity editor
                 .add_component<Components::Transform2D>(center_world, 0.0f, scale)
                 .add_component<Components::RigidBody>(true, false)
                 .add_component<Components::BoxCollider>(custom_vertices, true);
