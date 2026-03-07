@@ -108,9 +108,9 @@ namespace Engine
 
     // Load FMOD sound banks
     Log::info("Loading FMOD sound banks...");
-    Engine::AudioSystem::loadBank("Assets/sounds/Master.bank");
-    Engine::AudioSystem::loadBank("Assets/sounds/Master.strings.bank");
-    Engine::AudioSystem::loadBank("Assets/sounds/SFX.bank");
+    Engine::AudioSystem::loadBank("Assets/fmodstudio/Build/Desktop/Master.bank");
+    Engine::AudioSystem::loadBank("Assets/fmodstudio/Build/Desktop/Master.strings.bank");
+    Engine::AudioSystem::loadBank("Assets/fmodstudio/Build/Desktop/SFX.bank");
     Log::info("FMOD sound banks loaded successfully");
 
     // Load game settings (Window mode, Audio volumes)

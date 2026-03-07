@@ -257,7 +257,11 @@ namespace Components
       current_state.invoke_on_update(entity);
 
       // If the current state has looping audio, restart the instance if it has stopped
+      // Also update 3D position every frame so moving entities pan correctly
       if (!current_fmod_instance_.empty() && current_state.audio.has_value() && current_state.audio->loop) {
+        if (auto* t = entity.get_component<Transform2D>()) {
+          Engine::AudioSystem::setEventInstancePosition(current_fmod_instance_, t->position);
+        }
         if (!Engine::AudioSystem::isEventInstancePlaying(current_fmod_instance_)) {
           Engine::AudioSystem::startEventInstance(current_fmod_instance_);
         }
@@ -637,16 +641,23 @@ namespace Components
       // Generate unique instance name using entity ID and state name
       std::string instance_name = "StateAudio_" + std::to_string(owner_entity_->get_id()) + "_" + current_state_name;
 
+      // Get entity world position for spatial audio
+      Math::Vec2D entity_pos = { 0.0f, 0.0f };
+      if (auto* t = owner_entity_->get_component<Transform2D>()) {
+        entity_pos = t->position;
+      }
+
       // If looping, create persistent instance
       if (fmod_audio.loop) {
         Engine::AudioSystem::createEventInstance(instance_name, fmod_audio.event_path);
+        Engine::AudioSystem::setEventInstancePosition(instance_name, entity_pos);
         Engine::AudioSystem::setEventInstanceVolume(instance_name, fmod_audio.volume);
         Engine::AudioSystem::startEventInstance(instance_name);
         return instance_name;
       }
       else {
-        // One-shot event
-        Engine::AudioSystem::playEvent(fmod_audio.event_path);
+        // One-shot event at entity's world position
+        Engine::AudioSystem::playEventAtPosition(fmod_audio.event_path, entity_pos);
         return ""; // No instance to track for one-shot
       }
     }

@@ -33,6 +33,7 @@
 #include "../FunctionRegistry.h"
 #include "../Time.h"
 #include "../Random.h"
+#include "../Audio/AudioSystem.h"
 
 namespace Engine
 {
@@ -492,6 +493,9 @@ namespace Engine
               camera.zoom = trans->scale.x;
             }
           });
+
+        // Keep FMOD listener in sync with the active camera position
+        Engine::AudioSystem::setListenerPosition(camera.position);
 
         Engine::Graphics::Camera render_camera = camera;
 
