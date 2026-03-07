@@ -168,8 +168,9 @@ namespace Engine {
       std::string texture_path;                  // Path to texture file (for serialization/deserialization)
       std::unordered_map<int, TileColliderConfig> tile_collider_configs; // Per-tile collider configurations (tile_index -> config)
       AnimatedTileConfig animation_config;       // Animation configuration for this atlas
+      float friction = 1.0f;                     // Friction coefficient applied to colliders generated from this atlas
 
-      AtlasEntry() : texture_handle(nullptr), subTextures(), drawIndex(-1), texture_path("") {}
+      AtlasEntry() : texture_handle(nullptr), subTextures(), drawIndex(-1), texture_path(""), friction(1.0f) {}
     };
 
   }
@@ -180,4 +181,4 @@ REFLECT_FIELDS(Engine::Graphics::SubTexture, tex_coords);
 REFLECT_FIELDS(Engine::Graphics::Tile, atlas_index, tile_index);
 REFLECT_FIELDS(Engine::Graphics::TileColliderConfig, collider_type, aabb_width, aabb_height, aabb_offset, custom_vertices);
 REFLECT_FIELDS(Engine::Graphics::AnimatedTileConfig, is_animated, sheet_cols, sheet_rows, prop_cols, prop_rows, anim_cols, anim_rows, frame_duration, is_looping);
-REFLECT_FIELDS(Engine::Graphics::AtlasEntry, texture_path, subTextures, drawIndex, tile_collider_configs, animation_config);
+REFLECT_FIELDS(Engine::Graphics::AtlasEntry, texture_path, subTextures, drawIndex, tile_collider_configs, animation_config, friction);

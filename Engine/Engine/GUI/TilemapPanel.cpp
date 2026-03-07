@@ -1867,6 +1867,21 @@ namespace TilemapPanel {
             save_loaded_tilemaps_to_project_settings();
           }
 
+          // Friction setting for this atlas
+          {
+            float friction = loaded_tilemaps[i].friction;
+            ImGui::SetNextItemWidth(-1);
+            if (ImGui::DragFloat("##friction", &friction, 0.01f, 0.0f, 1.0f, "Friction: %.2f")) {
+              friction = std::clamp(friction, 0.0f, 1.0f);
+              loaded_tilemaps[i].friction = friction;
+              save_loaded_tilemaps_to_project_settings();
+              TilemapManager::rebuild_all_layers();
+            }
+            if (ImGui::IsItemHovered()) {
+              ImGui::SetTooltip("Friction applied to tile colliders from this atlas (0 = slippery, 1 = no slip)");
+            }
+          }
+
           // Edit Colliders button
           if (ImGui::Button("Edit Tile Colliders", ImVec2(-1, 0))) {
             TileColliderEditor::Open(i);

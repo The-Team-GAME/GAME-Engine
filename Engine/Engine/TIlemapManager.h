@@ -189,6 +189,17 @@ namespace TilemapManager {
 
   /*=================================================================================
   Function Brief:
+  Rebuilds all tile collision entities across every active tilemap layer.
+  Reads current atlas settings (including friction) from project settings.
+
+  Where to call it:
+  When per-atlas settings such as friction change and need to propagate to
+  all existing tile colliders in the world.
+  ==================================================================================*/
+  void rebuild_all_layers();
+
+  /*=================================================================================
+  Function Brief:
   Calculates the world bounds of all active tilemaps.
 
   Parameters:

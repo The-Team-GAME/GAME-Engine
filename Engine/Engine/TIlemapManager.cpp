@@ -169,6 +169,7 @@ namespace TilemapManager {
     // Helper struct for rectangle merging
     struct Rectangle {
       int x, y, width, height;
+      int atlas_index;
     };
 
     // Track processed tiles using relative coordinates
@@ -207,6 +208,7 @@ namespace TilemapManager {
         }
 
         // First, expand VERTICALLY (downward) to find maximum column height
+        // Only merge tiles from the same atlas so friction is consistent per collider
         int max_height = 0;
         for (int h = 0; rel_y + h < height; ++h) {
           if (processed[rel_y + h][rel_x]) break;
@@ -214,6 +216,7 @@ namespace TilemapManager {
           Engine::Graphics::Tile check_tile = int_map->get_tile(abs_x, abs_y + h);
           if (!check_tile.is_valid()) break;
           if (get_tile_collider_type(check_tile) != Engine::Graphics::TileColliderType::Default) break;
+          if (check_tile.atlas_index != tile.atlas_index) break;
 
           max_height++;
         }
@@ -234,7 +237,8 @@ namespace TilemapManager {
             }
 
             Engine::Graphics::Tile check_tile = int_map->get_tile(abs_x + w, abs_y + h);
-            if (!check_tile.is_valid() || get_tile_collider_type(check_tile) != Engine::Graphics::TileColliderType::Default) {
+            if (!check_tile.is_valid() || get_tile_collider_type(check_tile) != Engine::Graphics::TileColliderType::Default ||
+              check_tile.atlas_index != tile.atlas_index) {
               can_expand = false;
               break;
             }
@@ -250,8 +254,8 @@ namespace TilemapManager {
           }
         }
 
-        // Store rectangle with absolute coordinates
-        rectangles.push_back({ abs_x, abs_y, rect_width, max_height });
+        // Store rectangle with absolute coordinates and originating atlas
+        rectangles.push_back({ abs_x, abs_y, rect_width, max_height, tile.atlas_index });
       }
     }
 
@@ -263,6 +267,12 @@ namespace TilemapManager {
       Math::Vec2D center_world = { center_x, center_y };
       Math::Vec2D scale = { rect.width * grid_snap, rect.height * grid_snap };
 
+      // Look up friction from the atlas entry
+      float tile_friction = 1.0f;
+      if (rect.atlas_index >= 0 && rect.atlas_index < static_cast<int>(project_settings.loaded_tilemaps.size())) {
+        tile_friction = project_settings.loaded_tilemaps[rect.atlas_index].friction;
+      }
+
       // Create collision-only entity (no rendering components)
       auto entity = Engine::ECS::create_entity()
         .add_component<Components::TileCollider>() // Marker component to identify tile collision entities
@@ -270,8 +280,7 @@ namespace TilemapManager {
         .add_component<Components::RigidBody>(true, false) // is_static = true, no gravity
         .add_component<Components::BoxCollider>(scale.x, scale.y, true); // resolve_collisions = true
 
-      // Set friction to 1.0
-      entity.get_component<Components::BoxCollider>()->kinetic_friction = 1.0f;
+      entity.get_component<Components::BoxCollider>()->kinetic_friction = tile_friction;
 
       entity.clear_layers();
       entity.add_to_layer(layer_name);
@@ -317,12 +326,20 @@ namespace TilemapManager {
             // Apply offset to center position
             Math::Vec2D final_center = center_world + box_offset;
 
+            // Look up friction from the atlas entry
+            float aabb_friction = 1.0f;
+            if (tile.atlas_index >= 0 && tile.atlas_index < static_cast<int>(project_settings.loaded_tilemaps.size())) {
+              aabb_friction = project_settings.loaded_tilemaps[tile.atlas_index].friction;
+            }
+
             // Create AABB collision entity
             auto entity = Engine::ECS::create_entity()
               .add_component<Components::TileCollider>()
               .add_component<Components::Transform2D>(final_center, 0.0f, scale)
               .add_component<Components::RigidBody>(true, false)
               .add_component<Components::BoxCollider>(box_width, box_height, true);
+
+            entity.get_component<Components::BoxCollider>()->kinetic_friction = aabb_friction;
 
             entity.clear_layers();
             entity.add_to_layer(layer_name);
@@ -422,6 +439,20 @@ namespace TilemapManager {
     Engine::ProjectSaveManager::set_dirty(
       Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path())
     );
+  }
+
+  void rebuild_all_layers() {
+    for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
+      auto layers = entity.get_layers();
+      for (Engine::ECS::LayerID layer_id = 0; layer_id < Engine::ECS::MAX_LAYERS; ++layer_id) {
+        if (layers.test(layer_id)) {
+          std::string layer_name = Engine::ECS::get_layer_name(layer_id);
+          if (!layer_name.empty()) {
+            rebuild_tilemap_for_layer(layer_name);
+          }
+        }
+      }
+    }
   }
 
   void update_all_tile_dimensions() {
