@@ -20,7 +20,7 @@
                     },
                     {
                         "data": {
-                            "drawIndex": 5,
+                            "drawIndex": 1,
                             "tex_coords_list": [
                                 [
                                     {
@@ -203,7 +203,7 @@
                                 0.10000000149011612
                             ],
                             "is_looping": true,
-                            "startTime": 77.60755157470703,
+                            "startTime": 221.6177215576172,
                             "totalDuration": 0.8000000715255737
                         },
                         "type": "Components::Animation"
@@ -212,7 +212,7 @@
                         "data": {
                             "position": {
                                 "x": 1472.1939697265625,
-                                "y": 845.0070190429688
+                                "y": 845.0038452148438
                             },
                             "rotation": 0.0,
                             "scale": {
@@ -243,7 +243,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 77.60755157470703,
+                                                "startTime": 221.6177215576172,
                                                 "totalDuration": 0.10000000149011612
                                             },
                                             "collider_data": null,
@@ -329,7 +329,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 77.60755157470703,
+                                                "startTime": 221.6177215576172,
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": null,
@@ -513,10 +513,10 @@
                         "data": {
                             "local_offset": {
                                 "x": 1472.1939697265625,
-                                "y": 845.0070190429688
+                                "y": 845.0038452148438
                             },
                             "offset_initialized": true,
-                            "parent_id": 29,
+                            "parent_id": 53,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -525,7 +525,7 @@
                         "type": "Components::Parent"
                     }
                 ],
-                "id": 25,
+                "id": 49,
                 "layers": [
                     "default",
                     "main_menu_3"
@@ -553,7 +553,7 @@
                         "data": {
                             "position": {
                                 "x": 800.0,
-                                "y": 443.5125427246094
+                                "y": 443.51214599609375
                             },
                             "rotation": 0.0,
                             "scale": {
@@ -567,10 +567,10 @@
                         "data": {
                             "local_offset": {
                                 "x": 800.0,
-                                "y": 443.5125427246094
+                                "y": 443.51214599609375
                             },
                             "offset_initialized": true,
-                            "parent_id": 29,
+                            "parent_id": 53,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -579,7 +579,7 @@
                         "type": "Components::Parent"
                     }
                 ],
-                "id": 26,
+                "id": 50,
                 "layers": [
                     "default",
                     "main_menu_2"
@@ -607,7 +607,7 @@
                         "data": {
                             "position": {
                                 "x": 800.0,
-                                "y": 449.9568786621094
+                                "y": 449.95648193359375
                             },
                             "rotation": 0.0,
                             "scale": {
@@ -621,10 +621,10 @@
                         "data": {
                             "local_offset": {
                                 "x": 800.0,
-                                "y": 449.9568786621094
+                                "y": 449.95648193359375
                             },
                             "offset_initialized": true,
-                            "parent_id": 29,
+                            "parent_id": 53,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -639,7 +639,7 @@
                         "type": "Components::Children"
                     }
                 ],
-                "id": 27,
+                "id": 51,
                 "layers": [
                     "default",
                     "main_menu_4"
@@ -651,7 +651,7 @@
                     {
                         "data": {
                             "child_ids": [
-                                30
+                                54
                             ]
                         },
                         "type": "Components::Children"
@@ -672,7 +672,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 28,
+                "id": 52,
                 "layers": [
                     "default"
                 ],
@@ -782,7 +782,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 28,
+                            "parent_id": 52,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -793,17 +793,17 @@
                     {
                         "data": {
                             "child_ids": [
-                                27,
-                                26,
+                                51,
+                                50,
                                 641,
-                                26,
-                                25
+                                50,
+                                49
                             ]
                         },
                         "type": "Components::Children"
                     }
                 ],
-                "id": 29,
+                "id": 53,
                 "layers": [
                     "default"
                 ],
@@ -847,7 +847,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 28,
+                            "parent_id": 52,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -856,7 +856,7 @@
                         "type": "Components::Parent"
                     }
                 ],
-                "id": 30,
+                "id": 54,
                 "layers": [
                     "default",
                     "main_menu_5"
@@ -867,7 +867,7 @@
                 "components": [
                     {
                         "data": {
-                            "a": 1.0,
+                            "a": 0.0,
                             "b": 1.0,
                             "g": 1.0,
                             "r": 1.0
@@ -897,8 +897,8 @@
                     {
                         "data": {
                             "blueprint_id": "MainMenu",
-                            "current_state_name": "Menu",
-                            "property_anim_playing": false,
+                            "current_state_name": "Start",
+                            "property_anim_playing": true,
                             "states": [
                                 {
                                     "first": "Menu",
@@ -936,7 +936,7 @@
                                             "name": "MainMenu::sleeping_on_update"
                                         },
                                         "property_animation": {
-                                            "duration": 3.5,
+                                            "duration": 3.0,
                                             "is_looping": true,
                                             "tracks": [
                                                 {
@@ -947,15 +947,15 @@
                                                             "value": 1.0
                                                         },
                                                         {
-                                                            "time": 1.6836260557174683,
+                                                            "time": 1.4636262655258179,
                                                             "value": 1.0
                                                         },
                                                         {
-                                                            "time": 1.8286099433898926,
+                                                            "time": 1.5486102104187012,
                                                             "value": 0.0
                                                         },
                                                         {
-                                                            "time": 3.5,
+                                                            "time": 3.0,
                                                             "value": 0.0
                                                         }
                                                     ],
@@ -977,7 +977,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 28,
+                            "parent_id": 52,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -992,12 +992,12 @@
                         "type": "Components::Children"
                     }
                 ],
-                "id": 31,
+                "id": 55,
                 "layers": [
                     "default",
                     "main_menu_6"
                 ],
-                "name": "Entity 7"
+                "name": "Any key"
             },
             {
                 "components": [
@@ -1019,7 +1019,7 @@
                     {
                         "data": {
                             "position": {
-                                "x": 860.0259399414063,
+                                "x": 628.1168823242188,
                                 "y": 446.85302734375
                             },
                             "rotation": 0.0,
@@ -1086,7 +1086,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 28,
+                            "parent_id": 52,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -1095,7 +1095,7 @@
                         "type": "Components::Parent"
                     }
                 ],
-                "id": 32,
+                "id": 56,
                 "layers": [
                     "main_menu_0"
                 ],
