@@ -427,9 +427,10 @@ namespace Engine {
     // ------------------------------------------------------------
     // 3D Audio Positioning
     // ------------------------------------------------------------
-    void setListenerPosition(const Math::Vec2D& position)
+    void setListenerPosition(const Math::Vec2D& position, float depth)
     {
       gListenerAttributes.position = ToFMODVector(position);
+      gListenerAttributes.position.z = depth;
 
       if (gStudioSystem)
         gStudioSystem->setListenerAttributes(0, &gListenerAttributes);

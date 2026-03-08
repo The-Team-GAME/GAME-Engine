@@ -68,7 +68,7 @@ namespace Engine {
     // ------------------------------------------------------------
     // 3D audio positioning
     // ------------------------------------------------------------
-    ENGINE_API void setListenerPosition(const Math::Vec2D& position);
+    ENGINE_API void setListenerPosition(const Math::Vec2D& position, float depth = 0.0f);
     ENGINE_API void setListenerAttributes(const Math::Vec2D& position, const Math::Vec2D& velocity, const Math::Vec2D& forward, const Math::Vec2D& up);
     ENGINE_API bool setEventInstancePosition(const std::string& instanceName, const Math::Vec2D& position);
     ENGINE_API bool setEventInstanceAttributes(const std::string& instanceName, const Math::Vec2D& position, const Math::Vec2D& velocity);

@@ -494,9 +494,13 @@ namespace Engine
             }
           });
 
-        // Keep FMOD listener in sync with the active camera center
+        // Keep FMOD listener in sync with the active camera center.
+        // Pull the listener forward along Z by half the visible width so
+        // FMOD computes gradual stereo panning instead of snapping to 90°.
         auto vres = Engine::Graphics::get_virtual_resolution();
-        Engine::AudioSystem::setListenerPosition(camera.position + vres * 0.5f / camera.zoom);
+        f32 half_width = vres.x * 0.5f / camera.zoom;
+        Engine::AudioSystem::setListenerPosition(
+          camera.position + vres * 0.5f / camera.zoom, -half_width);
 
         Engine::Graphics::Camera render_camera = camera;
 
