@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{97635d17-2401-484e-9d09-eea6b8b08216}">
+		<property name="assetPath">
+			<value>Big Monkey_3.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>0.64532879818594102</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{6705423e-ca5e-45ab-9fba-198807b0541c}</destination>
+		</relationship>
+	</object>
+</objects>

@@ -144,6 +144,7 @@
 	</object>
 	<object class="MixerBusEffectChain" id="{8e778b95-49af-4150-8aa0-104d8b5b57af}">
 		<relationship name="effects">
+			<destination>{67aca750-ea6f-414c-a5b2-ce572815db27}</destination>
 			<destination>{94ed9e17-8a6e-49e0-91ee-919c425f4d13}</destination>
 		</relationship>
 	</object>
@@ -169,6 +170,14 @@
 		</property>
 		<property name="qualityA">
 			<value>0.254894763</value>
+		</property>
+	</object>
+	<object class="PitchShifterEffect" id="{67aca750-ea6f-414c-a5b2-ce572815db27}">
+		<property name="pitch">
+			<value>1.09000003</value>
+		</property>
+		<property name="overlap">
+			<value>15</value>
 		</property>
 	</object>
 	<object class="MixerBusFader" id="{94ed9e17-8a6e-49e0-91ee-919c425f4d13}" />
