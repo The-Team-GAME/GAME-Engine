@@ -5,8 +5,8 @@
 #include <fmod_errors.h>
 #include <unordered_map>
 #include <algorithm>
-#include <iostream>
 #include <string>
+#include "../Logger.h"
 #include <filesystem>
 #include <chrono>
 #include <vector>
@@ -48,11 +48,9 @@ namespace Engine {
       if (result != FMOD_OK)
       {
         if (context)
-          ::std::cout << "[FMOD ERROR] " << context << ": ";
+          Log::error("[AudioSystem] FMOD {}: {}", context, FMOD_ErrorString(result));
         else
-          ::std::cout << "[FMOD ERROR] ";
-
-        ::std::cout << FMOD_ErrorString(result) << "\n";
+          Log::error("[AudioSystem] FMOD error: {}", FMOD_ErrorString(result));
         return false;
       }
       return true;
@@ -77,7 +75,7 @@ namespace Engine {
     {
       if (gStudioSystem)
       {
-        ::std::cout << "[AudioSystem] Already initialized\n";
+        Log::info("[AudioSystem] Already initialized");
         return true;
       }
 
@@ -105,7 +103,7 @@ namespace Engine {
       if (gStudioSystem)
         gStudioSystem->setListenerAttributes(0, &gListenerAttributes);
 
-      ::std::cout << "[AudioSystem] FMOD initialized\n";
+      Log::info("[AudioSystem] FMOD initialized");
       return true;
     }
 
@@ -153,7 +151,7 @@ namespace Engine {
       gStudioSystem = nullptr;
       gCoreSystem = nullptr;
 
-      ::std::cout << "[AudioSystem] FMOD shutdown\n";
+      Log::info("[AudioSystem] FMOD shutdown");
     }
 
     // ------------------------------------------------------------
@@ -163,14 +161,14 @@ namespace Engine {
     {
       if (!gStudioSystem)
       {
-        ::std::cout << "[AudioSystem] Not initialized\n";
+        Log::warning("[AudioSystem] Not initialized");
         return false;
       }
 
       // Check if already loaded
       if (gBanks.find(path) != gBanks.end())
       {
-        ::std::cout << "[AudioSystem] Bank already loaded: " << path << "\n";
+        Log::info("[AudioSystem] Bank already loaded: {}", path);
         return true;
       }
 
@@ -191,7 +189,7 @@ namespace Engine {
       }
       catch (...) {}
 
-      ::std::cout << "[AudioSystem] Loaded bank: " << path << "\n";
+      Log::info("[AudioSystem] Loaded bank: {}", path);
       return true;
     }
 
@@ -200,7 +198,7 @@ namespace Engine {
       auto it = gBanks.find(path);
       if (it == gBanks.end())
       {
-        ::std::cout << "[AudioSystem] Bank not loaded: " << path << "\n";
+        Log::warning("[AudioSystem] Bank not loaded: {}", path);
         return false;
       }
 
@@ -209,7 +207,7 @@ namespace Engine {
 
       gBanks.erase(it);
       gBankTimestamps.erase(path);
-      ::std::cout << "[AudioSystem] Unloaded bank: " << path << "\n";
+      Log::info("[AudioSystem] Unloaded bank: {}", path);
       return true;
     }
 
@@ -221,7 +219,7 @@ namespace Engine {
       }
       gBanks.clear();
       gBankTimestamps.clear();
-      ::std::cout << "[AudioSystem] Unloaded all banks\n";
+      Log::info("[AudioSystem] Unloaded all banks");
     }
 
     bool isBankLoaded(const ::std::string& path)
@@ -251,7 +249,7 @@ namespace Engine {
 
       if (!any_changed) return;
 
-      ::std::cout << "[AudioSystem] Bank file change detected, hot-reloading...\n";
+      Log::info("[AudioSystem] Bank file change detected, hot-reloading...");
 
       // Collect all loaded bank paths
       ::std::vector<::std::string> paths;
@@ -288,15 +286,15 @@ namespace Engine {
             gBankTimestamps[path] = ::std::filesystem::last_write_time(path);
           }
           catch (...) {}
-          ::std::cout << "[AudioSystem] Reloaded bank: " << path << "\n";
+          Log::info("[AudioSystem] Reloaded bank: {}", path);
         }
         else
         {
-          ::std::cout << "[AudioSystem] Failed to reload bank: " << path << "\n";
+          Log::error("[AudioSystem] Failed to reload bank: {}", path);
         }
       }
 
-      ::std::cout << "[AudioSystem] Hot-reload complete\n";
+      Log::info("[AudioSystem] Hot-reload complete");
     }
 
     // ------------------------------------------------------------
@@ -384,7 +382,7 @@ namespace Engine {
       // Check if instance already exists
       if (gEventInstances.find(instanceName) != gEventInstances.end())
       {
-        ::std::cout << "[AudioSystem] Event instance already exists: " << instanceName << "\n";
+        Log::warning("[AudioSystem] Event instance already exists: {}", instanceName);
         return false;
       }
 
@@ -409,7 +407,7 @@ namespace Engine {
         return false;
 
       gEventInstances[instanceName] = instance;
-      ::std::cout << "[AudioSystem] Created event instance: " << instanceName << "\n";
+      Log::info("[AudioSystem] Created event instance: {}", instanceName);
       return true;
     }
 
@@ -418,7 +416,7 @@ namespace Engine {
       auto it = gEventInstances.find(instanceName);
       if (it == gEventInstances.end())
       {
-        ::std::cout << "[AudioSystem] Event instance not found: " << instanceName << "\n";
+        Log::warning("[AudioSystem] Event instance not found: {}", instanceName);
         return false;
       }
 
@@ -430,7 +428,7 @@ namespace Engine {
       auto it = gEventInstances.find(instanceName);
       if (it == gEventInstances.end())
       {
-        ::std::cout << "[AudioSystem] Event instance not found: " << instanceName << "\n";
+        Log::warning("[AudioSystem] Event instance not found: {}", instanceName);
         return false;
       }
 
@@ -445,7 +443,7 @@ namespace Engine {
       auto it = gEventInstances.find(instanceName);
       if (it == gEventInstances.end())
       {
-        ::std::cout << "[AudioSystem] Event instance not found: " << instanceName << "\n";
+        Log::warning("[AudioSystem] Event instance not found: {}", instanceName);
         return false;
       }
 
@@ -457,13 +455,13 @@ namespace Engine {
       auto it = gEventInstances.find(instanceName);
       if (it == gEventInstances.end())
       {
-        ::std::cout << "[AudioSystem] Event instance not found: " << instanceName << "\n";
+        Log::warning("[AudioSystem] Event instance not found: {}", instanceName);
         return false;
       }
 
       FMOD_Check(it->second->release(), "release");
       gEventInstances.erase(it);
-      ::std::cout << "[AudioSystem] Released event instance: " << instanceName << "\n";
+      Log::info("[AudioSystem] Released event instance: {}", instanceName);
       return true;
     }
 
@@ -474,7 +472,7 @@ namespace Engine {
         pair.second->release();
       }
       gEventInstances.clear();
-      ::std::cout << "[AudioSystem] Released all event instances\n";
+      Log::info("[AudioSystem] Released all event instances");
     }
 
     bool isEventInstancePlaying(const ::std::string& instanceName)
@@ -500,7 +498,7 @@ namespace Engine {
       auto it = gEventInstances.find(instanceName);
       if (it == gEventInstances.end())
       {
-        ::std::cout << "[AudioSystem] Event instance not found: " << instanceName << "\n";
+        Log::warning("[AudioSystem] Event instance not found: {}", instanceName);
         return false;
       }
 
@@ -514,7 +512,7 @@ namespace Engine {
       auto it = gEventInstances.find(instanceName);
       if (it == gEventInstances.end())
       {
-        ::std::cout << "[AudioSystem] Event instance not found: " << instanceName << "\n";
+        Log::warning("[AudioSystem] Event instance not found: {}", instanceName);
         return false;
       }
 
@@ -552,7 +550,7 @@ namespace Engine {
       auto it = gEventInstances.find(instanceName);
       if (it == gEventInstances.end())
       {
-        ::std::cout << "[AudioSystem] Event instance not found: " << instanceName << "\n";
+        Log::warning("[AudioSystem] Event instance not found: {}", instanceName);
         return false;
       }
 
@@ -569,7 +567,7 @@ namespace Engine {
       auto it = gEventInstances.find(instanceName);
       if (it == gEventInstances.end())
       {
-        ::std::cout << "[AudioSystem] Event instance not found: " << instanceName << "\n";
+        Log::warning("[AudioSystem] Event instance not found: {}", instanceName);
         return false;
       }
 
@@ -589,7 +587,7 @@ namespace Engine {
       auto it = gEventInstances.find(instanceName);
       if (it == gEventInstances.end())
       {
-        ::std::cout << "[AudioSystem] Event instance not found: " << instanceName << "\n";
+        Log::warning("[AudioSystem] Event instance not found: {}", instanceName);
         return false;
       }
 
