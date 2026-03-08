@@ -26,8 +26,6 @@
 
 class GameplayState : public Engine::Scene
 {
-  Engine::Audio::Sound bgm_sound;
-  Engine::Audio::ChannelHandle bgm_channel = Engine::Audio::INVALID_CHANNEL;
   // UI entity IDs
   Engine::ECS::EntityID pause_button_id = 0;
   Engine::ECS::EntityID tips_button_id = 0;
@@ -39,8 +37,6 @@ class GameplayState : public Engine::Scene
 public:
   void load() {
     Engine::Resources::open_level("levels/LevelOneTestingExtra.json");
-
-    bgm_sound = Engine::Resources::load_sound("sounds/BGM/Level 1/MonomythBGM.wav");
 
 
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
@@ -109,7 +105,9 @@ public:
   };
 
   void init() {
-    bgm_channel = Engine::Audio::play_sound(bgm_sound, 0.3f, true); // TODO: get from settings
+    Engine::AudioSystem::createEventInstance("gameplay_bgm", "event:/Music/Gameplay");
+    Engine::AudioSystem::setEventInstanceVolume("gameplay_bgm", 0.3f);
+    Engine::AudioSystem::startEventInstance("gameplay_bgm");
   };
 
   void update() {
@@ -271,6 +269,7 @@ public:
   };
 
   void unload() {
-    Engine::Audio::stop_all_sounds();
+    Engine::AudioSystem::stopEventInstance("gameplay_bgm", true);
+    Engine::AudioSystem::releaseEventInstance("gameplay_bgm");
   };
 };
