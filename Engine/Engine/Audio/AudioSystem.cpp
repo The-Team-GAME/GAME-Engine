@@ -5,7 +5,6 @@
 #include <fmod_errors.h>
 #include <unordered_map>
 #include <algorithm>
-#include <string>
 #include "../Logger.h"
 #include <filesystem>
 #include <chrono>
@@ -34,8 +33,13 @@ namespace Engine {
 
     // Hot-reload state
     static ::std::unordered_map<::std::string, ::std::filesystem::file_time_type> gBankTimestamps;
+    static ::std::unordered_map<::std::string, ::std::string> gBankAbsolutePaths; // original path -> absolute path
     static auto gLastHotReloadCheck = ::std::chrono::steady_clock::now();
-    static constexpr float HOT_RELOAD_INTERVAL = 1.0f; // seconds between checks
+    static constexpr float HOT_RELOAD_INTERVAL = 1.0f;  // seconds between polls
+    static constexpr float HOT_RELOAD_STABLE_WAIT = 1.0f; // seconds timestamps must be stable before reload
+    static ::std::chrono::steady_clock::time_point gChangeDetectedAt = {};
+    static bool gPendingReload = false;
+    static bool gHotReloadDiagnosticLogged = false;
 
     // Forward declaration
     static void checkBankHotReload();
@@ -150,6 +154,8 @@ namespace Engine {
       gStudioSystem->release();
       gStudioSystem = nullptr;
       gCoreSystem = nullptr;
+      gHotReloadDiagnosticLogged = false;
+      gPendingReload = false;
 
       Log::info("[AudioSystem] FMOD shutdown");
     }
@@ -183,11 +189,15 @@ namespace Engine {
 
       gBanks[path] = bank;
 
-      // Record file timestamp for hot-reload detection
+      // Record absolute path and timestamp for hot-reload detection
       try {
-        gBankTimestamps[path] = ::std::filesystem::last_write_time(path);
+        auto abs = ::std::filesystem::absolute(path);
+        gBankAbsolutePaths[path] = abs.string();
+        gBankTimestamps[path] = ::std::filesystem::last_write_time(abs);
       }
-      catch (...) {}
+      catch (const ::std::exception& e) {
+        Log::warning("[AudioSystem] Could not record bank timestamp for '{}': {}", path, e.what());
+      }
 
       Log::info("[AudioSystem] Loaded bank: {}", path);
       return true;
@@ -207,6 +217,7 @@ namespace Engine {
 
       gBanks.erase(it);
       gBankTimestamps.erase(path);
+      gBankAbsolutePaths.erase(path);
       Log::info("[AudioSystem] Unloaded bank: {}", path);
       return true;
     }
@@ -219,6 +230,7 @@ namespace Engine {
       }
       gBanks.clear();
       gBankTimestamps.clear();
+      gBankAbsolutePaths.clear();
       Log::info("[AudioSystem] Unloaded all banks");
     }
 
@@ -234,28 +246,82 @@ namespace Engine {
     {
       if (!gStudioSystem || gBankTimestamps.empty()) return;
 
-      bool any_changed = false;
-      for (auto& [path, timestamp] : gBankTimestamps)
+      // One-time diagnostic: show which paths are being watched
+      if (!gHotReloadDiagnosticLogged)
       {
-        try {
-          auto current_time = ::std::filesystem::last_write_time(path);
-          if (current_time != timestamp) {
-            any_changed = true;
-            break;
-          }
-        }
-        catch (...) {}
+        gHotReloadDiagnosticLogged = true;
+        Log::info("[AudioSystem] Hot-reload watching {} bank(s):", gBankAbsolutePaths.size());
+        for (auto& [orig, abs] : gBankAbsolutePaths)
+          Log::info("  {}", abs);
       }
 
-      if (!any_changed) return;
+      // Snapshot current on-disk timestamps using stored absolute paths
+      bool any_changed = false;
+      ::std::unordered_map<::std::string, ::std::filesystem::file_time_type> currentTimes;
+      for (auto& [path, recorded] : gBankTimestamps)
+      {
+        auto absIt = gBankAbsolutePaths.find(path);
+        const ::std::string& absPath = (absIt != gBankAbsolutePaths.end()) ? absIt->second : path;
+        try {
+          auto t = ::std::filesystem::last_write_time(absPath);
+          currentTimes[path] = t;
+          if (t != recorded)
+          {
+            Log::info("[AudioSystem] Bank changed: {}", absPath);
+            any_changed = true;
+          }
+        }
+        catch (const ::std::exception& e) {
+          // File temporarily inaccessible (being written) — treat as changed
+          Log::warning("[AudioSystem] Cannot read timestamp for '{}': {} — assuming changed", absPath, e.what());
+          any_changed = true;
+        }
+      }
 
-      Log::info("[AudioSystem] Bank file change detected, hot-reloading...");
+      if (any_changed)
+      {
+        // Update our snapshot to the latest times
+        for (auto& [path, t] : currentTimes)
+          gBankTimestamps[path] = t;
+
+        if (!gPendingReload)
+        {
+          // First detection — start the stability timer
+          gPendingReload = true;
+          gChangeDetectedAt = ::std::chrono::steady_clock::now();
+          Log::info("[AudioSystem] Bank change detected, waiting for writes to finish...");
+        }
+        else
+        {
+          // Still changing — reset the stability timer
+          gChangeDetectedAt = ::std::chrono::steady_clock::now();
+        }
+        return;
+      }
+
+      // No change detected this poll. If a reload is pending, check if stable long enough.
+      if (!gPendingReload) return;
+
+      float stable_secs = ::std::chrono::duration<float>(
+        ::std::chrono::steady_clock::now() - gChangeDetectedAt).count();
+      if (stable_secs < HOT_RELOAD_STABLE_WAIT) return;
+
+      // Timestamps have been stable — proceed with reload
+      gPendingReload = false;
+      Log::info("[AudioSystem] Bank files stable, hot-reloading...");
 
       // Collect all loaded bank paths
       ::std::vector<::std::string> paths;
       paths.reserve(gBanks.size());
       for (auto& [path, _] : gBanks)
         paths.push_back(path);
+
+      // Strings banks must load first so event name lookups work
+      ::std::stable_sort(paths.begin(), paths.end(), [](const ::std::string& a, const ::std::string& b) {
+        bool a_str = a.find(".strings.") != ::std::string::npos;
+        bool b_str = b.find(".strings.") != ::std::string::npos;
+        return a_str > b_str;
+      });
 
       // Release all instances and caches (they reference the old banks)
       releaseAllEventInstances();
@@ -269,9 +335,10 @@ namespace Engine {
       gBanks.clear();
       gBankTimestamps.clear();
 
-      gStudioSystem->flushCommands();
+      // Let FMOD process the unloads before loading new banks
+      gStudioSystem->update();
 
-      // Reload all banks
+      // Reload all banks in order
       for (auto& path : paths)
       {
         FMOD::Studio::Bank* bank = nullptr;
