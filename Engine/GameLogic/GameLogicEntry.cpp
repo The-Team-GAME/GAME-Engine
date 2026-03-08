@@ -448,10 +448,37 @@ static void register_upgrade_applicators()
   // Player action-specific stats (unused atm until implementations**)
   // ===============================================
 
+  // --- Dash ---
+
+  // "dash_cooldown" — reduces / scales the dash cooldown
+  //   Flat:       cooldown = max(1, cooldown - value)
+  //   Multiplier: cooldown *= value
+  mgr.register_stat_applicator("dash_cooldown",
+    [](Engine::FileIO::UpgradeType type, float value) {
+      auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+      if (!player_entity.is_valid()) {
+        Log::warning("[UpgradeApplicator] No player entity found for 'dash_cooldown'");
+        return;
+      }
+      auto* player = player_entity.get_component<Components::Player>();
+      if (!player) return;
+
+      if (type == Engine::FileIO::UpgradeType::Flat) {
+        player->dash.cooldown = std::max(1.0f, player->dash.cooldown - value);
+      }
+      else {
+        player->dash.cooldown *= value;
+        if (player->dash.cooldown < 1.0f) player->dash.cooldown = 1.0f;
+      }
+
+      player->dash.cd_timer = std::min(player->dash.cd_timer, player->dash.cooldown);
+      Log::info("[UpgradeApplicator] dash_cooldown applied — cd:{}", player->dash.cooldown);
+    });
+
   // --- Uppercut ---
 
   // "uppercut_cooldown" — reduces / scales the uppercut cooldown
-  //   Flat:       cooldown = max(0, cooldown - value)
+  //   Flat:       cooldown = max(1, cooldown - value)
   //   Multiplier: cooldown *= value
   mgr.register_stat_applicator("uppercut_cooldown",
     [](Engine::FileIO::UpgradeType type, float value) {
@@ -464,11 +491,11 @@ static void register_upgrade_applicators()
       if (!player) return;
 
       if (type == Engine::FileIO::UpgradeType::Flat) {
-        player->uppercut.cooldown = std::max(0.0f, player->uppercut.cooldown - value);
+        player->uppercut.cooldown = std::max(1.0f, player->uppercut.cooldown - value);
       }
       else {
         player->uppercut.cooldown *= value;
-        if (player->uppercut.cooldown < 0.0f) player->uppercut.cooldown = 0.0f;
+        if (player->uppercut.cooldown < 1.0f) player->uppercut.cooldown = 1.0f;
       }
 
       Log::info("[UpgradeApplicator] uppercut_cooldown applied — cd:{}", player->uppercut.cooldown);
@@ -511,11 +538,11 @@ static void register_upgrade_applicators()
       if (!player) return;
 
       if (type == Engine::FileIO::UpgradeType::Flat) {
-        player->smash.cooldown = std::max(0.0f, player->smash.cooldown - value);
+        player->smash.cooldown = std::max(1.0f, player->smash.cooldown - value);
       }
       else {
         player->smash.cooldown *= value;
-        if (player->smash.cooldown < 0.0f) player->smash.cooldown = 0.0f;
+        if (player->smash.cooldown < 1.0f) player->smash.cooldown = 1.0f;
       }
 
       Log::info("[UpgradeApplicator] smash_cooldown applied — cd:{}", player->smash.cooldown);

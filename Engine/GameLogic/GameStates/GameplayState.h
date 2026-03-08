@@ -51,9 +51,15 @@ public:
     // camera.add_component<Components::Camera>("player camera", true);
     // camera.add_component<Components::Parent>(player_entity.get_id());
 
-    // TODO: REMOVE
-    player_entity.add_component<Components::Health>(5, 5);
-    // player_entity.add_component<Components::HeartHUDSprite>();
+    // Ensure runtime player health + HUD are present even if level data was edited.
+    if (player_entity.is_valid()) {
+      if (!player_entity.has_component<Components::Health>()) {
+        player_entity.add_component<Components::Health>(5, 5);
+      }
+      if (!player_entity.has_component<Components::HeartHUDSprite>()) {
+        player_entity.add_component<Components::HeartHUDSprite>();
+      }
+    }
 
     // Victory zone - triggers victory screen when player enters
     // TODO: Position this at the end of the level

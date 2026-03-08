@@ -30,15 +30,6 @@
             "value": 1.0
         },
         {
-            "display_name": "Base Atk Speed Up I (Copy)",
-            "id": "atk_spd",
-            "max_level": 8,
-            "rarity": "Common",
-            "stat_name": "base_attack_damage",
-            "type": "Flat",
-            "value": 1.0
-        },
-        {
             "display_name": "Base Atk Damage Up II",
             "id": "atk_dmg_II",
             "max_level": 4,
@@ -84,6 +75,33 @@
             "value": 3.0
         },
         {
+            "display_name": "Uppercut Cooldown",
+            "id": "upp_cd",
+            "max_level": 4,
+            "rarity": "Rare",
+            "stat_name": "uppercut_cooldown",
+            "type": "Flat",
+            "value": 1.0
+        },
+        {
+            "display_name": "Uppercut Cooldown II",
+            "id": "upp_cd_II",
+            "max_level": 2,
+            "rarity": "Epic",
+            "stat_name": "uppercut_cooldown",
+            "type": "Flat",
+            "value": 2.0
+        },
+        {
+            "display_name": "Uppercut Cooldown III",
+            "id": "upp_cd_III",
+            "max_level": 1,
+            "rarity": "Legendary",
+            "stat_name": "uppercut_cooldown",
+            "type": "Flat",
+            "value": 3.0
+        },
+        {
             "display_name": "Smash Damage Up",
             "id": "smash_dmg",
             "max_level": 8,
@@ -111,6 +129,33 @@
             "value": 3.0
         },
         {
+            "display_name": "Smash Cooldown Reduction",
+            "id": "smash_cd",
+            "max_level": 4,
+            "rarity": "Rare",
+            "stat_name": "smash_cooldown",
+            "type": "Flat",
+            "value": 1.0
+        },
+        {
+            "display_name": "Smash Cooldown Reduction II",
+            "id": "smash_cd_II",
+            "max_level": 2,
+            "rarity": "Epic",
+            "stat_name": "smash_cooldown",
+            "type": "Flat",
+            "value": 2.0
+        },
+        {
+            "display_name": "Smash Cooldown Reduction III",
+            "id": "smash_cd_III",
+            "max_level": 1,
+            "rarity": "Legendary",
+            "stat_name": "smash_cooldown",
+            "type": "Flat",
+            "value": 3.0
+        },
+        {
             "display_name": "Health Up",
             "id": "hp",
             "max_level": 30,
@@ -127,6 +172,33 @@
             "stat_name": "base_attack_damage",
             "type": "Multiplier",
             "value": 1.2000000476837158
+        },
+        {
+            "display_name": "Dash Cooldown",
+            "id": "dash_cd",
+            "max_level": 4,
+            "rarity": "Rare",
+            "stat_name": "dash_cooldown",
+            "type": "Flat",
+            "value": 1.0
+        },
+        {
+            "display_name": "Dash Cooldown II",
+            "id": "dash_cd_II",
+            "max_level": 2,
+            "rarity": "Epic",
+            "stat_name": "dash_cooldown",
+            "type": "Flat",
+            "value": 2.0
+        },
+        {
+            "display_name": "Dash Cooldown III",
+            "id": "dash_cd_III",
+            "max_level": 1,
+            "rarity": "Legendary",
+            "stat_name": "dash_cooldown",
+            "type": "Flat",
+            "value": 3.0
         }
     ]
 }
