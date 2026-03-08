@@ -278,18 +278,4 @@ namespace Engine
         rolled_indices_[1] = -1;
     }
 
-    // ---- In-game picker UI signaling ----
-
-    void UpgradeManager::request_upgrade_picker()
-    {
-        upgrade_picker_requested_ = true;
-    }
-
-    bool UpgradeManager::consume_upgrade_picker_request()
-    {
-        bool result = upgrade_picker_requested_;
-        upgrade_picker_requested_ = false;
-        return result;
-    }
-
 } // namespace Engine

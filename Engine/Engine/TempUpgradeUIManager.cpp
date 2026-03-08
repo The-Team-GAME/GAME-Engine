@@ -6,14 +6,12 @@
 //-----------------------------------------------------------------------------------
 #include "TempUpgradeUIManager.h"
 #include "Precompiled.h"
-#include "GUI/UpgradePickerUI.h"
 
 namespace Engine
 {
   void TempUpgradeUIManager::draw()
   {
-#ifndef GAME_BUILD
-    UpgradePickerUI();
-#endif
+    // Upgrade picker UI is now handled by UpgradeUIStateMachine (entity-based).
+    // This function is kept as a no-op for ABI compatibility.
   }
 }

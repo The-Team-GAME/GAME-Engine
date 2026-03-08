@@ -95,14 +95,6 @@ namespace Engine
 
     ENGINE_API void reset();
 
-    // ---- In-game picker UI signaling ----
-
-    // Signal the UpgradePickerUI panel to open the card-pick modal this frame.
-    ENGINE_API void request_upgrade_picker();
-
-    // Consumed once by UpgradePickerUI; returns true exactly once per request.
-    ENGINE_API bool consume_upgrade_picker_request();
-
   private:
     UpgradeManager() = default;
 
@@ -117,9 +109,6 @@ namespace Engine
     // Rolled cards
     bool cards_rolled_ = false;
     int rolled_indices_[2] = { -1, -1 };
-
-    // UI signal
-    bool upgrade_picker_requested_ = false;
   };
 
 } // namespace Engine

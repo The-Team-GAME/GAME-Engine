@@ -41,6 +41,8 @@
 #include "Lua/LuaComponentBindings.h"
 #include "HotReloadManager.h"
 #include "GUI/TilemapPanel.h"
+#include "UpgradeManager.h"
+#include "UpgradeUIStateMachine.h"
 
 namespace Engine
 {
@@ -499,6 +501,10 @@ namespace Engine
     entity_clipboard.reset();
 
     Engine::SceneManager::cleanup();
+
+    // Destroy upgrade UI state machine before entities are wiped
+    Engine::UpgradeUIStateMachine::destroy_instance();
+    Engine::UpgradeManager::destroy_instance();
 
     // Force-destroy any entities that survived scene teardown so that
     // component destructors (including StateMachine callback name strings
