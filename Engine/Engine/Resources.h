@@ -21,7 +21,6 @@
 #include <memory>
 #include <variant>
 #include "Graphics/Renderer.h"
-#include "Audio/AudioPlayer.h"
 #include "ECS/Prefab.h"
 #include "LevelManager.h"
 #include "EngineExport.h"
@@ -33,14 +32,12 @@ namespace Engine {
       std::monostate,  // Empty state for failed loads
       Engine::Graphics::Texture,
       Engine::Graphics::Font,
-      Engine::Audio::Sound,
       Engine::ECS::Prefab,
       Engine::EntityList
     >;
     // Declare as extern - actual definition in Resources.cpp
     ENGINE_API extern std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> texture_cache;
     ENGINE_API extern std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> font_cache;
-    ENGINE_API extern std::unordered_map<std::string, std::weak_ptr<Engine::Audio::SoundData>> sound_cache;
     ENGINE_API extern std::unordered_map<std::string, std::weak_ptr<Engine::ECS::PrefabImpl>> prefab_cache;
     ENGINE_API extern std::unordered_map<std::string, Engine::EntityList> level_cache;
 
@@ -52,8 +49,6 @@ namespace Engine {
       size_t texture_alive;
       size_t font_count;
       size_t font_alive;
-      size_t sound_count;
-      size_t sound_alive;
       size_t prefab_count;
       size_t prefab_alive;
     };
@@ -83,12 +78,6 @@ namespace Engine {
 
     ENGINE_API Engine::Graphics::Texture load_texture(const std::string& filepath, bool append_resource_path = true, bool persist = false);
     ENGINE_API Engine::Graphics::Font load_font(const std::string& filepath, u32 size, bool append_resource_path = true, bool persist = false);
-
-    // Load sound effect (stored in memory)
-    ENGINE_API Engine::Audio::Sound load_sound(const std::string& filepath, bool append_resource_path = true, bool persist = false);
-
-    // Load music (streamed from disk)
-    ENGINE_API Engine::Audio::Sound load_music(const std::string& filepath, bool append_resource_path = true, bool persist = false);
 
     ENGINE_API Engine::Graphics::Texture get_rect_texture();
 
