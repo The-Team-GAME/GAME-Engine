@@ -16,6 +16,7 @@
 
 #include <imgui.h>
 #include <string>
+#include <vector>
 #include "../FileIO/Settings.h"
 #include "../FileIO/SettingsManager.h"
 #include "../UpgradeManager.h"
@@ -82,29 +83,60 @@ inline void UpgradePickerUI()
     return buffer;
   };
 
-  auto draw_card_sprite_button = [](Engine::Graphics::Texture texture, int sprite_index, const char* id, float max_width, float max_height, float& hover_lerp) -> bool {
+  auto resolve_upgrade_card_texture = [](const UpgradeDefinition& upg) -> Engine::Graphics::Texture {
+    std::vector<std::string> candidate_paths;
+    if (!upg.image_path.empty()) {
+      candidate_paths.push_back(upg.image_path);
+    }
+
+    const bool is_heal_upgrade = (upg.id == "hp") || (upg.stat_name == "health");
+    if (is_heal_upgrade) {
+      Engine::Resources::remove_from_cache("images/heal.png", true);
+      auto heal_texture = Engine::Resources::load_texture("images/heal.png", true, false);
+      if (heal_texture && heal_texture->id != 0) {
+        return heal_texture;
+      }
+
+      candidate_paths.push_back("images/heal.png");
+    }
+
+    static bool heal_cache_flushed = false;
+    if (is_heal_upgrade && !heal_cache_flushed)
+    {
+      for (const auto& image_path : candidate_paths)
+      {
+        Engine::Resources::remove_from_cache(image_path, true);
+      }
+      heal_cache_flushed = true;
+    }
+
+    for (const auto& image_path : candidate_paths) {
+      auto texture = Engine::Resources::load_texture(image_path, true, false);
+      if (texture && texture->id != 0) {
+        return texture;
+      }
+    }
+
+    return nullptr;
+  };
+
+  auto draw_texture_button = [](Engine::Graphics::Texture texture, const char* id, float max_width, float max_height, float& hover_lerp, ImVec2 uv0, ImVec2 uv1, float display_aspect_ratio = 0.0f) -> bool {
     if (!texture || texture->id == 0 || texture->width <= 0 || texture->height <= 0) {
       return false;
     }
 
-    constexpr int sprite_columns = 6;
-    const int clamped_index = (sprite_index < 0) ? 0 : (sprite_index >= sprite_columns ? sprite_columns - 1 : sprite_index);
-
-    const float sprite_width = static_cast<float>(texture->width) / static_cast<float>(sprite_columns);
-    const float sprite_height = static_cast<float>(texture->height);
-
-    const float uv_left = (sprite_width * static_cast<float>(clamped_index)) / static_cast<float>(texture->width);
-    const float uv_right = (sprite_width * static_cast<float>(clamped_index + 1)) / static_cast<float>(texture->width);
-
     const float available_width = ImGui::GetContentRegionAvail().x;
     const float target_width = (available_width > 0.0f) ? std::min(max_width, available_width) : max_width;
+    const float aspect_ratio = (display_aspect_ratio > 0.0f)
+      ? display_aspect_ratio
+      : (static_cast<float>(texture->height) / static_cast<float>(texture->width));
 
     float base_width = target_width;
-    float base_height = base_width * (sprite_height / sprite_width);
+    float base_height = base_width * aspect_ratio;
 
     if (base_height > max_height) {
       base_height = max_height;
-      base_width = base_height * (sprite_width / sprite_height);
+      base_width = base_height / aspect_ratio;
     }
 
     const float scale = 1.0f + 0.08f * hover_lerp;
@@ -137,13 +169,24 @@ inline void UpgradePickerUI()
       (ImTextureID)(intptr_t)texture->id,
       ImGui::GetItemRectMin(),
       ImGui::GetItemRectMax(),
-      ImVec2(uv_left, 0.0f),
-      ImVec2(uv_right, 1.0f),
+      uv0,
+      uv1,
       IM_COL32(255, 255, 255, 255)
     );
     ImGui::PopID();
 
     return pressed;
+  };
+
+  auto draw_card_sprite_button = [&](Engine::Graphics::Texture texture, int sprite_index, const char* id, float max_width, float max_height, float& hover_lerp) -> bool {
+    constexpr int sprite_columns = 6;
+    const int clamped_index = (sprite_index < 0) ? 0 : (sprite_index >= sprite_columns ? sprite_columns - 1 : sprite_index);
+    const float uv_left = static_cast<float>(clamped_index) / static_cast<float>(sprite_columns);
+    const float uv_right = static_cast<float>(clamped_index + 1) / static_cast<float>(sprite_columns);
+    const float sprite_display_aspect_ratio = (texture && texture->width > 0)
+      ? (static_cast<float>(texture->height) / (static_cast<float>(texture->width) / static_cast<float>(sprite_columns)))
+      : 0.0f;
+    return draw_texture_button(texture, id, max_width, max_height, hover_lerp, ImVec2(uv_left, 0.0f), ImVec2(uv_right, 1.0f), sprite_display_aspect_ratio);
   };
 
   static Engine::Graphics::Texture s_card_spritesheet = Engine::Resources::load_texture("images/Cards_Spritesheet.png");
@@ -187,6 +230,7 @@ inline void UpgradePickerUI()
     // =========================================================================
     // LEFT column — current upgrade levels
     // =========================================================================
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.05f, 0.05f, 0.09f, 1.0f));
     ImGui::BeginChild("##upg_history", ImVec2(210, 360), true);
     ImGui::TextColored(ImVec4(0.85f, 0.85f, 0.85f, 1.0f), "Your Upgrades");
     ImGui::Separator();
@@ -209,7 +253,8 @@ inline void UpgradePickerUI()
     if (!has_any)
       ImGui::TextDisabled("None yet.");
 
-    ImGui::EndChild();
+  ImGui::EndChild();
+  ImGui::PopStyleColor();
 
     ImGui::SameLine(0.0f, 12.0f);
 
@@ -237,6 +282,10 @@ inline void UpgradePickerUI()
         auto& upg = settings.upgrades[idx];
         int   cur_lvl = mgr.get_upgrade_level(upg.id);
         ImVec4 rc = rarity_color(upg.rarity);
+        auto override_card_texture = resolve_upgrade_card_texture(upg);
+        const bool has_full_card_override = (override_card_texture && override_card_texture->id != 0);
+        const bool is_heal_upgrade = upg.id == "hp" || upg.stat_name == "health";
+        const bool expects_standalone_card = !upg.image_path.empty() || upg.id == "hp" || upg.stat_name == "health";
 
         // Card background tinted with rarity colour
         ImGui::PushStyleColor(ImGuiCol_ChildBg,
@@ -250,16 +299,34 @@ inline void UpgradePickerUI()
 
         // Card art from shared spritesheet
         std::string image_button_id = "card_image_" + std::to_string(c);
-        if (draw_card_sprite_button(s_card_spritesheet, get_upgrade_sprite_index(upg), image_button_id.c_str(), card_w - 24.0f, 340.0f, s_card_hover_lerp[c])) {
+        if (has_full_card_override)
+        {
+          const float atlas_display_aspect_ratio = (s_card_spritesheet && s_card_spritesheet->width > 0)
+            ? (static_cast<float>(s_card_spritesheet->height) / (static_cast<float>(s_card_spritesheet->width) / 6.0f))
+            : 0.0f;
+          const ImVec2 override_uv0 = is_heal_upgrade ? ImVec2(112.0f / 640.0f, 120.0f / 896.0f) : ImVec2(0.0f, 0.0f);
+          const ImVec2 override_uv1 = is_heal_upgrade ? ImVec2(524.0f / 640.0f, 776.0f / 896.0f) : ImVec2(1.0f, 1.0f);
+          const float override_display_aspect_ratio = atlas_display_aspect_ratio;
+          if (draw_texture_button(override_card_texture, image_button_id.c_str(), card_w - 24.0f, 340.0f, s_card_hover_lerp[c], override_uv0, override_uv1, override_display_aspect_ratio)) {
+            pick_slot = c;
+          }
+        }
+        else if (!expects_standalone_card && draw_card_sprite_button(s_card_spritesheet, get_upgrade_sprite_index(upg), image_button_id.c_str(), card_w - 24.0f, 340.0f, s_card_hover_lerp[c])) {
           pick_slot = c;
         }
-        if (s_card_spritesheet && s_card_spritesheet->id != 0) {
+        if (has_full_card_override || (!expects_standalone_card && s_card_spritesheet && s_card_spritesheet->id != 0)) {
           ImGui::Spacing();
         }
         else {
           ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.9f, 1.0f));
           ImGui::TextWrapped("%s", upg.display_name.c_str());
           ImGui::PopStyleColor();
+          if (expects_standalone_card && !has_full_card_override)
+          {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.55f, 0.55f, 1.0f));
+            ImGui::TextWrapped("Standalone card image missing: %s", upg.image_path.empty() ? "images/heal.png" : upg.image_path.c_str());
+            ImGui::PopStyleColor();
+          }
         }
 
         ImGui::Separator();
