@@ -5,7 +5,7 @@
 			<value>MonkeyChasing</value>
 		</property>
 		<property name="outputFormat">
-			<value>1</value>
+			<value>2</value>
 		</property>
 		<relationship name="folder">
 			<destination>{f1471c80-c6c5-42c6-a7c4-35d81a229e0e}</destination>
@@ -117,6 +117,7 @@
 	</object>
 	<object class="MixerBusEffectChain" id="{2753eb36-852d-4328-8a4f-af53b2897565}">
 		<relationship name="effects">
+			<destination>{136e1b24-8399-45bf-a7f5-1018a4d8e933}</destination>
 			<destination>{b02c0037-0690-4e74-941f-60886f7ad8fa}</destination>
 			<destination>{7bb1cccf-69df-4768-ae84-17cf5f7c580c}</destination>
 		</relationship>
@@ -144,6 +145,17 @@
 		</relationship>
 	</object>
 	<object class="MixerBusPanner" id="{cbcabee9-7d5a-4b9b-bf08-8bc2d0a3fa81}" />
+	<object class="SpatialiserEffect" id="{136e1b24-8399-45bf-a7f5-1018a4d8e933}">
+		<property name="minimumDistance">
+			<value>0</value>
+		</property>
+		<property name="maximumDistance">
+			<value>10000</value>
+		</property>
+		<property name="overrideRange">
+			<value>true</value>
+		</property>
+	</object>
 	<object class="MixerBusFader" id="{b02c0037-0690-4e74-941f-60886f7ad8fa}" />
 	<object class="MultibandEqEffect" id="{7bb1cccf-69df-4768-ae84-17cf5f7c580c}">
 		<property name="filterTypeA">

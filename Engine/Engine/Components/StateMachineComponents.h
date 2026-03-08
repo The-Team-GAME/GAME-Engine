@@ -31,8 +31,6 @@
 #include <queue>
 #include "SpatialComponents.h"
 #include "../Resources.h"
-#include "../Audio/AudioPlayer.h"
-#include "../Audio/AudioPlayerInternal.h"
 #include "AudioComponents.h"
 #include "AnimatorComponents.h"
 #include "StateMachineBlueprintRegistry.h"
@@ -40,15 +38,11 @@
 namespace Components
 {
   // ============================================================================
-  // State Audio Definition
+  // State Audio Definition (FMOD Studio)
   // ============================================================================
 
-  struct StateAudio {
-    Components::Sound sound;
-    f32 volume = 1.0f;
-    bool loop = false;
-    bool stop_on_exit = true;
-  };
+  // StateAudio is now an alias for FMODStateAudio
+  using StateAudio = FMODStateAudio;
 
   // ============================================================================
   // State Animation Definition
@@ -93,10 +87,8 @@ namespace Components
 
     // Optional animation data for this state
     std::optional<StateAnimation> animation;
-    // Optional audio data for this state (OLD SYSTEM - kept for backwards compatibility)
-    std::optional<StateAudio> audio;
-    // Optional FMOD audio data for this state (NEW SYSTEM - preferred)
-    std::optional<FMODStateAudio> fmod_audio;
+    // Optional audio data for this state
+    std::optional<FMODStateAudio> audio;
     // Optional property animation clip for this state (animates component fields over time)
     std::optional<PropertyAnimationClip> property_animation;
 
@@ -106,12 +98,10 @@ namespace Components
     // Callbacks are left empty — sync_with_blueprint() fills them in from the blueprint.
     State(const std::string& state_name,
       std::optional<StateAnimation> state_animation = std::nullopt,
-      std::optional<StateAudio> state_audio = std::nullopt,
-      std::optional<FMODStateAudio> fmod_state_audio = std::nullopt)
+      std::optional<FMODStateAudio> state_audio = std::nullopt)
       : name(state_name)
       , animation(state_animation)
       , audio(state_audio)
-      , fmod_audio(fmod_state_audio)
     {
     }
 
@@ -159,8 +149,8 @@ namespace Components
     bool is_first_frame_ = false;     // Track if we just entered current state
     bool has_started_ = false;        // Track if the state machine has started running
     std::vector<std::string> state_history_; // Track previous states
-    Engine::Audio::ChannelHandle current_audio_channel_ = Engine::Audio::INVALID_CHANNEL; // Track currently playing audio (OLD SYSTEM)
-    std::string current_fmod_instance_; // Track current FMOD instance name (NEW SYSTEM)
+    std::string current_fmod_instance_; // Track current FMOD instance name
+    std::string current_fmod_event_path_; // Track the event path of the running instance (editor change detection)
 
     // Property animation playback state (non-serialized)
     float property_anim_elapsed_ = 0.0f;
@@ -266,6 +256,33 @@ namespace Components
       // Execute current state's update
       auto& current_state = states[current_state_name];
       current_state.invoke_on_update(entity);
+
+      // If the current state has looping audio:
+      //   - Detect if the event path was changed in the editor and restart with the new event
+      //   - Keep 3D position in sync every frame
+      //   - Restart if the instance stopped (loop support)
+      if (current_state.audio.has_value() && current_state.audio->loop) {
+        const std::string& desired_path = current_state.audio->event_path;
+        if (!desired_path.empty()) {
+          // Editor changed the path mid-state — stop/release old, apply new
+          if (current_fmod_event_path_ != desired_path) {
+            if (!current_fmod_instance_.empty()) {
+              Engine::AudioSystem::stopEventInstance(current_fmod_instance_, true);
+              Engine::AudioSystem::releaseEventInstance(current_fmod_instance_);
+              current_fmod_instance_.clear();
+            }
+            current_fmod_instance_ = apply_fmod_state_audio(current_state.audio.value());
+          }
+          else if (!current_fmod_instance_.empty()) {
+            if (auto* t = entity.get_component<Transform2D>()) {
+              Engine::AudioSystem::setEventInstancePosition(current_fmod_instance_, t->position);
+            }
+            if (!Engine::AudioSystem::isEventInstancePlaying(current_fmod_instance_)) {
+              Engine::AudioSystem::startEventInstance(current_fmod_instance_);
+            }
+          }
+        }
+      }
 
       // Evaluate property animation for current state
       evaluate_property_animation(entity, Engine::Time::get_fixed_dt());
@@ -443,31 +460,12 @@ namespace Components
           state_history_.erase(state_history_.begin());
         }
 
-        // Handle OLD audio system stop
-        if (current_audio_channel_ != Engine::Audio::INVALID_CHANNEL) {
-          bool should_stop = true;
-          if (old_state.audio.has_value()) {
-            should_stop = old_state.audio->stop_on_exit;
-          }
-
-          if (should_stop) {
-            Engine::Audio::stop_channel(current_audio_channel_);
-          }
-          current_audio_channel_ = Engine::Audio::INVALID_CHANNEL;
-        }
-
-        // Handle NEW FMOD audio system stop
+        // Handle FMOD audio system stop
         if (!current_fmod_instance_.empty()) {
-          bool should_stop = true;
-          if (old_state.fmod_audio.has_value()) {
-            should_stop = old_state.fmod_audio->stop_on_state_exit;
-          }
-
-          if (should_stop) {
-            Engine::AudioSystem::stopEventInstance(current_fmod_instance_, true);
-            Engine::AudioSystem::releaseEventInstance(current_fmod_instance_);
-          }
+          Engine::AudioSystem::stopEventInstance(current_fmod_instance_, true);
+          Engine::AudioSystem::releaseEventInstance(current_fmod_instance_);
           current_fmod_instance_.clear();
+          current_fmod_event_path_.clear();
         }
       }
 
@@ -486,12 +484,9 @@ namespace Components
         apply_state_animation(new_state_obj.animation.value());
       }
 
-      // Priority: Use FMOD audio if available, otherwise fall back to old audio system
-      if (new_state_obj.fmod_audio.has_value()) {
-        current_fmod_instance_ = apply_fmod_state_audio(new_state_obj.fmod_audio.value());
-      }
-      else if (new_state_obj.audio.has_value()) {
-        current_audio_channel_ = apply_state_audio(new_state_obj.audio.value());
+      // Apply FMOD audio if available
+      if (new_state_obj.audio.has_value()) {
+        current_fmod_instance_ = apply_fmod_state_audio(new_state_obj.audio.value());
       }
     }
 
@@ -543,27 +538,6 @@ namespace Components
           box->aabb.half_height = box->height / 2.0f;
         }
       }
-    }
-
-    // Apply the audio data (OLD SYSTEM)
-    Engine::Audio::ChannelHandle apply_state_audio(const StateAudio& audio) {
-      if (!owner_entity_) return Engine::Audio::INVALID_CHANNEL;
-
-      // Get or add Sound component
-      Sound* sound_comp = owner_entity_->get_component<Sound>();
-      if (!sound_comp) {
-        Log::warning("Sound component not found for entity {}", owner_entity_->get_id());
-        owner_entity_->add_component<Sound>();
-
-        sound_comp = owner_entity_->get_component<Sound>();
-
-      }
-
-      // Update Sound component data
-      sound_comp->sound_handle = audio.sound.sound_handle;
-
-      // Play the sound via the component
-      return sound_comp->play(audio.volume, audio.loop);
     }
 
   public:
@@ -685,16 +659,28 @@ namespace Components
       // Generate unique instance name using entity ID and state name
       std::string instance_name = "StateAudio_" + std::to_string(owner_entity_->get_id()) + "_" + current_state_name;
 
+      // Get entity world position for spatial audio
+      Math::Vec2D entity_pos = { 0.0f, 0.0f };
+      if (auto* t = owner_entity_->get_component<Transform2D>()) {
+        entity_pos = t->position;
+      }
+
       // If looping, create persistent instance
       if (fmod_audio.loop) {
+        // Always release any pre-existing instance with this name so editor path changes take effect
+        Engine::AudioSystem::stopEventInstance(instance_name, true);
+        Engine::AudioSystem::releaseEventInstance(instance_name);
+
         Engine::AudioSystem::createEventInstance(instance_name, fmod_audio.event_path);
+        Engine::AudioSystem::setEventInstancePosition(instance_name, entity_pos);
         Engine::AudioSystem::setEventInstanceVolume(instance_name, fmod_audio.volume);
         Engine::AudioSystem::startEventInstance(instance_name);
+        current_fmod_event_path_ = fmod_audio.event_path;
         return instance_name;
       }
       else {
-        // One-shot event
-        Engine::AudioSystem::playEvent(fmod_audio.event_path);
+        // One-shot event at entity's world position
+        Engine::AudioSystem::playEventAtPosition(fmod_audio.event_path, entity_pos);
         return ""; // No instance to track for one-shot
       }
     }
@@ -703,7 +689,6 @@ namespace Components
 } // namespace Components
 
 REFLECT_FIELDS(Components::ColliderData, width, height, offset, vertices)
-REFLECT_FIELDS(Components::State, name, on_enter_callback, on_update_callback, on_exit_callback, animation, audio, fmod_audio, property_animation)
+REFLECT_FIELDS(Components::State, name, on_enter_callback, on_update_callback, on_exit_callback, animation, audio, property_animation)
 REFLECT_FIELDS(Components::StateAnimation, texture, texture_atlas, animation, scale, collider_data)
-REFLECT_FIELDS(Components::StateAudio, sound, volume, loop, stop_on_exit)
 REGISTER_COMPONENT(Components::StateMachine, states, current_state_name, blueprint_id, property_anim_playing)
