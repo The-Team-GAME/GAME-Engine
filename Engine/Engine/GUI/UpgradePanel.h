@@ -17,6 +17,7 @@
 #include <unordered_set>
 #include "../FileIO/Settings.h"
 #include "../FileIO/SettingsManager.h"
+#include "../Resources.h"
 #include "../UpgradeManager.h"
 
 /*=================================================================================
@@ -38,6 +39,50 @@ inline void UpgradePanel()
 
   auto& settings = SettingsManager<UpgradeSettings>::get_mutable();
   auto& mgr = Engine::UpgradeManager::instance();
+
+  auto build_effect_text = [](const UpgradeDefinition& upg) -> std::string {
+    if (!upg.effect_text.empty()) {
+      return upg.effect_text;
+    }
+
+    char buffer[128]{};
+    if (upg.type == UpgradeType::Flat) {
+      snprintf(buffer, sizeof(buffer), "+%.1f  %s", upg.value, upg.stat_name.c_str());
+    }
+    else {
+      snprintf(buffer, sizeof(buffer), "x%.2f  %s", upg.value, upg.stat_name.c_str());
+    }
+    return buffer;
+  };
+
+  auto load_upgrade_image = [](const UpgradeDefinition& upg) -> Engine::Graphics::Texture {
+    if (upg.image_path.empty()) {
+      return nullptr;
+    }
+
+    auto texture = Engine::Resources::load_texture(upg.image_path, true, false);
+    if (!texture || texture->id == 0) {
+      return nullptr;
+    }
+    return texture;
+  };
+
+  auto draw_upgrade_image = [](Engine::Graphics::Texture texture, float max_width, float max_height) -> bool {
+    if (!texture || texture->id == 0 || texture->width <= 0 || texture->height <= 0) {
+      return false;
+    }
+
+    float draw_width = max_width;
+    float draw_height = draw_width * (static_cast<float>(texture->height) / static_cast<float>(texture->width));
+    if (draw_height > max_height) {
+      draw_height = max_height;
+      draw_width = draw_height * (static_cast<float>(texture->width) / static_cast<float>(texture->height));
+    }
+
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (max_width - draw_width) * 0.5f);
+    ImGui::Image((ImTextureID)(intptr_t)texture->id, ImVec2(draw_width, draw_height));
+    return true;
+  };
 
   // ---- Rarity color helper ----
   auto get_rarity_color = [&](const std::string& rarity) -> ImVec4 {
@@ -271,7 +316,7 @@ inline void UpgradePanel()
       }
     }
 
-    const int col_count = 10; // ID, Name, Stat, Link, Rarity, Type, Value, MaxLvl, Actions, Warnings
+    const int col_count = 13; // ID, Name, Image, Effect, Description, Stat, Link, Rarity, Type, Value, MaxLvl, Actions, Warnings
 
     // Spreadsheet-style: transparent widget backgrounds, subtle hover/active
     ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
@@ -285,6 +330,9 @@ inline void UpgradePanel()
     {
       ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed, 110.0f);
       ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, 120.0f);
+      ImGui::TableSetupColumn("Image", ImGuiTableColumnFlags_WidthFixed, 180.0f);
+      ImGui::TableSetupColumn("Effect", ImGuiTableColumnFlags_WidthFixed, 140.0f);
+      ImGui::TableSetupColumn("Description", ImGuiTableColumnFlags_WidthFixed, 180.0f);
       ImGui::TableSetupColumn("Stat", ImGuiTableColumnFlags_WidthFixed, 80.0f);
       ImGui::TableSetupColumn("Link", ImGuiTableColumnFlags_WidthFixed, 20.0f);
       ImGui::TableSetupColumn("Rarity", ImGuiTableColumnFlags_WidthFixed, 100.0f);
@@ -356,6 +404,45 @@ inline void UpgradePanel()
           if (ImGui::InputText("##dn", buf, sizeof(buf)))
           {
             upg.display_name = buf;
+            upgrades_changed = true;
+          }
+        }
+
+        // Image path
+        ImGui::TableNextColumn();
+        {
+          char buf[192]{};
+          strncpy_s(buf, upg.image_path.c_str(), sizeof(buf) - 1);
+          ImGui::SetNextItemWidth(-1);
+          if (ImGui::InputText("##img", buf, sizeof(buf)))
+          {
+            upg.image_path = buf;
+            upgrades_changed = true;
+          }
+        }
+
+        // Effect Text override
+        ImGui::TableNextColumn();
+        {
+          char buf[128]{};
+          strncpy_s(buf, upg.effect_text.c_str(), sizeof(buf) - 1);
+          ImGui::SetNextItemWidth(-1);
+          if (ImGui::InputText("##effect", buf, sizeof(buf)))
+          {
+            upg.effect_text = buf;
+            upgrades_changed = true;
+          }
+        }
+
+        // Description override
+        ImGui::TableNextColumn();
+        {
+          char buf[192]{};
+          strncpy_s(buf, upg.description.c_str(), sizeof(buf) - 1);
+          ImGui::SetNextItemWidth(-1);
+          if (ImGui::InputText("##desc", buf, sizeof(buf)))
+          {
+            upg.description = buf;
             upgrades_changed = true;
           }
         }
@@ -683,7 +770,6 @@ inline void UpgradePanel()
           {
             auto& upg = settings.upgrades[idx];
             int current_lvl = mgr.get_upgrade_level(upg.id);
-
             ImVec4 rarity_col = get_rarity_color(upg.rarity);
 
             ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(rarity_col.x * 0.15f, rarity_col.y * 0.15f, rarity_col.z * 0.15f, 1.0f));
@@ -692,10 +778,18 @@ inline void UpgradePanel()
             ImGui::TextColored(rarity_col, "[%s]", upg.rarity.c_str());
             ImGui::Text("%s", upg.display_name.c_str());
 
-            if (upg.type == UpgradeType::Flat)
-              ImGui::Text("  +%.1f %s", upg.value, upg.stat_name.c_str());
+            auto image = load_upgrade_image(upg);
+            if (image)
+            {
+              draw_upgrade_image(image, card_width - 24.0f, 72.0f);
+            }
             else
-              ImGui::Text("  x%.2f %s", upg.value, upg.stat_name.c_str());
+            {
+              std::string effect_text = build_effect_text(upg);
+              ImGui::TextWrapped("%s", effect_text.c_str());
+              if (!upg.description.empty())
+                ImGui::TextDisabled("%s", upg.description.c_str());
+            }
 
             ImGui::TextDisabled("Level: %d / %d", current_lvl, upg.max_level);
 

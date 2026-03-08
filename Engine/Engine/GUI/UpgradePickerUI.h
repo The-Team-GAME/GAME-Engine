@@ -45,6 +45,109 @@ inline void UpgradePickerUI()
     return { 0.55f, 0.55f, 0.55f, 1.0f };
     };
 
+  auto get_upgrade_sprite_index = [](const UpgradeDefinition& upg) -> int {
+    if (upg.stat_name == "base_attack_damage" || upg.stat_name == "damage") {
+      return 0;
+    }
+    if (upg.stat_name == "uppercut_damage" || upg.stat_name == "uppercut damage") {
+      return 1;
+    }
+    if (upg.stat_name == "smash_damage" || upg.stat_name == "smash damage") {
+      return 2;
+    }
+    if (upg.stat_name == "uppercut_cooldown") {
+      return 3;
+    }
+    if (upg.stat_name == "smash_cooldown") {
+      return 4;
+    }
+    if (upg.stat_name == "dash_cooldown") {
+      return 5;
+    }
+    return 0;
+  };
+
+  auto build_effect_text = [](const UpgradeDefinition& upg) -> std::string {
+    if (!upg.effect_text.empty()) {
+      return upg.effect_text;
+    }
+
+    char buffer[128]{};
+    if (upg.type == UpgradeType::Flat) {
+      snprintf(buffer, sizeof(buffer), "+%.1f  %s", upg.value, upg.stat_name.c_str());
+    }
+    else {
+      snprintf(buffer, sizeof(buffer), "x%.2f  %s", upg.value, upg.stat_name.c_str());
+    }
+    return buffer;
+  };
+
+  auto draw_card_sprite_button = [](Engine::Graphics::Texture texture, int sprite_index, const char* id, float max_width, float max_height, float& hover_lerp) -> bool {
+    if (!texture || texture->id == 0 || texture->width <= 0 || texture->height <= 0) {
+      return false;
+    }
+
+    constexpr int sprite_columns = 6;
+    const int clamped_index = (sprite_index < 0) ? 0 : (sprite_index >= sprite_columns ? sprite_columns - 1 : sprite_index);
+
+    const float sprite_width = static_cast<float>(texture->width) / static_cast<float>(sprite_columns);
+    const float sprite_height = static_cast<float>(texture->height);
+
+    const float uv_left = (sprite_width * static_cast<float>(clamped_index)) / static_cast<float>(texture->width);
+    const float uv_right = (sprite_width * static_cast<float>(clamped_index + 1)) / static_cast<float>(texture->width);
+
+    const float available_width = ImGui::GetContentRegionAvail().x;
+    const float target_width = (available_width > 0.0f) ? std::min(max_width, available_width) : max_width;
+
+    float base_width = target_width;
+    float base_height = base_width * (sprite_height / sprite_width);
+
+    if (base_height > max_height) {
+      base_height = max_height;
+      base_width = base_height * (sprite_width / sprite_height);
+    }
+
+    const float scale = 1.0f + 0.08f * hover_lerp;
+    float draw_width = base_width * scale;
+    float draw_height = base_height * scale;
+
+    if (draw_width > available_width && draw_width > 0.0f) {
+      const float clamp_scale = available_width / draw_width;
+      draw_width *= clamp_scale;
+      draw_height *= clamp_scale;
+    }
+    if (draw_height > max_height * 1.08f && draw_height > 0.0f) {
+      const float clamp_scale = (max_height * 1.08f) / draw_height;
+      draw_width *= clamp_scale;
+      draw_height *= clamp_scale;
+    }
+
+    const float horizontal_padding = std::max(0.0f, (target_width - draw_width) * 0.5f);
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + horizontal_padding);
+
+    ImGui::PushID(id);
+    const bool pressed = ImGui::InvisibleButton("##card_image_button", ImVec2(draw_width, draw_height));
+    const bool hovered = ImGui::IsItemHovered();
+    hover_lerp += (hovered ? 1.0f : -1.0f) * ImGui::GetIO().DeltaTime * 10.0f;
+    if (hover_lerp < 0.0f) hover_lerp = 0.0f;
+    if (hover_lerp > 1.0f) hover_lerp = 1.0f;
+
+    ImDrawList* draw_list = ImGui::GetWindowDrawList();
+    draw_list->AddImage(
+      (ImTextureID)(intptr_t)texture->id,
+      ImGui::GetItemRectMin(),
+      ImGui::GetItemRectMax(),
+      ImVec2(uv_left, 0.0f),
+      ImVec2(uv_right, 1.0f),
+      IM_COL32(255, 255, 255, 255)
+    );
+    ImGui::PopID();
+
+    return pressed;
+  };
+
+  static Engine::Graphics::Texture s_card_spritesheet = Engine::Resources::load_texture("images/Cards_Spritesheet.png");
+
   // =========================================================================
   // Open modal when signaled
   // =========================================================================
@@ -117,9 +220,10 @@ inline void UpgradePickerUI()
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.3f, 1.0f), "Choose a card:");
     ImGui::Spacing();
 
-    const float card_w = 270.0f;
-    const float card_h = 220.0f;
+    const float card_w = 500.0f;
+    const float card_h = 600.0f;
     int         pick_slot = -1;
+    static float s_card_hover_lerp[2] = { 0.0f, 0.0f };
 
     for (int c = 0; c < 2; ++c)
     {
@@ -144,33 +248,39 @@ inline void UpgradePickerUI()
         ImGui::TextColored(rc, "[ %s ]", upg.rarity.c_str());
         ImGui::Spacing();
 
-        // Name
+        // Card art from shared spritesheet
+        std::string image_button_id = "card_image_" + std::to_string(c);
+        if (draw_card_sprite_button(s_card_spritesheet, get_upgrade_sprite_index(upg), image_button_id.c_str(), card_w - 24.0f, 340.0f, s_card_hover_lerp[c])) {
+          pick_slot = c;
+        }
+        if (s_card_spritesheet && s_card_spritesheet->id != 0) {
+          ImGui::Spacing();
+        }
+        else {
+          ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.9f, 1.0f));
+          ImGui::TextWrapped("%s", upg.display_name.c_str());
+          ImGui::PopStyleColor();
+        }
+
+        ImGui::Separator();
+
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.9f, 1.0f));
         ImGui::TextWrapped("%s", upg.display_name.c_str());
         ImGui::PopStyleColor();
-        ImGui::Spacing();
 
-        // Effect
-        if (upg.type == UpgradeType::Flat)
-          ImGui::Text("  +%.1f  %s", upg.value, upg.stat_name.c_str());
-        else
-          ImGui::Text("  x%.2f  %s", upg.value, upg.stat_name.c_str());
+        const std::string effect_text = build_effect_text(upg);
+        ImGui::TextWrapped("%s", effect_text.c_str());
+
+        if (!upg.description.empty()) {
+          ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.78f, 0.78f, 0.78f, 1.0f));
+          ImGui::TextWrapped("%s", upg.description.c_str());
+          ImGui::PopStyleColor();
+        }
+
+        ImGui::Spacing();
 
         // Level
         ImGui::TextDisabled("Level: %d / %d", cur_lvl, upg.max_level);
-
-        // Pick button — tinted with rarity colour
-        ImGui::Spacing();
-        ImGui::PushStyleColor(ImGuiCol_Button,
-          ImVec4(rc.x * 0.4f, rc.y * 0.4f, rc.z * 0.4f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-          ImVec4(rc.x * 0.65f, rc.y * 0.65f, rc.z * 0.65f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive,
-          ImVec4(rc.x * 0.9f, rc.y * 0.9f, rc.z * 0.9f, 1.0f));
-        std::string btn_label = "  Pick!  ##" + std::to_string(c);
-        if (ImGui::Button(btn_label.c_str(), ImVec2(-1.0f, 0.0f)))
-          pick_slot = c;
-        ImGui::PopStyleColor(3);
 
         ImGui::EndChild();
         ImGui::PopStyleColor(); // ChildBg

@@ -119,6 +119,9 @@ namespace Engine
     {
       std::string id = "";            // Unique identifier (e.g. "flat_damage")
       std::string display_name = "";  // Display label (e.g. "Damage Boost")
+      std::string image_path = "";    // Optional popup card art path under Assets/
+      std::string effect_text = "";   // Optional popup buff line override (e.g. "+1 Base Attack")
+      std::string description = "";   // Optional popup description/flavor text
       std::string rarity = "Common";  // Must match a RarityTier::name
       std::string stat_name = "";     // Which stat this targets (e.g. "damage", "speed")
       UpgradeType type = UpgradeType::Flat;  // Flat or Multiplier
@@ -144,5 +147,5 @@ REFLECT_FIELDS(Engine::FileIO::GameSettings, fullscreen, vsync, bgm_volume, sfx_
 
 REFLECT_ENUM(Engine::FileIO::UpgradeType, Flat, Multiplier)
 REFLECT_FIELDS(Engine::FileIO::RarityTier, name, drop_rate)
-REFLECT_FIELDS(Engine::FileIO::UpgradeDefinition, id, display_name, rarity, stat_name, type, value, max_level)
+REFLECT_FIELDS(Engine::FileIO::UpgradeDefinition, id, display_name, image_path, effect_text, description, rarity, stat_name, type, value, max_level)
 REFLECT_FIELDS(Engine::FileIO::UpgradeSettings, base_point_threshold, threshold_scaling, rarities, upgrades)
