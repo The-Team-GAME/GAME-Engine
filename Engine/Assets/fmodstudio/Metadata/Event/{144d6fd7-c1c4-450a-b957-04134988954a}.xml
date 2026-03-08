@@ -5,7 +5,7 @@
 			<value>PlayerFootstep</value>
 		</property>
 		<property name="outputFormat">
-			<value>1</value>
+			<value>2</value>
 		</property>
 		<relationship name="folder">
 			<destination>{f1471c80-c6c5-42c6-a7c4-35d81a229e0e}</destination>
@@ -123,6 +123,7 @@
 	</object>
 	<object class="MixerBusEffectChain" id="{79b5f4cc-f5ec-48e9-a0ff-565c8602e943}">
 		<relationship name="effects">
+			<destination>{5c44f1d3-505c-4d6d-afb4-020a3fa21054}</destination>
 			<destination>{e3ba7b9c-0ce0-4ec2-bbf4-ced808f31573}</destination>
 		</relationship>
 	</object>
@@ -178,6 +179,17 @@
 		</relationship>
 	</object>
 	<object class="MixerBusPanner" id="{62084ba7-5006-43c9-9098-ed71287a73e5}" />
+	<object class="SpatialiserEffect" id="{5c44f1d3-505c-4d6d-afb4-020a3fa21054}">
+		<property name="minimumDistance">
+			<value>0</value>
+		</property>
+		<property name="maximumDistance">
+			<value>10000</value>
+		</property>
+		<property name="overrideRange">
+			<value>true</value>
+		</property>
+	</object>
 	<object class="MixerBusFader" id="{e3ba7b9c-0ce0-4ec2-bbf4-ced808f31573}" />
 	<object class="MultibandEqEffect" id="{d99ad0aa-32cd-48ee-a1aa-a8b47b1c47f9}">
 		<property name="frequencyA">
