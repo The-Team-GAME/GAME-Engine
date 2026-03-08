@@ -7,6 +7,9 @@
 #include <algorithm>
 #include <iostream>
 #include <string>
+#include <filesystem>
+#include <chrono>
+#include <vector>
 
 
 namespace Engine {
@@ -28,6 +31,14 @@ namespace Engine {
     // 3D audio state
     static FMOD_3D_ATTRIBUTES gListenerAttributes = {};
     static float gMasterVolume = 1.0f;
+
+    // Hot-reload state
+    static ::std::unordered_map<::std::string, ::std::filesystem::file_time_type> gBankTimestamps;
+    static auto gLastHotReloadCheck = ::std::chrono::steady_clock::now();
+    static constexpr float HOT_RELOAD_INTERVAL = 1.0f; // seconds between checks
+
+    // Forward declaration
+    static void checkBankHotReload();
 
     // ------------------------------------------------------------
     // FMOD error checking helper
@@ -88,8 +99,8 @@ namespace Engine {
       // This makes FMOD's computed right = +X, matching the game world.
       gListenerAttributes.position = { 0.0f, 0.0f, 0.0f };
       gListenerAttributes.velocity = { 0.0f, 0.0f, 0.0f };
-      gListenerAttributes.forward = { 0.0f, 0.0f, 1.0f };
-      gListenerAttributes.up = { 0.0f, 1.0f, 0.0f };
+      gListenerAttributes.forward = { 0.0f, 1.0f, 0.0f };
+      gListenerAttributes.up = { 0.0f, 0.0f, 1.0f };
 
       if (gStudioSystem)
         gStudioSystem->setListenerAttributes(0, &gListenerAttributes);
@@ -103,8 +114,17 @@ namespace Engine {
     // ------------------------------------------------------------
     void update()
     {
-      if (gStudioSystem)
-        gStudioSystem->update();
+      if (!gStudioSystem) return;
+
+      // Periodically check for bank file changes
+      auto now = ::std::chrono::steady_clock::now();
+      float elapsed = ::std::chrono::duration<float>(now - gLastHotReloadCheck).count();
+      if (elapsed >= HOT_RELOAD_INTERVAL) {
+        gLastHotReloadCheck = now;
+        checkBankHotReload();
+      }
+
+      gStudioSystem->update();
     }
 
     // ------------------------------------------------------------
@@ -164,6 +184,13 @@ namespace Engine {
         return false;
 
       gBanks[path] = bank;
+
+      // Record file timestamp for hot-reload detection
+      try {
+        gBankTimestamps[path] = ::std::filesystem::last_write_time(path);
+      }
+      catch (...) {}
+
       ::std::cout << "[AudioSystem] Loaded bank: " << path << "\n";
       return true;
     }
@@ -181,6 +208,7 @@ namespace Engine {
         return false;
 
       gBanks.erase(it);
+      gBankTimestamps.erase(path);
       ::std::cout << "[AudioSystem] Unloaded bank: " << path << "\n";
       return true;
     }
@@ -192,12 +220,83 @@ namespace Engine {
         pair.second->unload();
       }
       gBanks.clear();
+      gBankTimestamps.clear();
       ::std::cout << "[AudioSystem] Unloaded all banks\n";
     }
 
     bool isBankLoaded(const ::std::string& path)
     {
       return gBanks.find(path) != gBanks.end();
+    }
+
+    // ------------------------------------------------------------
+    // Bank Hot-Reload
+    // ------------------------------------------------------------
+    static void checkBankHotReload()
+    {
+      if (!gStudioSystem || gBankTimestamps.empty()) return;
+
+      bool any_changed = false;
+      for (auto& [path, timestamp] : gBankTimestamps)
+      {
+        try {
+          auto current_time = ::std::filesystem::last_write_time(path);
+          if (current_time != timestamp) {
+            any_changed = true;
+            break;
+          }
+        }
+        catch (...) {}
+      }
+
+      if (!any_changed) return;
+
+      ::std::cout << "[AudioSystem] Bank file change detected, hot-reloading...\n";
+
+      // Collect all loaded bank paths
+      ::std::vector<::std::string> paths;
+      paths.reserve(gBanks.size());
+      for (auto& [path, _] : gBanks)
+        paths.push_back(path);
+
+      // Release all instances and caches (they reference the old banks)
+      releaseAllEventInstances();
+      gEventDescriptions.clear();
+      gBuses.clear();
+      gVCAs.clear();
+
+      // Unload all banks
+      for (auto& [_, bank] : gBanks)
+        bank->unload();
+      gBanks.clear();
+      gBankTimestamps.clear();
+
+      gStudioSystem->flushCommands();
+
+      // Reload all banks
+      for (auto& path : paths)
+      {
+        FMOD::Studio::Bank* bank = nullptr;
+        if (FMOD_Check(
+          gStudioSystem->loadBankFile(
+            path.c_str(),
+            FMOD_STUDIO_LOAD_BANK_NORMAL,
+            &bank), "loadBankFile (hot reload)"))
+        {
+          gBanks[path] = bank;
+          try {
+            gBankTimestamps[path] = ::std::filesystem::last_write_time(path);
+          }
+          catch (...) {}
+          ::std::cout << "[AudioSystem] Reloaded bank: " << path << "\n";
+        }
+        else
+        {
+          ::std::cout << "[AudioSystem] Failed to reload bank: " << path << "\n";
+        }
+      }
+
+      ::std::cout << "[AudioSystem] Hot-reload complete\n";
     }
 
     // ------------------------------------------------------------
