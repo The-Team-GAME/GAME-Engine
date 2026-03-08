@@ -8,7 +8,7 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-#include "Precompiled.h"
+#include "../Precompiled.h"
 #include "FirebasePanel.h"
 #include "../Firebase/FirebaseManager.h"
 #include "../FileIO/Settings.h"
@@ -163,7 +163,7 @@ void FirebasePanel::draw_panel()
 
     // Tick status timer
     if (status_timer > 0.f) {
-        status_timer -= Engine::Time::get_real_dt_f();
+        status_timer -= Engine::Time::get_real_dt();
         if (status_timer <= 0.f) {
             status_message.clear();
             status_timer = 0.f;
