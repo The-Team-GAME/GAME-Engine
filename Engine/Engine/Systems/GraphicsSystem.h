@@ -494,15 +494,16 @@ namespace Engine
             }
           });
 
-        // Keep FMOD listener in sync with the active camera position
-        Engine::AudioSystem::setListenerPosition(camera.position);
+        // Keep FMOD listener in sync with the active camera center
+        auto vres = Engine::Graphics::get_virtual_resolution();
+        Engine::AudioSystem::setListenerPosition(camera.position + vres * 0.5f / camera.zoom);
 
         Engine::Graphics::Camera render_camera = camera;
 
         if (shake_time_remaining > 0.0f) {
           shake_time_remaining = std::max(0.0f, shake_time_remaining - dt);
 
-          
+
           const f32 trauma_decay_rate = (shake_duration > 0.0f) ? (1.8f / shake_duration) : 8.0f;
           shake_trauma = std::max(0.0f, shake_trauma - trauma_decay_rate * dt);
 

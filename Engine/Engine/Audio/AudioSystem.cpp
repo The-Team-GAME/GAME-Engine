@@ -84,10 +84,12 @@ namespace Engine {
       FMOD_Check(gStudioSystem->getCoreSystem(&gCoreSystem), "getCoreSystem");
 
       // Initialize listener attributes
+      // For a 2D side-view game: forward=(0,0,1) into the screen, up=(0,1,0).
+      // This makes FMOD's computed right = +X, matching the game world.
       gListenerAttributes.position = { 0.0f, 0.0f, 0.0f };
       gListenerAttributes.velocity = { 0.0f, 0.0f, 0.0f };
-      gListenerAttributes.forward = { 0.0f, 1.0f, 0.0f };
-      gListenerAttributes.up = { 0.0f, 0.0f, 1.0f };
+      gListenerAttributes.forward = { 0.0f, 0.0f, 1.0f };
+      gListenerAttributes.up = { 0.0f, 1.0f, 0.0f };
 
       if (gStudioSystem)
         gStudioSystem->setListenerAttributes(0, &gListenerAttributes);
