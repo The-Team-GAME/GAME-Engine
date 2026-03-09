@@ -193,11 +193,11 @@ static void register_collision_callbacks()
         Log::info("Player knocked back! Force applied: ({}, {})", attack->knockback.x, attack->knockback.y);
 
         // Trigger death state immediately when HP reaches 0
-        if (health->is_dead()) 
+        if (health->is_dead())
         {
           Log::info("Player is dead!");
           Components::StateMachine* state_machine = player_entity.get_component<Components::StateMachine>();
-          if (state_machine && state_machine->get_current_state() != "Death") 
+          if (state_machine && state_machine->get_current_state() != "Death")
           {
             state_machine->change_state("Death");
           }
@@ -247,179 +247,101 @@ static void register_upgrade_applicators()
 {
   auto& mgr = Engine::UpgradeManager::instance();
 
-  // "damage" — modifies all 3 attack damages on the Player component
-  mgr.register_stat_applicator("damage",
+  // "attack_damage" — modifies basic attack combo damage (attack1/2/3_data.dmg)
+  mgr.register_stat_applicator("attack_damage",
     [](Engine::FileIO::UpgradeType type, float value) {
       auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
-      if (!player_entity.is_valid()) {
-        Log::warning("[UpgradeApplicator] No player entity found for 'damage'");
-        return;
-      }
+      if (!player_entity.is_valid()) return;
       auto* player = player_entity.get_component<Components::Player>();
       if (!player) return;
 
       if (type == Engine::FileIO::UpgradeType::Flat) {
-        int flat = static_cast<int>(value);
-        player->attack1_data.dmg += flat;
-        player->attack2_data.dmg += flat;
-        player->attack3_data.dmg += flat;
+        player->attack1_data.dmg += value;
+        player->attack2_data.dmg += value;
+        player->attack3_data.dmg += value;
       }
       else {
-        player->attack1_data.dmg = static_cast<f32>(static_cast<s32>(player->attack1_data.dmg) * value);
-        player->attack2_data.dmg = static_cast<f32>(static_cast<s32>(player->attack2_data.dmg) * value);
-        player->attack3_data.dmg = static_cast<f32>(static_cast<s32>(player->attack3_data.dmg) * value);
+        player->attack1_data.dmg *= value;
+        player->attack2_data.dmg *= value;
+        player->attack3_data.dmg *= value;
       }
-      Log::info("[UpgradeApplicator] damage applied — atk1:{} atk2:{} atk3:{}",
+      Log::info("[UpgradeApplicator] attack_damage applied — atk1:{} atk2:{} atk3:{}",
         player->attack1_data.dmg, player->attack2_data.dmg, player->attack3_data.dmg);
     });
 
-  // "speed" — modifies walk_speed on the Player component
-  mgr.register_stat_applicator("speed",
+  // "uppercut_damage" — modifies uppercut_data.dmg
+  mgr.register_stat_applicator("uppercut_damage",
     [](Engine::FileIO::UpgradeType type, float value) {
       auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
-      if (!player_entity.is_valid()) {
-        Log::warning("[UpgradeApplicator] No player entity found for 'speed'");
-        return;
-      }
+      if (!player_entity.is_valid()) return;
       auto* player = player_entity.get_component<Components::Player>();
       if (!player) return;
 
-      if (type == Engine::FileIO::UpgradeType::Flat) {
-        player->walk_speed += value;
-      }
-      else {
-        player->walk_speed *= value;
-      }
-      Log::info("[UpgradeApplicator] speed applied — walk_speed:{}", player->walk_speed);
+      if (type == Engine::FileIO::UpgradeType::Flat)
+        player->uppercut_data.dmg += value;
+      else
+        player->uppercut_data.dmg *= value;
+      Log::info("[UpgradeApplicator] uppercut_damage applied — dmg:{}", player->uppercut_data.dmg);
     });
 
-  // "health" — modifies max HP on the Health component (and heals the added amount for flat)
-  mgr.register_stat_applicator("health",
+  // "downsmash_damage" — modifies smash_data.dmg
+  mgr.register_stat_applicator("downsmash_damage",
     [](Engine::FileIO::UpgradeType type, float value) {
       auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
-      if (!player_entity.is_valid()) {
-        Log::warning("[UpgradeApplicator] No player entity found for 'health'");
-        return;
-      }
-      auto* health = player_entity.get_component<Components::Health>();
-      if (!health) return;
+      if (!player_entity.is_valid()) return;
+      auto* player = player_entity.get_component<Components::Player>();
+      if (!player) return;
 
-      if (type == Engine::FileIO::UpgradeType::Flat) {
-        // Exception: flat health upgrade only adds 1 max HP
-        // while max is below 3; otherwise it does nothing.
-        if (health->max < 3) {
-          health->max += 1;
-          health->heal(1); // also heal the added amount
-          Log::info("[UpgradeApplicator] health flat applied (+1) — HP:{}/{}", health->value, health->max);
-        }
-        else {
-          Log::info("[UpgradeApplicator] health flat ignored (max >= 3) — HP:{}/{}", health->value, health->max);
-        }
-      }
-      else {
-        int old_max = health->max;
-        health->max = static_cast<int>(static_cast<float>(health->max) * value);
-        int gained = health->max - old_max;
-        if (gained > 0) health->heal(gained);
-      }
+      if (type == Engine::FileIO::UpgradeType::Flat)
+        player->smash_data.dmg += value;
+      else
+        player->smash_data.dmg *= value;
+      Log::info("[UpgradeApplicator] downsmash_damage applied — dmg:{}", player->smash_data.dmg);
     });
 
-  // ===============================================
-  // Player action-specific stats (unused atm until implementations**)
-  // ===============================================
-
-  // --- Uppercut ---
-
-  // "uppercut_cooldown" — reduces / scales the uppercut cooldown
-  //   Flat:       cooldown = max(0, cooldown - value)
-  //   Multiplier: cooldown *= value
+  // "uppercut_cooldown" — Flat: cooldown = max(0, cooldown - value)
   mgr.register_stat_applicator("uppercut_cooldown",
     [](Engine::FileIO::UpgradeType type, float value) {
       auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
-      if (!player_entity.is_valid()) {
-        Log::warning("[UpgradeApplicator] No player entity found for 'uppercut_cooldown'");
-        return;
-      }
+      if (!player_entity.is_valid()) return;
       auto* player = player_entity.get_component<Components::Player>();
       if (!player) return;
 
-      if (type == Engine::FileIO::UpgradeType::Flat) {
+      if (type == Engine::FileIO::UpgradeType::Flat)
         player->uppercut.cooldown = std::max(0.0f, player->uppercut.cooldown - value);
-      }
-      else {
-        player->uppercut.cooldown *= value;
-        if (player->uppercut.cooldown < 0.0f) player->uppercut.cooldown = 0.0f;
-      }
-
+      else
+        player->uppercut.cooldown = std::max(0.0f, player->uppercut.cooldown * value);
       Log::info("[UpgradeApplicator] uppercut_cooldown applied — cd:{}", player->uppercut.cooldown);
     });
 
-  // "uppercut_speed" — modifies the vertical launch speed of the uppercut
-  //   Flat:       speed += value
-  //   Multiplier: speed *= value
-  mgr.register_stat_applicator("uppercut_speed",
+  // "downsmash_cooldown" — Flat: cooldown = max(0, cooldown - value)
+  mgr.register_stat_applicator("downsmash_cooldown",
     [](Engine::FileIO::UpgradeType type, float value) {
       auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
-      if (!player_entity.is_valid()) {
-        Log::warning("[UpgradeApplicator] No player entity found for 'uppercut_speed'");
-        return;
-      }
+      if (!player_entity.is_valid()) return;
       auto* player = player_entity.get_component<Components::Player>();
       if (!player) return;
 
-      if (type == Engine::FileIO::UpgradeType::Flat) {
-        player->uppercut.speed += value;
-      }
-      else {
-        player->uppercut.speed *= value;
-      }
-
-      Log::info("[UpgradeApplicator] uppercut_speed applied — speed:{}", player->uppercut.speed);
-    });
-
-  // --- Smash / Downsmash ---
-
-  // "smash_cooldown" — reduces / scales the smash cooldown
-  mgr.register_stat_applicator("smash_cooldown",
-    [](Engine::FileIO::UpgradeType type, float value) {
-      auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
-      if (!player_entity.is_valid()) {
-        Log::warning("[UpgradeApplicator] No player entity found for 'smash_cooldown'");
-        return;
-      }
-      auto* player = player_entity.get_component<Components::Player>();
-      if (!player) return;
-
-      if (type == Engine::FileIO::UpgradeType::Flat) {
+      if (type == Engine::FileIO::UpgradeType::Flat)
         player->smash.cooldown = std::max(0.0f, player->smash.cooldown - value);
-      }
-      else {
-        player->smash.cooldown *= value;
-        if (player->smash.cooldown < 0.0f) player->smash.cooldown = 0.0f;
-      }
-
-      Log::info("[UpgradeApplicator] smash_cooldown applied — cd:{}", player->smash.cooldown);
+      else
+        player->smash.cooldown = std::max(0.0f, player->smash.cooldown * value);
+      Log::info("[UpgradeApplicator] downsmash_cooldown applied — cd:{}", player->smash.cooldown);
     });
 
-  // "smash_speed" — modifies the downward speed of the smash
-  mgr.register_stat_applicator("smash_speed",
+  // "dash_cooldown" — Flat: cooldown = max(0, cooldown - value)
+  mgr.register_stat_applicator("dash_cooldown",
     [](Engine::FileIO::UpgradeType type, float value) {
       auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
-      if (!player_entity.is_valid()) {
-        Log::warning("[UpgradeApplicator] No player entity found for 'smash_speed'");
-        return;
-      }
+      if (!player_entity.is_valid()) return;
       auto* player = player_entity.get_component<Components::Player>();
       if (!player) return;
 
-      if (type == Engine::FileIO::UpgradeType::Flat) {
-        player->smash.speed += value;
-      }
-      else {
-        player->smash.speed *= value;
-      }
-
-      Log::info("[UpgradeApplicator] smash_speed applied — speed:{}", player->smash.speed);
+      if (type == Engine::FileIO::UpgradeType::Flat)
+        player->dash.cooldown = std::max(0.0f, player->dash.cooldown - value);
+      else
+        player->dash.cooldown = std::max(0.0f, player->dash.cooldown * value);
+      Log::info("[UpgradeApplicator] dash_cooldown applied — cd:{}", player->dash.cooldown);
     });
 }
 

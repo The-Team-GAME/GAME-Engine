@@ -22,7 +22,7 @@
             "id": "flat_atk_dmg",
             "max_level": 5,
             "rarity": "Epic",
-            "stat_name": "damage",
+            "stat_name": "attack_damage",
             "type": "Flat",
             "value": 1.0
         },
@@ -32,7 +32,7 @@
             "id": "flat_upp_dmg",
             "max_level": 5,
             "rarity": "Rare",
-            "stat_name": "damage",
+            "stat_name": "uppercut_damage",
             "type": "Flat",
             "value": 1.0
         },
@@ -42,7 +42,7 @@
             "id": "flat_smash_dmg",
             "max_level": 5,
             "rarity": "Rare",
-            "stat_name": "damage",
+            "stat_name": "downsmash_damage",
             "type": "Flat",
             "value": 1.0
         },
@@ -54,7 +54,7 @@
             "rarity": "Common",
             "stat_name": "uppercut_cooldown",
             "type": "Flat",
-            "value": -1.0
+            "value": 1.0
         },
         {
             "card_index": 4,
@@ -64,7 +64,7 @@
             "rarity": "Common",
             "stat_name": "downsmash_cooldown",
             "type": "Flat",
-            "value": -1.0
+            "value": 1.0
         },
         {
             "card_index": 5,
@@ -74,7 +74,7 @@
             "rarity": "Common",
             "stat_name": "dash_cooldown",
             "type": "Flat",
-            "value": -1.0
+            "value": 1.0
         }
     ]
 }
