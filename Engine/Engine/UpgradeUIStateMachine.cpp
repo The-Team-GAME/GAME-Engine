@@ -259,6 +259,15 @@ namespace Engine
     auto& settings = FileIO::SettingsManager<FileIO::UpgradeSettings>::get();
 
     auto rect = Resources::get_rect_texture();
+
+    // ---- Spritesheet configuration — update these if the sheet changes ----
+    constexpr int   ss_card_w = 160;   // pixel width  of one card frame
+    constexpr int   ss_card_h = 224;   // pixel height of one card frame
+    constexpr int   ss_rows = 1;     // number of rows  in the sheet
+    constexpr int   ss_cols = 6;     // number of cols  in the sheet
+    constexpr int   ss_total = 6;     // total number of cards in the sheet
+    // -----------------------------------------------------------------------
+
     auto spritesheet = Resources::load_texture("images/Upgrades/Cards_Spritesheet.png");
     auto panel_tex = Resources::load_texture("images/Upgrades/UpgradeMenu.png");
 
@@ -273,9 +282,9 @@ namespace Engine
 
     // Layout sizing
     // Panel: 224x256 native, scaled to match card height
-    // Cards: 160x224 native from spritesheet, scaled 2x
-    constexpr float card_display_w = 320.0f;
-    constexpr float card_display_h = 448.0f;
+    // Cards: ss_card_w x ss_card_h native from spritesheet, scaled 2x
+    constexpr float card_display_w = static_cast<float>(ss_card_w) * 2.0f;
+    constexpr float card_display_h = static_cast<float>(ss_card_h) * 2.0f;
     constexpr float panel_scale = card_display_h / 256.0f;  // ~1.75
     constexpr float panel_display_w = 224.0f * panel_scale;  // ~392
     constexpr float panel_display_h = card_display_h;         // 448
@@ -346,7 +355,7 @@ namespace Engine
         auto mc = ECS::create_entity()
           .add_component<Components::Transform2D>(x, y, 0.0f, mini_w, mini_h)
           .add_component<Components::Texture>(spritesheet)
-          .add_component<Components::TextureAtlas>(160, 224, 1, 6, 6)
+          .add_component<Components::TextureAtlas>(ss_card_w, ss_card_h, ss_rows, ss_cols, ss_total)
           .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
           .add_component<Components::UI>()
           .add_to_layer("main_menu_5");
@@ -366,7 +375,7 @@ namespace Engine
     auto c0 = ECS::create_entity()
       .add_component<Components::Transform2D>(card0_cx, center_y, 0.0f, card_display_w, card_display_h)
       .add_component<Components::Texture>(spritesheet)
-      .add_component<Components::TextureAtlas>(160, 224, 1, 6, 6)
+      .add_component<Components::TextureAtlas>(ss_card_w, ss_card_h, ss_rows, ss_cols, ss_total)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()
       .add_to_layer("main_menu_5");
@@ -382,7 +391,7 @@ namespace Engine
     auto c1 = ECS::create_entity()
       .add_component<Components::Transform2D>(card1_cx, center_y, 0.0f, card_display_w, card_display_h)
       .add_component<Components::Texture>(spritesheet)
-      .add_component<Components::TextureAtlas>(160, 224, 1, 6, 6)
+      .add_component<Components::TextureAtlas>(ss_card_w, ss_card_h, ss_rows, ss_cols, ss_total)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()
       .add_to_layer("main_menu_5");
