@@ -124,6 +124,7 @@ namespace Engine
       UpgradeType type = UpgradeType::Flat;  // Flat or Multiplier
       float value = 0.0f;            // Flat: amount added; Multiplier: factor (e.g. 1.3 = x1.3)
       int max_level = 5;             // Max times this upgrade can be picked per run
+      int card_index = 0;            // Index into Cards_Spritesheet.png (0-5)
     };
 
     // Top-level upgrade settings loaded from JSON
@@ -144,5 +145,5 @@ REFLECT_FIELDS(Engine::FileIO::GameSettings, fullscreen, vsync, bgm_volume, sfx_
 
 REFLECT_ENUM(Engine::FileIO::UpgradeType, Flat, Multiplier)
 REFLECT_FIELDS(Engine::FileIO::RarityTier, name, drop_rate)
-REFLECT_FIELDS(Engine::FileIO::UpgradeDefinition, id, display_name, rarity, stat_name, type, value, max_level)
+REFLECT_FIELDS(Engine::FileIO::UpgradeDefinition, id, display_name, rarity, stat_name, type, value, max_level, card_index)
 REFLECT_FIELDS(Engine::FileIO::UpgradeSettings, base_point_threshold, threshold_scaling, rarities, upgrades)

@@ -63,7 +63,6 @@ namespace Engine
     ECS::EntityID dimmer_id_ = 0;
     ECS::EntityID card0_id_ = 0;
     ECS::EntityID card1_id_ = 0;
-    ECS::EntityID skip_id_ = 0;
 
     int picked_slot_ = -1;
   };
