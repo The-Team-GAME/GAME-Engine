@@ -15,6 +15,7 @@
 
 #include "pch.h"
 #include "../Components/EnemyHealthComponent.h"
+#include "../Components/HealthComponents.h"
 
 namespace Engine {
   namespace Systems
@@ -28,6 +29,10 @@ namespace Engine {
       void update_entity(Engine::ECS::Entity entity) override {
         auto* enemy_health = entity.get_component<Components::EnemyHealth>();
         if (!enemy_health) return;
+
+        if (!entity.has_component<Components::EnemyHealthBarRect>()) {
+          entity.add_component<Components::EnemyHealthBarRect>();
+        }
 
         // Check if enemy is dead
         if (enemy_health->is_dead()) {

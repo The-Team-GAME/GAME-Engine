@@ -57,6 +57,10 @@
   <PropertyGroup>
     <ShowAllFiles>true</ShowAllFiles>
   </PropertyGroup>
+  <PropertyGroup>
+    <SafeSolutionDir>$([System.String]::Copy('$(SolutionDir)').TrimEnd('\\'))</SafeSolutionDir>
+    <SafeOutDir>$([System.String]::Copy('$(OutDir)').TrimEnd('\\'))</SafeOutDir>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerWorkingDirectory>$(ProjectDir)..</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
@@ -88,23 +92,24 @@
       <ImportLibrary>$(OutDir)Engine.lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)Engine\Assets\*" "$(OutDir)Assets\" /s /r /y /q
+      <Command>if not exist "$(SafeOutDir)\Assets" mkdir "$(SafeOutDir)\Assets"
+    xcopy "$(SafeSolutionDir)\Engine\Assets\*" "$(SafeOutDir)\Assets" /s /r /y /q /i
 
 
 
 
-xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q
+xcopy "$(SafeSolutionDir)\Dependencies\FMOD\lib\fmod.dll" "$(SafeOutDir)" /s /r /y /q /i
 
 
 
 
-xcopy "$(SolutionDir)Dependencies\FMOD Studio\lib\fmodstudio.dll" "$(OutDir)" /s /r /y /q
+xcopy "$(SafeSolutionDir)\Dependencies\FMOD Studio\lib\fmodstudio.dll" "$(SafeOutDir)" /s /r /y /q /i
 
 
-xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q
+xcopy "$(SafeSolutionDir)\Dependencies\Lua\lua54.dll" "$(SafeOutDir)" /s /r /y /q /i
 
 
-msbuild "$(SolutionDir)Engine\GameLogic\GameLogic.vcxproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform) /p:SolutionDir="$(SolutionDir)\" /v:minimal
+"$(MSBuildBinPath)\MSBuild.exe" "$(SafeSolutionDir)\Engine\GameLogic\GameLogic.vcxproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform) "/p:SolutionDir=$(SafeSolutionDir)\\" /v:minimal
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -132,23 +137,24 @@ msbuild "$(SolutionDir)Engine\GameLogic\GameLogic.vcxproj" /p:Configuration=$(Co
       <ImportLibrary>$(OutDir)Engine.lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)Engine\Assets\*" "$(OutDir)Assets\" /s /r /y /q
+      <Command>if not exist "$(SafeOutDir)\Assets" mkdir "$(SafeOutDir)\Assets"
+    xcopy "$(SafeSolutionDir)\Engine\Assets\*" "$(SafeOutDir)\Assets" /s /r /y /q /i
 
 
 
 
-xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q
+xcopy "$(SafeSolutionDir)\Dependencies\FMOD\lib\fmod.dll" "$(SafeOutDir)" /s /r /y /q /i
 
 
 
 
-xcopy "$(SolutionDir)Dependencies\FMOD Studio\lib\fmodstudio.dll" "$(OutDir)" /s /r /y /q
+xcopy "$(SafeSolutionDir)\Dependencies\FMOD Studio\lib\fmodstudio.dll" "$(SafeOutDir)" /s /r /y /q /i
 
 
-xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q
+xcopy "$(SafeSolutionDir)\Dependencies\Lua\lua54.dll" "$(SafeOutDir)" /s /r /y /q /i
 
 
-msbuild "$(SolutionDir)Engine\GameLogic\GameLogic.vcxproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform) /p:SolutionDir="$(SolutionDir)\" /v:minimal
+"$(MSBuildBinPath)\MSBuild.exe" "$(SafeSolutionDir)\Engine\GameLogic\GameLogic.vcxproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform) "/p:SolutionDir=$(SafeSolutionDir)\\" /v:minimal
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -176,23 +182,24 @@ msbuild "$(SolutionDir)Engine\GameLogic\GameLogic.vcxproj" /p:Configuration=$(Co
       <ImportLibrary>$(OutDir)Engine.lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)Engine\Assets\*" "$(OutDir)Assets\" /s /r /y /q
+      <Command>if not exist "$(SafeOutDir)\Assets" mkdir "$(SafeOutDir)\Assets"
+    xcopy "$(SafeSolutionDir)\Engine\Assets\*" "$(SafeOutDir)\Assets" /s /r /y /q /i
 
 
 
 
-xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q
+xcopy "$(SafeSolutionDir)\Dependencies\FMOD\lib\fmod.dll" "$(SafeOutDir)" /s /r /y /q /i
 
 
 
 
-xcopy "$(SolutionDir)Dependencies\FMOD Studio\lib\fmodstudio.dll" "$(OutDir)" /s /r /y /q
+xcopy "$(SafeSolutionDir)\Dependencies\FMOD Studio\lib\fmodstudio.dll" "$(SafeOutDir)" /s /r /y /q /i
 
 
-xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q
+xcopy "$(SafeSolutionDir)\Dependencies\Lua\lua54.dll" "$(SafeOutDir)" /s /r /y /q /i
 
 
-msbuild "$(SolutionDir)Engine\GameLogic\GameLogic.vcxproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform) /p:SolutionDir="$(SolutionDir)\" /v:minimal
+"$(MSBuildBinPath)\MSBuild.exe" "$(SafeSolutionDir)\Engine\GameLogic\GameLogic.vcxproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform) "/p:SolutionDir=$(SafeSolutionDir)\\" /v:minimal
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

@@ -381,121 +381,169 @@ namespace Engine {
         auto* bar = e.get_component<EnemyHealthBarRect>();
         if (!hp || !tr || !bar) return;
 
-        ensure_bar(*bar);
-
         const float now = Engine::Time::get_time();
-        const float dt = Engine::Time::get_fixed_dt();
 
         const int cur = std::max(0, hp->current_hp);
         const int mx = std::max(1, hp->max_hp);
 
+        ensure_bar(e, *bar, mx);
+
         if (bar->last_hp < 0) {
           bar->last_hp = cur;
           bar->last_max = mx;
-          const float r = float(cur) / float(mx);
-          bar->front_ratio = bar->after_ratio = r;
           bar->visible_until = now + (bar->persist_after_first_hit ? 60.f : bar->show_duration);
+        }
+        else if (bar->last_max != mx) {
+          destroy_rect(*bar);
+          ensure_bar(e, *bar, mx);
+          bar->last_max = mx;
         }
 
         if (cur < bar->last_hp) {
-          // took damage
-          const float newR = float(cur) / float(mx);
-          const float oldR = float(bar->last_hp) / float(mx);
-          bar->front_ratio = newR;     // snap
-          bar->after_ratio = oldR;     // drain
           bar->has_been_hit = true;
           if (!bar->persist_after_first_hit) bar->visible_until = now + bar->show_duration;
+          restart_bar_animation(*bar);
         }
         else if (cur > bar->last_hp) {
-          // healed
-          const float r = float(cur) / float(mx);
-          bar->front_ratio = bar->after_ratio = r;
           bar->visible_until = now + 0.4f;
         }
         bar->last_hp = cur;
         bar->last_max = mx;
 
-        if (bar->after_ratio > bar->front_ratio) {
-          bar->after_ratio = std::max(bar->front_ratio, bar->after_ratio - bar->drain_speed * dt);
-        }
-
         const bool show = bar->persist_after_first_hit
           ? (bar->has_been_hit && !hp->is_dead())
           : (now <= bar->visible_until && !hp->is_dead());
 
-        if (show) layout_rect(*tr, *bar);
+        if (show) layout_rect(e, *tr, *bar, cur, mx);
         else      hide_rect(*bar);
 
         if (hp->is_dead()) destroy_rect(*bar);
       }
 
     private:
-      static Engine::Graphics::Texture rect() { return Engine::Resources::get_rect_texture(); }
-
-      void ensure_bar(Components::EnemyHealthBarRect& bar) {
+      void ensure_bar(Engine::ECS::Entity owner, Components::EnemyHealthBarRect& bar, [[maybe_unused]] int max_hp) {
         using namespace Components;
-        if (bar.initialized) return;
+
+        if (bar.initialized && bar.sprite.is_valid()) return;
+
+        destroy_rect(bar);
+
         bar.initialized = true;
-        if (!bar.tex) bar.tex = rect();
 
-        auto make = [&](const EnemyHealthBarRect::RGBA& c) {
-          return Engine::ECS::create_entity()
-            .add_component<Components::Transform2D>(0.f, 0.f, 0.f, bar.width, bar.height)
-            .add_component<Components::Texture>(bar.tex)
-            .add_component<Components::Color>(c.r, c.g, c.b, c.a)
-            .remove_from_layer("default").add_to_layer(bar.layer.c_str());
-          };
+        auto prefab = Engine::Resources::load_prefab("prefabs/Enemy_HealthBar.json");
+        bar.sprite = Engine::ECS::instantiate_prefab(prefab);
 
-        bar.base = make(bar.base_color);
-        bar.after = make(bar.after_color);
-        bar.front = make(bar.front_color);
+        if (bar.sprite.has_component<Components::UI>()) {
+          bar.sprite.remove_component<Components::UI>();
+        }
+
+        if (auto* parent = bar.sprite.get_component<Components::Parent>()) {
+          parent->parent_id = owner.get_id();
+          parent->local_offset = Math::Vec2D(0.0f, 0.0f);
+          if (auto* owner_transform = owner.get_component<Components::Transform2D>()) {
+            parent->prev_parent_pos = owner_transform->position;
+          }
+          else {
+            parent->prev_parent_pos = Math::Vec2D(0.0f, 0.0f);
+          }
+          parent->offset_initialized = true;
+        }
+        else {
+          bar.sprite.add_component<Components::Parent>(owner.get_id(), Math::Vec2D(0.0f, 0.0f));
+        }
+
+        if (auto* transform = bar.sprite.get_component<Components::Transform2D>()) {
+          const float square_size = std::max(bar.width, bar.height);
+          if (transform->scale.x <= 0.0f || transform->scale.y <= 0.0f) {
+            transform->scale.x = square_size;
+            transform->scale.y = square_size;
+          }
+        }
+
+        if (auto* color = bar.sprite.get_component<Components::Color>()) {
+          color->a = 0.0f;
+        }
+        else {
+          bar.sprite.add_component<Components::Color>(1.f, 1.f, 1.f, 0.f);
+        }
+
+        bar.sprite.remove_from_layer("default");
+        bar.sprite.add_to_layer(bar.layer.c_str());
+
+        if (auto* state_machine = bar.sprite.get_component<Components::StateMachine>()) {
+          state_machine->blueprint_id = "EnemyHealthBar";
+          state_machine->current_state_name = "Blank";
+        }
+        else {
+          bar.sprite.add_component<Components::StateMachine>();
+          if (auto* new_state_machine = bar.sprite.get_component<Components::StateMachine>()) {
+            new_state_machine->blueprint_id = "EnemyHealthBar";
+            new_state_machine->current_state_name = "Blank";
+          }
+        }
+
+        restart_bar_animation(bar);
       }
 
       void hide_rect(Components::EnemyHealthBarRect& bar) {
-        for (auto ent : { bar.base, bar.after, bar.front }) {
-          if (auto* t = ent.get_component<Components::Transform2D>()) t->scale.y = 0.f;
+        if (auto* t = bar.sprite.get_component<Components::Transform2D>()) {
+          t->scale.x = 0.f;
+          t->scale.y = 0.f;
+        }
+
+        if (auto* color = bar.sprite.get_component<Components::Color>()) {
+          color->a = 0.f;
         }
       }
 
       void destroy_rect(Components::EnemyHealthBarRect& bar) {
-        for (auto ent : { bar.base, bar.after, bar.front }) if (ent.is_valid()) ent.destroy();
+        if (bar.sprite.is_valid()) {
+          bar.sprite.destroy();
+        }
+        bar.sprite = Engine::ECS::Entity();
         bar.initialized = false;
       }
 
-      // Layout: base full, front & after left-anchored
-      void layout_rect(const Components::Transform2D& to, Components::EnemyHealthBarRect& bar) {
-        // center of the bar
-        const float centerX = to.position.x + bar.offset.x;   // offset.x shifts center horizontally
-        const float centerY = to.position.y + bar.offset.y;   // offset.y is vertical lift
-        const float left = centerX - bar.width * 0.5f;     // left edge from centered bar
-
-        // Base (full dark background)
-        if (auto* t = bar.base.get_component<Components::Transform2D>()) {
-          t->position.x = centerX;            // centered
-          t->position.y = centerY;
-          t->rotation = 0.f;
-          t->scale.x = bar.width;
-          t->scale.y = bar.height;
+      void restart_bar_animation(Components::EnemyHealthBarRect& bar) {
+        if (auto* animation = bar.sprite.get_component<Components::Animation>()) {
+          animation->startTime = Engine::Time::get_time();
         }
 
-        // Inner height so base outline peeks
-        const float inner_h = std::max(1.f, bar.height - bar.inset_y_px * 2.f);
+        if (auto* atlas = bar.sprite.get_component<Components::TextureAtlas>()) {
+          atlas->drawIndex = 0;
+        }
+      }
 
-        auto place_fill = [&](Engine::ECS::Entity e, float ratio) {
-          if (auto* t = e.get_component<Components::Transform2D>()) {
-            const float w = std::max(0.f, std::min(1.f, ratio)) * bar.width;
-            // right to left depletion
-            t->position.x = left + w * 0.5f;  // center of the current width
-            t->position.y = centerY;
-            t->rotation = 0.f;
-            t->scale.x = w;
-            t->scale.y = inner_h;
+      void layout_rect(Engine::ECS::Entity owner, const Components::Transform2D& to,
+        Components::EnemyHealthBarRect& bar, [[maybe_unused]] int current_hp, [[maybe_unused]] int max_hp) {
+        if (!bar.sprite.is_valid()) {
+          return;
+        }
+
+        const float square_size = std::max(bar.width, bar.height);
+
+        float anchor_x = to.position.x;
+        float anchor_y = to.position.y;
+
+        if (auto* collider = owner.get_component<Components::BoxCollider>()) {
+          anchor_x += collider->offset.x;
+          anchor_y += collider->offset.y - collider->height * 0.5f;
+        }
+
+        if (auto* t = bar.sprite.get_component<Components::Transform2D>()) {
+          t->position.x = anchor_x + bar.offset.x;
+          t->position.y = anchor_y + bar.offset.y;
+          t->rotation = 0.f;
+
+          if (t->scale.x <= 0.f || t->scale.y <= 0.f) {
+            t->scale.x = square_size;
+            t->scale.y = square_size;
           }
-          };
+        }
 
-        // Draw delayed then front so front is on top
-        place_fill(bar.after, bar.after_ratio);
-        place_fill(bar.front, bar.front_ratio);
+        if (auto* color = bar.sprite.get_component<Components::Color>()) {
+          color->a = 1.f;
+        }
       }
     };
 
