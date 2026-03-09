@@ -1,9 +1,5 @@
 {
     "api_key": "AIzaSyAelA3F5derUSghlYKQGssERI3Z53MuRwY",
     "database_url": "",
-    "pinned_collections": [
-        "test",
-        "asd"
-    ],
     "project_id": "monkeyengine-2ad5a"
 }
