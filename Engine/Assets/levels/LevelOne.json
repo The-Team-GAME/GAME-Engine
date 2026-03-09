@@ -30814,6 +30814,12 @@
                 "components": [
                     {
                         "data": {
+                            "path": "sounds/SFX/Player/Player Footstep.wav"
+                        },
+                        "type": "Components::Sound"
+                    },
+                    {
+                        "data": {
                             "intensity": 0.0,
                             "mesh_intensity": 0.0,
                             "speed": 0.0

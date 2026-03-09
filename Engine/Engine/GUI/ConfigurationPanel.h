@@ -13,7 +13,7 @@
 #include "Precompiled.h"
 #include "FileIO/Settings.h"
 #include "WindowManager.h"
-#include "Audio/AudioSystem.h"
+#include "Audio/AudioPlayer.h"
 #include "../HotReloadManager.h"
 
 /*=================================================================================
@@ -41,7 +41,7 @@ inline void ConfigurationPanel()
     // Fullscreen Toggle
     ImGui::Text("Display");
     ImGui::Separator();
-
+    
     if (ImGui::Checkbox("Fullscreen", &game_settings.fullscreen))
     {
       Engine::WindowManager::set_fullscreen(game_settings.fullscreen);
@@ -80,22 +80,22 @@ inline void ConfigurationPanel()
     // BGM Volume Slider
     if (ImGui::SliderFloat("BGM Volume", &game_settings.bgm_volume, 0.0f, 1.0f, "%.2f"))
     {
-      Engine::AudioSystem::setBGMVolume(game_settings.bgm_volume);
+      Engine::Audio::set_bgm_volume(game_settings.bgm_volume);
       settings_changed = true;
     }
 
     // SFX Volume Slider
     if (ImGui::SliderFloat("SFX Volume", &game_settings.sfx_volume, 0.0f, 1.0f, "%.2f"))
     {
-      Engine::AudioSystem::setSFXVolume(game_settings.sfx_volume);
+      Engine::Audio::set_sfx_volume(game_settings.sfx_volume);
       settings_changed = true;
     }
 
     // Master Volume (read from audio system)
-    f32 master_volume = Engine::AudioSystem::getMasterVolume();
+    f32 master_volume = Engine::Audio::get_master_volume();
     if (ImGui::SliderFloat("Master Volume", &master_volume, 0.0f, 1.0f, "%.2f"))
     {
-      Engine::AudioSystem::setMasterVolume(master_volume);
+      Engine::Audio::set_master_volume(master_volume);
     }
 
     // Save settings if changed
@@ -118,7 +118,7 @@ inline void ConfigurationPanel()
     // Window Settings (Requires Restart)
     ImGui::Text("Window (Requires Restart)");
     ImGui::Separator();
-
+    
     // Window Title - use buffer for InputText
     static char title_buffer[256] = "";
     static bool title_initialized = false;
@@ -132,7 +132,7 @@ inline void ConfigurationPanel()
       engine_settings.window_title = title_buffer;
       engine_settings_changed = true;
     }
-
+    
     // Window Dimensions
     if (ImGui::InputInt("Window Width", &engine_settings.window_width))
     {
@@ -142,7 +142,7 @@ inline void ConfigurationPanel()
     {
       engine_settings_changed = true;
     }
-
+    
     ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), "* Changes require application restart to take effect");
 
     ImGui::Spacing();
@@ -237,8 +237,8 @@ inline void ConfigurationPanel()
       Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::load("Assets/settings/game_settings.json");
       const auto& game_settings = Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get();
       Engine::WindowManager::set_fullscreen(game_settings.fullscreen);
-      Engine::AudioSystem::setBGMVolume(game_settings.bgm_volume);
-      Engine::AudioSystem::setSFXVolume(game_settings.sfx_volume);
+      Engine::Audio::set_bgm_volume(game_settings.bgm_volume);
+      Engine::Audio::set_sfx_volume(game_settings.sfx_volume);
     }
 
     ImGui::Spacing();

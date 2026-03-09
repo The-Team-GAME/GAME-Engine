@@ -5,7 +5,7 @@
 			<value>MonkeyAttack</value>
 		</property>
 		<property name="outputFormat">
-			<value>2</value>
+			<value>1</value>
 		</property>
 		<relationship name="folder">
 			<destination>{f1471c80-c6c5-42c6-a7c4-35d81a229e0e}</destination>
@@ -117,7 +117,6 @@
 	</object>
 	<object class="MixerBusEffectChain" id="{3c97f698-0cc3-453e-aa29-79543295dbbd}">
 		<relationship name="effects">
-			<destination>{ebabbf8a-c210-4e85-9dc4-583b6e1169ee}</destination>
 			<destination>{6dad7452-cd21-4a01-92dd-50d7ade1678e}</destination>
 			<destination>{ff601165-a204-4340-977c-042aeeaf0066}</destination>
 		</relationship>
@@ -145,17 +144,6 @@
 		</relationship>
 	</object>
 	<object class="MixerBusPanner" id="{de69d87c-6841-434e-9760-7e366eadcbdc}" />
-	<object class="SpatialiserEffect" id="{ebabbf8a-c210-4e85-9dc4-583b6e1169ee}">
-		<property name="minimumDistance">
-			<value>0</value>
-		</property>
-		<property name="maximumDistance">
-			<value>10000</value>
-		</property>
-		<property name="overrideRange">
-			<value>true</value>
-		</property>
-	</object>
 	<object class="MixerBusFader" id="{6dad7452-cd21-4a01-92dd-50d7ade1678e}" />
 	<object class="MultibandEqEffect" id="{ff601165-a204-4340-977c-042aeeaf0066}">
 		<property name="filterTypeA">

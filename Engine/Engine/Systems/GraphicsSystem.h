@@ -33,7 +33,6 @@
 #include "../FunctionRegistry.h"
 #include "../Time.h"
 #include "../Random.h"
-#include "../Audio/AudioSystem.h"
 
 namespace Engine
 {
@@ -494,20 +493,12 @@ namespace Engine
             }
           });
 
-        // Keep FMOD listener in sync with the active camera center.
-        // Pull the listener forward along Z by half the visible width so
-        // FMOD computes gradual stereo panning instead of snapping to 90°.
-        auto vres = Engine::Graphics::get_virtual_resolution();
-        f32 half_width = vres.x * 0.5f / camera.zoom;
-        Engine::AudioSystem::setListenerPosition(
-          camera.position + vres * 0.5f / camera.zoom, -half_width);
-
         Engine::Graphics::Camera render_camera = camera;
 
         if (shake_time_remaining > 0.0f) {
           shake_time_remaining = std::max(0.0f, shake_time_remaining - dt);
 
-
+          
           const f32 trauma_decay_rate = (shake_duration > 0.0f) ? (1.8f / shake_duration) : 8.0f;
           shake_trauma = std::max(0.0f, shake_trauma - trauma_decay_rate * dt);
 

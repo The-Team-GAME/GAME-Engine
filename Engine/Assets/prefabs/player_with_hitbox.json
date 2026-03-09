@@ -12,7 +12,7 @@
                         }
                     },
                     "collided": false,
-                    "height": 103.79214477539062,
+                    "height": 103.79214477539063,
                     "kinetic_friction": 0.800000011920929,
                     "offset": {
                         "x": -0.3579139709472656,
@@ -599,6 +599,12 @@
             },
             {
                 "data": {
+                    "path": "sounds/SFX/Player/Player Footstep.wav"
+                },
+                "type": "Components::Sound"
+            },
+            {
+                "data": {
                     "blueprint_id": "Player",
                     "current_state_name": "Idle",
                     "property_anim_playing": false,
@@ -646,7 +652,7 @@
                                         "totalDuration": 0.7199999094009399
                                     },
                                     "collider_data": {
-                                        "height": 103.79214477539062,
+                                        "height": 103.79214477539063,
                                         "offset": {
                                             "x": -0.3579139709472656,
                                             "y": 12.103927612304688
@@ -2661,7 +2667,7 @@
                                     "collider_data": {
                                         "height": 100.340576171875,
                                         "offset": {
-                                            "x": -2.5599136352539062,
+                                            "x": -2.5599136352539063,
                                             "y": 13.8297119140625
                                         },
                                         "vertices": [],
@@ -3029,7 +3035,7 @@
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": {
-                                        "height": 103.79214477539062,
+                                        "height": 103.79214477539063,
                                         "offset": {
                                             "x": -0.3579139709472656,
                                             "y": 12.103927612304688
@@ -4671,7 +4677,7 @@
                                         "height": 99.98263549804688,
                                         "offset": {
                                             "x": 7.578609466552734,
-                                            "y": 14.008682250976562
+                                            "y": 14.008682250976563
                                         },
                                         "vertices": [],
                                         "width": 39.03034210205078
@@ -4975,7 +4981,7 @@
                     },
                     "damage_immune": false,
                     "dash": {
-                        "cd_timer": -9.987503290176392e-06,
+                        "cd_timer": -0.000009987503290176392,
                         "cooldown": 5.0,
                         "duration": 0.20000000298023224,
                         "impulse": 0.0,
@@ -4985,7 +4991,7 @@
                     },
                     "jump_force": -600000.0,
                     "smash": {
-                        "cd_timer": -3.669038414955139e-05,
+                        "cd_timer": -0.00003669038414955139,
                         "cooldown": 7.0,
                         "duration": 0.0,
                         "impulse": 0.0,
@@ -5014,7 +5020,7 @@
                         "timer": 1.0
                     },
                     "uppercut": {
-                        "cd_timer": -9.987503290176392e-06,
+                        "cd_timer": -0.000009987503290176392,
                         "cooldown": 5.0,
                         "duration": 0.4000000059604645,
                         "impulse": 0.0,

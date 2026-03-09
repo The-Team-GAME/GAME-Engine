@@ -8,7 +8,7 @@
                         "half_width": 125.0,
                         "pos": {
                             "x": -2576.341552734375,
-                            "y": 963.5847778320312
+                            "y": 963.5847778320313
                         }
                     },
                     "height": 250.0,
@@ -87,6 +87,12 @@
                     "totalDuration": 0.0
                 },
                 "type": "Components::Animation"
+            },
+            {
+                "data": {
+                    "path": ""
+                },
+                "type": "Components::Sound"
             },
             {
                 "data": {

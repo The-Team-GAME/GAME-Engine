@@ -13,7 +13,7 @@
 // Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "Time.h"
-#include "Audio/AudioSystem.h"
+#include "Audio/AudioPlayer.h"
 #include <chrono>
 namespace chrono = std::chrono;
 
@@ -108,19 +108,19 @@ namespace Engine {
     bool set_paused(bool paused)
     {
       if (is_paused == paused) return is_paused; // No change needed
-
+      
       is_paused = paused;
-
+      
       // Pause/resume audio when game is paused/unpaused
       if (is_paused)
       {
-        Engine::AudioSystem::pauseAll(true);
+        Engine::Audio::pause_all_sounds();
       }
       else
       {
-        Engine::AudioSystem::pauseAll(false);
+        Engine::Audio::resume_all_sounds();
       }
-
+      
       return is_paused;
     }
 

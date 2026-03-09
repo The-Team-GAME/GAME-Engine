@@ -47434,6 +47434,12 @@
                     },
                     {
                         "data": {
+                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
+                        },
+                        "type": "Components::Sound"
+                    },
+                    {
+                        "data": {
                             "current_state_name": "Idle",
                             "states": [
                                 {
@@ -47787,7 +47793,7 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 74.66677856445312,
+                                                "height": 74.66677856445313,
                                                 "offset": {
                                                     "x": 7.185054302215576,
                                                     "y": 24.732242584228516
@@ -48699,6 +48705,12 @@
                     },
                     {
                         "data": {
+                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
+                        },
+                        "type": "Components::Sound"
+                    },
+                    {
+                        "data": {
                             "current_state_name": "Idle",
                             "states": [
                                 {
@@ -49052,7 +49064,7 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 74.66677856445312,
+                                                "height": 74.66677856445313,
                                                 "offset": {
                                                     "x": 7.185054302215576,
                                                     "y": 24.732242584228516
@@ -49998,6 +50010,12 @@
                     },
                     {
                         "data": {
+                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
+                        },
+                        "type": "Components::Sound"
+                    },
+                    {
+                        "data": {
                             "current_state_name": "Idle",
                             "states": [
                                 {
@@ -50351,7 +50369,7 @@
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": {
-                                                "height": 74.66677856445312,
+                                                "height": 74.66677856445313,
                                                 "offset": {
                                                     "x": 7.185054302215576,
                                                     "y": 24.732242584228516
@@ -51072,7 +51090,7 @@
                             "height": 91.67919921875,
                             "kinetic_friction": 0.800000011920929,
                             "offset": {
-                                "x": 4.9591064453125e-05,
+                                "x": 0.000049591064453125,
                                 "y": 18.160400390625
                             },
                             "polygon": {
@@ -51664,6 +51682,12 @@
                     },
                     {
                         "data": {
+                            "path": "sounds/SFX/Player/Player Footstep.wav"
+                        },
+                        "type": "Components::Sound"
+                    },
+                    {
+                        "data": {
                             "current_state_name": "Idle",
                             "states": [
                                 {
@@ -51708,7 +51732,7 @@
                                             "collider_data": {
                                                 "height": 94.18408203125,
                                                 "offset": {
-                                                    "x": 2.0352554321289062,
+                                                    "x": 2.0352554321289063,
                                                     "y": 16.907958984375
                                                 },
                                                 "vertices": [],
@@ -51981,7 +52005,7 @@
                                             "collider_data": {
                                                 "height": 91.67919921875,
                                                 "offset": {
-                                                    "x": 4.9591064453125e-05,
+                                                    "x": 0.000049591064453125,
                                                     "y": 18.160400390625
                                                 },
                                                 "vertices": [],
@@ -53273,7 +53297,7 @@
                                             "collider_data": {
                                                 "height": 90.4267578125,
                                                 "offset": {
-                                                    "x": -31.937210083007812,
+                                                    "x": -31.937210083007813,
                                                     "y": 18.78662109375
                                                 },
                                                 "vertices": [],

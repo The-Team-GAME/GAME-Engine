@@ -17,7 +17,12 @@
 #include "../Resources.h"
 #include "../Logger.h"
 #include "Precompiled.h"
-#include "../Audio/AudioSystem.h"
+#include "../Audio/AudioPlayerInternal.h"
+#include "../Audio/AudioPlayer.h"
+#include <unordered_map>
+
+// Static storage for playing channel handles
+static std::unordered_map<std::string, Engine::Audio::ChannelHandle> playing_sounds;
 
 void ResourceManagerPanel() {
   if (!ImGui::Begin("Resource Manager")) {
@@ -33,7 +38,7 @@ void ResourceManagerPanel() {
   ImGui::Separator();
   ImGui::Text("Textures: %zu total, %zu alive", stats.texture_count, stats.texture_alive);
   ImGui::Text("Fonts: %zu total, %zu alive", stats.font_count, stats.font_alive);
-  ImGui::Text("Audio: Managed by FMOD Studio (banks loaded at startup)");
+  ImGui::Text("Sounds: %zu total, %zu alive", stats.sound_count, stats.sound_alive);
   ImGui::Separator();
 
   // Button to clear unused resources
@@ -159,21 +164,103 @@ void ResourceManagerPanel() {
     ImGui::Unindent();
   }
 
-  // Audio section (FMOD Studio)
-  if (ImGui::CollapsingHeader("Audio (FMOD Studio)")) {
+  // Sounds section
+  if (ImGui::CollapsingHeader("Sounds")) {
     ImGui::Indent();
-    ImGui::Text("Audio is managed by FMOD Studio.");
-    ImGui::Text("Banks are loaded at engine startup.");
-    ImGui::Text("Use FMOD Studio events (e.g. \"event:/SFX/MySound\") in components.");
 
-    if (Engine::AudioSystem::isInitialized()) {
-      ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "FMOD Studio: Initialized");
-    }
-    else {
-      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "FMOD Studio: Not Initialized");
+    for (const auto& pair : Engine::Resources::sound_cache) {
+      const std::string& path = pair.first;
+      auto sound_ptr = pair.second.lock();
+
+      ImGui::PushID(path.c_str());
+
+      if (sound_ptr && sound_ptr->sound != nullptr) {
+        ImGui::Text("%s", path.c_str());
+        ImGui::SameLine();
+        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "[ALIVE]");
+
+        ImGui::Text("  Type: %s", sound_ptr->is_stream ? "Music (Streamed)" : "Sound Effect");
+
+        // Check if this sound is currently playing
+        auto channel_it = playing_sounds.find(path);
+        bool is_playing = false;
+        if (channel_it != playing_sounds.end()) {
+          is_playing = Engine::Audio::is_channel_playing(channel_it->second);
+          // Clean up finished sounds
+          if (!is_playing) {
+            playing_sounds.erase(channel_it);
+          }
+        }
+
+        // Playback controls
+        ImGui::Text("  Controls:");
+        ImGui::SameLine();
+
+        if (!is_playing) {
+          // Play button
+          if (ImGui::SmallButton("Play")) {
+            Engine::Audio::ChannelHandle handle = Engine::Audio::play_sound(sound_ptr, 1.0f, false);
+            if (handle != Engine::Audio::INVALID_CHANNEL) {
+              playing_sounds[path] = handle;
+              Log::info("Playing sound: {}", path);
+            }
+          }
+          ImGui::SameLine();
+
+          // Play looped button
+          if (ImGui::SmallButton("Play Loop")) {
+            Engine::Audio::ChannelHandle handle = Engine::Audio::play_sound(sound_ptr, 1.0f, true);
+            if (handle != Engine::Audio::INVALID_CHANNEL) {
+              playing_sounds[path] = handle;
+              Log::info("Playing sound (looped): {}", path);
+            }
+          }
+        }
+        else {
+          // Stop button
+          if (ImGui::SmallButton("Stop")) {
+            Engine::Audio::stop_channel(channel_it->second);
+            playing_sounds.erase(channel_it);
+            Log::info("Stopped sound: {}", path);
+          }
+          ImGui::SameLine();
+
+          // Pause/Resume button
+          ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "[PLAYING]");
+          ImGui::SameLine();
+
+          if (ImGui::SmallButton("Pause")) {
+            Engine::Audio::pause_channel(channel_it->second);
+            Log::info("Paused sound: {}", path);
+          }
+          ImGui::SameLine();
+
+          if (ImGui::SmallButton("Resume")) {
+            Engine::Audio::resume_channel(channel_it->second);
+            Log::info("Resumed sound: {}", path);
+          }
+
+          // Volume control
+          static float volume = 1.0f;
+          ImGui::SetNextItemWidth(150.0f);
+          if (ImGui::SliderFloat("Volume", &volume, 0.0f, 1.0f, "%.2f")) {
+            Engine::Audio::set_channel_volume(channel_it->second, volume);
+          }
+        }
+
+        ImGui::Spacing();
+      }
+      else {
+        ImGui::Text("%s", path.c_str());
+        ImGui::SameLine();
+        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "[EXPIRED]");
+        ImGui::Spacing();
+      }
+
+      ImGui::PopID();
+      ImGui::Separator();
     }
 
-    ImGui::Text("Master Volume: %.2f", Engine::AudioSystem::getMasterVolume());
     ImGui::Unindent();
   }
 

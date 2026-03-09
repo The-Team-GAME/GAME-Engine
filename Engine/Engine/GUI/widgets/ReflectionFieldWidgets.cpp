@@ -27,7 +27,6 @@
 #include <unordered_map>
 #include <algorithm>
 #include "../../FunctionRegistry.h"
-#include "../../Audio/AudioSystem.h"
 
 namespace ImGuiWidgets {
 
@@ -477,81 +476,6 @@ namespace ImGuiWidgets {
     }
   }
 
-  // Renders an event_path field as a searchable dropdown of all FMOD events in loaded banks
-  static bool render_fmod_event_path_combo(const std::string& label, ReflectionLibrary::GenericValue& path_value, bool& modified) {
-    if (!path_value.isString()) return false;
-
-    std::string current_path = path_value.getString();
-
-    // Static cache - refreshed every 2 seconds to avoid querying banks each frame
-    static std::vector<std::string> cached_event_paths;
-    static float cache_timer = 0.0f;
-    cache_timer += ImGui::GetIO().DeltaTime;
-    if (cached_event_paths.empty() || cache_timer > 2.0f) {
-      cached_event_paths = Engine::AudioSystem::getAllEventPaths();
-      cache_timer = 0.0f;
-    }
-
-    ImGui::Text("%s", label.c_str());
-    ImGui::SameLine();
-
-    if (ImGui::BeginCombo(("##" + label).c_str(), current_path.empty() ? "<None>" : current_path.c_str())) {
-      // Filter input
-      static char filter[256] = "";
-      ImGui::InputText("##filter", filter, sizeof(filter));
-      ImGui::Separator();
-
-      // <None> option
-      bool is_selected = current_path.empty();
-      if (ImGui::Selectable("<None>", is_selected)) {
-        path_value = std::string("");
-        modified = true;
-      }
-      if (is_selected) ImGui::SetItemDefaultFocus();
-
-      // List all events, filtered
-      std::string filter_lower(filter);
-      std::transform(filter_lower.begin(), filter_lower.end(), filter_lower.begin(), ::tolower);
-
-      for (const auto& event_path : cached_event_paths) {
-        if (!filter_lower.empty()) {
-          std::string path_lower = event_path;
-          std::transform(path_lower.begin(), path_lower.end(), path_lower.begin(), ::tolower);
-          if (path_lower.find(filter_lower) == std::string::npos)
-            continue;
-        }
-
-        is_selected = (current_path == event_path);
-        if (ImGui::Selectable(event_path.c_str(), is_selected)) {
-          path_value = event_path;
-          modified = true;
-        }
-        if (is_selected) ImGui::SetItemDefaultFocus();
-      }
-
-      ImGui::EndCombo();
-    }
-
-    return true;
-  }
-
-  // Renders FMOD component fields, replacing event_path with a dropdown
-  static bool render_fmod_component_fields(ReflectionLibrary::GenericValue& field_value, bool& modified,
-    Engine::ECS::Entity entity, Engine::ECS::Prefab* prefab, const std::string& prefab_path) {
-    if (!field_value.isObject()) return false;
-
-    auto& fields = field_value.getObject();
-    for (auto& [field_name, field_val] : fields) {
-      if (field_name == "event_path" && field_val.isString()) {
-        render_fmod_event_path_combo("event_path", field_val, modified);
-      }
-      else {
-        render_field(field_name, field_val.type_hint, field_val, modified, entity, prefab, prefab_path);
-      }
-    }
-    return true;
-  }
-
   bool render_statemachine_field(ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity) {
     // StateMachine structure:
     // - states: unordered_map<string, State> (Serialized as Array of Pairs or Object)
@@ -631,6 +555,7 @@ namespace ImGuiWidgets {
                   state_obj["name"] = ReflectionLibrary::GenericValue(sb.state_name);
                   state_obj["animation"] = ReflectionLibrary::GenericValue();  // null
                   state_obj["audio"] = ReflectionLibrary::GenericValue();      // null
+                  state_obj["fmod_audio"] = ReflectionLibrary::GenericValue(); // null
 
                   ReflectionLibrary::Object enter_cb;
                   enter_cb["name"] = ReflectionLibrary::GenericValue(sb.on_enter);
@@ -912,18 +837,25 @@ namespace ImGuiWidgets {
             // FMOD Audio per state
             // ================================================================
             ImGui::Separator();
-            auto fmod_it = state_obj.find("audio");
+            auto fmod_it = state_obj.find("fmod_audio");
             if (fmod_it != state_obj.end() && fmod_it->second.isObject()) {
               ReflectionLibrary::Object& fmod_obj = fmod_it->second.getObject();
 
               ImGui::Text("FMOD Audio:");
               ImGui::Indent();
 
-              // Event path (dropdown)
+              // Event path
+              std::string event_path;
               auto ep_it = fmod_obj.find("event_path");
               if (ep_it != fmod_obj.end() && ep_it->second.isString()) {
-                std::string ep_label = "Event Path##fmod_" + state_name;
-                render_fmod_event_path_combo(ep_label, ep_it->second, local_modified);
+                event_path = ep_it->second.getString();
+              }
+              char event_buf[256];
+              strncpy_s(event_buf, event_path.c_str(), sizeof(event_buf) - 1);
+              std::string ep_label = "Event Path##fmod_" + state_name;
+              if (ImGui::InputText(ep_label.c_str(), event_buf, sizeof(event_buf))) {
+                fmod_obj["event_path"] = ReflectionLibrary::GenericValue(std::string(event_buf));
+                local_modified = true;
               }
 
               // Volume
@@ -944,6 +876,15 @@ namespace ImGuiWidgets {
                 local_modified = true;
               }
 
+              // Stop on state exit checkbox
+              auto stop_it = fmod_obj.find("stop_on_state_exit");
+              bool fmod_stop = (stop_it != fmod_obj.end() && stop_it->second.isBool()) ? stop_it->second.getBool() : true;
+              std::string stop_label = "Stop On Exit##fmod_" + state_name;
+              if (ImGui::Checkbox(stop_label.c_str(), &fmod_stop)) {
+                fmod_obj["stop_on_state_exit"] = ReflectionLibrary::GenericValue(fmod_stop);
+                local_modified = true;
+              }
+
               ImGui::Unindent();
 
               // Remove FMOD Audio button
@@ -958,7 +899,7 @@ namespace ImGuiWidgets {
               ImGui::Spacing();
               std::string add_fmod_label = "Add FMOD Audio##" + state_name;
               if (ImGui::Button(add_fmod_label.c_str(), ImVec2(-1, 0))) {
-                state_obj["audio"] = ReflectionLibrary::to_generic_value(Components::FMODStateAudio{});
+                state_obj["fmod_audio"] = ReflectionLibrary::to_generic_value(Components::FMODStateAudio{});
                 local_modified = true;
               }
             }
@@ -1264,12 +1205,6 @@ namespace ImGuiWidgets {
 
     if (type_hint == "Components::StateMachine") {
       return render_statemachine_field(field_value, modified, entity);
-    }
-
-    if (type_hint == "Components::FMODEvent" ||
-      type_hint == "Components::FMODEventInstance" ||
-      type_hint == "Components::FMODStateAudio") {
-      return render_fmod_component_fields(field_value, modified, entity, prefab, prefab_path);
     }
 
     // Not handled by specialized renderer
