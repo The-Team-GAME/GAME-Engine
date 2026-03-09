@@ -9,27 +9,12 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "UpgradeManager.h"
-#include <cctype>
 
 namespace Engine
 {
     // ---- Singleton ----
 
-    namespace {
-        UpgradeManager* g_upgrade_manager = nullptr;
-
-        std::string normalize_stat_name(const std::string& name)
-        {
-            std::string out;
-            out.reserve(name.size());
-            for (unsigned char ch : name)
-            {
-                if (std::isalnum(ch))
-                    out.push_back(static_cast<char>(std::tolower(ch)));
-            }
-            return out;
-        }
-    }
+    namespace { UpgradeManager* g_upgrade_manager = nullptr; }
 
     UpgradeManager& UpgradeManager::instance()
     {
@@ -63,16 +48,7 @@ namespace Engine
 
     bool UpgradeManager::has_stat_applicator(const std::string& stat_name) const
     {
-        if (stat_applicators_.count(stat_name) > 0)
-            return true;
-
-        const std::string target = normalize_stat_name(stat_name);
-        for (const auto& [registered_name, _] : stat_applicators_)
-        {
-            if (normalize_stat_name(registered_name) == target)
-                return true;
-        }
-        return false;
+        return stat_applicators_.count(stat_name) > 0;
     }
 
     std::vector<std::string> UpgradeManager::get_registered_stats() const
@@ -128,8 +104,7 @@ namespace Engine
         for (int i = 0; i < static_cast<int>(settings.upgrades.size()); ++i)
         {
             if (is_upgrade_eligible(i))
-             
-            return false;
+                return false;
         }
         return true;
     }
@@ -236,19 +211,6 @@ namespace Engine
 
         // Apply to player via stat applicator
         auto it = stat_applicators_.find(upg.stat_name);
-        if (it == stat_applicators_.end())
-        {
-            const std::string target = normalize_stat_name(upg.stat_name);
-            for (auto jt = stat_applicators_.begin(); jt != stat_applicators_.end(); ++jt)
-            {
-                if (normalize_stat_name(jt->first) == target)
-                {
-                    it = jt;
-                    Log::info("[UpgradeManager] Resolved stat alias '{}' -> '{}'", upg.stat_name, jt->first);
-                    break;
-                }
-            }
-        }
         if (it != stat_applicators_.end())
         {
             it->second(upg.type, upg.value);
