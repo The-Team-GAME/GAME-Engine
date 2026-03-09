@@ -518,13 +518,77 @@ void FirebasePanel::draw_panel()
   // ========================================================================
   if (ImGui::CollapsingHeader("Document Editor", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    // ---- Document ID ----
+    // ---- Document ID + Pull/Push ----
+    bool has_doc_id     = (doc_id_buf[0] != '\0');
+    bool has_collection = (collection_buf[0] != '\0');
+    bool can_act        = has_doc_id && has_collection && pending == 0;
+
     ImGui::Text("Document ID:");
     ImGui::SameLine();
     if (doc_id_buf[0] != '\0')
       ImGui::TextWrapped("%s", doc_id_buf);
     else
       ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.f), "(none selected)");
+
+    if (!can_act) ImGui::BeginDisabled();
+
+    // Pull — fetch from Firestore into editor
+    if (ImGui::Button("Pull"))
+    {
+      std::string col = collection_buf;
+      std::string id  = doc_id_buf;
+      Engine::Firebase::get_document(col, id,
+        [col, id](bool success, const std::string& data) {
+          if (success) {
+            std::string formatted = pretty_json(data.c_str());
+            strncpy_s(json_edit_buf, formatted.c_str(), sizeof(json_edit_buf) - 1);
+            sync_json_to_fields();
+            set_status("Pulled " + id, true);
+            push_log("PULL " + col + "/" + id, true, "OK");
+          }
+          else {
+            set_status("Pull failed: " + data, false);
+            push_log("PULL " + col + "/" + id, false, data);
+          }
+        });
+    }
+
+    ImGui::SameLine();
+
+    // Push — write editor contents to Firestore
+    if (ImGui::Button("Push"))
+    {
+      sync_fields_to_json();
+      std::string col  = collection_buf;
+      std::string id   = doc_id_buf;
+      std::string body = json_edit_buf;
+      Engine::Firebase::set_document(col, id, body,
+        [col, id](bool success, const std::string& data) {
+          if (success) {
+            set_status("Pushed " + id, true);
+            push_log("PUSH " + col + "/" + id, true, "OK");
+            // Refresh the collection list
+            Engine::Firebase::query_collection(col,
+              [col](bool ok, const std::string& d2) {
+                if (ok) {
+                  has_fetched_once = true;
+                  parse_collection_response(d2);
+                  push_log("REFRESH " + col, true,
+                    std::to_string(cached_docs.size()) + " document(s)");
+                }
+                else {
+                  push_log("REFRESH " + col, false, d2);
+                }
+              });
+          }
+          else {
+            set_status("Push failed: " + data, false);
+            push_log("PUSH " + col + "/" + id, false, data);
+          }
+        });
+    }
+
+    if (!can_act) ImGui::EndDisabled();
 
     ImGui::Spacing();
 
@@ -588,73 +652,6 @@ void FirebasePanel::draw_panel()
         sync_fields_to_json();
       }
     }
-
-    ImGui::Spacing();
-
-    // ---- Action buttons ----
-    bool has_doc_id    = (doc_id_buf[0] != '\0');
-    bool has_collection = (collection_buf[0] != '\0');
-    bool can_act       = has_doc_id && has_collection && pending == 0;
-
-    if (!can_act) ImGui::BeginDisabled();
-
-    // Get
-    if (ImGui::Button("Get"))
-    {
-      std::string col = collection_buf;
-      std::string id  = doc_id_buf;
-      Engine::Firebase::get_document(col, id,
-        [col, id](bool success, const std::string& data) {
-          if (success) {
-            std::string formatted = pretty_json(data.c_str());
-            strncpy_s(json_edit_buf, formatted.c_str(), sizeof(json_edit_buf) - 1);
-            sync_json_to_fields();
-            set_status("Loaded " + id, true);
-            push_log("GET " + col + "/" + id, true, "OK");
-          }
-          else {
-            set_status("Get failed: " + data, false);
-            push_log("GET " + col + "/" + id, false, data);
-          }
-        });
-    }
-
-    ImGui::SameLine();
-
-    // Save
-    if (ImGui::Button("Save"))
-    {
-      sync_fields_to_json();
-      std::string col  = collection_buf;
-      std::string id   = doc_id_buf;
-      std::string body = json_edit_buf;
-      Engine::Firebase::set_document(col, id, body,
-        [col, id](bool success, const std::string& data) {
-          if (success) {
-            set_status("Saved " + id, true);
-            push_log("SET " + col + "/" + id, true, "OK");
-            // Refresh the collection list
-            Engine::Firebase::query_collection(col,
-              [col](bool ok, const std::string& d2) {
-                if (ok) {
-                  has_fetched_once = true;
-                  parse_collection_response(d2);
-                  push_log("REFRESH " + col, true,
-                    std::to_string(cached_docs.size()) + " document(s)");
-                }
-                else {
-                  push_log("REFRESH " + col, false, d2);
-                }
-              });
-          }
-          else {
-            set_status("Save failed: " + data, false);
-            push_log("SET " + col + "/" + id, false, data);
-          }
-        });
-    }
-
-    if (!can_act) ImGui::EndDisabled();
 
     ImGui::Spacing();
 
