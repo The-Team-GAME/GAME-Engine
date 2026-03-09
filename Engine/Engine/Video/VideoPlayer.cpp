@@ -3,6 +3,7 @@
 #include "../Resources.h"
 #include "../Path.h"
 #include "../Logger.h"
+#include "../Time.h"
 #include "../Graphics/Shader.h"
 #include <GL/glew.h>
 #include <fmod.hpp>
@@ -314,9 +315,9 @@ namespace Engine {
         auto copy_plane = [](const plm_plane_t& plane, std::vector<uint8_t>& buf, int w, int h) {
           for (int row = 0; row < h; ++row)
             std::memcpy(buf.data() + row * w, plane.data + row * plane.width, w);
-        };
+          };
 
-        copy_plane(frame->y,  impl->buf_y,  impl->plane_y_w, impl->plane_y_h);
+        copy_plane(frame->y, impl->buf_y, impl->plane_y_w, impl->plane_y_h);
         copy_plane(frame->cb, impl->buf_cb, impl->plane_c_w, impl->plane_c_h);
         copy_plane(frame->cr, impl->buf_cr, impl->plane_c_w, impl->plane_c_h);
 
@@ -388,7 +389,7 @@ namespace Engine {
 
       // Create GL_R8 textures for the 3 planes
       glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-      m_impl->tex_y  = create_plane_texture(m_impl->plane_y_w, m_impl->plane_y_h);
+      m_impl->tex_y = create_plane_texture(m_impl->plane_y_w, m_impl->plane_y_h);
       m_impl->tex_cb = create_plane_texture(m_impl->plane_c_w, m_impl->plane_c_h);
       m_impl->tex_cr = create_plane_texture(m_impl->plane_c_w, m_impl->plane_c_h);
 
@@ -464,16 +465,23 @@ namespace Engine {
       m_impl->apply_volume();
     }
 
-    void VideoPlayer::update(float dt)
+    void VideoPlayer::render(float vres_w, float vres_h)
     {
-      if (!m_impl->plm || !m_impl->playing || m_impl->paused)
+      if (!m_impl->shader || !m_impl->quad_vao || m_impl->width == 0)
         return;
 
-      // Keep FMOD channel volume in sync with master volume changes
-      m_impl->apply_volume();
+      // Advance decoder using real frame delta (runs once per render frame)
+      if (m_impl->plm && m_impl->playing && !m_impl->paused)
+      {
+        m_impl->apply_volume();
+        plm_decode(m_impl->plm, static_cast<double>(Time::get_real_dt()));
 
-      // Advance decoder — fires on_video / on_audio callbacks
-      plm_decode(m_impl->plm, static_cast<double>(dt));
+        if (plm_has_ended(m_impl->plm))
+        {
+          m_impl->playing = false;
+          m_impl->stop_audio();
+        }
+      }
 
       // Upload YCbCr planes to GPU
       if (m_impl->frame_dirty)
@@ -497,18 +505,6 @@ namespace Engine {
 
         m_impl->frame_dirty = false;
       }
-
-      if (plm_has_ended(m_impl->plm))
-      {
-        m_impl->playing = false;
-        m_impl->stop_audio();
-      }
-    }
-
-    void VideoPlayer::render(float vres_w, float vres_h)
-    {
-      if (!m_impl->shader || !m_impl->quad_vao || m_impl->width == 0)
-        return;
 
       // Compute aspect-ratio-preserving size in NDC
       float vid_w = static_cast<float>(m_impl->width);

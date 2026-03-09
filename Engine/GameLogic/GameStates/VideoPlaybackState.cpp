@@ -14,8 +14,6 @@ void VideoPlaybackState::init()
 
 void VideoPlaybackState::update()
 {
-  accumulated_dt += Engine::Time::get_fixed_dt();
-
   // Press Escape to stop and go back
   if (Engine::Input::is_pressed(Engine::KeyCode::Escape))
   {
@@ -39,13 +37,6 @@ void VideoPlaybackState::update()
 
 void VideoPlaybackState::draw()
 {
-  // Advance video once per render frame (not per fixed timestep)
-  if (accumulated_dt > 0.0f)
-  {
-    player.update(accumulated_dt);
-    accumulated_dt = 0.0f;
-  }
-
   Engine::Graphics::clear_screen({ 0.0f, 0.0f, 0.0f, 1.0f });
 
   Math::Vec2D vres = Engine::Graphics::get_virtual_resolution();

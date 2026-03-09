@@ -31,11 +31,9 @@ namespace Engine {
       void set_looping(bool loop);
       void set_volume(float volume);
 
-      // Must be called every frame while playing
-      void update(float dt);
-
       // Render the current video frame as a centered, aspect-ratio-preserved
-      // quad within the given virtual resolution. Call after update().
+      // quad within the given virtual resolution.
+      // Automatically advances the decoder each frame.
       void render(float vres_w, float vres_h);
 
       // Query state
