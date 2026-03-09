@@ -61,6 +61,7 @@ namespace Engine
 
     // Picker UI entities (owned by this FSM)
     ECS::EntityID dimmer_id_ = 0;
+    ECS::EntityID panel_id_ = 0;
     ECS::EntityID card0_id_ = 0;
     ECS::EntityID card1_id_ = 0;
 

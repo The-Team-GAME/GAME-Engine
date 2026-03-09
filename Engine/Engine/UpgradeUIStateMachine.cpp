@@ -260,6 +260,7 @@ namespace Engine
 
     auto rect = Resources::get_rect_texture();
     auto spritesheet = Resources::load_texture("images/Upgrades/Cards_Spritesheet.png");
+    auto panel_tex = Resources::load_texture("images/Upgrades/UpgradeMenu.png");
 
     // Dimmer — full-screen dark overlay
     auto dimmer = ECS::create_entity()
@@ -270,22 +271,41 @@ namespace Engine
       .add_to_layer("main_menu_4");
     dimmer_id_ = dimmer.get_id();
 
-    // Card dimensions: spritesheet is 960x224, 6 columns => each card 160x224
-    // Display scaled up
+    // Layout sizing
+    // Panel: 224x256 native, scaled to match card height
+    // Cards: 160x224 native from spritesheet, scaled 2x
     constexpr float card_display_w = 320.0f;
     constexpr float card_display_h = 448.0f;
-    constexpr float card_gap = 40.0f;
-    float total_w = card_display_w * 2.0f + card_gap;
-    float left_x = 800.0f - total_w / 2.0f + card_display_w / 2.0f;
-    float right_x = 800.0f + total_w / 2.0f - card_display_w / 2.0f;
+    constexpr float panel_scale = card_display_h / 256.0f;  // ~1.75
+    constexpr float panel_display_w = 224.0f * panel_scale;  // ~392
+    constexpr float panel_display_h = card_display_h;         // 448
+    constexpr float gap = 30.0f;
 
-    // Card 0 — left
+    // Total group: [panel] gap [card0] gap [card1]
+    float group_w = panel_display_w + gap + card_display_w + gap + card_display_w;
+    float group_left = (1600.0f - group_w) / 2.0f;  // left edge of group
+
+    float panel_cx = group_left + panel_display_w / 2.0f;
+    float card0_cx = group_left + panel_display_w + gap + card_display_w / 2.0f;
+    float card1_cx = group_left + panel_display_w + gap + card_display_w + gap + card_display_w / 2.0f;
+    constexpr float center_y = 450.0f;
+
+    // "Your Upgrades" panel — left
+    auto panel = ECS::create_entity()
+      .add_component<Components::Transform2D>(panel_cx, center_y, 0.0f, panel_display_w, panel_display_h)
+      .add_component<Components::Texture>(panel_tex)
+      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+      .add_component<Components::UI>()
+      .add_to_layer("main_menu_5");
+    panel_id_ = panel.get_id();
+
+    // Card 0 — center
     int idx0 = mgr.get_rolled_card(0);
     int draw0 = (idx0 >= 0 && idx0 < static_cast<int>(settings.upgrades.size()))
       ? settings.upgrades[idx0].card_index : 0;
 
     auto c0 = ECS::create_entity()
-      .add_component<Components::Transform2D>(left_x, 450.0f, 0.0f, card_display_w, card_display_h)
+      .add_component<Components::Transform2D>(card0_cx, center_y, 0.0f, card_display_w, card_display_h)
       .add_component<Components::Texture>(spritesheet)
       .add_component<Components::TextureAtlas>(160, 224, 1, 6, 6)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
@@ -301,7 +321,7 @@ namespace Engine
       ? settings.upgrades[idx1].card_index : 0;
 
     auto c1 = ECS::create_entity()
-      .add_component<Components::Transform2D>(right_x, 450.0f, 0.0f, card_display_w, card_display_h)
+      .add_component<Components::Transform2D>(card1_cx, center_y, 0.0f, card_display_w, card_display_h)
       .add_component<Components::Texture>(spritesheet)
       .add_component<Components::TextureAtlas>(160, 224, 1, 6, 6)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
@@ -322,6 +342,7 @@ namespace Engine
       };
 
     destroy_if_active(dimmer_id_);
+    destroy_if_active(panel_id_);
     destroy_if_active(card0_id_);
     destroy_if_active(card1_id_);
   }
