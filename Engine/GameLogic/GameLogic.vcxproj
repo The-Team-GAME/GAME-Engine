@@ -169,6 +169,7 @@
     <ClCompile Include="GameLogicEntry.cpp" />
     <ClCompile Include="GameStates\BasicState.cpp" />
     <ClCompile Include="GameStates\OptionsState.cpp" />
+    <ClCompile Include="GameStates\VideoPlaybackState.cpp" />
     <ClCompile Include="GameStates\PauseState.cpp" />
     <ClCompile Include="GameStates\StressTestState.cpp" />
     <ClCompile Include="GameStates\VictoryState.cpp" />
@@ -194,6 +195,7 @@
     <ClInclude Include="Components\InteractableComponents.h" />
     <ClInclude Include="GameStates\BehaviourState.h" />
     <ClInclude Include="GameStates\BasicState.h" />
+    <ClInclude Include="GameStates\VideoPlaybackState.h" />
     <ClInclude Include="GameStates\DistortionEffectState.h" />
     <ClInclude Include="GameStates\EmptyState.h" />
     <ClInclude Include="GameStates\GameMonkeyTestState.h" />

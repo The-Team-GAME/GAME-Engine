@@ -103,6 +103,11 @@ namespace Engine {
     ENGINE_API std::vector<std::string> getAllBusPaths();
 
     // ------------------------------------------------------------
+    // FMOD Core access (for subsystems that need raw PCM playback)
+    // ------------------------------------------------------------
+    ENGINE_API void* getCoreSystem();
+
+    // ------------------------------------------------------------
     // Utility
     // ------------------------------------------------------------
     ENGINE_API bool isInitialized();
