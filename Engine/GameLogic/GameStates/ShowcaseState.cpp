@@ -18,12 +18,6 @@
 void ShowcaseState::load() {
   background_texture = Engine::Resources::load_texture("images/sample_bg.png");
 
-  // Load audio
-  walk_sound = Engine::Resources::load_sound("sounds/SFX/Player/Player Footstep.wav");
-  jump_sound = Engine::Resources::load_sound("sounds/SFX/Player/Player Jump (DJ SY Edition).wav");
-  punch_sound = Engine::Resources::load_sound("sounds/SFX/Player/Player Swing.wav");
-  bgm_sound = Engine::Resources::load_sound("sounds/BGM/Level 1/MonomythBGM.wav");
-
   // Load fonts
   title_font = Engine::Resources::load_font("fonts/PlayfairDisplay-VariableFont_wght.ttf", 82);
   info_font = Engine::Resources::load_font("fonts/Roboto-Regular.ttf", 48);
@@ -199,13 +193,14 @@ void ShowcaseState::init() {
     // Play attack animation
     if (event.attacker == player.get_id()) {
       // Stop walk sound if playing
-      if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
-        Engine::Audio::stop_channel(walk_sound_channel);
-        walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
+      if (walk_playing) {
+        Engine::AudioSystem::stopEventInstance(WALK_INSTANCE, true);
+        Engine::AudioSystem::releaseEventInstance(WALK_INSTANCE);
+        walk_playing = false;
       }
 
       // Play punch sound
-      Engine::Audio::play_sound(punch_sound);
+      Engine::AudioSystem::playEvent(PUNCH_EVENT);
 
       // Switch to punch animation state
       auto* anim_state = player.get_component<Components::AnimationState>();
@@ -287,7 +282,9 @@ void ShowcaseState::init() {
     });
 
   // Start playing background music (looped)
-  bgm_channel = Engine::Audio::play_sound(bgm_sound, 0.5f, true);
+  Engine::AudioSystem::createEventInstance(BGM_INSTANCE, BGM_EVENT);
+  Engine::AudioSystem::setEventInstanceVolume(BGM_INSTANCE, 0.5f);
+  Engine::AudioSystem::startEventInstance(BGM_INSTANCE);
 }
 
 void ShowcaseState::update() {
@@ -296,9 +293,10 @@ void ShowcaseState::update() {
   auto* anim_state = player.get_component<Components::AnimationState>();
 
   if (!player_transform || !rigid || !anim_state) {
-    if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
-      Engine::Audio::stop_channel(walk_sound_channel);
-      walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
+    if (walk_playing) {
+      Engine::AudioSystem::stopEventInstance(WALK_INSTANCE, true);
+      Engine::AudioSystem::releaseEventInstance(WALK_INSTANCE);
+      walk_playing = false;
     }
     return;
   }
@@ -325,13 +323,14 @@ void ShowcaseState::update() {
     // Jump with Space when on ground
     if (Engine::Input::is_pressed(Engine::KeyCode::Space) && rigid->on_ground) {
       Engine::Systems::Physics2DSystem::jump(*rigid);
-      Engine::Audio::play_sound(jump_sound);
+      Engine::AudioSystem::playEvent(JUMP_EVENT);
       anim_state->set_animation_state(JUMP_STATE);
 
       // Stop walking sound when jumping
-      if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
-        Engine::Audio::stop_channel(walk_sound_channel);
-        walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
+      if (walk_playing) {
+        Engine::AudioSystem::stopEventInstance(WALK_INSTANCE, true);
+        Engine::AudioSystem::releaseEventInstance(WALK_INSTANCE);
+        walk_playing = false;
       }
     }
 
@@ -342,9 +341,10 @@ void ShowcaseState::update() {
         anim_state->set_animation_state(JUMP_STATE);
 
         // Stop walking sound when in air
-        if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
-          Engine::Audio::stop_channel(walk_sound_channel);
-          walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
+        if (walk_playing) {
+          Engine::AudioSystem::stopEventInstance(WALK_INSTANCE, true);
+          Engine::AudioSystem::releaseEventInstance(WALK_INSTANCE);
+          walk_playing = false;
         }
       }
     }
@@ -352,7 +352,9 @@ void ShowcaseState::update() {
       // On ground and moving - use run animation
       if (anim_state->current_state != RUN_STATE) {
         anim_state->set_animation_state(RUN_STATE);
-        walk_sound_channel = Engine::Audio::play_sound(walk_sound, 1.0f, true);
+        Engine::AudioSystem::createEventInstance(WALK_INSTANCE, WALK_EVENT);
+        Engine::AudioSystem::startEventInstance(WALK_INSTANCE);
+        walk_playing = true;
       }
     }
     else {
@@ -360,9 +362,10 @@ void ShowcaseState::update() {
       if (anim_state->current_state != IDLE_STATE) {
         anim_state->set_animation_state(IDLE_STATE);
 
-        if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
-          Engine::Audio::stop_channel(walk_sound_channel);
-          walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
+        if (walk_playing) {
+          Engine::AudioSystem::stopEventInstance(WALK_INSTANCE, true);
+          Engine::AudioSystem::releaseEventInstance(WALK_INSTANCE);
+          walk_playing = false;
         }
       }
     }
@@ -405,15 +408,14 @@ void ShowcaseState::draw() {
 
 void ShowcaseState::free() {
   // Stop any playing sounds
-  if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
-    Engine::Audio::stop_channel(walk_sound_channel);
-    walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
+  if (walk_playing) {
+    Engine::AudioSystem::stopEventInstance(WALK_INSTANCE, true);
+    Engine::AudioSystem::releaseEventInstance(WALK_INSTANCE);
+    walk_playing = false;
   }
 
-  if (bgm_channel != Engine::Audio::INVALID_CHANNEL) {
-    Engine::Audio::stop_channel(bgm_channel);
-    bgm_channel = Engine::Audio::INVALID_CHANNEL;
-  }
+  Engine::AudioSystem::stopEventInstance(BGM_INSTANCE, true);
+  Engine::AudioSystem::releaseEventInstance(BGM_INSTANCE);
 
   // Cleanup entities
   Engine::ECS::destroy_entities_with<Components::Tag<"ShowcaseState">>();

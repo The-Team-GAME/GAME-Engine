@@ -3,8 +3,7 @@
   <ItemGroup>
     <ClCompile Include="Audio\AudioSystem.cpp" />
     <ClCompile Include="Audio\AudioSystemExample.cpp" />
-    <ClCompile Include="Audio\AudioPlayer.cpp" />
-    <ClCompile Include="Audio\AudioPlayerInternal.cpp" />
+
     <ClCompile Include="Components\StateMachineBlueprintRegistry.cpp" />
     <ClCompile Include="ECS\PrefabMergeUtils.cpp" />
     <ClCompile Include="ECS\Types.cpp" />
@@ -80,8 +79,7 @@
   <ItemGroup>
     <ClInclude Include="Audio\AudioSystem.h" />
     <ClInclude Include="Audio\GameAudio.h" />
-    <ClInclude Include="Audio\AudioPlayer.h" />
-    <ClInclude Include="Audio\AudioPlayerInternal.h" />
+
     <ClInclude Include="Components\GraphicsComponents.h" />
     <ClInclude Include="Components\PhysicsComponents.h" />
     <ClInclude Include="Components\UtilityComponents.h" />
