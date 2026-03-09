@@ -193,11 +193,11 @@ static void register_collision_callbacks()
         Log::info("Player knocked back! Force applied: ({}, {})", attack->knockback.x, attack->knockback.y);
 
         // Trigger death state immediately when HP reaches 0
-        if (health->is_dead()) 
+        if (health->is_dead())
         {
           Log::info("Player is dead!");
           Components::StateMachine* state_machine = player_entity.get_component<Components::StateMachine>();
-          if (state_machine && state_machine->get_current_state() != "Death") 
+          if (state_machine && state_machine->get_current_state() != "Death")
           {
             state_machine->change_state("Death");
           }
@@ -249,39 +249,39 @@ static void register_upgrade_applicators()
 
   // "base_attack_damage" — modifies only Attack1/Attack2/Attack3 damage
   auto base_attack_damage_applicator = [](Engine::FileIO::UpgradeType type, float value) {
-      auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
-      if (!player_entity.is_valid()) {
-        Log::warning("[UpgradeApplicator] No player entity found for 'base_attack_damage'");
-        return;
-      }
-      auto* player = player_entity.get_component<Components::Player>();
-      if (!player) return;
+    auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+    if (!player_entity.is_valid()) {
+      Log::warning("[UpgradeApplicator] No player entity found for 'base_attack_damage'");
+      return;
+    }
+    auto* player = player_entity.get_component<Components::Player>();
+    if (!player) return;
 
-      auto apply_flat = [](float& dmg, int flat) {
-        dmg += static_cast<float>(flat);
+    auto apply_flat = [](float& dmg, int flat) {
+      dmg += static_cast<float>(flat);
       };
 
-      auto apply_multiplier = [](float& dmg, float mult) {
-        int scaled = static_cast<int>(std::lround(dmg * mult));
-        if (scaled < 1) scaled = 1;
-        dmg = static_cast<float>(scaled);
+    auto apply_multiplier = [](float& dmg, float mult) {
+      int scaled = static_cast<int>(std::lround(dmg * mult));
+      if (scaled < 1) scaled = 1;
+      dmg = static_cast<float>(scaled);
       };
 
-      if (type == Engine::FileIO::UpgradeType::Flat) {
-        int flat = static_cast<int>(std::lround(value));
-        if (flat <= 0) flat = 1;
+    if (type == Engine::FileIO::UpgradeType::Flat) {
+      int flat = static_cast<int>(std::lround(value));
+      if (flat <= 0) flat = 1;
 
-        apply_flat(player->attack1_data.dmg, flat);
-        apply_flat(player->attack2_data.dmg, flat);
-        apply_flat(player->attack3_data.dmg, flat);
-      }
-      else {
-        apply_multiplier(player->attack1_data.dmg, value);
-        apply_multiplier(player->attack2_data.dmg, value);
-        apply_multiplier(player->attack3_data.dmg, value);
-      }
-      Log::info("[UpgradeApplicator] base_attack_damage applied — atk1:{} atk2:{} atk3:{}",
-        player->attack1_data.dmg, player->attack2_data.dmg, player->attack3_data.dmg);
+      apply_flat(player->attack1_data.dmg, flat);
+      apply_flat(player->attack2_data.dmg, flat);
+      apply_flat(player->attack3_data.dmg, flat);
+    }
+    else {
+      apply_multiplier(player->attack1_data.dmg, value);
+      apply_multiplier(player->attack2_data.dmg, value);
+      apply_multiplier(player->attack3_data.dmg, value);
+    }
+    Log::info("[UpgradeApplicator] base_attack_damage applied — atk1:{} atk2:{} atk3:{}",
+      player->attack1_data.dmg, player->attack2_data.dmg, player->attack3_data.dmg);
     };
 
   mgr.register_stat_applicator("base_attack_damage", base_attack_damage_applicator);
@@ -289,35 +289,35 @@ static void register_upgrade_applicators()
 
   // "uppercut_damage" — modifies only Uppercut damage
   auto uppercut_damage_applicator = [](Engine::FileIO::UpgradeType type, float value) {
-      auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
-      if (!player_entity.is_valid()) {
-        Log::warning("[UpgradeApplicator] No player entity found for 'uppercut_damage'");
-        return;
-      }
-      auto* player = player_entity.get_component<Components::Player>();
-      if (!player) return;
+    auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+    if (!player_entity.is_valid()) {
+      Log::warning("[UpgradeApplicator] No player entity found for 'uppercut_damage'");
+      return;
+    }
+    auto* player = player_entity.get_component<Components::Player>();
+    if (!player) return;
 
-      auto apply_flat = [](float& dmg, int flat) {
-        dmg += static_cast<float>(flat);
+    auto apply_flat = [](float& dmg, int flat) {
+      dmg += static_cast<float>(flat);
       };
 
-      auto apply_multiplier = [](float& dmg, float mult) {
-        int scaled = static_cast<int>(std::lround(dmg * mult));
-        if (scaled < 1) scaled = 1;
-        dmg = static_cast<float>(scaled);
+    auto apply_multiplier = [](float& dmg, float mult) {
+      int scaled = static_cast<int>(std::lround(dmg * mult));
+      if (scaled < 1) scaled = 1;
+      dmg = static_cast<float>(scaled);
       };
 
-      if (type == Engine::FileIO::UpgradeType::Flat) {
-        int flat = static_cast<int>(std::lround(value));
-        if (flat <= 0) flat = 1;
-        apply_flat(player->uppercut_data.dmg, flat);
-      }
-      else {
-        apply_multiplier(player->uppercut_data.dmg, value);
-      }
+    if (type == Engine::FileIO::UpgradeType::Flat) {
+      int flat = static_cast<int>(std::lround(value));
+      if (flat <= 0) flat = 1;
+      apply_flat(player->uppercut_data.dmg, flat);
+    }
+    else {
+      apply_multiplier(player->uppercut_data.dmg, value);
+    }
 
-      Log::info("[UpgradeApplicator] uppercut_damage applied — uppercut:{}",
-        player->uppercut_data.dmg);
+    Log::info("[UpgradeApplicator] uppercut_damage applied — uppercut:{}",
+      player->uppercut_data.dmg);
     };
 
   mgr.register_stat_applicator("uppercut_damage", uppercut_damage_applicator);
@@ -325,35 +325,35 @@ static void register_upgrade_applicators()
 
   // "smash_damage" — modifies only Smash damage
   auto smash_damage_applicator = [](Engine::FileIO::UpgradeType type, float value) {
-      auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
-      if (!player_entity.is_valid()) {
-        Log::warning("[UpgradeApplicator] No player entity found for 'smash_damage'");
-        return;
-      }
-      auto* player = player_entity.get_component<Components::Player>();
-      if (!player) return;
+    auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+    if (!player_entity.is_valid()) {
+      Log::warning("[UpgradeApplicator] No player entity found for 'smash_damage'");
+      return;
+    }
+    auto* player = player_entity.get_component<Components::Player>();
+    if (!player) return;
 
-      auto apply_flat = [](float& dmg, int flat) {
-        dmg += static_cast<float>(flat);
+    auto apply_flat = [](float& dmg, int flat) {
+      dmg += static_cast<float>(flat);
       };
 
-      auto apply_multiplier = [](float& dmg, float mult) {
-        int scaled = static_cast<int>(std::lround(dmg * mult));
-        if (scaled < 1) scaled = 1;
-        dmg = static_cast<float>(scaled);
+    auto apply_multiplier = [](float& dmg, float mult) {
+      int scaled = static_cast<int>(std::lround(dmg * mult));
+      if (scaled < 1) scaled = 1;
+      dmg = static_cast<float>(scaled);
       };
 
-      if (type == Engine::FileIO::UpgradeType::Flat) {
-        int flat = static_cast<int>(std::lround(value));
-        if (flat <= 0) flat = 1;
-        apply_flat(player->smash_data.dmg, flat);
-      }
-      else {
-        apply_multiplier(player->smash_data.dmg, value);
-      }
+    if (type == Engine::FileIO::UpgradeType::Flat) {
+      int flat = static_cast<int>(std::lround(value));
+      if (flat <= 0) flat = 1;
+      apply_flat(player->smash_data.dmg, flat);
+    }
+    else {
+      apply_multiplier(player->smash_data.dmg, value);
+    }
 
-      Log::info("[UpgradeApplicator] smash_damage applied — smash:{}",
-        player->smash_data.dmg);
+    Log::info("[UpgradeApplicator] smash_damage applied — smash:{}",
+      player->smash_data.dmg);
     };
 
   mgr.register_stat_applicator("smash_damage", smash_damage_applicator);
@@ -682,11 +682,11 @@ static void register_systems()
 {
   Engine::ECS::add_system<Engine::Systems::HealthSystem>();
   Engine::ECS::add_system<Engine::Systems::EnemyHealthSystem>();
-  Engine::ECS::add_system<Engine::Systems::HeartrateSystem>();
+  // Engine::ECS::add_system<Engine::Systems::HeartrateSystem>();
   Engine::ECS::add_system<Engine::Systems::InteractableSystem>();
   Engine::ECS::add_system<Engine::Systems::DebugHitboxRenderSystem>();
   Engine::ECS::add_system<Engine::Systems::EnemyHealthBarRectSystem>();
-  Engine::ECS::add_system<Engine::Systems::HeartHUDSpriteSystem>();
+  // Engine::ECS::add_system<Engine::Systems::HeartHUDSpriteSystem>();
 }
 
 static void unregister_systems()
