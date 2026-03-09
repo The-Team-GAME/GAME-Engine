@@ -279,7 +279,7 @@ namespace Engine
     constexpr float panel_scale = card_display_h / 256.0f;  // ~1.75
     constexpr float panel_display_w = 224.0f * panel_scale;  // ~392
     constexpr float panel_display_h = card_display_h;         // 448
-    constexpr float gap = 30.0f;
+    constexpr float gap = 10.0f;
 
     // Total group: [panel] gap [card0] gap [card1]
     float group_w = panel_display_w + gap + card_display_w + gap + card_display_w;
