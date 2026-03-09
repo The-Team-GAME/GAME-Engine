@@ -228,9 +228,8 @@ namespace Engine {
       void apply_volume()
       {
         if (!fmod_channel) return;
-        float bgm_vol = AudioSystem::getBGMVolume();
         float master_vol = AudioSystem::getMasterVolume();
-        fmod_channel->setVolume(volume * bgm_vol * master_vol);
+        fmod_channel->setVolume(volume * master_vol);
       }
 
       void stop_audio()
@@ -393,7 +392,7 @@ namespace Engine {
       if (!m_impl->plm || !m_impl->playing || m_impl->paused)
         return;
 
-      // Keep FMOD channel volume in sync with BGM volume changes
+      // Keep FMOD channel volume in sync with master volume changes
       m_impl->apply_volume();
 
       // Advance decoder — this fires on_video / on_audio callbacks as needed
