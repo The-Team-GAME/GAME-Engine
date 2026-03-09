@@ -11,6 +11,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
+#include <vector>
 #include "EngineExport.h"
 #include "ECS/Types.h"
 
@@ -64,6 +65,7 @@ namespace Engine
     ECS::EntityID panel_id_ = 0;
     ECS::EntityID card0_id_ = 0;
     ECS::EntityID card1_id_ = 0;
+    std::vector<ECS::EntityID> mini_card_ids_;
 
     int picked_slot_ = -1;
   };

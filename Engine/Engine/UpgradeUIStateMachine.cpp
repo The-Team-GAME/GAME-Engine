@@ -299,6 +299,65 @@ namespace Engine
       .add_to_layer("main_menu_5");
     panel_id_ = panel.get_id();
 
+    // ---- Mini-cards showing acquired upgrades on the panel ----
+    // Each mini-card is 1/6 of the full display card size
+    constexpr float mini_w = card_display_w / 6.0f;  // ~53.3
+    constexpr float mini_h = card_display_h / 6.0f;  // ~74.7
+    constexpr float mini_gap = 2.0f;
+
+    // Starting positions for each category row (offsets from panel top-left corner).
+    // Adjust these values to align with the category markers on the panel image.
+    constexpr float row_start_x = 150.0f;          // X offset from panel left edge
+    constexpr float row0_y = 122.0f;               // Basic Attack Y offset from panel top edge
+    constexpr float row1_y = 204.0f;               // Uppercut Y offset from panel top edge
+    constexpr float row2_y = 288.0f;               // Downsmash Y offset from panel top edge
+    constexpr float row3_y = 368.0f;               // Final Row Y offset from panel top edge
+    constexpr float row_y[4] = { row0_y, row1_y, row2_y, row3_y };
+
+    float panel_left = panel_cx - panel_display_w / 2.0f;
+    float panel_top = center_y - panel_display_h / 2.0f;
+
+    // Map stat_name -> category row
+    auto get_category = [](const std::string& stat_name) -> int {
+      if (stat_name == "attack_damage")                                   return 0;
+      if (stat_name == "uppercut_damage" || stat_name == "uppercut_cooldown")  return 1;
+      if (stat_name == "downsmash_damage" || stat_name == "downsmash_cooldown") return 2;
+      if (stat_name == "dash_cooldown")                                   return 3;
+      return -1;
+      };
+
+    int row_card_count[4] = { 0, 0, 0, 0 };
+
+    for (size_t i = 0; i < settings.upgrades.size(); ++i)
+    {
+      const auto& upg = settings.upgrades[i];
+      int level = mgr.get_upgrade_level(upg.id);
+      if (level <= 0) continue;
+
+      int cat = get_category(upg.stat_name);
+      if (cat < 0) continue;
+
+      for (int lv = 0; lv < level; ++lv)
+      {
+        float x = panel_left + row_start_x + mini_w / 2.0f
+          + row_card_count[cat] * (mini_w + mini_gap);
+        float y = panel_top + row_y[cat];
+
+        auto mc = ECS::create_entity()
+          .add_component<Components::Transform2D>(x, y, 0.0f, mini_w, mini_h)
+          .add_component<Components::Texture>(spritesheet)
+          .add_component<Components::TextureAtlas>(160, 224, 1, 6, 6)
+          .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+          .add_component<Components::UI>()
+          .add_to_layer("main_menu_5");
+        if (auto* atlas = ECS::Entity(mc.get_id()).get_component<Components::TextureAtlas>())
+          atlas->drawIndex = upg.card_index;
+        mini_card_ids_.push_back(mc.get_id());
+
+        ++row_card_count[cat];
+      }
+    }
+
     // Card 0 — center
     int idx0 = mgr.get_rolled_card(0);
     int draw0 = (idx0 >= 0 && idx0 < static_cast<int>(settings.upgrades.size()))
@@ -343,6 +402,9 @@ namespace Engine
 
     destroy_if_active(dimmer_id_);
     destroy_if_active(panel_id_);
+    for (auto& id : mini_card_ids_)
+      destroy_if_active(id);
+    mini_card_ids_.clear();
     destroy_if_active(card0_id_);
     destroy_if_active(card1_id_);
   }
