@@ -3,6 +3,7 @@
 #include "../Resources.h"
 #include "../Path.h"
 #include "../Logger.h"
+#include "../Graphics/Shader.h"
 #include <GL/glew.h>
 #include <fmod.hpp>
 #include <mutex>
@@ -83,7 +84,6 @@ namespace Engine {
     static FMOD_RESULT F_CALL fmod_pcm_read(
       FMOD_SOUND* sound, void* data, unsigned int datalen)
     {
-      // Retrieve ring buffer pointer stored as userdata on the sound
       FMOD::Sound* snd = reinterpret_cast<FMOD::Sound*>(sound);
       void* ud = nullptr;
       snd->getUserData(&ud);
@@ -99,11 +99,26 @@ namespace Engine {
       float* out = static_cast<float*>(data);
       size_t num_read = ring->read(out, float_count);
 
-      // Zero-fill remainder if ring didn't have enough
       if (num_read < float_count)
         std::memset(out + num_read, 0, (float_count - num_read) * sizeof(float));
 
       return FMOD_OK;
+    }
+
+    // ----------------------------------------------------------------
+    // Helper: create a single-channel GL_R8 texture
+    // ----------------------------------------------------------------
+    static GLuint create_plane_texture(int w, int h)
+    {
+      GLuint tex = 0;
+      glGenTextures(1, &tex);
+      glBindTexture(GL_TEXTURE_2D, tex);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, w, h, 0, GL_RED, GL_UNSIGNED_BYTE, nullptr);
+      return tex;
     }
 
     // ----------------------------------------------------------------
@@ -113,10 +128,25 @@ namespace Engine {
     {
       plm_t* plm = nullptr;
 
-      // Video frame texture
-      Graphics::Texture texture;
-      std::vector<uint8_t> rgba_buffer;
+      // YCbCr plane textures (uploaded to GPU each frame)
+      GLuint tex_y = 0;
+      GLuint tex_cb = 0;
+      GLuint tex_cr = 0;
+
+      // CPU-side plane buffers (written by on_video callback)
+      std::vector<uint8_t> buf_y;
+      std::vector<uint8_t> buf_cb;
+      std::vector<uint8_t> buf_cr;
       bool frame_dirty = false;
+
+      // Plane dimensions (may differ from display width/height due to macroblock rounding)
+      int plane_y_w = 0, plane_y_h = 0;
+      int plane_c_w = 0, plane_c_h = 0;
+
+      // Rendering resources
+      GLuint quad_vao = 0;
+      GLuint quad_vbo = 0;
+      std::unique_ptr<Graphics::Shader> shader;
 
       // FMOD audio
       FMOD::System* core_system = nullptr;
@@ -130,6 +160,34 @@ namespace Engine {
       float volume = 1.0f;
       int width = 0;
       int height = 0;
+
+      void init_quad()
+      {
+        // Unit quad: position (-1..1), texcoord (0..1)
+        float verts[] = {
+          -1.0f, -1.0f,  0.0f, 1.0f,   // bottom-left  (tex V flipped: 1)
+           1.0f, -1.0f,  1.0f, 1.0f,   // bottom-right
+           1.0f,  1.0f,  1.0f, 0.0f,   // top-right
+          -1.0f, -1.0f,  0.0f, 1.0f,   // bottom-left
+           1.0f,  1.0f,  1.0f, 0.0f,   // top-right
+          -1.0f,  1.0f,  0.0f, 0.0f,   // top-left
+        };
+
+        glGenVertexArrays(1, &quad_vao);
+        glGenBuffers(1, &quad_vbo);
+        glBindVertexArray(quad_vao);
+        glBindBuffer(GL_ARRAY_BUFFER, quad_vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
+
+        // location 0: position (vec2)
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+        // location 1: texcoord (vec2)
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+        glBindVertexArray(0);
+      }
 
       void cleanup()
       {
@@ -148,19 +206,25 @@ namespace Engine {
           plm_destroy(plm);
           plm = nullptr;
         }
-        if (texture && texture->id != 0)
-        {
-          glDeleteTextures(1, &texture->id);
-          texture->id = 0;
-        }
-        texture.reset();
-        rgba_buffer.clear();
+        auto delete_tex = [](GLuint& t) { if (t) { glDeleteTextures(1, &t); t = 0; } };
+        delete_tex(tex_y);
+        delete_tex(tex_cb);
+        delete_tex(tex_cr);
+
+        if (quad_vbo) { glDeleteBuffers(1, &quad_vbo); quad_vbo = 0; }
+        if (quad_vao) { glDeleteVertexArrays(1, &quad_vao); quad_vao = 0; }
+        shader.reset();
+
+        buf_y.clear();
+        buf_cb.clear();
+        buf_cr.clear();
         ring.clear();
         playing = false;
         paused = false;
         frame_dirty = false;
         width = 0;
         height = 0;
+        plane_y_w = plane_y_h = plane_c_w = plane_c_h = 0;
       }
 
       bool init_audio()
@@ -180,7 +244,6 @@ namespace Engine {
           return false;
         }
 
-        // Ring buffer: 1 second of stereo float audio
         size_t ring_size = static_cast<size_t>(samplerate) * 2;
         ring.init(ring_size);
 
@@ -242,17 +305,25 @@ namespace Engine {
         ring.clear();
       }
 
-      // pl_mpeg video callback — called from plm_decode() on main thread
+      // pl_mpeg video callback — copies raw YCbCr planes
       static void on_video(plm_t* /*mpeg*/, plm_frame_t* frame, void* user)
       {
         auto* impl = static_cast<Impl*>(user);
-        // Convert YCrCb to RGBA, writing into our pre-allocated buffer.
-        // plm_frame_to_rgba leaves alpha untouched; buffer was init'd to 255.
-        plm_frame_to_rgba(frame, impl->rgba_buffer.data(), impl->width * 4);
+
+        // Copy each plane row-by-row (plane stride may differ from display width)
+        auto copy_plane = [](const plm_plane_t& plane, std::vector<uint8_t>& buf, int w, int h) {
+          for (int row = 0; row < h; ++row)
+            std::memcpy(buf.data() + row * w, plane.data + row * plane.width, w);
+        };
+
+        copy_plane(frame->y,  impl->buf_y,  impl->plane_y_w, impl->plane_y_h);
+        copy_plane(frame->cb, impl->buf_cb, impl->plane_c_w, impl->plane_c_h);
+        copy_plane(frame->cr, impl->buf_cr, impl->plane_c_w, impl->plane_c_h);
+
         impl->frame_dirty = true;
       }
 
-      // pl_mpeg audio callback — called from plm_decode() on main thread
+      // pl_mpeg audio callback
       static void on_audio(plm_t* /*mpeg*/, plm_samples_t* samples, void* user)
       {
         auto* impl = static_cast<Impl*>(user);
@@ -289,11 +360,8 @@ namespace Engine {
         return false;
       }
 
-      // Probe for stream headers if they weren't found immediately
       if (!plm_has_headers(m_impl->plm))
-      {
         plm_probe(m_impl->plm, 128 * 1024);
-      }
 
       m_impl->width = plm_get_width(m_impl->plm);
       m_impl->height = plm_get_height(m_impl->plm);
@@ -306,37 +374,46 @@ namespace Engine {
         return false;
       }
 
-      // Allocate RGBA buffer (alpha channel pre-filled to 255)
-      m_impl->rgba_buffer.resize(
-        static_cast<size_t>(m_impl->width) * m_impl->height * 4, 255);
+      // Plane dimensions: Y is full size, Cb/Cr are half (4:2:0)
+      // pl_mpeg rounds up to macroblock boundaries (16px) internally,
+      // but we only upload the display-sized portion.
+      m_impl->plane_y_w = m_impl->width;
+      m_impl->plane_y_h = m_impl->height;
+      m_impl->plane_c_w = m_impl->width / 2;
+      m_impl->plane_c_h = m_impl->height / 2;
 
-      // Create OpenGL texture for video frames
-      auto tex = std::make_shared<Graphics::TextureData>();
-      tex->width = m_impl->width;
-      tex->height = m_impl->height;
-      tex->filter = Graphics::TextureFilter::Linear;
-      tex->path = full_path;
+      m_impl->buf_y.resize(static_cast<size_t>(m_impl->plane_y_w) * m_impl->plane_y_h, 0);
+      m_impl->buf_cb.resize(static_cast<size_t>(m_impl->plane_c_w) * m_impl->plane_c_h, 128);
+      m_impl->buf_cr.resize(static_cast<size_t>(m_impl->plane_c_w) * m_impl->plane_c_h, 128);
 
-      glGenTextures(1, &tex->id);
-      glBindTexture(GL_TEXTURE_2D, tex->id);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
-        m_impl->width, m_impl->height,
-        0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+      // Create GL_R8 textures for the 3 planes
+      glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+      m_impl->tex_y  = create_plane_texture(m_impl->plane_y_w, m_impl->plane_y_h);
+      m_impl->tex_cb = create_plane_texture(m_impl->plane_c_w, m_impl->plane_c_h);
+      m_impl->tex_cr = create_plane_texture(m_impl->plane_c_w, m_impl->plane_c_h);
 
-      m_impl->texture = tex;
+      // Load YCbCr→RGB shader (once, reused across open/close cycles)
+      if (!m_impl->shader)
+      {
+        m_impl->shader = Graphics::Shader::load_from_file(
+          "Assets/shaders/video_yuv.vert", "Assets/shaders/video_yuv.frag");
+        if (!m_impl->shader || !m_impl->shader->is_valid())
+        {
+          Log::error("[VideoPlayer] Failed to load YCbCr shader");
+          close();
+          return false;
+        }
+      }
 
-      // Install pl_mpeg callbacks for both video and audio
+      // Create quad VAO/VBO if not yet created
+      if (!m_impl->quad_vao)
+        m_impl->init_quad();
+
+      // Install pl_mpeg callbacks
       plm_set_video_decode_callback(m_impl->plm, Impl::on_video, m_impl.get());
       plm_set_audio_decode_callback(m_impl->plm, Impl::on_audio, m_impl.get());
-
-      // Audio lead time: how far ahead audio is decoded relative to video
       plm_set_audio_lead_time(m_impl->plm, 1152.0 * 4.0 / 44100.0);
 
-      // Initialize FMOD audio
       m_impl->init_audio();
 
       Log::info("[VideoPlayer] Opened: {} ({}x{}, {:.1f}s)",
@@ -395,17 +472,29 @@ namespace Engine {
       // Keep FMOD channel volume in sync with master volume changes
       m_impl->apply_volume();
 
-      // Advance decoder — this fires on_video / on_audio callbacks as needed
+      // Advance decoder — fires on_video / on_audio callbacks
       plm_decode(m_impl->plm, static_cast<double>(dt));
 
-      // Upload the latest decoded frame to GPU
-      if (m_impl->frame_dirty && m_impl->texture)
+      // Upload YCbCr planes to GPU
+      if (m_impl->frame_dirty)
       {
-        glBindTexture(GL_TEXTURE_2D, m_impl->texture->id);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        glBindTexture(GL_TEXTURE_2D, m_impl->tex_y);
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
-          m_impl->width, m_impl->height,
-          GL_RGBA, GL_UNSIGNED_BYTE,
-          m_impl->rgba_buffer.data());
+          m_impl->plane_y_w, m_impl->plane_y_h,
+          GL_RED, GL_UNSIGNED_BYTE, m_impl->buf_y.data());
+
+        glBindTexture(GL_TEXTURE_2D, m_impl->tex_cb);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
+          m_impl->plane_c_w, m_impl->plane_c_h,
+          GL_RED, GL_UNSIGNED_BYTE, m_impl->buf_cb.data());
+
+        glBindTexture(GL_TEXTURE_2D, m_impl->tex_cr);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
+          m_impl->plane_c_w, m_impl->plane_c_h,
+          GL_RED, GL_UNSIGNED_BYTE, m_impl->buf_cr.data());
+
         m_impl->frame_dirty = false;
       }
 
@@ -414,6 +503,46 @@ namespace Engine {
         m_impl->playing = false;
         m_impl->stop_audio();
       }
+    }
+
+    void VideoPlayer::render(float vres_w, float vres_h)
+    {
+      if (!m_impl->shader || !m_impl->quad_vao || m_impl->width == 0)
+        return;
+
+      // Compute aspect-ratio-preserving size in NDC
+      float vid_w = static_cast<float>(m_impl->width);
+      float vid_h = static_cast<float>(m_impl->height);
+      float scale = (std::min)(vres_w / vid_w, vres_h / vid_h);
+      float ndc_half_w = (vid_w * scale) / vres_w;  // in 0..1 range, maps to -1..1 via shader
+      float ndc_half_h = (vid_h * scale) / vres_h;
+
+      m_impl->shader->use();
+
+      // Centered at origin (NDC 0,0)
+      m_impl->shader->set_vec2("u_pos", 0.0f, 0.0f);
+      m_impl->shader->set_vec2("u_size", ndc_half_w, ndc_half_h);
+
+      // Bind the 3 YCbCr plane textures
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, m_impl->tex_y);
+      m_impl->shader->set_int("u_tex_y", 0);
+
+      glActiveTexture(GL_TEXTURE1);
+      glBindTexture(GL_TEXTURE_2D, m_impl->tex_cb);
+      m_impl->shader->set_int("u_tex_cb", 1);
+
+      glActiveTexture(GL_TEXTURE2);
+      glBindTexture(GL_TEXTURE_2D, m_impl->tex_cr);
+      m_impl->shader->set_int("u_tex_cr", 2);
+
+      // Draw the quad
+      glBindVertexArray(m_impl->quad_vao);
+      glDrawArrays(GL_TRIANGLES, 0, 6);
+      glBindVertexArray(0);
+
+      // Reset active texture to 0
+      glActiveTexture(GL_TEXTURE0);
     }
 
     bool VideoPlayer::is_playing() const
@@ -457,11 +586,6 @@ namespace Engine {
     {
       if (!m_impl->plm) return 0.0;
       return plm_get_time(m_impl->plm);
-    }
-
-    Graphics::Texture VideoPlayer::get_texture() const
-    {
-      return m_impl->texture;
     }
 
   } // namespace Video

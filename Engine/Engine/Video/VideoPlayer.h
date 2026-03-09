@@ -34,6 +34,10 @@ namespace Engine {
       // Must be called every frame while playing
       void update(float dt);
 
+      // Render the current video frame as a centered, aspect-ratio-preserved
+      // quad within the given virtual resolution. Call after update().
+      void render(float vres_w, float vres_h);
+
       // Query state
       bool is_playing() const;
       bool is_paused() const;
@@ -45,10 +49,6 @@ namespace Engine {
       int get_height() const;
       double get_duration() const;
       double get_time() const;
-
-      // Returns the texture containing the current video frame.
-      // Use with Graphics::draw_texture() or draw_texture_ui().
-      Graphics::Texture get_texture() const;
 
     private:
 #pragma warning(push)

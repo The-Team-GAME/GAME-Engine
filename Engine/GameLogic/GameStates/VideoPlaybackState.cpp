@@ -14,8 +14,7 @@ void VideoPlaybackState::init()
 
 void VideoPlaybackState::update()
 {
-  f32 dt = Engine::Time::get_fixed_dt();
-  player.update(dt);
+  accumulated_dt += Engine::Time::get_fixed_dt();
 
   // Press Escape to stop and go back
   if (Engine::Input::is_pressed(Engine::KeyCode::Escape))
@@ -40,24 +39,17 @@ void VideoPlaybackState::update()
 
 void VideoPlaybackState::draw()
 {
+  // Advance video once per render frame (not per fixed timestep)
+  if (accumulated_dt > 0.0f)
+  {
+    player.update(accumulated_dt);
+    accumulated_dt = 0.0f;
+  }
+
   Engine::Graphics::clear_screen({ 0.0f, 0.0f, 0.0f, 1.0f });
 
-  auto tex = player.get_texture();
-  if (tex)
-  {
-    // Center the video on screen, fitting to virtual resolution
-    Math::Vec2D vres = Engine::Graphics::get_virtual_resolution();
-    f32 vid_w = static_cast<f32>(player.get_width());
-    f32 vid_h = static_cast<f32>(player.get_height());
-
-    // Scale to fit while preserving aspect ratio
-    f32 scale = (std::min)(vres.x / vid_w, vres.y / vid_h);
-    Math::Vec2D size{ vid_w * scale, vid_h * scale };
-    Math::Vec2D pos{ vres.x * 0.5f, vres.y * 0.5f };
-
-    Engine::Graphics::draw_texture_ui(tex, pos, size, 0.0f,
-      { 1.0f, 1.0f, 1.0f, 1.0f });
-  }
+  Math::Vec2D vres = Engine::Graphics::get_virtual_resolution();
+  player.render(vres.x, vres.y);
 }
 
 void VideoPlaybackState::free()
