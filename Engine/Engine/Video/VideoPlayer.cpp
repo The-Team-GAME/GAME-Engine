@@ -1,5 +1,7 @@
 #include "VideoPlayer.h"
 #include "../Audio/AudioSystem.h"
+#include "../Resources.h"
+#include "../Path.h"
 #include "../Logger.h"
 #include <GL/glew.h>
 #include <fmod.hpp>
@@ -273,22 +275,34 @@ namespace Engine {
       close();
     }
 
-    bool VideoPlayer::open(const std::string& path)
+    bool VideoPlayer::open(const std::string& path, bool append_resource_path)
     {
       close();
 
-      m_impl->plm = plm_create_with_filename(path.c_str());
+      std::string full_path = append_resource_path
+        ? Engine::Path(Resources::resource_path).join(path)
+        : Engine::Path(path).normalize();
+
+      m_impl->plm = plm_create_with_filename(full_path.c_str());
       if (!m_impl->plm)
       {
-        Log::error("[VideoPlayer] Failed to open video file: {}", path);
+        Log::error("[VideoPlayer] Failed to open video file: {}", full_path);
         return false;
+      }
+
+      // Probe for stream headers if they weren't found immediately
+      if (!plm_has_headers(m_impl->plm))
+      {
+        plm_probe(m_impl->plm, 128 * 1024);
       }
 
       m_impl->width = plm_get_width(m_impl->plm);
       m_impl->height = plm_get_height(m_impl->plm);
       if (m_impl->width == 0 || m_impl->height == 0)
       {
-        Log::error("[VideoPlayer] Invalid video dimensions in: {}", path);
+        Log::error("[VideoPlayer] Invalid video dimensions in: {}", full_path);
+        Log::error("[VideoPlayer] File must be an MPEG-PS (.mpg) container. "
+          "Convert with: ffmpeg -i input.mp4 -c:v mpeg1video -c:a mp2 -f mpeg output.mpg");
         close();
         return false;
       }
@@ -302,7 +316,7 @@ namespace Engine {
       tex->width = m_impl->width;
       tex->height = m_impl->height;
       tex->filter = Graphics::TextureFilter::Linear;
-      tex->path = path;
+      tex->path = full_path;
 
       glGenTextures(1, &tex->id);
       glBindTexture(GL_TEXTURE_2D, tex->id);
@@ -311,8 +325,8 @@ namespace Engine {
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
       glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
-                   m_impl->width, m_impl->height,
-                   0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        m_impl->width, m_impl->height,
+        0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
       m_impl->texture = tex;
 
@@ -327,7 +341,7 @@ namespace Engine {
       m_impl->init_audio();
 
       Log::info("[VideoPlayer] Opened: {} ({}x{}, {:.1f}s)",
-                path, m_impl->width, m_impl->height, plm_get_duration(m_impl->plm));
+        full_path, m_impl->width, m_impl->height, plm_get_duration(m_impl->plm));
       return true;
     }
 
@@ -390,9 +404,9 @@ namespace Engine {
       {
         glBindTexture(GL_TEXTURE_2D, m_impl->texture->id);
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
-                        m_impl->width, m_impl->height,
-                        GL_RGBA, GL_UNSIGNED_BYTE,
-                        m_impl->rgba_buffer.data());
+          m_impl->width, m_impl->height,
+          GL_RGBA, GL_UNSIGNED_BYTE,
+          m_impl->rgba_buffer.data());
         m_impl->frame_dirty = false;
       }
 

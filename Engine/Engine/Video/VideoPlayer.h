@@ -18,8 +18,8 @@ namespace Engine {
       VideoPlayer(const VideoPlayer&) = delete;
       VideoPlayer& operator=(const VideoPlayer&) = delete;
 
-      // Open an .mpg file for playback
-      bool open(const std::string& path);
+      // Open an .mpg file for playback (path relative to Assets/ by default)
+      bool open(const std::string& path, bool append_resource_path = true);
 
       // Close and release all resources
       void close();
