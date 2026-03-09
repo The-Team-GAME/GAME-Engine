@@ -261,11 +261,11 @@ namespace Engine
     auto rect = Resources::get_rect_texture();
 
     // ---- Spritesheet configuration — update these if the sheet changes ----
-    constexpr int   ss_card_w = 160;   // pixel width  of one card frame
+    constexpr int   ss_card_w = 128;   // pixel width  of one card frame  (1024 / 8 cols)
     constexpr int   ss_card_h = 224;   // pixel height of one card frame
     constexpr int   ss_rows = 1;     // number of rows  in the sheet
-    constexpr int   ss_cols = 6;     // number of cols  in the sheet
-    constexpr int   ss_total = 6;     // total number of cards in the sheet
+    constexpr int   ss_cols = 8;     // number of cols  in the sheet (actual sheet width)
+    constexpr int   ss_total = 6;     // number of cards in use (last 2 ignored for now)
     // -----------------------------------------------------------------------
 
     auto spritesheet = Resources::load_texture("images/Upgrades/Cards_Spritesheet.png");
