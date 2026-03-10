@@ -19,48 +19,48 @@ typedef void* HINTERNET;
 
 namespace Engine
 {
-    namespace Firebase
+  namespace Firebase
+  {
+    namespace HTTP
     {
-        namespace HTTP
-        {
-            // ----------------------------------------------------------------
-            // Session lifecycle — call once from FirebaseManager::init/shutdown
-            // ----------------------------------------------------------------
-            bool open_session(const std::string& user_agent = "MonkeyEngine/1.0");
-            void close_session();
+      // ----------------------------------------------------------------
+      // Session lifecycle — call once from FirebaseManager::init/shutdown
+      // ----------------------------------------------------------------
+      bool open_session(const std::string& user_agent = "MonkeyEngine/1.0");
+      void close_session();
 
-            // ----------------------------------------------------------------
-            // Synchronous HTTPS requests (blocking — run on worker threads)
-            // ----------------------------------------------------------------
-            HttpResponse get(const std::string& url);
-            HttpResponse post(const std::string& url, const std::string& body);
-            HttpResponse patch(const std::string& url, const std::string& body);
-            HttpResponse put(const std::string& url, const std::string& body);
-            HttpResponse del(const std::string& url);   // "delete" is a keyword
+      // ----------------------------------------------------------------
+      // Synchronous HTTPS requests (blocking — run on worker threads)
+      // ----------------------------------------------------------------
+      HttpResponse get(const std::string& url);
+      HttpResponse post(const std::string& url, const std::string& body);
+      HttpResponse patch(const std::string& url, const std::string& body);
+      HttpResponse put(const std::string& url, const std::string& body);
+      HttpResponse del(const std::string& url);   // "delete" is a keyword
 
-            // ----------------------------------------------------------------
-            // SSE streaming support
-            // ----------------------------------------------------------------
+      // ----------------------------------------------------------------
+      // SSE streaming support
+      // ----------------------------------------------------------------
 
-            // Holds the WinHTTP handles for an open SSE stream
-            struct StreamHandle
-            {
-                HINTERNET connection = nullptr;
-                HINTERNET request    = nullptr;
-            };
+      // Holds the WinHTTP handles for an open SSE stream
+      struct StreamHandle
+      {
+        HINTERNET connection = nullptr;
+        HINTERNET request = nullptr;
+      };
 
-            // Open an SSE stream: sends GET with Accept: text/event-stream,
-            // receives headers, but does NOT read the body.
-            // Returns a valid StreamHandle on success (both handles non-null).
-            StreamHandle open_stream(const std::string& url);
+      // Open an SSE stream: sends GET with Accept: text/event-stream,
+      // receives headers, but does NOT read the body.
+      // Returns a valid StreamHandle on success (both handles non-null).
+      StreamHandle open_stream(const std::string& url);
 
-            // Read a chunk of data from an open stream.
-            // Returns number of bytes read (0 = no data yet or connection closed).
-            int read_stream_chunk(HINTERNET request, char* buffer, int buffer_size);
+      // Read a chunk of data from an open stream.
+      // Returns number of bytes read (0 = no data yet or connection closed).
+      int read_stream_chunk(HINTERNET request, char* buffer, int buffer_size);
 
-            // Close a stream and release its handles.
-            void close_stream(StreamHandle& handle);
+      // Close a stream and release its handles.
+      void close_stream(StreamHandle& handle);
 
-        } // namespace HTTP
-    } // namespace Firebase
+    } // namespace HTTP
+  } // namespace Firebase
 } // namespace Engine
