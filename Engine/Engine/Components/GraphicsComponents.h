@@ -566,7 +566,8 @@ namespace Components
   // Parallax scrolling component - makes the entity scroll at a fraction of the camera speed
   // scroll_factor: (0,0) = fully static background, (1,1) = moves with world, values in between give parallax
   // tiling: if true, the texture tiles infinitely in both axes so it never runs out
-  // tile_size: size of each repeated tile in world units (only used when tiling = true)
+  // tile_size: size of each repeated tile in 
+  // (only used when tiling = true)
   struct Parallax
   {
     Math::Vec2D scroll_factor = { 0.9f, 0.9f }; // How much camera movement affects this layer (0 = static, 1 = normal)
