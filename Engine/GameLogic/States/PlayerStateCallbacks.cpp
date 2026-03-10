@@ -234,7 +234,7 @@ namespace PlayerStateCallbacks
     {
       Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
       assert(sm);
-      sm->change_state("Falling");
+      sm->change_state("Idle");
     }
     take_input(entity);
   }
