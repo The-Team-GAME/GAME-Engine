@@ -161,6 +161,14 @@ namespace Engine {
     }
 
     // ------------------------------------------------------------
+    // FMOD Core access (for subsystems that need raw PCM playback)
+    // ------------------------------------------------------------
+    void* getCoreSystem()
+    {
+      return static_cast<void*>(gCoreSystem);
+    }
+
+    // ------------------------------------------------------------
     // Bank Management
     // ------------------------------------------------------------
     bool loadBank(const ::std::string& path)
