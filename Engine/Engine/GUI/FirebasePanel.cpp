@@ -714,6 +714,9 @@ void FirebasePanel::draw_panel()
 
   if (ImGui::CollapsingHeader("Document Browser", ImGuiTreeNodeFlags_DefaultOpen))
   {
+    float browser_start_y = ImGui::GetCursorPosY();
+    float browser_min_height = 30.f * ImGui::GetTextLineHeightWithSpacing();
+
     if (selected_collection.empty())
     {
       ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.f),
@@ -939,13 +942,17 @@ void FirebasePanel::draw_panel()
             ImGui::SetNextItemWidth(-1.f);
             char kid[32]; std::snprintf(kid, sizeof(kid), "##fk%d", fi);
             if (ImGui::InputText(kid, field_rows[fi].key, sizeof(field_rows[fi].key)))
-            { sync_fields_to_json(); fields_dirty = true; }
+            {
+              sync_fields_to_json(); fields_dirty = true;
+            }
 
             ImGui::TableSetColumnIndex(1);
             ImGui::SetNextItemWidth(-1.f);
             char vid[32]; std::snprintf(vid, sizeof(vid), "##fv%d", fi);
             if (ImGui::InputText(vid, field_rows[fi].val, sizeof(field_rows[fi].val)))
-            { sync_fields_to_json(); fields_dirty = true; }
+            {
+              sync_fields_to_json(); fields_dirty = true;
+            }
 
             ImGui::TableSetColumnIndex(2);
             bool is_trailing_empty = (fi == static_cast<int>(field_rows.size()) - 1
@@ -1050,6 +1057,11 @@ void FirebasePanel::draw_panel()
         }
       }
     }
+
+    // Ensure minimum height (10 field rows of padding)
+    float browser_used = ImGui::GetCursorPosY() - browser_start_y;
+    if (browser_used < browser_min_height)
+      ImGui::Dummy(ImVec2(1.f, browser_min_height - browser_used));
   }
 
   ImGui::Spacing();
