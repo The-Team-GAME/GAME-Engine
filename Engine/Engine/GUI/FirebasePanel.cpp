@@ -281,6 +281,27 @@ namespace
           set_status("Fetched " + std::to_string(cached_docs.size()) + " document(s) from \"" + col + "\"", true);
           push_log("QUERY " + col, true,
             std::to_string(cached_docs.size()) + " document(s)");
+
+          // Auto-pull the selected document if one is active
+          std::string selected_id(doc_id_buf);
+          if (!selected_id.empty()) {
+            // Re-select the same doc in the refreshed list
+            for (int i = 0; i < static_cast<int>(cached_docs.size()); ++i) {
+              if (cached_docs[i].id == selected_id) {
+                selected_doc_idx = i;
+                break;
+              }
+            }
+            Engine::Firebase::get_document(col, selected_id,
+              [col, selected_id](bool ok, const std::string& doc_data) {
+                if (ok) {
+                  std::string formatted = pretty_json(doc_data.c_str());
+                  strncpy_s(json_edit_buf, formatted.c_str(), sizeof(json_edit_buf) - 1);
+                  sync_json_to_fields();
+                  push_log("PULL " + col + "/" + selected_id, true, "OK");
+                }
+              });
+          }
         }
       });
   }
@@ -521,8 +542,8 @@ void FirebasePanel::draw_panel()
         field_rows.clear();
 
         // Push the new (empty) document to Firestore immediately
-        std::string col  = fb_settings.collection;
-        std::string id   = new_doc_name_buf;
+        std::string col = fb_settings.collection;
+        std::string id = new_doc_name_buf;
         std::string body = "{}";
         Engine::Firebase::set_document(col, id, body,
           [col, id](bool success, const std::string& data) {
