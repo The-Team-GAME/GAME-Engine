@@ -462,7 +462,7 @@ namespace Engine
     if (arc_active_)
     {
       constexpr float arc_duration = 0.4f;
-      constexpr float arc_peak = -120.0f;  // upward arc offset in pixels
+      constexpr float arc_peak = -40.0f;   // slight upward arc offset in pixels
       constexpr float pi = 3.14159265f;
 
       arc_time_ += dt;
