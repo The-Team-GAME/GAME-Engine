@@ -219,6 +219,9 @@ namespace PlayerStateCallbacks
     assert(player_comp);
     rigid->is_jumping = true;
     rigid->on_ground = false;
+
+    rigid->velocity.zero();
+    rigid->force.zero();
     rigid->force.y += player_comp->jump_force;
 
     default_state = true;
@@ -230,11 +233,11 @@ namespace PlayerStateCallbacks
     assert(rigid);
 
     // we check for rigid->on_ground here because on the first few frames there is still a chance that the player will be counted as on gound
-    if (rigid->on_ground && rigid->velocity.y >= 0.0f)
+    if (rigid->on_ground)// && rigid->velocity.y >= 0.0f)
     {
       Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
       assert(sm);
-      sm->change_state("Idle");
+      sm->change_state("Falling");
     }
     take_input(entity);
   }
@@ -402,7 +405,7 @@ namespace PlayerStateCallbacks
 
     Components::Attack* attack = hitbox.get_component<Components::Attack>();
     assert(attack);
-    attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactBlue_Spritesheet.png");
+    attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactWhite_Spritesheet.png");
   }
 
   inline void attack1_on_update(Engine::ECS::Entity entity) {
@@ -446,7 +449,7 @@ namespace PlayerStateCallbacks
 
     Components::Attack* attack = hitbox.get_component<Components::Attack>();
     assert(attack);
-    attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactBlue_Spritesheet.png");
+    attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactWhite_Spritesheet.png");
   }
 
   inline void attack2_on_update(Engine::ECS::Entity entity) {
@@ -490,7 +493,7 @@ namespace PlayerStateCallbacks
 
     Components::Attack* attack = hitbox.get_component<Components::Attack>();
     assert(attack);
-    attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactBlue_Spritesheet.png");
+    attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactWhite_Spritesheet.png");
   }
 
   inline void attack3_on_update(Engine::ECS::Entity entity) {
