@@ -54,6 +54,7 @@ namespace Engine
 
     void spawn_picker_entities();
     void destroy_picker_entities();
+    void animate_cards();
 
     UpgradeFlowState state_ = UpgradeFlowState::Idle;
 
@@ -68,6 +69,18 @@ namespace Engine
     std::vector<ECS::EntityID> mini_card_ids_;
 
     int picked_slot_ = -1;
+
+    // Animation state
+    float card_base_x_[2] = {};
+    float card_base_y_[2] = {};
+    float card_base_sx_[2] = {};
+    float card_base_sy_[2] = {};
+    float picker_open_time_ = 0.0f;
+    int   hovered_card_ = -1;
+    float hover_lerp_[2] = {};
+    float stamp_time_ = -1.0f;
+    int   stamp_card_ = -1;
+    bool  flip_done_ = false;
   };
 
 } // namespace Engine

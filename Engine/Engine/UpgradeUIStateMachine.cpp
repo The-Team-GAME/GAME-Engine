@@ -18,9 +18,17 @@
 #include "Logger.h"
 #include "FileIO/Settings.h"
 #include "FileIO/SettingsManager.h"
+#include "Easing.h"
+#include <cmath>
 
 namespace Engine
 {
+  // ---- Card animation toggles (set to false to disable) ----
+  constexpr bool kEnableFlipReveal = true;
+  constexpr bool kEnableIdleFloat = true;
+  constexpr bool kEnableHoverLift = true;
+  constexpr bool kEnableSelectionStamp = true;
+
   // ---- Singleton ----
 
   namespace { UpgradeUIStateMachine* g_upgrade_ui_sm = nullptr; }
@@ -192,25 +200,34 @@ namespace Engine
     }
     case UpgradeFlowState::PickerOpen:
     {
+      // Drive card animations (flip, float, hover, stamp)
+      animate_cards();
+
+      // Don't process input during flip reveal or stamp animation
+      if (!flip_done_) break;
+      if (kEnableSelectionStamp && stamp_time_ >= 0.0f) break;
+
       glm::vec2 mouse = Input::get_mouse_position();
 
       // Hit-test card 0
       if (card0_id_ != 0 && ECS::is_entity_active(ECS::Entity(card0_id_)))
       {
-        auto* t = ECS::Entity(card0_id_).get_component<Components::Transform2D>();
-        if (t)
+        float hw = card_base_sx_[0] / 2.0f;
+        float hh = card_base_sy_[0] / 2.0f;
+        if (mouse.x >= card_base_x_[0] - hw && mouse.x <= card_base_x_[0] + hw &&
+          mouse.y >= card_base_y_[0] - hh && mouse.y <= card_base_y_[0] + hh)
         {
-          float hw = t->scale.x / 2.0f;
-          float hh = t->scale.y / 2.0f;
-          if (mouse.x >= t->position.x - hw && mouse.x <= t->position.x + hw &&
-            mouse.y >= t->position.y - hh && mouse.y <= t->position.y + hh)
+          if (Input::is_pressed(KeyCode::MouseLeft))
           {
-            if (Input::is_pressed(KeyCode::MouseLeft))
+            if (kEnableSelectionStamp)
             {
-              picked_slot_ = 0;
-              transition_to(UpgradeFlowState::Applying);
-              break;
+              stamp_card_ = 0; stamp_time_ = 0.0f;
             }
+            else
+            {
+              picked_slot_ = 0; transition_to(UpgradeFlowState::Applying);
+            }
+            break;
           }
         }
       }
@@ -218,20 +235,22 @@ namespace Engine
       // Hit-test card 1
       if (card1_id_ != 0 && ECS::is_entity_active(ECS::Entity(card1_id_)))
       {
-        auto* t = ECS::Entity(card1_id_).get_component<Components::Transform2D>();
-        if (t)
+        float hw = card_base_sx_[1] / 2.0f;
+        float hh = card_base_sy_[1] / 2.0f;
+        if (mouse.x >= card_base_x_[1] - hw && mouse.x <= card_base_x_[1] + hw &&
+          mouse.y >= card_base_y_[1] - hh && mouse.y <= card_base_y_[1] + hh)
         {
-          float hw = t->scale.x / 2.0f;
-          float hh = t->scale.y / 2.0f;
-          if (mouse.x >= t->position.x - hw && mouse.x <= t->position.x + hw &&
-            mouse.y >= t->position.y - hh && mouse.y <= t->position.y + hh)
+          if (Input::is_pressed(KeyCode::MouseLeft))
           {
-            if (Input::is_pressed(KeyCode::MouseLeft))
+            if (kEnableSelectionStamp)
             {
-              picked_slot_ = 1;
-              transition_to(UpgradeFlowState::Applying);
-              break;
+              stamp_card_ = 1; stamp_time_ = 0.0f;
             }
+            else
+            {
+              picked_slot_ = 1; transition_to(UpgradeFlowState::Applying);
+            }
+            break;
           }
         }
       }
@@ -248,6 +267,144 @@ namespace Engine
         transition_to(UpgradeFlowState::Idle);
       break;
     }
+    }
+  }
+
+  // ---- Card animations ----
+
+  void UpgradeUIStateMachine::animate_cards()
+  {
+    float dt = Time::get_unscaled_fixed_dt();
+    picker_open_time_ += dt;
+
+    ECS::EntityID card_ids[2] = { card0_id_, card1_id_ };
+
+    // Start from base values each frame; effects accumulate offsets
+    float pos_y[2] = { card_base_y_[0], card_base_y_[1] };
+    float scale_x[2] = { card_base_sx_[0], card_base_sx_[1] };
+    float scale_y[2] = { card_base_sy_[0], card_base_sy_[1] };
+
+    // ---- Flip Reveal ----
+    if (kEnableFlipReveal && !flip_done_)
+    {
+      constexpr float flip_duration = 0.3f;
+      constexpr float flip_stagger = 0.08f;
+      bool all_done = true;
+      for (int i = 0; i < 2; ++i)
+      {
+        float card_t = picker_open_time_ - i * flip_stagger;
+        if (card_t < 0.0f)
+        {
+          scale_x[i] = 0.0f;
+          all_done = false;
+        }
+        else if (card_t < flip_duration)
+        {
+          scale_x[i] = Easing::EaseBackOut(card_t, 0.0f, card_base_sx_[i], flip_duration);
+          all_done = false;
+        }
+        // else: scale_x stays at base (fully revealed)
+      }
+      if (all_done) flip_done_ = true;
+    }
+
+    // ---- Idle Float (only after flip completes) ----
+    if (kEnableIdleFloat && flip_done_)
+    {
+      constexpr float float_amplitude = 3.0f;
+      constexpr float float_speed = 0.2f;
+      constexpr float float_phase_offset = 0.5f;
+      constexpr float two_pi = 6.2831853f;
+      for (int i = 0; i < 2; ++i)
+      {
+        pos_y[i] += float_amplitude * sinf(picker_open_time_ * float_speed * two_pi + i * float_phase_offset);
+      }
+    }
+
+    // ---- Hover Lift (only after flip completes) ----
+    if (kEnableHoverLift && flip_done_)
+    {
+      constexpr float hover_lift_y = -15.0f;
+      constexpr float hover_scale_boost = 1.05f;
+      constexpr float hover_speed = 8.0f;
+
+      glm::vec2 mouse = Input::get_mouse_position();
+      hovered_card_ = -1;
+      for (int i = 0; i < 2; ++i)
+      {
+        float hw = card_base_sx_[i] / 2.0f;
+        float hh = card_base_sy_[i] / 2.0f;
+        if (mouse.x >= card_base_x_[i] - hw && mouse.x <= card_base_x_[i] + hw &&
+          mouse.y >= card_base_y_[i] - hh && mouse.y <= card_base_y_[i] + hh)
+        {
+          hovered_card_ = i;
+        }
+      }
+
+      for (int i = 0; i < 2; ++i)
+      {
+        float target = (hovered_card_ == i) ? 1.0f : 0.0f;
+        hover_lerp_[i] += (target - hover_lerp_[i]) * hover_speed * dt;
+        // Clamp to [0,1]
+        if (hover_lerp_[i] < 0.0f) hover_lerp_[i] = 0.0f;
+        if (hover_lerp_[i] > 1.0f) hover_lerp_[i] = 1.0f;
+
+        pos_y[i] += hover_lift_y * hover_lerp_[i];
+        float boost = 1.0f + (hover_scale_boost - 1.0f) * hover_lerp_[i];
+        scale_x[i] *= boost;
+        scale_y[i] *= boost;
+      }
+    }
+
+    // ---- Selection Stamp ----
+    if (kEnableSelectionStamp && stamp_time_ >= 0.0f)
+    {
+      constexpr float stamp_duration = 0.15f;
+      constexpr float stamp_squish = 0.85f;
+      stamp_time_ += dt;
+
+      if (stamp_time_ >= stamp_duration)
+      {
+        // Stamp finished — apply the upgrade
+        stamp_time_ = -1.0f;
+        picked_slot_ = stamp_card_;
+        stamp_card_ = -1;
+        transition_to(UpgradeFlowState::Applying);
+        return;
+      }
+
+      int c = stamp_card_;
+      if (c >= 0 && c < 2)
+      {
+        float half = stamp_duration / 2.0f;
+        float squish_factor;
+        if (stamp_time_ < half)
+        {
+          // Squish down
+          float t = stamp_time_;
+          squish_factor = Easing::EaseQuadIn(t, 1.0f, stamp_squish - 1.0f, half);
+        }
+        else
+        {
+          // Bounce back
+          float t = stamp_time_ - half;
+          squish_factor = Easing::EaseQuadOut(t, stamp_squish, 1.0f - stamp_squish, half);
+        }
+        scale_x[c] *= squish_factor;
+        scale_y[c] *= squish_factor;
+      }
+    }
+
+    // ---- Write final values to entities ----
+    for (int i = 0; i < 2; ++i)
+    {
+      if (card_ids[i] == 0) continue;
+      auto* t = ECS::Entity(card_ids[i]).get_component<Components::Transform2D>();
+      if (!t) continue;
+      t->position.x = card_base_x_[i];
+      t->position.y = pos_y[i];
+      t->scale.x = scale_x[i];
+      t->scale.y = scale_y[i];
     }
   }
 
@@ -405,6 +562,33 @@ namespace Engine
     if (auto* atlas = ECS::Entity(c1.get_id()).get_component<Components::TextureAtlas>())
       atlas->drawIndex = draw1;
     card1_id_ = c1.get_id();
+
+    // ---- Store base values and reset animation state ----
+    card_base_x_[0] = card0_cx;    card_base_y_[0] = center_y;
+    card_base_sx_[0] = card_display_w; card_base_sy_[0] = card_display_h;
+    card_base_x_[1] = card1_cx;    card_base_y_[1] = center_y;
+    card_base_sx_[1] = card_display_w; card_base_sy_[1] = card_display_h;
+
+    picker_open_time_ = 0.0f;
+    hovered_card_ = -1;
+    hover_lerp_[0] = 0.0f;
+    hover_lerp_[1] = 0.0f;
+    stamp_time_ = -1.0f;
+    stamp_card_ = -1;
+
+    if (kEnableFlipReveal)
+    {
+      flip_done_ = false;
+      // Start cards invisible (scale.x = 0) for flip-in
+      if (auto* t0 = ECS::Entity(card0_id_).get_component<Components::Transform2D>())
+        t0->scale.x = 0.0f;
+      if (auto* t1 = ECS::Entity(card1_id_).get_component<Components::Transform2D>())
+        t1->scale.x = 0.0f;
+    }
+    else
+    {
+      flip_done_ = true;
+    }
   }
 
   void UpgradeUIStateMachine::destroy_picker_entities()
