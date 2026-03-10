@@ -139,15 +139,12 @@ namespace Engine
     // Firebase Cloud Firestore Settings
     // ==================================================================================
 
-    // Configuration for connecting to a Firebase Cloud Firestore project.
+    // Configuration for connecting to a Firebase Realtime Database project.
     // Game developers fill in their Firebase project details in firebase_settings.json.
-    // The database_url is auto-derived from project_id if left empty.
     struct FirebaseSettings
     {
-      std::string project_id = "";     // Firebase project ID (e.g. "my-game-12345")
-      std::string api_key = "";        // Firebase Web API key
-      std::string database_url = "";   // Optional override (defaults to "https://firestore.googleapis.com")
-      std::string collection = "game_data"; // Firestore collection name used by the game
+      std::string database_url = "";   // RTDB URL (e.g. "https://myproject-default-rtdb.firebaseio.com")
+      std::string collection = "game_data"; // Top-level RTDB path used by the game
     };
   }
 }
@@ -161,4 +158,4 @@ REFLECT_ENUM(Engine::FileIO::UpgradeType, Flat, Multiplier)
 REFLECT_FIELDS(Engine::FileIO::RarityTier, name, drop_rate)
 REFLECT_FIELDS(Engine::FileIO::UpgradeDefinition, id, display_name, rarity, stat_name, type, value, max_level)
 REFLECT_FIELDS(Engine::FileIO::UpgradeSettings, base_point_threshold, threshold_scaling, rarities, upgrades)
-REFLECT_FIELDS(Engine::FileIO::FirebaseSettings, project_id, api_key, database_url, collection)
+REFLECT_FIELDS(Engine::FileIO::FirebaseSettings, database_url, collection)

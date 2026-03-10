@@ -1,6 +1,4 @@
 {
-  "api_key": "AIzaSyAelA3F5derUSghlYKQGssERI3Z53MuRwY",
   "collection": "game_data",
-  "database_url": "",
-  "project_id": "monkeyengine-2ad5a"
+  "database_url": "https://monkeyengine-2ad5a-default-rtdb.asia-southeast1.firebasedatabase.app/"
 }

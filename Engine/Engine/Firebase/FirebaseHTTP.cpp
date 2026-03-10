@@ -5,7 +5,7 @@
 // brief:   WinHTTP implementation for HTTPS requests. Uses the Windows-native
 //          WinHTTP API so there are zero external dependencies — TLS is handled
 //          by the OS. All functions are synchronous; the manager layer handles
-//          async dispatch via std::async.
+//          async dispatch via std::async. Also provides SSE streaming primitives.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
@@ -251,9 +251,144 @@ namespace Engine
                 return send_request("PATCH", url, body);
             }
 
+            HttpResponse put(const std::string& url, const std::string& body)
+            {
+                return send_request("PUT", url, body);
+            }
+
             HttpResponse del(const std::string& url)
             {
                 return send_request("DELETE", url, "");
+            }
+
+            // ----------------------------------------------------------------
+            // SSE streaming support
+            // ----------------------------------------------------------------
+
+            StreamHandle open_stream(const std::string& url)
+            {
+                StreamHandle handle{};
+
+                if (!g_session) {
+                    Log::error("[Firebase HTTP] open_stream: session not initialized");
+                    return handle;
+                }
+
+                UrlParts parts;
+                if (!parse_url(url, parts)) {
+                    Log::error("[Firebase HTTP] open_stream: failed to parse URL: {}", url);
+                    return handle;
+                }
+
+                HINTERNET connection = WinHttpConnect(
+                    g_session,
+                    parts.host.c_str(),
+                    parts.port,
+                    0
+                );
+
+                if (!connection) {
+                    Log::error("[Firebase HTTP] open_stream: WinHttpConnect failed, error: {}", GetLastError());
+                    return handle;
+                }
+
+                DWORD flags = parts.is_https ? WINHTTP_FLAG_SECURE : 0;
+                HINTERNET request = WinHttpOpenRequest(
+                    connection,
+                    L"GET",
+                    parts.path.c_str(),
+                    nullptr,
+                    WINHTTP_NO_REFERER,
+                    WINHTTP_DEFAULT_ACCEPT_TYPES,
+                    flags
+                );
+
+                if (!request) {
+                    Log::error("[Firebase HTTP] open_stream: WinHttpOpenRequest failed, error: {}", GetLastError());
+                    WinHttpCloseHandle(connection);
+                    return handle;
+                }
+
+                // Disable auto-redirect so we can handle 307 if needed
+                // Actually, let WinHTTP handle redirects automatically
+                // Set longer timeouts for SSE (receive can block for a long time)
+                WinHttpSetTimeouts(request, 5000, 10000, 15000, 0); // 0 = infinite receive timeout
+
+                // Add SSE accept header
+                std::wstring headers = L"Accept: text/event-stream\r\n";
+
+                BOOL sent = WinHttpSendRequest(
+                    request,
+                    headers.c_str(),
+                    (DWORD)-1L,
+                    WINHTTP_NO_REQUEST_DATA,
+                    0, 0, 0
+                );
+
+                if (!sent) {
+                    Log::error("[Firebase HTTP] open_stream: WinHttpSendRequest failed, error: {}", GetLastError());
+                    WinHttpCloseHandle(request);
+                    WinHttpCloseHandle(connection);
+                    return handle;
+                }
+
+                if (!WinHttpReceiveResponse(request, nullptr)) {
+                    Log::error("[Firebase HTTP] open_stream: WinHttpReceiveResponse failed, error: {}", GetLastError());
+                    WinHttpCloseHandle(request);
+                    WinHttpCloseHandle(connection);
+                    return handle;
+                }
+
+                // Verify status code
+                DWORD status_code = 0;
+                DWORD size = sizeof(status_code);
+                WinHttpQueryHeaders(
+                    request,
+                    WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
+                    WINHTTP_HEADER_NAME_BY_INDEX,
+                    &status_code,
+                    &size,
+                    WINHTTP_NO_HEADER_INDEX
+                );
+
+                if (status_code != 200) {
+                    Log::error("[Firebase HTTP] open_stream: unexpected status code: {}", status_code);
+                    WinHttpCloseHandle(request);
+                    WinHttpCloseHandle(connection);
+                    return handle;
+                }
+
+                handle.connection = connection;
+                handle.request = request;
+                return handle;
+            }
+
+            int read_stream_chunk(HINTERNET request, char* buffer, int buffer_size)
+            {
+                if (!request || !buffer || buffer_size <= 0) return 0;
+
+                DWORD bytes_available = 0;
+                if (!WinHttpQueryDataAvailable(request, &bytes_available)) return -1;
+                if (bytes_available == 0) return 0;
+
+                DWORD to_read = (bytes_available < static_cast<DWORD>(buffer_size))
+                    ? bytes_available : static_cast<DWORD>(buffer_size);
+                DWORD bytes_read = 0;
+                if (!WinHttpReadData(request, buffer, to_read, &bytes_read)) return -1;
+
+                return static_cast<int>(bytes_read);
+            }
+
+            void close_stream(StreamHandle& handle)
+            {
+                if (handle.request) {
+                    WinHttpCloseHandle(handle.request);
+                    handle.request = nullptr;
+                }
+                if (handle.connection) {
+                    WinHttpCloseHandle(handle.connection);
+                    handle.connection = nullptr;
+                }
             }
 
         } // namespace HTTP

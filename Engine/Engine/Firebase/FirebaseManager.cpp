@@ -2,15 +2,17 @@
 // file:    FirebaseManager.cpp
 // project: Monkey Stole My GPA
 //
-// brief:   Implementation of the Firebase Cloud Firestore manager.  Coordinates
-//          settings loading, WinHTTP session lifecycle, and async request dispatch.
-//          All HTTP work runs on background threads via std::async; update() polls
-//          their futures each frame and invokes callbacks on the main thread.
+// brief:   Implementation of the Firebase Realtime Database manager. Coordinates
+//          settings loading, WinHTTP session lifecycle, async CRUD dispatch, and
+//          SSE watch management. All HTTP work runs on background threads via
+//          std::async; update() polls their futures each frame and drains SSE
+//          events, invoking callbacks on the main thread.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "FirebaseManager.h"
 #include "FirebaseHTTP.h"
+#include "FirebaseListener.h"
 #include "../Logger.h"
 #include "../FileIO/Settings.h"
 #include "../FileIO/SettingsManager.h"
@@ -29,12 +31,9 @@ namespace Engine
     // ================================================================
     static bool             g_initialized = false;
     static bool             g_configured = false;
-    static std::string      g_base_url;            // e.g. "https://firestore.googleapis.com"
-    static std::string      g_project_id;
-    static std::string      g_api_key;
+    static std::string      g_base_url;            // e.g. "https://monkeyengine-2ad5a-default-rtdb.firebaseio.com"
 
-    // Pending async requests — guarded by mutex because std::async worker
-    // threads could be modifying futures concurrently with the main thread.
+    // Pending async requests
     static std::mutex                    g_mutex;
     static std::vector<PendingRequest>   g_pending;
 
@@ -42,31 +41,20 @@ namespace Engine
     // Helpers
     // ----------------------------------------------------------------
 
-    // Build Firestore REST URL for a document or collection.
-    //   document_path("scores", "player1")  →
-    //     https://firestore.googleapis.com/v1/projects/{id}/databases/(default)/documents/scores/player1?key={key}
-    //   document_path("scores", "")  →
-    //     .../documents/scores?key={key}
-    static std::string document_url(const std::string& collection, const std::string& doc_id = "")
+    // Build RTDB REST URL.
+    //   rtdb_url("game_data", "player1") → {base_url}/game_data/player1.json
+    //   rtdb_url("game_data", "")        → {base_url}/game_data.json
+    static std::string rtdb_url(const std::string& collection, const std::string& doc_id = "")
     {
-      std::string url = g_base_url
-        + "/v1/projects/" + g_project_id
-        + "/databases/(default)/documents/"
-        + collection;
-
+      std::string url = g_base_url + "/" + collection;
       if (!doc_id.empty()) {
         url += "/" + doc_id;
       }
-
-      if (!g_api_key.empty()) {
-        url += "?key=" + g_api_key;
-      }
-
+      url += ".json";
       return url;
     }
 
-    // Enqueue an async HTTP request.  The lambda `work` runs on a
-    // background thread; when it finishes, update() picks up the result.
+    // Enqueue an async HTTP request.
     static void enqueue(std::function<HttpResponse()> work, Callback on_complete)
     {
       PendingRequest req;
@@ -92,21 +80,17 @@ namespace Engine
       }
 
       const auto& settings = Engine::FileIO::SettingsManager<Engine::FileIO::FirebaseSettings>::get();
-      g_project_id = settings.project_id;
-      g_api_key = settings.api_key;
-      g_base_url = settings.database_url.empty()
-        ? "https://firestore.googleapis.com"
-        : settings.database_url;
+      g_base_url = settings.database_url;
 
       // Trim trailing slash
       if (!g_base_url.empty() && g_base_url.back() == '/') {
         g_base_url.pop_back();
       }
 
-      g_configured = !g_project_id.empty() && !g_api_key.empty();
+      g_configured = !g_base_url.empty();
 
       if (!g_configured) {
-        Log::warning("[Firebase] project_id or api_key not set — cloud features disabled until configured");
+        Log::warning("[Firebase] database_url not set — cloud features disabled until configured");
       }
 
       // Open WinHTTP session
@@ -124,12 +108,11 @@ namespace Engine
     {
       if (!g_initialized) return;
 
-      // Snapshot the pending list so we don't hold the lock while invoking callbacks
+      // --- Poll CRUD futures ---
       std::vector<PendingRequest> ready;
       {
         std::lock_guard<std::mutex> lock(g_mutex);
         for (auto it = g_pending.begin(); it != g_pending.end(); ) {
-          // Check if the future is ready (non-blocking)
           if (it->future.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
             ready.push_back(std::move(*it));
             it = g_pending.erase(it);
@@ -140,20 +123,25 @@ namespace Engine
         }
       }
 
-      // Dispatch callbacks on the main thread
       for (auto& req : ready) {
         HttpResponse resp = req.future.get();
         if (req.on_complete) {
           req.on_complete(resp.success, resp.body);
         }
       }
+
+      // --- Drain SSE events ---
+      Listener::dispatch_events();
     }
 
     void shutdown()
     {
       if (!g_initialized) return;
 
-      // Wait for outstanding requests to finish (with a timeout)
+      // Stop all watches first
+      Listener::stop_all();
+
+      // Wait for outstanding CRUD requests
       {
         std::lock_guard<std::mutex> lock(g_mutex);
         for (auto& req : g_pending) {
@@ -175,7 +163,7 @@ namespace Engine
     bool is_configured() { return g_configured; }
 
     // ================================================================
-    // Firestore CRUD
+    // RTDB CRUD
     // ================================================================
 
     void get_document(
@@ -188,17 +176,13 @@ namespace Engine
         return;
       }
 
-      std::string url = document_url(collection, document_id);
+      std::string url = rtdb_url(collection, document_id);
 
       enqueue(
         [url]() -> HttpResponse { return HTTP::get(url); },
         [cb = std::move(on_complete)](bool success, const std::string& body) {
-          if (success) {
-            cb(true, from_firestore_document(body));
-          }
-          else {
-            cb(false, body);
-          }
+          // RTDB returns flat JSON directly — no conversion needed
+          cb(success, body);
         }
       );
     }
@@ -214,18 +198,12 @@ namespace Engine
         return;
       }
 
-      std::string url = document_url(collection, document_id);
-      std::string firestore_body = to_firestore_document(json_data);
+      std::string url = rtdb_url(collection, document_id);
 
       enqueue(
-        [url, firestore_body]() -> HttpResponse { return HTTP::patch(url, firestore_body); },
+        [url, json_data]() -> HttpResponse { return HTTP::put(url, json_data); },
         [cb = std::move(on_complete)](bool success, const std::string& body) {
-          if (success) {
-            cb(true, from_firestore_document(body));
-          }
-          else {
-            cb(false, body);
-          }
+          cb(success, body);
         }
       );
     }
@@ -240,7 +218,7 @@ namespace Engine
         return;
       }
 
-      std::string url = document_url(collection, document_id);
+      std::string url = rtdb_url(collection, document_id);
 
       enqueue(
         [url]() -> HttpResponse { return HTTP::del(url); },
@@ -259,17 +237,13 @@ namespace Engine
         return;
       }
 
-      std::string url = document_url(collection);
+      std::string url = rtdb_url(collection);
 
       enqueue(
         [url]() -> HttpResponse { return HTTP::get(url); },
         [cb = std::move(on_complete)](bool success, const std::string& body) {
-          if (success) {
-            cb(true, from_firestore_collection(body));
-          }
-          else {
-            cb(false, body);
-          }
+          // RTDB returns {"doc1":{...},"doc2":{...}} — pass through directly
+          cb(success, body);
         }
       );
     }
@@ -293,12 +267,41 @@ namespace Engine
         [method, url, body]() -> HttpResponse {
           if (method == "GET")    return HTTP::get(url);
           if (method == "POST")   return HTTP::post(url, body);
+          if (method == "PUT")    return HTTP::put(url, body);
           if (method == "PATCH")  return HTTP::patch(url, body);
           if (method == "DELETE") return HTTP::del(url);
           return HttpResponse{ 0, "Unsupported HTTP method: " + method, false };
         },
         std::move(on_complete)
       );
+    }
+
+    // ================================================================
+    // SSE Watch API — delegates to FirebaseListener
+    // ================================================================
+
+    int watch_collection(const std::string& collection, Callback on_change)
+    {
+      if (!g_configured) return -1;
+      std::string url = rtdb_url(collection);
+      return Listener::start_watch(url, std::move(on_change));
+    }
+
+    int watch_document(const std::string& collection, const std::string& doc_id, Callback on_change)
+    {
+      if (!g_configured) return -1;
+      std::string url = rtdb_url(collection, doc_id);
+      return Listener::start_watch(url, std::move(on_change));
+    }
+
+    bool unwatch(int watch_id)
+    {
+      return Listener::stop_watch(watch_id);
+    }
+
+    size_t watch_count()
+    {
+      return Listener::active_count();
     }
 
     size_t pending_count()

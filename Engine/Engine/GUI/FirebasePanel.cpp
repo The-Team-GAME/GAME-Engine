@@ -2,9 +2,9 @@
 // file:    FirebasePanel.cpp
 // project: Monkey Stole My GPA
 //
-// brief:   Firebase Firestore CRUD panel.
+// brief:   Firebase Realtime Database CRUD panel with Live Update.
 //          Sections: Connection Status, Collection Browser, Document Editor,
-//          Activity Log.
+//          Live Update, Activity Log.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
@@ -84,6 +84,12 @@ namespace
   };
   static std::vector<FieldRow> field_rows;
 
+  // --- Live Update ---
+  static bool  live_update_enabled = false;
+  static int   live_watch_id = -1;
+  static int   live_event_count = 0;
+  static std::string live_last_event_time;
+
   // ====================================================================
   // Helpers
   // ====================================================================
@@ -146,41 +152,29 @@ namespace
     return !doc.HasParseError() && doc.IsObject() && doc.ObjectEmpty();
   }
 
-  // Parse the flat JSON array from query_collection into CachedDocument list.
-  static void parse_collection_response(const std::string& json_array)
+  // Parse the RTDB collection response into CachedDocument list.
+  // RTDB returns an object keyed by doc ID: {"doc1":{...},"doc2":{...}}
+  // or "null" if the path doesn't exist.
+  static void parse_collection_response(const std::string& json_obj)
   {
     cached_docs.clear();
     selected_doc_idx = -1;
 
     rapidjson::Document doc;
-    doc.Parse(json_array.c_str());
-    if (doc.HasParseError() || !doc.IsArray()) return;
+    doc.Parse(json_obj.c_str());
+    if (doc.HasParseError() || doc.IsNull()) return;
+    if (!doc.IsObject()) return;
 
-    for (rapidjson::SizeType i = 0; i < doc.Size(); ++i)
+    for (auto it = doc.MemberBegin(); it != doc.MemberEnd(); ++it)
     {
-      const auto& obj = doc[i];
-      if (!obj.IsObject()) continue;
-
       CachedDocument cd;
-      if (obj.HasMember("_id") && obj["_id"].IsString())
-        cd.id = obj["_id"].GetString();
+      cd.id = it->name.GetString();
 
-      // Serialize the object (minus _id) as flat JSON
-      rapidjson::Document copy;
-      copy.SetObject();
-      auto& alloc = copy.GetAllocator();
-      for (auto it = obj.MemberBegin(); it != obj.MemberEnd(); ++it)
-      {
-        if (std::string(it->name.GetString()) == "_id") continue;
-        copy.AddMember(
-          rapidjson::Value(it->name, alloc),
-          rapidjson::Value(it->value, alloc),
-          alloc);
-      }
+      // Serialize the value as pretty JSON
       rapidjson::StringBuffer buf;
       rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buf);
       writer.SetIndent(' ', 2);
-      copy.Accept(writer);
+      it->value.Accept(writer);
       cd.json = buf.GetString();
 
       cached_docs.push_back(std::move(cd));
@@ -344,12 +338,12 @@ void FirebasePanel::draw_panel()
 
     const auto& settings =
       Engine::FileIO::SettingsManager<Engine::FileIO::FirebaseSettings>::get();
-    ImGui::Text("Project ID: ");
+    ImGui::Text("Database URL:");
     ImGui::SameLine();
-    if (settings.project_id.empty())
+    if (settings.database_url.empty())
       ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.f), "(not set)");
     else
-      ImGui::TextWrapped("%s", settings.project_id.c_str());
+      ImGui::TextWrapped("%s", settings.database_url.c_str());
 
     if (pending > 0)
     {
@@ -368,7 +362,7 @@ void FirebasePanel::draw_panel()
     if (!configured)
     {
       ImGui::TextColored(ImVec4(1.f, 0.8f, 0.f, 1.f),
-        "Configure project_id and api_key in:");
+        "Configure database_url in:");
       ImGui::BulletText("Assets/settings/firebase_settings.json");
       ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.f),
         "Restart the engine after editing.");
@@ -438,9 +432,7 @@ void FirebasePanel::draw_panel()
       for (int i = 0; i < static_cast<int>(cached_docs.size()); ++i)
       {
         bool is_selected = (i == selected_doc_idx);
-        std::string label = cached_docs[i].id;
-        if (is_empty_document_json(cached_docs[i].json))
-          label += " (empty)";
+        const std::string& label = cached_docs[i].id;
 
         if (ImGui::Selectable(label.c_str(), is_selected))
         {
@@ -541,7 +533,7 @@ void FirebasePanel::draw_panel()
         json_edit_buf[0] = '{'; json_edit_buf[1] = '}'; json_edit_buf[2] = '\0';
         field_rows.clear();
 
-        // Push the new (empty) document to Firestore immediately
+        // Push the new (empty) document to RTDB immediately
         std::string col = fb_settings.collection;
         std::string id = new_doc_name_buf;
         std::string body = "{}";
@@ -602,7 +594,7 @@ void FirebasePanel::draw_panel()
 
     if (!can_act) ImGui::BeginDisabled();
 
-    // Pull — fetch from Firestore into editor
+    // Pull — fetch from RTDB into editor
     if (ImGui::Button("Pull"))
     {
       std::string col = fb_settings.collection;
@@ -625,7 +617,7 @@ void FirebasePanel::draw_panel()
 
     ImGui::SameLine();
 
-    // Push — write editor contents to Firestore
+    // Push — write editor contents to RTDB
     if (ImGui::Button("Push"))
     {
       sync_fields_to_json();
@@ -754,6 +746,108 @@ void FirebasePanel::draw_panel()
   }
 
   if (!configured) ImGui::EndDisabled();
+
+  ImGui::Spacing();
+
+  // ========================================================================
+  // Live Update (SSE)
+  // ========================================================================
+  if (ImGui::CollapsingHeader("Live Update", ImGuiTreeNodeFlags_DefaultOpen))
+  {
+    if (!configured) ImGui::BeginDisabled();
+
+    bool toggled = ImGui::Checkbox("Enable Live Update", &live_update_enabled);
+    if (toggled)
+    {
+      if (live_update_enabled)
+      {
+        // Start watching the collection
+        std::string col = fb_settings.collection;
+        if (!col.empty())
+        {
+          live_event_count = 0;
+          live_last_event_time.clear();
+          live_watch_id = Engine::Firebase::watch_collection(col,
+            [col](bool /*success*/, const std::string& event_json) {
+              live_event_count++;
+              live_last_event_time = now_timestamp();
+              push_log("SSE", true, event_json.substr(0, 120));
+
+              // Auto-refresh: re-fetch the collection
+              Engine::Firebase::query_collection(col,
+                [col](bool ok, const std::string& data) {
+                  if (ok) {
+                    has_fetched_once = true;
+
+                    // Remember selected doc
+                    std::string prev_id(doc_id_buf);
+                    parse_collection_response(data);
+
+                    // Re-select previously selected doc
+                    if (!prev_id.empty()) {
+                      for (int i = 0; i < static_cast<int>(cached_docs.size()); ++i) {
+                        if (cached_docs[i].id == prev_id) {
+                          selected_doc_idx = i;
+                          strncpy_s(json_edit_buf, cached_docs[i].json.c_str(), sizeof(json_edit_buf) - 1);
+                          sync_json_to_fields();
+                          break;
+                        }
+                      }
+                    }
+                  }
+                });
+            });
+
+          if (live_watch_id >= 0)
+          {
+            set_status("Live Update started on \"" + col + "\"", true);
+            push_log("WATCH", true, "Started on " + col);
+          }
+          else
+          {
+            live_update_enabled = false;
+            set_status("Failed to start Live Update", false);
+            push_log("WATCH", false, "Failed to start");
+          }
+        }
+        else
+        {
+          live_update_enabled = false;
+        }
+      }
+      else
+      {
+        // Stop watching
+        if (live_watch_id >= 0)
+        {
+          Engine::Firebase::unwatch(live_watch_id);
+          push_log("UNWATCH", true, "Stopped watch " + std::to_string(live_watch_id));
+          live_watch_id = -1;
+        }
+        set_status("Live Update stopped", true);
+      }
+    }
+
+    // Status indicator
+    ImGui::SameLine();
+    if (live_update_enabled && live_watch_id >= 0)
+    {
+      ImGui::TextColored(ImVec4(0.2f, 1.f, 0.3f, 1.f), "(connected)");
+    }
+    else
+    {
+      ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.f), "(off)");
+    }
+
+    if (live_event_count > 0)
+    {
+      ImGui::Text("Events received: %d", live_event_count);
+      ImGui::SameLine();
+      ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.f), "(last: %s)", live_last_event_time.c_str());
+    }
+
+    if (!configured) ImGui::EndDisabled();
+  }
 
   ImGui::Spacing();
 
