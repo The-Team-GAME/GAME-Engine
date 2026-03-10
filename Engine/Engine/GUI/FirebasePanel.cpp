@@ -445,6 +445,10 @@ void FirebasePanel::draw_panel()
       ImGui::TextColored(ImVec4(1.f, 0.85f, 0.f, 1.f),
         "%zu request(s) in flight%s", pending, dot_str);
     }
+    else
+    {
+      ImGui::Dummy(ImVec2(1.f, ImGui::GetTextLineHeight()));
+    }
 
     ImGui::Spacing();
 
