@@ -784,6 +784,8 @@ inline void UpgradePanel()
       ImGui::Checkbox("Idle Float", &ui.enable_idle_float);
       ImGui::Checkbox("Hover Lift", &ui.enable_hover_lift);
       ImGui::Checkbox("Selection Stamp", &ui.enable_selection_stamp);
+      ImGui::Checkbox("Hover Tilt", &ui.enable_hover_tilt);
+      ImGui::Checkbox("Idle Tilt", &ui.enable_idle_tilt);
     }
 
     // ---- Reset ----

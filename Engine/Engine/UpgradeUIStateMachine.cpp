@@ -353,6 +353,57 @@ namespace Engine
       }
     }
 
+    // ---- Idle Tilt (gentle sine-wave oscillation when not hovered) ----
+    // Computed first so Hover Tilt can override when the card is hovered.
+    if (enable_idle_tilt && flip_done_)
+    {
+      constexpr float idle_tilt_amplitude = 1.0f;   // degrees
+      constexpr float idle_tilt_speed = 0.3f;   // Hz
+      constexpr float idle_tilt_phase = 1.2f;   // phase offset between cards
+      constexpr float two_pi = 6.2831853f;
+      for (int i = 0; i < 2; ++i)
+      {
+        if (hovered_card_ != i)  // only when NOT hovered
+        {
+          float target = idle_tilt_amplitude
+            * sinf(picker_open_time_ * idle_tilt_speed * two_pi + i * idle_tilt_phase);
+          card_tilt_[i] += (target - card_tilt_[i]) * 6.0f * dt;
+        }
+      }
+    }
+
+    // ---- Hover Tilt (mouse-X-based tilt on the hovered card) ----
+    if (enable_hover_tilt && flip_done_)
+    {
+      constexpr float max_tilt_deg = 3.0f;  // degrees at card edge
+      constexpr float tilt_speed = 2.0f;  // lerp speed
+
+      glm::vec2 mouse = Input::get_mouse_position();
+      for (int i = 0; i < 2; ++i)
+      {
+        if (hovered_card_ == i)
+        {
+          float norm_x = (mouse.x - card_base_x_[i]) / (card_base_sx_[i] / 2.0f);
+          if (norm_x < -1.0f) norm_x = -1.0f;
+          if (norm_x > 1.0f) norm_x = 1.0f;
+          float target_tilt = max_tilt_deg * norm_x;
+          card_tilt_[i] += (target_tilt - card_tilt_[i]) * tilt_speed * dt;
+        }
+        else if (!enable_idle_tilt)
+        {
+          // No idle tilt running — lerp back to 0
+          card_tilt_[i] += (0.0f - card_tilt_[i]) * tilt_speed * dt;
+        }
+      }
+    }
+
+    // If both tilt effects are off, snap to 0
+    if (!enable_hover_tilt && !enable_idle_tilt)
+    {
+      card_tilt_[0] = 0.0f;
+      card_tilt_[1] = 0.0f;
+    }
+
     // ---- Selection Stamp ----
     if (enable_selection_stamp && stamp_time_ >= 0.0f)
     {
@@ -402,6 +453,7 @@ namespace Engine
       t->position.y = pos_y[i];
       t->scale.x = scale_x[i];
       t->scale.y = scale_y[i];
+      t->rotation = card_tilt_[i];
     }
   }
 
@@ -570,6 +622,8 @@ namespace Engine
     hovered_card_ = -1;
     hover_lerp_[0] = 0.0f;
     hover_lerp_[1] = 0.0f;
+    card_tilt_[0] = 0.0f;
+    card_tilt_[1] = 0.0f;
     stamp_time_ = -1.0f;
     stamp_card_ = -1;
 

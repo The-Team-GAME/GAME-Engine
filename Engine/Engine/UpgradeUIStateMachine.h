@@ -46,10 +46,12 @@ namespace Engine
     ENGINE_API void set_upgrade_button(ECS::EntityID id);
 
     // Animation effect toggles — can be changed at runtime (e.g. from ImGui panel).
-    bool enable_flip_reveal = true;
-    bool enable_idle_float = true;
-    bool enable_hover_lift = true;
+    bool enable_flip_reveal     = true;
+    bool enable_idle_float      = true;
+    bool enable_hover_lift      = true;
     bool enable_selection_stamp = true;
+    bool enable_hover_tilt      = true;
+    bool enable_idle_tilt       = true;
 
   private:
     UpgradeUIStateMachine() = default;
@@ -84,6 +86,7 @@ namespace Engine
     float picker_open_time_ = 0.0f;
     int   hovered_card_ = -1;
     float hover_lerp_[2] = {};
+    float card_tilt_[2]  = {};   // current Z-rotation (degrees) for tilt effects
     float stamp_time_ = -1.0f;
     int   stamp_card_ = -1;
     bool  flip_done_ = false;
