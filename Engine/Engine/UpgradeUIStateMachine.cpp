@@ -321,11 +321,13 @@ namespace Engine
 
     // Starting positions for each category row (offsets from panel top-left corner).
     // Adjust these values to align with the category markers on the panel image.
-    constexpr float row_start_x = 150.0f;          // X offset from panel left edge
-    constexpr float row0_y = 122.0f;               // Basic Attack Y offset from panel top edge
-    constexpr float row1_y = 204.0f;               // Uppercut Y offset from panel top edge
-    constexpr float row2_y = 288.0f;               // Downsmash Y offset from panel top edge
-    constexpr float row3_y = 368.0f;               // Final Row Y offset from panel top edge
+    constexpr float row_start_x = 150.0f;         // X offset from panel left edge
+    constexpr float row_start_y = 142.0f;         // Top row position
+    constexpr float row_height = 94.0f;           // Consistent spacing between rows
+    constexpr float row0_y = row_start_y;         // Basic Attack Y offset from panel top edge
+    constexpr float row1_y = row0_y + row_height; // Uppercut Y offset from panel top edge
+    constexpr float row2_y = row1_y + row_height; // Downsmash Y offset from panel top edge
+    constexpr float row3_y = row2_y + row_height; // Final Row Y offset from panel top edge
     constexpr float row_y[4] = { row0_y, row1_y, row2_y, row3_y };
 
     float panel_left = panel_cx - panel_display_w / 2.0f;
