@@ -85,8 +85,7 @@ namespace
   };
   static std::vector<FieldRow> field_rows;
 
-  // --- Live Update ---
-  static bool  live_update_enabled = true;
+  // --- Live Update (always on) ---
   static int   live_watch_id = -1;
   static int   live_event_count = 0;
   static std::string live_last_event_time;
@@ -259,6 +258,59 @@ namespace
     }
   }
 
+  // Forward declaration — defined below, but needed by start_live_watch callback.
+  static void fetch_all_collections();
+
+  // Start a root-level live-update watch on the entire database.
+  static void start_live_watch()
+  {
+    live_event_count = 0;
+    live_last_event_time.clear();
+    live_watch_id = Engine::Firebase::watch_collection("",
+      [](bool /*success*/, const std::string& event_json) {
+        live_event_count++;
+        live_last_event_time = now_timestamp();
+        push_log("SSE", true, event_json.substr(0, 120));
+
+        // Refresh the collection list
+        fetch_all_collections();
+
+        // Refresh the currently viewed collection (if any)
+        std::string col = selected_collection;
+        if (!col.empty()) {
+          Engine::Firebase::query_collection(col,
+            [col](bool ok, const std::string& data) {
+              if (ok) {
+                has_fetched_once = true;
+                std::string prev_id(doc_id_buf);
+                parse_collection_response(data);
+                if (!prev_id.empty()) {
+                  for (int i = 0; i < static_cast<int>(cached_docs.size()); ++i) {
+                    if (cached_docs[i].id == prev_id) {
+                      selected_doc_idx = i;
+                      strncpy_s(json_edit_buf, cached_docs[i].json.c_str(), sizeof(json_edit_buf) - 1);
+                      sync_json_to_fields();
+                      break;
+                    }
+                  }
+                }
+              }
+            });
+        }
+      });
+  }
+
+  // Stop the current live-update watch (if any).
+  static void stop_live_watch()
+  {
+    if (live_watch_id >= 0)
+    {
+      Engine::Firebase::unwatch(live_watch_id);
+      push_log("UNWATCH", true, "Stopped watch " + std::to_string(live_watch_id));
+      live_watch_id = -1;
+    }
+  }
+
   // Fetch the list of top-level collection names from RTDB root.
   static void fetch_all_collections()
   {
@@ -409,58 +461,14 @@ void FirebasePanel::draw_panel()
     ImGui::Separator();
     ImGui::Spacing();
 
-    // ---- Live Update toggle ----
+    // ---- Live Update status (always on, watches entire database) ----
     if (!configured) ImGui::BeginDisabled();
-    bool lu_toggled = ImGui::Checkbox("Live Update", &live_update_enabled);
-    if (lu_toggled)
-    {
-      if (live_update_enabled)
-      {
-        std::string col = selected_collection;
-        if (!col.empty())
-        {
-          live_event_count = 0;
-          live_last_event_time.clear();
-          live_watch_id = Engine::Firebase::watch_collection(col,
-            [col](bool /*success*/, const std::string& event_json) {
-              live_event_count++;
-              live_last_event_time = now_timestamp();
-              push_log("SSE", true, event_json.substr(0, 120));
-              Engine::Firebase::query_collection(col,
-                [col](bool ok, const std::string& data) {
-                  if (ok) {
-                    has_fetched_once = true;
-                    std::string prev_id(doc_id_buf);
-                    parse_collection_response(data);
-                    if (!prev_id.empty()) {
-                      for (int i = 0; i < static_cast<int>(cached_docs.size()); ++i) {
-                        if (cached_docs[i].id == prev_id) {
-                          selected_doc_idx = i;
-                          strncpy_s(json_edit_buf, cached_docs[i].json.c_str(), sizeof(json_edit_buf) - 1);
-                          sync_json_to_fields();
-                          break;
-                        }
-                      }
-                    }
-                  }
-                });
-            });
-          if (live_watch_id >= 0) { set_status("Live Update started on \"" + col + "\"", true); push_log("WATCH", true, "Started on " + col); }
-          else { live_update_enabled = false; set_status("Failed to start Live Update", false); push_log("WATCH", false, "Failed"); }
-        }
-        else { live_update_enabled = false; }
-      }
-      else
-      {
-        if (live_watch_id >= 0) { Engine::Firebase::unwatch(live_watch_id); push_log("UNWATCH", true, "Stopped watch " + std::to_string(live_watch_id)); live_watch_id = -1; }
-        set_status("Live Update stopped", true);
-      }
-    }
+    ImGui::Text("Live Update:");
     ImGui::SameLine();
-    if (live_update_enabled && live_watch_id >= 0)
+    if (live_watch_id >= 0)
       ImGui::TextColored(ImVec4(0.2f, 1.f, 0.3f, 1.f), "connected");
     else
-      ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.f), "off");
+      ImGui::TextColored(ImVec4(1.f, 0.85f, 0.f, 1.f), "connecting...");
     if (live_event_count > 0)
     {
       ImGui::SameLine();
@@ -480,12 +488,13 @@ void FirebasePanel::draw_panel()
   // Collections
   // ========================================================================
 
-  // Auto-fetch collection list on first configured frame
+  // Auto-fetch collection list and start root watch on first configured frame
   static bool auto_fetched = false;
   if (configured && !auto_fetched)
   {
     auto_fetched = true;
     fetch_all_collections();
+    start_live_watch();
   }
 
   if (ImGui::CollapsingHeader("Collections", ImGuiTreeNodeFlags_DefaultOpen))
@@ -900,62 +909,6 @@ void FirebasePanel::draw_panel()
       ImGui::TextWrapped("%s", doc_id_buf);
     else
       ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.f), "(none selected)");
-
-    // Pull / Push — only available when Live Update is disabled
-    if (!live_update_enabled)
-    {
-      if (!can_act) ImGui::BeginDisabled();
-
-      if (ImGui::Button("Pull from Server"))
-      {
-        std::string col = selected_collection;
-        std::string id = doc_id_buf;
-        Engine::Firebase::get_document(col, id,
-          [col, id](bool success, const std::string& data) {
-            if (success) {
-              std::string formatted = pretty_json(data.c_str());
-              strncpy_s(json_edit_buf, formatted.c_str(), sizeof(json_edit_buf) - 1);
-              sync_json_to_fields();
-              fields_dirty = false;
-              set_status("Pulled " + id, true);
-              push_log("PULL " + col + "/" + id, true, "OK");
-            }
-            else {
-              set_status("Pull failed: " + data, false);
-              push_log("PULL " + col + "/" + id, false, data);
-            }
-          });
-      }
-
-      ImGui::SameLine();
-
-      if (ImGui::Button("Push to Server"))
-      {
-        sync_fields_to_json();
-        std::string col = selected_collection;
-        std::string id = doc_id_buf;
-        std::string body = json_edit_buf;
-        Engine::Firebase::set_document(col, id, body,
-          [col, id](bool success, const std::string& data) {
-            if (success) {
-              fields_dirty = false;
-              set_status("Pushed " + id, true);
-              push_log("PUSH " + col + "/" + id, true, "OK");
-              Engine::Firebase::query_collection(col,
-                [col](bool ok, const std::string& d2) {
-                  if (ok) { has_fetched_once = true; parse_collection_response(d2); }
-                  else { push_log("REFRESH " + col, false, d2); }
-                });
-            }
-            else {
-              set_status("Push failed: " + data, false);
-              push_log("PUSH " + col + "/" + id, false, data);
-            }
-          });
-      }
-
-      if (!can_act) ImGui::EndDisabled();
-    }
 
     ImGui::Spacing();
 
