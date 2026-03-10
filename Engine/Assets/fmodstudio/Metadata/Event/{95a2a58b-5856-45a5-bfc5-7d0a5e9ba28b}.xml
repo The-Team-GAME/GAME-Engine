@@ -161,8 +161,8 @@
 		<property name="extentMode">
 			<value>1</value>
 		</property>
-		<property name="minimumExtent">
-			<value>360</value>
+		<property name="soundSize">
+			<value>84</value>
 		</property>
 	</object>
 	<object class="MixerBusFader" id="{ced2c989-8e42-4b43-a741-0672af93af9b}" />

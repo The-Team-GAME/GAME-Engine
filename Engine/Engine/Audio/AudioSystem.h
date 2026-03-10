@@ -46,7 +46,10 @@ namespace Engine {
     // Event playback (one-shot)
     // ------------------------------------------------------------
     ENGINE_API bool playEvent(const std::string& eventPath);
-    ENGINE_API bool playEventAtPosition(const std::string& eventPath, const Math::Vec2D& position, float minDistance = 100.0f, float maxDistance = 1000.0f);
+    // minDistance: radius where sound is full volume and mostly centered (default 500)
+    // maxDistance: radius where sound fades to silence (default 2000)
+    // soundSpread: 0-100, how much sound spreads between speakers when close (0=point source, 100=wide stereo)
+    ENGINE_API bool playEventAtPosition(const std::string& eventPath, const Math::Vec2D& position, float minDistance = 500.0f, float maxDistance = 2000.0f, float soundSpread = 50.0f);
 
     // ------------------------------------------------------------
     // Event instance management (persistent events)

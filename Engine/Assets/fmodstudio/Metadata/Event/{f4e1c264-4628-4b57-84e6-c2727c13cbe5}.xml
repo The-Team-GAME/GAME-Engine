@@ -186,6 +186,15 @@
 		<property name="overrideRange">
 			<value>true</value>
 		</property>
+		<property name="extentMode">
+			<value>1</value>
+		</property>
+		<property name="soundSize">
+			<value>260</value>
+		</property>
+		<property name="minimumExtent">
+			<value>2</value>
+		</property>
 	</object>
 	<object class="MixerBusFader" id="{d3d76f2c-f033-497f-aebc-b7acc168a3c4}" />
 	<object class="SpatialiserEffect" id="{26122a6f-98bd-42e0-a7a6-90822d0e6517}">

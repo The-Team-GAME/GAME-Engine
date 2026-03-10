@@ -145,6 +145,12 @@
 		<property name="overrideRange">
 			<value>true</value>
 		</property>
+		<property name="extentMode">
+			<value>1</value>
+		</property>
+		<property name="soundSize">
+			<value>260</value>
+		</property>
 	</object>
 	<object class="MixerBusFader" id="{222bd53d-ec07-4a40-b3e9-05806bc287cb}" />
 	<object class="PitchShifterEffect" id="{82b3b79f-d3b0-4285-83a6-8f940eae4eea}">

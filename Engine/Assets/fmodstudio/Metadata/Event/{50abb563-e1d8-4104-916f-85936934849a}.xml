@@ -160,6 +160,12 @@
 		<property name="overrideRange">
 			<value>true</value>
 		</property>
+		<property name="extentMode">
+			<value>1</value>
+		</property>
+		<property name="soundSize">
+			<value>440</value>
+		</property>
 	</object>
 	<object class="MixerBusFader" id="{17a7132e-6e87-4195-95a2-967a40a4a4e3}" />
 	<object class="MixerBusFader" id="{e7abf5fe-ae87-491a-a89f-3a255d2a1795}" />

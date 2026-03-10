@@ -422,7 +422,7 @@ namespace Engine {
       return true;
     }
 
-    bool playEventAtPosition(const ::std::string& eventPath, const Math::Vec2D& position, float minDistance, float maxDistance)
+    bool playEventAtPosition(const ::std::string& eventPath, const Math::Vec2D& position, float minDistance, float maxDistance, float soundSpread)
     {
       if (!gStudioSystem)
         return false;
@@ -456,12 +456,26 @@ namespace Engine {
 
       FMOD_Check(instance->set3DAttributes(&attributes), "set3DAttributes");
       
-      // Set min/max distance for 3D spatialization control
-      // Larger minDistance = more center channel presence (less hard-panned)
+      // Set min/max distance for volume falloff:
+      // - Within minDistance: full volume, mostly centered
+      // - Beyond maxDistance: fades to silence
+      // - Between: gradual volume falloff and panning based on position
       FMOD_Check(instance->setProperty(FMOD_STUDIO_EVENT_PROPERTY_MINIMUM_DISTANCE, minDistance), "setMinDistance");
       FMOD_Check(instance->setProperty(FMOD_STUDIO_EVENT_PROPERTY_MAXIMUM_DISTANCE, maxDistance), "setMaxDistance");
       
       FMOD_Check(instance->start(), "start");
+      
+      // Set 3D spread (0-360 degrees): controls how wide the sound appears between speakers
+      // Higher values = sounds near center play more on both left+right speakers
+      // Lower values = more directional/point-source (harder panning)
+      // Must be set AFTER start() to access the core channel
+      FMOD::ChannelGroup* channelGroup = nullptr;
+      if (FMOD_Check(instance->getChannelGroup(&channelGroup), "getChannelGroup") && channelGroup)
+      {
+        // Convert 0-100 spread to 0-360 degrees for FMOD
+        float spreadDegrees = (soundSpread / 100.0f) * 360.0f;
+        FMOD_Check(channelGroup->set3DSpread(spreadDegrees), "set3DSpread");
+      }
       FMOD_Check(instance->release(), "release");
 
       return true;
