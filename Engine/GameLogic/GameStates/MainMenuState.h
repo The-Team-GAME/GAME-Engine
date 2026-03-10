@@ -277,10 +277,8 @@ public:
     showing_start_screen = true;
     create_start_screen();
 
-    // Load and play background music via FMOD Studio
-    Engine::AudioSystem::createEventInstance("mainmenu_bgm", "event:/Music/MainMenu");
-    Engine::AudioSystem::setEventInstanceVolume("mainmenu_bgm", 0.3f);
-    Engine::AudioSystem::startEventInstance("mainmenu_bgm");
+    // Play managed scene BGM (replaces any previously active scene music)
+    Engine::AudioSystem::playSceneMusic("event:/BGM/MainMenu", 0.3f, true);
   };
 
   void init() {
@@ -415,8 +413,7 @@ public:
   void free() {};
 
   void unload() {
-    Engine::AudioSystem::stopEventInstance("mainmenu_bgm", true);
-    Engine::AudioSystem::releaseEventInstance("mainmenu_bgm");
+    Engine::AudioSystem::stopSceneMusic(true);
     start_screen_entities.clear();
   };
 };

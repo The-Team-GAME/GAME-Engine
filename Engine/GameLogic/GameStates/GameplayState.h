@@ -99,9 +99,7 @@ public:
   };
 
   void init() {
-    Engine::AudioSystem::createEventInstance("gameplay_bgm", "event:/Music/Gameplay");
-    Engine::AudioSystem::setEventInstanceVolume("gameplay_bgm", 0.3f);
-    Engine::AudioSystem::startEventInstance("gameplay_bgm");
+    Engine::AudioSystem::playSceneMusic("event:/BGM/LevelBGM", 0.3f, true);
   };
 
   void update() {
@@ -263,7 +261,6 @@ public:
   };
 
   void unload() {
-    Engine::AudioSystem::stopEventInstance("gameplay_bgm", true);
-    Engine::AudioSystem::releaseEventInstance("gameplay_bgm");
+    Engine::AudioSystem::stopSceneMusic(true);
   };
 };

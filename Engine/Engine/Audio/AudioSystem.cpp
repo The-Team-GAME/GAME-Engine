@@ -40,14 +40,29 @@ namespace Engine {
     static ::std::chrono::steady_clock::time_point gChangeDetectedAt = {};
     static bool gPendingReload = false;
     static bool gHotReloadDiagnosticLogged = false;
+    static constexpr const char* SCENE_BGM_INSTANCE = "scene_bgm";
 
-    // Forward declaration
+    // Forward declarations
     static void checkBankHotReload();
+    static bool FMOD_Check(FMOD_RESULT result, const char* context = nullptr);
+
+    static bool stopAndReleaseInstanceIfExists(const ::std::string& instanceName, bool immediate, const char* context)
+    {
+      auto it = gEventInstances.find(instanceName);
+      if (it == gEventInstances.end())
+        return true;
+
+      FMOD_STUDIO_STOP_MODE mode = immediate ? FMOD_STUDIO_STOP_IMMEDIATE : FMOD_STUDIO_STOP_ALLOWFADEOUT;
+      bool stopOk = FMOD_Check(it->second->stop(mode), context);
+      bool releaseOk = FMOD_Check(it->second->release(), context);
+      gEventInstances.erase(it);
+      return stopOk && releaseOk;
+    }
 
     // ------------------------------------------------------------
     // FMOD error checking helper
     // ------------------------------------------------------------
-    static bool FMOD_Check(FMOD_RESULT result, const char* context = nullptr)
+    static bool FMOD_Check(FMOD_RESULT result, const char* context)
     {
       if (result != FMOD_OK)
       {
@@ -66,7 +81,7 @@ namespace Engine {
     static FMOD_VECTOR ToFMODVector(const Math::Vec2D& v)
     {
       FMOD_VECTOR fv;
-      fv.x = v.x;
+      fv.x = -v.x;  // Negate X to match FMOD left/right orientation with world space
       fv.y = v.y;
       fv.z = 0.0f;
       return fv;
@@ -407,7 +422,7 @@ namespace Engine {
       return true;
     }
 
-    bool playEventAtPosition(const ::std::string& eventPath, const Math::Vec2D& position)
+    bool playEventAtPosition(const ::std::string& eventPath, const Math::Vec2D& position, float minDistance, float maxDistance)
     {
       if (!gStudioSystem)
         return false;
@@ -440,6 +455,12 @@ namespace Engine {
       attributes.up = { 0.0f, 0.0f, 1.0f };
 
       FMOD_Check(instance->set3DAttributes(&attributes), "set3DAttributes");
+      
+      // Set min/max distance for 3D spatialization control
+      // Larger minDistance = more center channel presence (less hard-panned)
+      FMOD_Check(instance->setProperty(FMOD_STUDIO_EVENT_PROPERTY_MINIMUM_DISTANCE, minDistance), "setMinDistance");
+      FMOD_Check(instance->setProperty(FMOD_STUDIO_EVENT_PROPERTY_MAXIMUM_DISTANCE, maxDistance), "setMaxDistance");
+      
       FMOD_Check(instance->start(), "start");
       FMOD_Check(instance->release(), "release");
 
@@ -761,6 +782,47 @@ namespace Engine {
       }
 
       return FMOD_Check(vca->getVolume(&outVolume), "VCA::getVolume");
+    }
+
+    bool playSceneMusic(const ::std::string& eventPath, float volume, bool immediateStop)
+    {
+      if (!gStudioSystem)
+      {
+        Log::warning("[AudioSystem] Not initialized");
+        return false;
+      }
+
+      if (!stopAndReleaseInstanceIfExists(SCENE_BGM_INSTANCE, immediateStop, "scene_bgm stop/release"))
+      {
+        Log::warning("[AudioSystem] Continuing after scene BGM cleanup failure");
+      }
+
+      if (!createEventInstance(SCENE_BGM_INSTANCE, eventPath))
+        return false;
+
+      if (!setEventInstanceVolume(SCENE_BGM_INSTANCE, volume))
+      {
+        stopAndReleaseInstanceIfExists(SCENE_BGM_INSTANCE, true, "scene_bgm cleanup after set volume failure");
+        return false;
+      }
+
+      if (!startEventInstance(SCENE_BGM_INSTANCE))
+      {
+        stopAndReleaseInstanceIfExists(SCENE_BGM_INSTANCE, true, "scene_bgm cleanup after start failure");
+        return false;
+      }
+
+      return true;
+    }
+
+    bool stopSceneMusic(bool immediate)
+    {
+      return stopAndReleaseInstanceIfExists(SCENE_BGM_INSTANCE, immediate, "scene_bgm stop/release");
+    }
+
+    bool isSceneMusicPlaying()
+    {
+      return isEventInstancePlaying(SCENE_BGM_INSTANCE);
     }
 
     // ------------------------------------------------------------

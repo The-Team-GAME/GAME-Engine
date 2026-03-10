@@ -46,7 +46,7 @@ namespace Engine {
     // Event playback (one-shot)
     // ------------------------------------------------------------
     ENGINE_API bool playEvent(const std::string& eventPath);
-    ENGINE_API bool playEventAtPosition(const std::string& eventPath, const Math::Vec2D& position);
+    ENGINE_API bool playEventAtPosition(const std::string& eventPath, const Math::Vec2D& position, float minDistance = 100.0f, float maxDistance = 1000.0f);
 
     // ------------------------------------------------------------
     // Event instance management (persistent events)
@@ -81,6 +81,11 @@ namespace Engine {
     ENGINE_API bool setVCAVolume(const std::string& vcaPath, float volume);
     ENGINE_API bool getBusVolume(const std::string& busPath, float& outVolume);
     ENGINE_API bool getVCAVolume(const std::string& vcaPath, float& outVolume);
+
+    // Scene BGM helpers (single managed BGM instance across scene transitions)
+    ENGINE_API bool playSceneMusic(const std::string& eventPath, float volume = 1.0f, bool immediateStop = true);
+    ENGINE_API bool stopSceneMusic(bool immediate = true);
+    ENGINE_API bool isSceneMusicPlaying();
 
     // ------------------------------------------------------------
     // Global controls
