@@ -86,7 +86,7 @@ namespace
   static std::vector<FieldRow> field_rows;
 
   // --- Live Update ---
-  static bool  live_update_enabled = false;
+  static bool  live_update_enabled = true;
   static int   live_watch_id = -1;
   static int   live_event_count = 0;
   static std::string live_last_event_time;
@@ -404,6 +404,70 @@ void FirebasePanel::draw_panel()
       ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.f),
         "Restart the engine after editing.");
     }
+
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+
+    // ---- Live Update toggle ----
+    if (!configured) ImGui::BeginDisabled();
+    bool lu_toggled = ImGui::Checkbox("Live Update", &live_update_enabled);
+    if (lu_toggled)
+    {
+      if (live_update_enabled)
+      {
+        std::string col = selected_collection;
+        if (!col.empty())
+        {
+          live_event_count = 0;
+          live_last_event_time.clear();
+          live_watch_id = Engine::Firebase::watch_collection(col,
+            [col](bool /*success*/, const std::string& event_json) {
+              live_event_count++;
+              live_last_event_time = now_timestamp();
+              push_log("SSE", true, event_json.substr(0, 120));
+              Engine::Firebase::query_collection(col,
+                [col](bool ok, const std::string& data) {
+                  if (ok) {
+                    has_fetched_once = true;
+                    std::string prev_id(doc_id_buf);
+                    parse_collection_response(data);
+                    if (!prev_id.empty()) {
+                      for (int i = 0; i < static_cast<int>(cached_docs.size()); ++i) {
+                        if (cached_docs[i].id == prev_id) {
+                          selected_doc_idx = i;
+                          strncpy_s(json_edit_buf, cached_docs[i].json.c_str(), sizeof(json_edit_buf) - 1);
+                          sync_json_to_fields();
+                          break;
+                        }
+                      }
+                    }
+                  }
+                });
+            });
+          if (live_watch_id >= 0) { set_status("Live Update started on \"" + col + "\"", true); push_log("WATCH", true, "Started on " + col); }
+          else { live_update_enabled = false; set_status("Failed to start Live Update", false); push_log("WATCH", false, "Failed"); }
+        }
+        else { live_update_enabled = false; }
+      }
+      else
+      {
+        if (live_watch_id >= 0) { Engine::Firebase::unwatch(live_watch_id); push_log("UNWATCH", true, "Stopped watch " + std::to_string(live_watch_id)); live_watch_id = -1; }
+        set_status("Live Update stopped", true);
+      }
+    }
+    ImGui::SameLine();
+    if (live_update_enabled && live_watch_id >= 0)
+      ImGui::TextColored(ImVec4(0.2f, 1.f, 0.3f, 1.f), "connected");
+    else
+      ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.f), "off");
+    if (live_event_count > 0)
+    {
+      ImGui::SameLine();
+      ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.f),
+        "%d event(s), last: %s", live_event_count, live_last_event_time.c_str());
+    }
+    if (!configured) ImGui::EndDisabled();
   }
 
   ImGui::Spacing();
@@ -837,42 +901,75 @@ void FirebasePanel::draw_panel()
     else
       ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.f), "(none selected)");
 
-    if (!can_act) ImGui::BeginDisabled();
-
-    // Pull from Server — re-fetches into editor, discards local changes
-    if (ImGui::Button("Pull from Server"))
+    // Pull / Push — only available when Live Update is disabled
+    if (!live_update_enabled)
     {
-      std::string col = selected_collection;
-      std::string id = doc_id_buf;
-      Engine::Firebase::get_document(col, id,
-        [col, id](bool success, const std::string& data) {
-          if (success) {
-            std::string formatted = pretty_json(data.c_str());
-            strncpy_s(json_edit_buf, formatted.c_str(), sizeof(json_edit_buf) - 1);
-            sync_json_to_fields();
-            fields_dirty = false;
-            set_status("Pulled " + id, true);
-            push_log("PULL " + col + "/" + id, true, "OK");
-          }
-          else {
-            set_status("Pull failed: " + data, false);
-            push_log("PULL " + col + "/" + id, false, data);
-          }
-        });
-    }
+      if (!can_act) ImGui::BeginDisabled();
 
-    if (!can_act) ImGui::EndDisabled();
+      if (ImGui::Button("Pull from Server"))
+      {
+        std::string col = selected_collection;
+        std::string id = doc_id_buf;
+        Engine::Firebase::get_document(col, id,
+          [col, id](bool success, const std::string& data) {
+            if (success) {
+              std::string formatted = pretty_json(data.c_str());
+              strncpy_s(json_edit_buf, formatted.c_str(), sizeof(json_edit_buf) - 1);
+              sync_json_to_fields();
+              fields_dirty = false;
+              set_status("Pulled " + id, true);
+              push_log("PULL " + col + "/" + id, true, "OK");
+            }
+            else {
+              set_status("Pull failed: " + data, false);
+              push_log("PULL " + col + "/" + id, false, data);
+            }
+          });
+      }
+
+      ImGui::SameLine();
+
+      if (ImGui::Button("Push to Server"))
+      {
+        sync_fields_to_json();
+        std::string col = selected_collection;
+        std::string id = doc_id_buf;
+        std::string body = json_edit_buf;
+        Engine::Firebase::set_document(col, id, body,
+          [col, id](bool success, const std::string& data) {
+            if (success) {
+              fields_dirty = false;
+              set_status("Pushed " + id, true);
+              push_log("PUSH " + col + "/" + id, true, "OK");
+              Engine::Firebase::query_collection(col,
+                [col](bool ok, const std::string& d2) {
+                  if (ok) { has_fetched_once = true; parse_collection_response(d2); }
+                  else { push_log("REFRESH " + col, false, d2); }
+                });
+            }
+            else {
+              set_status("Push failed: " + data, false);
+              push_log("PUSH " + col + "/" + id, false, data);
+            }
+          });
+      }
+
+      if (!can_act) ImGui::EndDisabled();
+    }
 
     ImGui::Spacing();
 
     // ---- Field-level editor ----
     ImGui::Text("Fields:");
-    if (has_doc_id && field_rows.empty())
+
+    // Always keep one trailing empty placeholder row so the user can type
+    // a new field directly — no separate Add button needed.
     {
-      ImGui::TextColored(ImVec4(1.f, 0.85f, 0.f, 1.f),
-        "This document has no fields.");
-      ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.f),
-        "Add a field below — it will be saved to the server automatically.");
+      bool trailing_empty = !field_rows.empty()
+        && field_rows.back().key[0] == '\0'
+        && field_rows.back().val[0] == '\0';
+      if (!trailing_empty)
+        field_rows.emplace_back();
     }
 
     if (ImGui::BeginTable("##fields", 3,
@@ -906,48 +1003,14 @@ void FirebasePanel::draw_panel()
         }
 
         ImGui::TableSetColumnIndex(2);
-        char rid[32]; std::snprintf(rid, sizeof(rid), "x##fr%d", fi);
-        if (ImGui::SmallButton(rid)) erase_idx = fi;
-      }
-
-      // Add-row
-      ImGui::TableNextRow();
-      ImGui::TableSetColumnIndex(0);
-      ImGui::SetNextItemWidth(-1.f);
-      ImGui::InputText("##nfk", new_field_key, sizeof(new_field_key));
-      ImGui::TableSetColumnIndex(1);
-      ImGui::SetNextItemWidth(-1.f);
-      ImGui::InputText("##nfv", new_field_val, sizeof(new_field_val));
-      ImGui::TableSetColumnIndex(2);
-      if (ImGui::SmallButton("+##addfield") && new_field_key[0] != '\0')
-      {
-        FieldRow nr{};
-        strncpy_s(nr.key, new_field_key, sizeof(nr.key) - 1);
-        strncpy_s(nr.val, new_field_val, sizeof(nr.val) - 1);
-        field_rows.push_back(nr);
-        new_field_key[0] = '\0';
-        new_field_val[0] = '\0';
-        sync_fields_to_json();
-        if (doc_id_buf[0] != '\0' && !selected_collection.empty())
+        // Hide the delete button on the trailing empty placeholder row
+        bool is_trailing_empty = (fi == static_cast<int>(field_rows.size()) - 1
+          && field_rows[fi].key[0] == '\0'
+          && field_rows[fi].val[0] == '\0');
+        if (!is_trailing_empty)
         {
-          std::string col = selected_collection;
-          std::string id = doc_id_buf;
-          std::string body = json_edit_buf;
-          Engine::Firebase::set_document(col, id, body,
-            [col, id](bool success, const std::string& data) {
-              if (success) {
-                set_status("Field added — " + id + " saved", true);
-                push_log("ADD FIELD " + col + "/" + id, true, "OK");
-                Engine::Firebase::query_collection(col,
-                  [col](bool ok, const std::string& d2) {
-                    if (ok) { has_fetched_once = true; parse_collection_response(d2); }
-                  });
-              }
-              else {
-                set_status("Add field failed: " + data, false);
-                push_log("ADD FIELD", false, data);
-              }
-            });
+          char rid[32]; std::snprintf(rid, sizeof(rid), "x##fr%d", fi);
+          if (ImGui::SmallButton(rid)) erase_idx = fi;
         }
       }
 
@@ -1044,108 +1107,6 @@ void FirebasePanel::draw_panel()
   }
 
   if (!configured) ImGui::EndDisabled();
-
-  ImGui::Spacing();
-
-  // ========================================================================
-  // Live Update (SSE)
-  // ========================================================================
-  if (ImGui::CollapsingHeader("Live Update", ImGuiTreeNodeFlags_DefaultOpen))
-  {
-    if (!configured) ImGui::BeginDisabled();
-
-    bool toggled = ImGui::Checkbox("Enable Live Update", &live_update_enabled);
-    if (toggled)
-    {
-      if (live_update_enabled)
-      {
-        // Start watching the collection
-        std::string col = selected_collection;
-        if (!col.empty())
-        {
-          live_event_count = 0;
-          live_last_event_time.clear();
-          live_watch_id = Engine::Firebase::watch_collection(col,
-            [col](bool /*success*/, const std::string& event_json) {
-              live_event_count++;
-              live_last_event_time = now_timestamp();
-              push_log("SSE", true, event_json.substr(0, 120));
-
-              // Auto-refresh: re-fetch the collection
-              Engine::Firebase::query_collection(col,
-                [col](bool ok, const std::string& data) {
-                  if (ok) {
-                    has_fetched_once = true;
-
-                    // Remember selected doc
-                    std::string prev_id(doc_id_buf);
-                    parse_collection_response(data);
-
-                    // Re-select previously selected doc
-                    if (!prev_id.empty()) {
-                      for (int i = 0; i < static_cast<int>(cached_docs.size()); ++i) {
-                        if (cached_docs[i].id == prev_id) {
-                          selected_doc_idx = i;
-                          strncpy_s(json_edit_buf, cached_docs[i].json.c_str(), sizeof(json_edit_buf) - 1);
-                          sync_json_to_fields();
-                          break;
-                        }
-                      }
-                    }
-                  }
-                });
-            });
-
-          if (live_watch_id >= 0)
-          {
-            set_status("Live Update started on \"" + col + "\"", true);
-            push_log("WATCH", true, "Started on " + col);
-          }
-          else
-          {
-            live_update_enabled = false;
-            set_status("Failed to start Live Update", false);
-            push_log("WATCH", false, "Failed to start");
-          }
-        }
-        else
-        {
-          live_update_enabled = false;
-        }
-      }
-      else
-      {
-        // Stop watching
-        if (live_watch_id >= 0)
-        {
-          Engine::Firebase::unwatch(live_watch_id);
-          push_log("UNWATCH", true, "Stopped watch " + std::to_string(live_watch_id));
-          live_watch_id = -1;
-        }
-        set_status("Live Update stopped", true);
-      }
-    }
-
-    // Status indicator
-    ImGui::SameLine();
-    if (live_update_enabled && live_watch_id >= 0)
-    {
-      ImGui::TextColored(ImVec4(0.2f, 1.f, 0.3f, 1.f), "(connected)");
-    }
-    else
-    {
-      ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.f), "(off)");
-    }
-
-    if (live_event_count > 0)
-    {
-      ImGui::Text("Events received: %d", live_event_count);
-      ImGui::SameLine();
-      ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.f), "(last: %s)", live_last_event_time.c_str());
-    }
-
-    if (!configured) ImGui::EndDisabled();
-  }
 
   ImGui::Spacing();
 
