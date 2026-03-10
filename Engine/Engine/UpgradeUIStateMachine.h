@@ -45,6 +45,12 @@ namespace Engine
     // Tell the FSM which entity is the upgrade button (call after button creation).
     ENGINE_API void set_upgrade_button(ECS::EntityID id);
 
+    // Animation effect toggles — can be changed at runtime (e.g. from ImGui panel).
+    bool enable_flip_reveal = true;
+    bool enable_idle_float = true;
+    bool enable_hover_lift = true;
+    bool enable_selection_stamp = true;
+
   private:
     UpgradeUIStateMachine() = default;
 

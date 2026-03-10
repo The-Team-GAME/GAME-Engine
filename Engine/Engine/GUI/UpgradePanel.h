@@ -18,6 +18,7 @@
 #include "../FileIO/Settings.h"
 #include "../FileIO/SettingsManager.h"
 #include "../UpgradeManager.h"
+#include "../UpgradeUIStateMachine.h"
 
 /*=================================================================================
 Function Brief:
@@ -772,6 +773,17 @@ inline void UpgradePanel()
 
         ImGui::EndTable();
       }
+    }
+
+    // ---- Card Animation Effects ----
+    ImGui::Spacing();
+    if (ImGui::CollapsingHeader("Card Animation Effects"))
+    {
+      auto& ui = Engine::UpgradeUIStateMachine::instance();
+      ImGui::Checkbox("Flip Reveal", &ui.enable_flip_reveal);
+      ImGui::Checkbox("Idle Float", &ui.enable_idle_float);
+      ImGui::Checkbox("Hover Lift", &ui.enable_hover_lift);
+      ImGui::Checkbox("Selection Stamp", &ui.enable_selection_stamp);
     }
 
     // ---- Reset ----

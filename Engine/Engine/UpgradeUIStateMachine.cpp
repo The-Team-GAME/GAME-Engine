@@ -23,11 +23,8 @@
 
 namespace Engine
 {
-  // ---- Card animation toggles (set to false to disable) ----
-  constexpr bool kEnableFlipReveal = true;
-  constexpr bool kEnableIdleFloat = true;
-  constexpr bool kEnableHoverLift = true;
-  constexpr bool kEnableSelectionStamp = true;
+  // ---- Card animation toggles are now runtime members on the singleton ----
+  // (enable_flip_reveal / enable_idle_float / enable_hover_lift / enable_selection_stamp)
 
   // ---- Singleton ----
 
@@ -205,7 +202,7 @@ namespace Engine
 
       // Don't process input during flip reveal or stamp animation
       if (!flip_done_) break;
-      if (kEnableSelectionStamp && stamp_time_ >= 0.0f) break;
+      if (enable_selection_stamp && stamp_time_ >= 0.0f) break;
 
       glm::vec2 mouse = Input::get_mouse_position();
 
@@ -219,7 +216,7 @@ namespace Engine
         {
           if (Input::is_pressed(KeyCode::MouseLeft))
           {
-            if (kEnableSelectionStamp)
+            if (enable_selection_stamp)
             {
               stamp_card_ = 0; stamp_time_ = 0.0f;
             }
@@ -242,7 +239,7 @@ namespace Engine
         {
           if (Input::is_pressed(KeyCode::MouseLeft))
           {
-            if (kEnableSelectionStamp)
+            if (enable_selection_stamp)
             {
               stamp_card_ = 1; stamp_time_ = 0.0f;
             }
@@ -285,7 +282,7 @@ namespace Engine
     float scale_y[2] = { card_base_sy_[0], card_base_sy_[1] };
 
     // ---- Flip Reveal ----
-    if (kEnableFlipReveal && !flip_done_)
+    if (enable_flip_reveal && !flip_done_)
     {
       constexpr float flip_duration = 0.3f;
       constexpr float flip_stagger = 0.08f;
@@ -309,7 +306,7 @@ namespace Engine
     }
 
     // ---- Idle Float (only after flip completes) ----
-    if (kEnableIdleFloat && flip_done_)
+    if (enable_idle_float && flip_done_)
     {
       constexpr float float_amplitude = 3.0f;
       constexpr float float_speed = 0.2f;
@@ -322,7 +319,7 @@ namespace Engine
     }
 
     // ---- Hover Lift (only after flip completes) ----
-    if (kEnableHoverLift && flip_done_)
+    if (enable_hover_lift && flip_done_)
     {
       constexpr float hover_lift_y = -15.0f;
       constexpr float hover_scale_boost = 1.05f;
@@ -357,7 +354,7 @@ namespace Engine
     }
 
     // ---- Selection Stamp ----
-    if (kEnableSelectionStamp && stamp_time_ >= 0.0f)
+    if (enable_selection_stamp && stamp_time_ >= 0.0f)
     {
       constexpr float stamp_duration = 0.15f;
       constexpr float stamp_squish = 0.85f;
@@ -576,7 +573,7 @@ namespace Engine
     stamp_time_ = -1.0f;
     stamp_card_ = -1;
 
-    if (kEnableFlipReveal)
+    if (enable_flip_reveal)
     {
       flip_done_ = false;
       // Start cards invisible (scale.x = 0) for flip-in
