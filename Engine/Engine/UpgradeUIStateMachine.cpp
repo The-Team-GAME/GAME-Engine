@@ -260,12 +260,20 @@ namespace Engine
 
     auto rect = Resources::get_rect_texture();
 
-    // ---- Spritesheet configuration — update these if the sheet changes ----
-    constexpr int   ss_card_w = 128;   // pixel width  of one card frame  (1024 / 8 cols)
-    constexpr int   ss_card_h = 224;   // pixel height of one card frame
-    constexpr int   ss_rows = 1;     // number of rows  in the sheet
-    constexpr int   ss_cols = 8;     // number of cols  in the sheet (actual sheet width)
+    // ---- Spritesheet (Cards_Spritesheet.png: 1024 x 224) ----
+    constexpr int   ss_img_w = 1024;  // full image width  in pixels
+    constexpr int   ss_img_h = 224;   // full image height in pixels
+    constexpr int   ss_cols = 8;     // number of columns in the sheet
+    constexpr int   ss_rows = 1;     // number of rows    in the sheet
     constexpr int   ss_total = 6;     // number of cards in use (last 2 ignored for now)
+    constexpr int   ss_card_w = ss_img_w / ss_cols;  // 128 — one frame width
+    constexpr int   ss_card_h = ss_img_h / ss_rows;  // 224 — one frame height
+    constexpr float ss_scale = 2.0f;                // display scale multiplier
+
+    // ---- Panel (UpgradeMenu.png: 192 x 256) ----
+    constexpr float panel_img_w = 192.0f;
+    constexpr float panel_img_h = 256.0f;
+    constexpr float panel_scale = 2.0f;  // display scale multiplier
     // -----------------------------------------------------------------------
 
     auto spritesheet = Resources::load_texture("images/Upgrades/Cards_Spritesheet.png");
@@ -280,14 +288,11 @@ namespace Engine
       .add_to_layer("main_menu_4");
     dimmer_id_ = dimmer.get_id();
 
-    // Layout sizing
-    // Panel: 224x256 native, scaled to match card height
-    // Cards: ss_card_w x ss_card_h native from spritesheet, scaled 2x
-    constexpr float card_display_w = static_cast<float>(ss_card_w) * 2.0f;
-    constexpr float card_display_h = static_cast<float>(ss_card_h) * 2.0f;
-    constexpr float panel_scale = card_display_h / 256.0f;  // ~1.75
-    constexpr float panel_display_w = 224.0f * panel_scale;  // ~392
-    constexpr float panel_display_h = card_display_h;         // 448
+    // Layout sizing — derived from image sizes and scale factors above
+    constexpr float card_display_w = static_cast<float>(ss_card_w) * ss_scale;
+    constexpr float card_display_h = static_cast<float>(ss_card_h) * ss_scale;
+    constexpr float panel_display_w = panel_img_w * panel_scale;
+    constexpr float panel_display_h = panel_img_h * panel_scale;
     constexpr float gap = 10.0f;
 
     // Total group: [panel] gap [card0] gap [card1]
