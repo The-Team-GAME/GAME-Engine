@@ -34,7 +34,6 @@
 namespace
 {
   // --- Input buffers ---
-  static char collection_buf[256] = "";
   static char doc_id_buf[256] = "";
   static char json_edit_buf[8192] = "";
   static char new_field_key[256] = "";
@@ -254,7 +253,9 @@ namespace
   // Fetch the current collection and handle all outcomes.
   static void fetch_collection()
   {
-    std::string col = collection_buf;
+    const auto& settings =
+      Engine::FileIO::SettingsManager<Engine::FileIO::FirebaseSettings>::get();
+    std::string col = settings.collection;
     if (col.empty()) return;
 
     Engine::Firebase::query_collection(col,
@@ -362,21 +363,28 @@ void FirebasePanel::draw_panel()
   // ========================================================================
   // Collection Browser
   // ========================================================================
+
+  // Auto-fetch on first frame when configured
+  const auto& fb_settings =
+    Engine::FileIO::SettingsManager<Engine::FileIO::FirebaseSettings>::get();
+  static bool auto_fetched = false;
+  if (configured && !auto_fetched && !fb_settings.collection.empty())
+  {
+    auto_fetched = true;
+    fetch_collection();
+  }
+
   if (ImGui::CollapsingHeader("Collection Browser", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    // ---- Collection name input + Fetch ----
+    // ---- Collection name (read-only from settings) + Refresh ----
     ImGui::Text("Collection:");
     ImGui::SameLine();
-    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - 100.f);
-    bool enter_pressed = ImGui::InputText("##collection", collection_buf, sizeof(collection_buf),
-      ImGuiInputTextFlags_EnterReturnsTrue);
-    ImGui::SameLine();
-    bool can_fetch = (collection_buf[0] != '\0' && pending == 0);
-    if (!can_fetch) ImGui::BeginDisabled();
-    if (ImGui::Button("Fetch", ImVec2(48.f, 0)) || (enter_pressed && can_fetch))
-      fetch_collection();
-    if (!can_fetch) ImGui::EndDisabled();
-    ImGui::SameLine();
+    if (fb_settings.collection.empty())
+      ImGui::TextColored(ImVec4(1.f, 0.85f, 0.f, 1.f), "(not set — edit firebase_settings.json)");
+    else
+      ImGui::TextWrapped("%s", fb_settings.collection.c_str());
+
+    bool can_fetch = (!fb_settings.collection.empty() && pending == 0);
     if (!can_fetch) ImGui::BeginDisabled();
     if (ImGui::Button("Refresh", ImVec2(-1.f, 0)))
       fetch_collection();
@@ -395,7 +403,7 @@ void FirebasePanel::draw_panel()
     }
     else if (!has_fetched_once)
     {
-      ImGui::TextDisabled("Enter a collection name and click Fetch.");
+      ImGui::TextDisabled("Waiting for initial fetch...");
     }
     else if (cached_docs.empty())
     {
@@ -435,7 +443,7 @@ void FirebasePanel::draw_panel()
     if (selected_doc_idx >= 0 && selected_doc_idx < static_cast<int>(cached_docs.size()))
     {
       ImGui::SameLine();
-      bool can_delete = (collection_buf[0] != '\0' && pending == 0);
+      bool can_delete = (!fb_settings.collection.empty() && pending == 0);
       if (!can_delete) ImGui::BeginDisabled();
       if (ImGui::Button("Delete Selected"))
       {
@@ -454,7 +462,7 @@ void FirebasePanel::draw_panel()
 
       if (ImGui::Button("Delete", ImVec2(120, 0)))
       {
-        std::string col = collection_buf;
+        std::string col = fb_settings.collection;
         std::string id = delete_target_id;
         Engine::Firebase::delete_document(col, id,
           [col, id](bool success, const std::string& data) {
@@ -503,7 +511,7 @@ void FirebasePanel::draw_panel()
 
       ImGui::Spacing();
 
-      bool can_create = (new_doc_name_buf[0] != '\0' && collection_buf[0] != '\0');
+      bool can_create = (new_doc_name_buf[0] != '\0' && !fb_settings.collection.empty());
       if (!can_create) ImGui::BeginDisabled();
       if (ImGui::Button("Create", ImVec2(120, 0)) || (enter && can_create))
       {
@@ -513,7 +521,7 @@ void FirebasePanel::draw_panel()
         field_rows.clear();
 
         // Push the new (empty) document to Firestore immediately
-        std::string col  = collection_buf;
+        std::string col  = fb_settings.collection;
         std::string id   = new_doc_name_buf;
         std::string body = "{}";
         Engine::Firebase::set_document(col, id, body,
@@ -561,7 +569,7 @@ void FirebasePanel::draw_panel()
   {
     // ---- Document ID + Pull/Push ----
     bool has_doc_id = (doc_id_buf[0] != '\0');
-    bool has_collection = (collection_buf[0] != '\0');
+    bool has_collection = !fb_settings.collection.empty();
     bool can_act = has_doc_id && has_collection && pending == 0;
 
     ImGui::Text("Document ID:");
@@ -576,7 +584,7 @@ void FirebasePanel::draw_panel()
     // Pull — fetch from Firestore into editor
     if (ImGui::Button("Pull"))
     {
-      std::string col = collection_buf;
+      std::string col = fb_settings.collection;
       std::string id = doc_id_buf;
       Engine::Firebase::get_document(col, id,
         [col, id](bool success, const std::string& data) {
@@ -600,7 +608,7 @@ void FirebasePanel::draw_panel()
     if (ImGui::Button("Push"))
     {
       sync_fields_to_json();
-      std::string col = collection_buf;
+      std::string col = fb_settings.collection;
       std::string id = doc_id_buf;
       std::string body = json_edit_buf;
       Engine::Firebase::set_document(col, id, body,
