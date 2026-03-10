@@ -46,12 +46,13 @@ namespace Engine
     ENGINE_API void set_upgrade_button(ECS::EntityID id);
 
     // Animation effect toggles — can be changed at runtime (e.g. from ImGui panel).
-    bool enable_flip_reveal     = true;
-    bool enable_idle_float      = true;
-    bool enable_hover_lift      = true;
+    bool enable_flip_reveal = true;
+    bool enable_idle_float = true;
+    bool enable_hover_lift = true;
     bool enable_selection_stamp = true;
-    bool enable_hover_tilt      = true;
-    bool enable_idle_tilt       = true;
+    bool enable_hover_tilt = true;
+    bool enable_idle_tilt = true;
+    bool enable_card_arc = true;
 
   private:
     UpgradeUIStateMachine() = default;
@@ -63,6 +64,12 @@ namespace Engine
     void spawn_picker_entities();
     void destroy_picker_entities();
     void animate_cards();
+
+    // Compute the target mini-card slot position on the panel for a picked card.
+    void compute_arc_target(int slot, float& out_x, float& out_y);
+
+    // Start the arc-to-panel animation for the given card slot.
+    void start_arc(int card_slot);
 
     UpgradeFlowState state_ = UpgradeFlowState::Idle;
 
@@ -86,10 +93,20 @@ namespace Engine
     float picker_open_time_ = 0.0f;
     int   hovered_card_ = -1;
     float hover_lerp_[2] = {};
-    float card_tilt_[2]  = {};   // current Z-rotation (degrees) for tilt effects
+    float card_tilt_[2] = {};   // current Z-rotation (degrees) for tilt effects
     float stamp_time_ = -1.0f;
     int   stamp_card_ = -1;
     bool  flip_done_ = false;
+
+    // Arc-to-panel animation state
+    bool  arc_active_ = false;
+    float arc_time_ = 0.0f;
+    int   arc_card_ = -1;         // which card (0 or 1) is flying
+    float arc_start_x_ = 0.0f, arc_start_y_ = 0.0f;
+    float arc_end_x_ = 0.0f, arc_end_y_ = 0.0f;
+    float arc_start_sx_ = 0.0f, arc_start_sy_ = 0.0f;
+    float arc_end_sx_ = 0.0f, arc_end_sy_ = 0.0f;
+    float smash_time_ = -1.0f;   // landing bounce timer (-1 = inactive)
   };
 
 } // namespace Engine

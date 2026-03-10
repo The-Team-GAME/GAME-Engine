@@ -786,6 +786,7 @@ inline void UpgradePanel()
       ImGui::Checkbox("Selection Stamp", &ui.enable_selection_stamp);
       ImGui::Checkbox("Hover Tilt", &ui.enable_hover_tilt);
       ImGui::Checkbox("Idle Tilt", &ui.enable_idle_tilt);
+      ImGui::Checkbox("Card Arc", &ui.enable_card_arc);
     }
 
     // ---- Reset ----

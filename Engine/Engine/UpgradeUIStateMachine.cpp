@@ -200,9 +200,10 @@ namespace Engine
       // Drive card animations (flip, float, hover, stamp)
       animate_cards();
 
-      // Don't process input during flip reveal or stamp animation
+      // Don't process input during flip reveal, stamp, or arc animation
       if (!flip_done_) break;
       if (enable_selection_stamp && stamp_time_ >= 0.0f) break;
+      if (arc_active_ || smash_time_ >= 0.0f) break;
 
       glm::vec2 mouse = Input::get_mouse_position();
 
@@ -219,6 +220,10 @@ namespace Engine
             if (enable_selection_stamp)
             {
               stamp_card_ = 0; stamp_time_ = 0.0f;
+            }
+            else if (enable_card_arc)
+            {
+              start_arc(0);
             }
             else
             {
@@ -242,6 +247,10 @@ namespace Engine
             if (enable_selection_stamp)
             {
               stamp_card_ = 1; stamp_time_ = 0.0f;
+            }
+            else if (enable_card_arc)
+            {
+              start_arc(1);
             }
             else
             {
@@ -413,10 +422,16 @@ namespace Engine
 
       if (stamp_time_ >= stamp_duration)
       {
-        // Stamp finished — apply the upgrade
+        // Stamp finished — start arc or apply immediately
         stamp_time_ = -1.0f;
-        picked_slot_ = stamp_card_;
+        int sc = stamp_card_;
         stamp_card_ = -1;
+        if (enable_card_arc)
+        {
+          start_arc(sc);
+          return;
+        }
+        picked_slot_ = sc;
         transition_to(UpgradeFlowState::Applying);
         return;
       }
@@ -441,6 +456,101 @@ namespace Engine
         scale_x[c] *= squish_factor;
         scale_y[c] *= squish_factor;
       }
+    }
+
+    // ---- Arc-to-Panel Flight ----
+    if (arc_active_)
+    {
+      constexpr float arc_duration = 0.4f;
+      constexpr float arc_peak = -120.0f;  // upward arc offset in pixels
+      constexpr float pi = 3.14159265f;
+
+      arc_time_ += dt;
+      float t = arc_time_ / arc_duration;
+      if (t > 1.0f) t = 1.0f;
+
+      int ac = arc_card_;
+      if (ac >= 0 && ac < 2 && card_ids[ac] != 0)
+      {
+        // Smooth eased interpolation for X and Y
+        float eased = Easing::EaseQuadInOut(t, 0.0f, 1.0f, 1.0f);
+        float cx = arc_start_x_ + (arc_end_x_ - arc_start_x_) * eased;
+        float cy = arc_start_y_ + (arc_end_y_ - arc_start_y_) * eased;
+        // Add parabolic arc (peaks at t=0.5)
+        cy += arc_peak * 4.0f * t * (1.0f - t);
+
+        // Scale: shrink from full to mini (accelerating)
+        float se = Easing::EaseCubicIn(t, 0.0f, 1.0f, 1.0f);
+        float sx = arc_start_sx_ + (arc_end_sx_ - arc_start_sx_) * se;
+        float sy = arc_start_sy_ + (arc_end_sy_ - arc_start_sy_) * se;
+
+        // Gentle spin during flight
+        float rot = sinf(t * pi) * 8.0f;
+
+        auto* at = ECS::Entity(card_ids[ac]).get_component<Components::Transform2D>();
+        if (at)
+        {
+          at->position.x = cx;
+          at->position.y = cy;
+          at->scale.x = sx;
+          at->scale.y = sy;
+          at->rotation = rot;
+        }
+      }
+
+      // Fade out the non-selected card
+      int other = 1 - ac;
+      if (other >= 0 && other < 2 && card_ids[other] != 0)
+      {
+        auto* oc = ECS::Entity(card_ids[other]).get_component<Components::Color>();
+        if (oc)
+        {
+          float fade_t = Easing::EaseQuadIn(t, 0.0f, 1.0f, 1.0f);
+          oc->a = 1.0f - fade_t;
+        }
+      }
+
+      if (t >= 1.0f)
+      {
+        arc_active_ = false;
+        smash_time_ = 0.0f;  // start smash landing
+      }
+      return;  // skip normal write during arc
+    }
+
+    // ---- Smash Landing ----
+    if (smash_time_ >= 0.0f)
+    {
+      constexpr float smash_duration = 0.12f;
+      smash_time_ += dt;
+
+      int ac = arc_card_;
+      if (ac >= 0 && ac < 2 && card_ids[ac] != 0)
+      {
+        auto* at = ECS::Entity(card_ids[ac]).get_component<Components::Transform2D>();
+        if (at)
+        {
+          at->position.x = arc_end_x_;
+          at->position.y = arc_end_y_;
+          // EaseBackOut overshoots then settles — from 0.8×mini to 1.0×mini
+          float st = smash_time_;
+          if (st > smash_duration) st = smash_duration;
+          float factor = Easing::EaseBackOut(st, 0.8f, 0.2f, smash_duration);
+          at->scale.x = arc_end_sx_ * factor;
+          at->scale.y = arc_end_sy_ * factor;
+          at->rotation = 0.0f;
+        }
+      }
+
+      if (smash_time_ >= smash_duration)
+      {
+        smash_time_ = -1.0f;
+        picked_slot_ = arc_card_;
+        arc_card_ = -1;
+        transition_to(UpgradeFlowState::Applying);
+        return;
+      }
+      return;  // skip normal write during smash
     }
 
     // ---- Write final values to entities ----
@@ -550,6 +660,27 @@ namespace Engine
 
     int row_card_count[4] = { 0, 0, 0, 0 };
 
+    // Two-pass layout: first count cards per row, then position with stacking
+    for (size_t i = 0; i < settings.upgrades.size(); ++i)
+    {
+      const auto& upg = settings.upgrades[i];
+      int level = mgr.get_upgrade_level(upg.id);
+      if (level <= 0) continue;
+      int cat = get_category(upg.stat_name);
+      if (cat >= 0) row_card_count[cat] += level;
+    }
+
+    // Compute effective spacing per row (compress when > 4 cards)
+    constexpr float max_row_w = 4.0f * (mini_w + mini_gap);
+    float row_spacing[4];
+    for (int r = 0; r < 4; ++r)
+      row_spacing[r] = (row_card_count[r] <= 4)
+      ? (mini_w + mini_gap)
+      : (max_row_w / static_cast<float>(row_card_count[r]));
+
+    // Reset counts for positioning pass
+    int row_pos[4] = { 0, 0, 0, 0 };
+
     for (size_t i = 0; i < settings.upgrades.size(); ++i)
     {
       const auto& upg = settings.upgrades[i];
@@ -562,7 +693,7 @@ namespace Engine
       for (int lv = 0; lv < level; ++lv)
       {
         float x = panel_left + row_start_x + mini_w / 2.0f
-          + row_card_count[cat] * (mini_w + mini_gap);
+          + row_pos[cat] * row_spacing[cat];
         float y = panel_top + row_y[cat];
 
         auto mc = ECS::create_entity()
@@ -576,7 +707,7 @@ namespace Engine
           atlas->drawIndex = upg.card_index;
         mini_card_ids_.push_back(mc.get_id());
 
-        ++row_card_count[cat];
+        ++row_pos[cat];
       }
     }
 
@@ -626,6 +757,10 @@ namespace Engine
     card_tilt_[1] = 0.0f;
     stamp_time_ = -1.0f;
     stamp_card_ = -1;
+    arc_active_ = false;
+    arc_time_ = 0.0f;
+    smash_time_ = -1.0f;
+    arc_card_ = -1;
 
     if (enable_flip_reveal)
     {
@@ -671,6 +806,107 @@ namespace Engine
     }
     state_ = UpgradeFlowState::Idle;
     picked_slot_ = -1;
+    arc_active_ = false;
+    arc_time_ = 0.0f;
+    smash_time_ = -1.0f;
+    arc_card_ = -1;
+  }
+
+  // ---- Arc helpers ----
+
+  void UpgradeUIStateMachine::compute_arc_target(int slot, float& out_x, float& out_y)
+  {
+    auto& mgr = UpgradeManager::instance();
+    auto& settings = FileIO::SettingsManager<FileIO::UpgradeSettings>::get();
+
+    // Same layout constants as spawn_picker_entities
+    constexpr float ss_scale = 2.0f;
+    constexpr float card_display_w = 128.0f * ss_scale;  // 256
+    constexpr float card_display_h = 224.0f * ss_scale;  // 448
+    constexpr float mini_w = card_display_w / 6.0f;
+    constexpr float mini_h = card_display_h / 6.0f;
+    constexpr float mini_gap = 2.0f;
+    constexpr float panel_img_w = 192.0f;
+    constexpr float panel_scale = 2.0f;
+    constexpr float panel_display_w = panel_img_w * panel_scale;
+    constexpr float panel_display_h = 256.0f * panel_scale;
+    constexpr float gap = 10.0f;
+    constexpr float row_start_x = 150.0f;
+    constexpr float row_start_y = 142.0f;
+    constexpr float row_height = 94.0f;
+    constexpr float row_y[4] = { row_start_y, row_start_y + row_height,
+      row_start_y + 2.0f * row_height, row_start_y + 3.0f * row_height };
+
+    float group_w = panel_display_w + gap + card_display_w + gap + card_display_w;
+    float group_left = (1600.0f - group_w) / 2.0f;
+    float panel_cx = group_left + panel_display_w / 2.0f;
+    float panel_left = panel_cx - panel_display_w / 2.0f;
+    float panel_top = 450.0f - panel_display_h / 2.0f;
+
+    // Category lookup (same as spawn_picker_entities)
+    auto get_category = [](const std::string& stat_name) -> int {
+      if (stat_name == "attack_damage")                                   return 0;
+      if (stat_name == "uppercut_damage" || stat_name == "uppercut_cooldown")  return 1;
+      if (stat_name == "downsmash_damage" || stat_name == "downsmash_cooldown") return 2;
+      if (stat_name == "dash_cooldown")                                   return 3;
+      return -1;
+      };
+
+    // Count existing cards per row (current levels BEFORE this pick is applied)
+    int row_card_count[4] = { 0, 0, 0, 0 };
+    for (size_t i = 0; i < settings.upgrades.size(); ++i)
+    {
+      const auto& upg = settings.upgrades[i];
+      int level = mgr.get_upgrade_level(upg.id);
+      if (level <= 0) continue;
+      int cat = get_category(upg.stat_name);
+      if (cat >= 0) row_card_count[cat] += level;
+    }
+
+    // Determine which row the picked card belongs to
+    int idx = mgr.get_rolled_card(slot);
+    int cat = -1;
+    if (idx >= 0 && idx < static_cast<int>(settings.upgrades.size()))
+      cat = get_category(settings.upgrades[idx].stat_name);
+
+    if (cat < 0)
+    {
+      // Fallback: aim at panel center
+      out_x = panel_cx;
+      out_y = 450.0f;
+      return;
+    }
+
+    // The new card will be at position row_card_count[cat] (0-indexed)
+    int new_count = row_card_count[cat] + 1;
+
+    // Compute stacking spacing (same formula as spawn)
+    constexpr float max_row_w = 4.0f * (mini_w + mini_gap);
+    float spacing = (new_count <= 4)
+      ? (mini_w + mini_gap)
+      : (max_row_w / static_cast<float>(new_count));
+
+    int target_slot = row_card_count[cat]; // 0-indexed slot for the new card
+    out_x = panel_left + row_start_x + mini_w / 2.0f + target_slot * spacing;
+    out_y = panel_top + row_y[cat];
+  }
+
+  void UpgradeUIStateMachine::start_arc(int card_slot)
+  {
+    constexpr float ss_scale = 2.0f;
+    constexpr float mini_w = 128.0f * ss_scale / 6.0f;
+    constexpr float mini_h = 224.0f * ss_scale / 6.0f;
+
+    arc_active_ = true;
+    arc_time_ = 0.0f;
+    arc_card_ = card_slot;
+    arc_start_x_ = card_base_x_[card_slot];
+    arc_start_y_ = card_base_y_[card_slot];
+    arc_start_sx_ = card_base_sx_[card_slot];
+    arc_start_sy_ = card_base_sy_[card_slot];
+    arc_end_sx_ = mini_w;
+    arc_end_sy_ = mini_h;
+    compute_arc_target(card_slot, arc_end_x_, arc_end_y_);
   }
 
 } // namespace Engine
