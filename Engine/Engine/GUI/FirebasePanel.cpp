@@ -35,9 +35,9 @@ namespace
 {
   // --- Input buffers ---
   static char collection_buf[256] = "";
-  static char doc_id_buf[256]     = "";
+  static char doc_id_buf[256] = "";
   static char json_edit_buf[8192] = "";
-  static char new_field_key[256]  = "";
+  static char new_field_key[256] = "";
   static char new_field_val[1024] = "";
 
   // --- Cached collection listing ---
@@ -51,15 +51,15 @@ namespace
 
   // --- Fetch state ---
   static bool has_fetched_once = false;  // distinguishes "never fetched" from "fetched, 0 results"
-  static int  new_doc_counter  = 1;
+  static int  new_doc_counter = 1;
 
   // --- Activity log ---
   struct PanelLogEntry
   {
     std::string timestamp;
     std::string operation;
-    bool        success  = false;
-    bool        warning  = false;
+    bool        success = false;
+    bool        warning = false;
     std::string message;
   };
   static std::deque<PanelLogEntry> activity_log;
@@ -80,7 +80,7 @@ namespace
   // --- Field-level editor ---
   struct FieldRow
   {
-    char key[256]  = {};
+    char key[256] = {};
     char val[1024] = {};
   };
   static std::vector<FieldRow> field_rows;
@@ -91,7 +91,7 @@ namespace
 
   static std::string now_timestamp()
   {
-    auto now  = std::chrono::system_clock::now();
+    auto now = std::chrono::system_clock::now();
     auto time = std::chrono::system_clock::to_time_t(now);
     struct tm buf {};
     localtime_s(&buf, &time);
@@ -102,7 +102,7 @@ namespace
   }
 
   static void push_log(const std::string& op, bool success, const std::string& msg,
-                        bool warning = false)
+    bool warning = false)
   {
     if (activity_log.size() >= MAX_LOG_ENTRIES) activity_log.pop_front();
     activity_log.push_back({ now_timestamp(), op, success, warning, msg });
@@ -194,9 +194,9 @@ namespace
     rapidjson::Document::AllocatorType& alloc)
   {
     std::string s(str);
-    if (s == "true")             { out.SetBool(true);  return; }
-    if (s == "false")            { out.SetBool(false); return; }
-    if (s == "null" || s.empty()){ out.SetNull();      return; }
+    if (s == "true") { out.SetBool(true);  return; }
+    if (s == "false") { out.SetBool(false); return; }
+    if (s == "null" || s.empty()) { out.SetNull();      return; }
     try { size_t p; long long iv = std::stoll(s, &p); if (p == s.size()) { out.SetInt64(iv);  return; } }
     catch (...) {}
     try { size_t p; double   dv = std::stod(s, &p);  if (p == s.size()) { out.SetDouble(dv); return; } }
@@ -293,8 +293,8 @@ void FirebasePanel::draw_panel()
   ImGui::Begin("Firebase");
 
   const bool initialized = Engine::Firebase::is_initialized();
-  const bool configured  = Engine::Firebase::is_configured();
-  const size_t pending   = Engine::Firebase::pending_count();
+  const bool configured = Engine::Firebase::is_configured();
+  const size_t pending = Engine::Firebase::pending_count();
 
   // Tick status timer
   if (status_timer > 0.f)
@@ -311,14 +311,14 @@ void FirebasePanel::draw_panel()
     ImGui::Text("Initialized:");
     ImGui::SameLine();
     ImGui::TextColored(initialized ? ImVec4(0.2f, 1.f, 0.3f, 1.f)
-                                   : ImVec4(1.f, 0.3f, 0.2f, 1.f),
-                       initialized ? "Yes" : "No");
+      : ImVec4(1.f, 0.3f, 0.2f, 1.f),
+      initialized ? "Yes" : "No");
 
     ImGui::Text("Configured: ");
     ImGui::SameLine();
     ImGui::TextColored(configured ? ImVec4(0.2f, 1.f, 0.3f, 1.f)
-                                  : ImVec4(1.f, 0.3f, 0.2f, 1.f),
-                       configured ? "Yes" : "No");
+      : ImVec4(1.f, 0.3f, 0.2f, 1.f),
+      configured ? "Yes" : "No");
 
     const auto& settings =
       Engine::FileIO::SettingsManager<Engine::FileIO::FirebaseSettings>::get();
@@ -455,11 +455,11 @@ void FirebasePanel::draw_panel()
       if (ImGui::Button("Delete", ImVec2(120, 0)))
       {
         std::string col = collection_buf;
-        std::string id  = delete_target_id;
+        std::string id = delete_target_id;
         Engine::Firebase::delete_document(col, id,
           [col, id](bool success, const std::string& data) {
             if (success) {
-              doc_id_buf[0]    = '\0';
+              doc_id_buf[0] = '\0';
               json_edit_buf[0] = '\0';
               field_rows.clear();
               for (auto it = cached_docs.begin(); it != cached_docs.end(); ++it)
@@ -503,7 +503,7 @@ void FirebasePanel::draw_panel()
 
       ImGui::Spacing();
 
-      bool can_create = (new_doc_name_buf[0] != '\0');
+      bool can_create = (new_doc_name_buf[0] != '\0' && collection_buf[0] != '\0');
       if (!can_create) ImGui::BeginDisabled();
       if (ImGui::Button("Create", ImVec2(120, 0)) || (enter && can_create))
       {
@@ -511,6 +511,36 @@ void FirebasePanel::draw_panel()
         strncpy_s(doc_id_buf, new_doc_name_buf, sizeof(doc_id_buf) - 1);
         json_edit_buf[0] = '{'; json_edit_buf[1] = '}'; json_edit_buf[2] = '\0';
         field_rows.clear();
+
+        // Push the new (empty) document to Firestore immediately
+        std::string col  = collection_buf;
+        std::string id   = new_doc_name_buf;
+        std::string body = "{}";
+        Engine::Firebase::set_document(col, id, body,
+          [col, id](bool success, const std::string& data) {
+            if (success) {
+              set_status("Created " + id, true);
+              push_log("CREATE " + col + "/" + id, true, "OK");
+              // Refresh the collection list so the new doc appears
+              Engine::Firebase::query_collection(col,
+                [col](bool ok, const std::string& d2) {
+                  if (ok) {
+                    has_fetched_once = true;
+                    parse_collection_response(d2);
+                    push_log("REFRESH " + col, true,
+                      std::to_string(cached_docs.size()) + " document(s)");
+                  }
+                  else {
+                    push_log("REFRESH " + col, false, d2);
+                  }
+                });
+            }
+            else {
+              set_status("Create failed: " + data, false);
+              push_log("CREATE " + col + "/" + id, false, data);
+            }
+          });
+
         push_log("NEW", true, std::string(new_doc_name_buf));
         ImGui::CloseCurrentPopup();
       }
@@ -530,9 +560,9 @@ void FirebasePanel::draw_panel()
   if (ImGui::CollapsingHeader("Document Editor", ImGuiTreeNodeFlags_DefaultOpen))
   {
     // ---- Document ID + Pull/Push ----
-    bool has_doc_id     = (doc_id_buf[0] != '\0');
+    bool has_doc_id = (doc_id_buf[0] != '\0');
     bool has_collection = (collection_buf[0] != '\0');
-    bool can_act        = has_doc_id && has_collection && pending == 0;
+    bool can_act = has_doc_id && has_collection && pending == 0;
 
     ImGui::Text("Document ID:");
     ImGui::SameLine();
@@ -547,7 +577,7 @@ void FirebasePanel::draw_panel()
     if (ImGui::Button("Pull"))
     {
       std::string col = collection_buf;
-      std::string id  = doc_id_buf;
+      std::string id = doc_id_buf;
       Engine::Firebase::get_document(col, id,
         [col, id](bool success, const std::string& data) {
           if (success) {
@@ -570,8 +600,8 @@ void FirebasePanel::draw_panel()
     if (ImGui::Button("Push"))
     {
       sync_fields_to_json();
-      std::string col  = collection_buf;
-      std::string id   = doc_id_buf;
+      std::string col = collection_buf;
+      std::string id = doc_id_buf;
       std::string body = json_edit_buf;
       Engine::Firebase::set_document(col, id, body,
         [col, id](bool success, const std::string& data) {
@@ -617,9 +647,9 @@ void FirebasePanel::draw_panel()
       ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersInnerV |
       ImGuiTableFlags_SizingStretchProp))
     {
-      ImGui::TableSetupColumn("Key",   ImGuiTableColumnFlags_WidthStretch, 0.35f);
+      ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthStretch, 0.35f);
       ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch, 0.57f);
-      ImGui::TableSetupColumn("",      ImGuiTableColumnFlags_WidthFixed,   28.f);
+      ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 28.f);
       ImGui::TableHeadersRow();
 
       int erase_idx = -1;
