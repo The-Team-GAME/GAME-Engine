@@ -248,6 +248,24 @@ namespace Engine
       );
     }
 
+    void list_collections(Callback on_complete)
+    {
+      if (!g_configured) {
+        if (on_complete) on_complete(false, "Firebase not configured");
+        return;
+      }
+
+      // GET /.json?shallow=true returns {"collection1":true,"collection2":true}
+      std::string url = g_base_url + "/.json?shallow=true";
+
+      enqueue(
+        [url]() -> HttpResponse { return HTTP::get(url); },
+        [cb = std::move(on_complete)](bool success, const std::string& body) {
+          cb(success, body);
+        }
+      );
+    }
+
     // ================================================================
     // Generic raw request
     // ================================================================

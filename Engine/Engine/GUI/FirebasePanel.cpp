@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 #include <deque>
+#include <algorithm>
 #include <chrono>
 #include <ctime>
 #include <cstring>
@@ -89,6 +90,13 @@ namespace
   static int   live_watch_id = -1;
   static int   live_event_count = 0;
   static std::string live_last_event_time;
+
+  // --- Collections ---
+  static std::vector<std::string> cached_collections;
+  static std::string selected_collection;
+  static bool has_fetched_collections = false;
+  static char new_collection_buf[256] = "";
+  static std::string delete_collection_target;
 
   // ====================================================================
   // Helpers
@@ -244,12 +252,34 @@ namespace
     }
   }
 
-  // Fetch the current collection and handle all outcomes.
+  // Fetch the list of top-level collection names from RTDB root.
+  static void fetch_all_collections()
+  {
+    Engine::Firebase::list_collections(
+      [](bool success, const std::string& data) {
+        has_fetched_collections = true;
+        if (!success) {
+          set_status("Failed to list collections: " + data, false);
+          push_log("LIST COLLECTIONS", false, data);
+          return;
+        }
+        cached_collections.clear();
+        rapidjson::Document doc;
+        doc.Parse(data.c_str());
+        if (!doc.HasParseError() && doc.IsObject()) {
+          for (auto it = doc.MemberBegin(); it != doc.MemberEnd(); ++it)
+            cached_collections.push_back(it->name.GetString());
+          std::sort(cached_collections.begin(), cached_collections.end());
+        }
+        push_log("LIST COLLECTIONS", true,
+          std::to_string(cached_collections.size()) + " collection(s)");
+      });
+  }
+
+  // Fetch documents within the currently selected collection.
   static void fetch_collection()
   {
-    const auto& settings =
-      Engine::FileIO::SettingsManager<Engine::FileIO::FirebaseSettings>::get();
-    std::string col = settings.collection;
+    std::string col = selected_collection;
     if (col.empty()) return;
 
     Engine::Firebase::query_collection(col,
@@ -376,134 +406,116 @@ void FirebasePanel::draw_panel()
   if (!configured) ImGui::BeginDisabled();
 
   // ========================================================================
-  // Collection Browser
+  // Collections
   // ========================================================================
 
-  // Auto-fetch on first frame when configured
-  const auto& fb_settings =
-    Engine::FileIO::SettingsManager<Engine::FileIO::FirebaseSettings>::get();
+  // Auto-fetch collection list on first configured frame
   static bool auto_fetched = false;
-  if (configured && !auto_fetched && !fb_settings.collection.empty())
+  if (configured && !auto_fetched)
   {
     auto_fetched = true;
-    fetch_collection();
+    fetch_all_collections();
   }
 
-  if (ImGui::CollapsingHeader("Collection Browser", ImGuiTreeNodeFlags_DefaultOpen))
+  if (ImGui::CollapsingHeader("Collections", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    // ---- Collection name (read-only from settings) + Refresh ----
-    ImGui::Text("Collection:");
-    ImGui::SameLine();
-    if (fb_settings.collection.empty())
-      ImGui::TextColored(ImVec4(1.f, 0.85f, 0.f, 1.f), "(not set — edit firebase_settings.json)");
-    else
-      ImGui::TextWrapped("%s", fb_settings.collection.c_str());
+    // ---- Refresh + New ----
+    bool can_list = (pending == 0);
+    if (!can_list) ImGui::BeginDisabled();
+    if (ImGui::Button("Refresh##col_refresh"))
+      fetch_all_collections();
+    if (!can_list) ImGui::EndDisabled();
 
-    bool can_fetch = (!fb_settings.collection.empty() && pending == 0);
-    if (!can_fetch) ImGui::BeginDisabled();
-    if (ImGui::Button("Refresh", ImVec2(-1.f, 0)))
-      fetch_collection();
-    if (!can_fetch) ImGui::EndDisabled();
+    ImGui::SameLine();
+    if (ImGui::Button("+ New##col_new"))
+    {
+      new_collection_buf[0] = '\0';
+      ImGui::OpenPopup("New Collection");
+    }
 
     ImGui::Spacing();
 
-    // ---- Document list ----
-    ImGui::Text("%zu document(s)", cached_docs.size());
-
-    ImGui::BeginChild("##doclist", ImVec2(0, 160), ImGuiChildFlags_Borders);
-
-    if (pending > 0 && !has_fetched_once)
+    // ---- Collection list ----
+    ImGui::BeginChild("##collist", ImVec2(0, 100), ImGuiChildFlags_Borders);
+    if (!has_fetched_collections)
     {
       ImGui::TextDisabled("Loading...");
     }
-    else if (!has_fetched_once)
+    else if (cached_collections.empty())
     {
-      ImGui::TextDisabled("Waiting for initial fetch...");
-    }
-    else if (cached_docs.empty())
-    {
-      ImGui::TextColored(ImVec4(1.f, 0.85f, 0.f, 1.f),
-        "No documents found.");
       ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.f),
-        "The collection may not exist or is empty.");
+        "No collections found. Use '+ New' to create one.");
     }
     else
     {
-      for (int i = 0; i < static_cast<int>(cached_docs.size()); ++i)
+      for (const auto& col_name : cached_collections)
       {
-        bool is_selected = (i == selected_doc_idx);
-        const std::string& label = cached_docs[i].id;
-
-        if (ImGui::Selectable(label.c_str(), is_selected))
+        bool is_selected = (col_name == selected_collection);
+        if (ImGui::Selectable(col_name.c_str(), is_selected))
         {
-          selected_doc_idx = i;
-          strncpy_s(doc_id_buf, cached_docs[i].id.c_str(), sizeof(doc_id_buf) - 1);
-          strncpy_s(json_edit_buf, cached_docs[i].json.c_str(), sizeof(json_edit_buf) - 1);
-          sync_json_to_fields();
+          if (!is_selected)
+          {
+            selected_collection = col_name;
+            cached_docs.clear();
+            selected_doc_idx = -1;
+            has_fetched_once = false;
+            doc_id_buf[0] = '\0';
+            json_edit_buf[0] = '\0';
+            field_rows.clear();
+            fetch_collection();
+          }
         }
       }
     }
     ImGui::EndChild();
 
-    // ---- New + Delete buttons ----
-    if (ImGui::Button("+ New"))
+    // ---- Delete selected collection ----
+    if (!selected_collection.empty())
     {
-      std::string default_name = "new_doc_" + std::to_string(new_doc_counter++);
-      strncpy_s(new_doc_name_buf, default_name.c_str(), sizeof(new_doc_name_buf) - 1);
-      ImGui::OpenPopup("New Document");
-    }
-
-    if (selected_doc_idx >= 0 && selected_doc_idx < static_cast<int>(cached_docs.size()))
-    {
-      ImGui::SameLine();
-      bool can_delete = (!fb_settings.collection.empty() && pending == 0);
-      if (!can_delete) ImGui::BeginDisabled();
-      if (ImGui::Button("Delete Selected"))
-      {
-        delete_target_id = cached_docs[selected_doc_idx].id;
-        ImGui::OpenPopup("Confirm Delete");
-      }
-      if (!can_delete) ImGui::EndDisabled();
-    }
-
-    // ---- Delete confirmation popup ----
-    if (ImGui::BeginPopupModal("Confirm Delete", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-    {
-      ImGui::Text("Delete document \"%s\"?", delete_target_id.c_str());
-      ImGui::Text("This cannot be undone.");
       ImGui::Spacing();
+      bool can_del_col = (pending == 0);
+      if (!can_del_col) ImGui::BeginDisabled();
+      if (ImGui::Button("Delete Collection"))
+      {
+        delete_collection_target = selected_collection;
+        ImGui::OpenPopup("Confirm Delete Collection");
+      }
+      if (!can_del_col) ImGui::EndDisabled();
+      ImGui::SameLine();
+      ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.f),
+        "(deletes all documents in \"%s\")", selected_collection.c_str());
+    }
 
+    // ---- Delete Collection popup ----
+    if (ImGui::BeginPopupModal("Confirm Delete Collection", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+      ImGui::Text("Delete collection \"%s\"?", delete_collection_target.c_str());
+      ImGui::Text("ALL documents inside will be permanently removed.");
+      ImGui::Spacing();
       if (ImGui::Button("Delete", ImVec2(120, 0)))
       {
-        std::string col = fb_settings.collection;
-        std::string id = delete_target_id;
-        Engine::Firebase::delete_document(col, id,
-          [col, id](bool success, const std::string& data) {
+        std::string col = delete_collection_target;
+        Engine::Firebase::delete_document(col, "",
+          [col](bool success, const std::string& data) {
             if (success) {
-              doc_id_buf[0] = '\0';
-              json_edit_buf[0] = '\0';
-              field_rows.clear();
-              for (auto it = cached_docs.begin(); it != cached_docs.end(); ++it)
-                if (it->id == id) { cached_docs.erase(it); break; }
-              selected_doc_idx = -1;
-              set_status("Deleted " + id, true);
-              push_log("DELETE " + col + "/" + id, true, "OK");
-              Engine::Firebase::query_collection(col,
-                [col](bool ok, const std::string& d2) {
-                  if (ok) {
-                    has_fetched_once = true;
-                    parse_collection_response(d2);
-                    push_log("REFRESH " + col, true,
-                      std::to_string(cached_docs.size()) + " document(s)");
-                  }
-                  else {
-                    push_log("REFRESH " + col, false, d2);
-                  }
-                });
+              if (selected_collection == col) {
+                selected_collection.clear();
+                cached_docs.clear();
+                selected_doc_idx = -1;
+                has_fetched_once = false;
+                doc_id_buf[0] = '\0';
+                json_edit_buf[0] = '\0';
+                field_rows.clear();
+              }
+              cached_collections.erase(
+                std::remove(cached_collections.begin(), cached_collections.end(), col),
+                cached_collections.end());
+              set_status("Deleted collection \"" + col + "\"", true);
+              push_log("DELETE COLLECTION", true, col);
             }
             else {
-              set_status("Delete failed: " + data, false);
-              push_log("DELETE " + col + "/" + id, false, data);
+              set_status("Delete collection failed: " + data, false);
+              push_log("DELETE COLLECTION", false, data);
             }
           });
         ImGui::CloseCurrentPopup();
@@ -514,62 +526,222 @@ void FirebasePanel::draw_panel()
       ImGui::EndPopup();
     }
 
-    // ---- New Document popup ----
-    if (ImGui::BeginPopupModal("New Document", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    // ---- New Collection popup ----
+    if (ImGui::BeginPopupModal("New Collection", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
-      ImGui::Text("Document name:");
+      ImGui::Text("Collection name (path segment, no spaces):");
       ImGui::SetNextItemWidth(300.f);
-      bool enter = ImGui::InputText("##newdocname", new_doc_name_buf, sizeof(new_doc_name_buf),
+      bool enter = ImGui::InputText("##newcolname", new_collection_buf, sizeof(new_collection_buf),
         ImGuiInputTextFlags_EnterReturnsTrue);
-
       ImGui::Spacing();
-
-      bool can_create = (new_doc_name_buf[0] != '\0' && !fb_settings.collection.empty());
-      if (!can_create) ImGui::BeginDisabled();
-      if (ImGui::Button("Create", ImVec2(120, 0)) || (enter && can_create))
+      bool can_create_col = (new_collection_buf[0] != '\0');
+      if (!can_create_col) ImGui::BeginDisabled();
+      if (ImGui::Button("Select", ImVec2(120, 0)) || (enter && can_create_col))
       {
+        std::string col = new_collection_buf;
+        if (std::find(cached_collections.begin(), cached_collections.end(), col)
+            == cached_collections.end())
+          cached_collections.push_back(col);
+        selected_collection = col;
+        cached_docs.clear();
         selected_doc_idx = -1;
-        strncpy_s(doc_id_buf, new_doc_name_buf, sizeof(doc_id_buf) - 1);
-        json_edit_buf[0] = '{'; json_edit_buf[1] = '}'; json_edit_buf[2] = '\0';
+        has_fetched_once = false;
+        doc_id_buf[0] = '\0';
+        json_edit_buf[0] = '\0';
         field_rows.clear();
-
-        // Push the new (empty) document to RTDB immediately
-        std::string col = fb_settings.collection;
-        std::string id = new_doc_name_buf;
-        std::string body = "{}";
-        Engine::Firebase::set_document(col, id, body,
-          [col, id](bool success, const std::string& data) {
-            if (success) {
-              set_status("Created " + id, true);
-              push_log("CREATE " + col + "/" + id, true, "OK");
-              // Refresh the collection list so the new doc appears
-              Engine::Firebase::query_collection(col,
-                [col](bool ok, const std::string& d2) {
-                  if (ok) {
-                    has_fetched_once = true;
-                    parse_collection_response(d2);
-                    push_log("REFRESH " + col, true,
-                      std::to_string(cached_docs.size()) + " document(s)");
-                  }
-                  else {
-                    push_log("REFRESH " + col, false, d2);
-                  }
-                });
-            }
-            else {
-              set_status("Create failed: " + data, false);
-              push_log("CREATE " + col + "/" + id, false, data);
-            }
-          });
-
-        push_log("NEW", true, std::string(new_doc_name_buf));
+        set_status("Collection \"" + col + "\" selected — add documents to create it in RTDB", true);
+        push_log("NEW COLLECTION", true, col);
         ImGui::CloseCurrentPopup();
       }
-      if (!can_create) ImGui::EndDisabled();
+      if (!can_create_col) ImGui::EndDisabled();
       ImGui::SameLine();
       if (ImGui::Button("Cancel", ImVec2(120, 0)))
         ImGui::CloseCurrentPopup();
       ImGui::EndPopup();
+    }
+  }
+
+  ImGui::Spacing();
+
+  // ========================================================================
+  // Document Browser
+  // ========================================================================
+
+  if (ImGui::CollapsingHeader("Document Browser", ImGuiTreeNodeFlags_DefaultOpen))
+  {
+    if (selected_collection.empty())
+    {
+      ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.f),
+        "Select a collection above to browse documents.");
+    }
+    else
+    {
+      ImGui::Text("Collection:");
+      ImGui::SameLine();
+      ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.f, 1.f), "%s", selected_collection.c_str());
+
+      bool can_fetch = (pending == 0);
+      if (!can_fetch) ImGui::BeginDisabled();
+      if (ImGui::Button("Refresh##docs", ImVec2(-1.f, 0)))
+        fetch_collection();
+      if (!can_fetch) ImGui::EndDisabled();
+
+      ImGui::Spacing();
+
+      // ---- Document list ----
+      ImGui::Text("%zu document(s)", cached_docs.size());
+
+      ImGui::BeginChild("##doclist", ImVec2(0, 160), ImGuiChildFlags_Borders);
+      if (pending > 0 && !has_fetched_once)
+      {
+        ImGui::TextDisabled("Loading...");
+      }
+      else if (!has_fetched_once)
+      {
+        ImGui::TextDisabled("Press Refresh to load documents.");
+      }
+      else if (cached_docs.empty())
+      {
+        ImGui::TextColored(ImVec4(1.f, 0.85f, 0.f, 1.f), "No documents found.");
+        ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.f),
+          "The collection may be empty or not yet created.");
+      }
+      else
+      {
+        for (int i = 0; i < static_cast<int>(cached_docs.size()); ++i)
+        {
+          bool is_selected = (i == selected_doc_idx);
+          const std::string& label = cached_docs[i].id;
+          if (ImGui::Selectable(label.c_str(), is_selected))
+          {
+            selected_doc_idx = i;
+            strncpy_s(doc_id_buf, cached_docs[i].id.c_str(), sizeof(doc_id_buf) - 1);
+            strncpy_s(json_edit_buf, cached_docs[i].json.c_str(), sizeof(json_edit_buf) - 1);
+            sync_json_to_fields();
+          }
+        }
+      }
+      ImGui::EndChild();
+
+      // ---- New + Delete buttons ----
+      if (ImGui::Button("+ New"))
+      {
+        std::string default_name = "new_doc_" + std::to_string(new_doc_counter++);
+        strncpy_s(new_doc_name_buf, default_name.c_str(), sizeof(new_doc_name_buf) - 1);
+        ImGui::OpenPopup("New Document");
+      }
+
+      if (selected_doc_idx >= 0 && selected_doc_idx < static_cast<int>(cached_docs.size()))
+      {
+        ImGui::SameLine();
+        bool can_delete = (pending == 0);
+        if (!can_delete) ImGui::BeginDisabled();
+        if (ImGui::Button("Delete Selected"))
+        {
+          delete_target_id = cached_docs[selected_doc_idx].id;
+          ImGui::OpenPopup("Confirm Delete");
+        }
+        if (!can_delete) ImGui::EndDisabled();
+      }
+
+      // ---- Delete confirmation popup ----
+      if (ImGui::BeginPopupModal("Confirm Delete", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+      {
+        ImGui::Text("Delete document \"%s\"?", delete_target_id.c_str());
+        ImGui::Text("This cannot be undone.");
+        ImGui::Spacing();
+        if (ImGui::Button("Delete", ImVec2(120, 0)))
+        {
+          std::string col = selected_collection;
+          std::string id = delete_target_id;
+          Engine::Firebase::delete_document(col, id,
+            [col, id](bool success, const std::string& data) {
+              if (success) {
+                doc_id_buf[0] = '\0';
+                json_edit_buf[0] = '\0';
+                field_rows.clear();
+                for (auto it = cached_docs.begin(); it != cached_docs.end(); ++it)
+                  if (it->id == id) { cached_docs.erase(it); break; }
+                selected_doc_idx = -1;
+                set_status("Deleted " + id, true);
+                push_log("DELETE " + col + "/" + id, true, "OK");
+                Engine::Firebase::query_collection(col,
+                  [col](bool ok, const std::string& d2) {
+                    if (ok) {
+                      has_fetched_once = true;
+                      parse_collection_response(d2);
+                      push_log("REFRESH " + col, true,
+                        std::to_string(cached_docs.size()) + " document(s)");
+                    }
+                    else {
+                      push_log("REFRESH " + col, false, d2);
+                    }
+                  });
+              }
+              else {
+                set_status("Delete failed: " + data, false);
+                push_log("DELETE " + col + "/" + id, false, data);
+              }
+            });
+          ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(120, 0)))
+          ImGui::CloseCurrentPopup();
+        ImGui::EndPopup();
+      }
+
+      // ---- New Document popup ----
+      if (ImGui::BeginPopupModal("New Document", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+      {
+        ImGui::Text("Document name:");
+        ImGui::SetNextItemWidth(300.f);
+        bool enter = ImGui::InputText("##newdocname", new_doc_name_buf, sizeof(new_doc_name_buf),
+          ImGuiInputTextFlags_EnterReturnsTrue);
+        ImGui::Spacing();
+        bool can_create = (new_doc_name_buf[0] != '\0');
+        if (!can_create) ImGui::BeginDisabled();
+        if (ImGui::Button("Create", ImVec2(120, 0)) || (enter && can_create))
+        {
+          selected_doc_idx = -1;
+          strncpy_s(doc_id_buf, new_doc_name_buf, sizeof(doc_id_buf) - 1);
+          json_edit_buf[0] = '{'; json_edit_buf[1] = '}'; json_edit_buf[2] = '\0';
+          field_rows.clear();
+          std::string col = selected_collection;
+          std::string id = new_doc_name_buf;
+          std::string body = "{}";
+          Engine::Firebase::set_document(col, id, body,
+            [col, id](bool success, const std::string& data) {
+              if (success) {
+                set_status("Created " + id, true);
+                push_log("CREATE " + col + "/" + id, true, "OK");
+                Engine::Firebase::query_collection(col,
+                  [col](bool ok, const std::string& d2) {
+                    if (ok) {
+                      has_fetched_once = true;
+                      parse_collection_response(d2);
+                      push_log("REFRESH " + col, true,
+                        std::to_string(cached_docs.size()) + " document(s)");
+                    }
+                    else {
+                      push_log("REFRESH " + col, false, d2);
+                    }
+                  });
+              }
+              else {
+                set_status("Create failed: " + data, false);
+                push_log("CREATE " + col + "/" + id, false, data);
+              }
+            });
+          push_log("NEW DOC", true, std::string(new_doc_name_buf));
+          ImGui::CloseCurrentPopup();
+        }
+        if (!can_create) ImGui::EndDisabled();
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(120, 0)))
+          ImGui::CloseCurrentPopup();
+        ImGui::EndPopup();
+      }
     }
   }
 
@@ -582,7 +754,7 @@ void FirebasePanel::draw_panel()
   {
     // ---- Document ID + Pull/Push ----
     bool has_doc_id = (doc_id_buf[0] != '\0');
-    bool has_collection = !fb_settings.collection.empty();
+    bool has_collection = !selected_collection.empty();
     bool can_act = has_doc_id && has_collection && pending == 0;
 
     ImGui::Text("Document ID:");
@@ -597,7 +769,7 @@ void FirebasePanel::draw_panel()
     // Pull — fetch from RTDB into editor
     if (ImGui::Button("Pull"))
     {
-      std::string col = fb_settings.collection;
+      std::string col = selected_collection;
       std::string id = doc_id_buf;
       Engine::Firebase::get_document(col, id,
         [col, id](bool success, const std::string& data) {
@@ -621,7 +793,7 @@ void FirebasePanel::draw_panel()
     if (ImGui::Button("Push"))
     {
       sync_fields_to_json();
-      std::string col = fb_settings.collection;
+      std::string col = selected_collection;
       std::string id = doc_id_buf;
       std::string body = json_edit_buf;
       Engine::Firebase::set_document(col, id, body,
@@ -762,7 +934,7 @@ void FirebasePanel::draw_panel()
       if (live_update_enabled)
       {
         // Start watching the collection
-        std::string col = fb_settings.collection;
+        std::string col = selected_collection;
         if (!col.empty())
         {
           live_event_count = 0;

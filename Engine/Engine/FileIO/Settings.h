@@ -144,7 +144,6 @@ namespace Engine
     struct FirebaseSettings
     {
       std::string database_url = "";   // RTDB URL (e.g. "https://myproject-default-rtdb.firebaseio.com")
-      std::string collection = "game_data"; // Top-level RTDB path used by the game
     };
   }
 }
@@ -158,4 +157,4 @@ REFLECT_ENUM(Engine::FileIO::UpgradeType, Flat, Multiplier)
 REFLECT_FIELDS(Engine::FileIO::RarityTier, name, drop_rate)
 REFLECT_FIELDS(Engine::FileIO::UpgradeDefinition, id, display_name, rarity, stat_name, type, value, max_level)
 REFLECT_FIELDS(Engine::FileIO::UpgradeSettings, base_point_threshold, threshold_scaling, rarities, upgrades)
-REFLECT_FIELDS(Engine::FileIO::FirebaseSettings, database_url, collection)
+REFLECT_FIELDS(Engine::FileIO::FirebaseSettings, database_url)

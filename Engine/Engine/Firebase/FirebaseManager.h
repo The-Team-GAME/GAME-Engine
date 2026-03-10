@@ -64,6 +64,11 @@ namespace Engine
             const std::string& collection,
             Callback on_complete);
 
+        // List top-level collection names (keys at RTDB root).
+        // Callback receives a JSON object: {"game_data":true,"scores":true}
+        // or "null" if the database is empty.
+        ENGINE_API void list_collections(Callback on_complete);
+
         // ----------------------------------------------------------------
         // Generic raw HTTP request (for any REST endpoint)
         // ----------------------------------------------------------------
