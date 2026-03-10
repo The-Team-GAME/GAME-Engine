@@ -28,6 +28,7 @@
 #include "GameStates/PauseState.h"
 #include "GameStates/VictoryState.h"
 #include "GameStates/OptionsState.h"
+#include "GameStates/LeaderboardState.h"
 
 // Game systems
 #include "Systems/HealthSystem.h"
@@ -523,6 +524,7 @@ static void register_scenes()
   Engine::SceneManager::register_scene<PauseState>("PauseState");
   Engine::SceneManager::register_scene<VictoryState>("VictoryState");
   Engine::SceneManager::register_scene<OptionsState>("OptionsState");
+  Engine::SceneManager::register_scene<LeaderboardState>("LeaderboardState");
 }
 
 static void register_systems()
