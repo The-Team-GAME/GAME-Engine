@@ -892,178 +892,165 @@ void FirebasePanel::draw_panel()
           ImGui::CloseCurrentPopup();
         ImGui::EndPopup();
       }
+
+      // ---- Document Editor (shown inline when a document is selected) ----
+      if (selected_doc_idx >= 0 && selected_doc_idx < static_cast<int>(cached_docs.size()))
+      {
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        bool has_doc_id = (doc_id_buf[0] != '\0');
+        bool has_collection = !selected_collection.empty();
+        bool can_act = has_doc_id && has_collection && pending == 0;
+
+        ImGui::Text("Editing:");
+        ImGui::SameLine();
+        ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.f, 1.f), "%s", doc_id_buf);
+
+        ImGui::Spacing();
+
+        // ---- Field-level editor ----
+        ImGui::Text("Fields:");
+
+        {
+          bool trailing_empty = !field_rows.empty()
+            && field_rows.back().key[0] == '\0'
+            && field_rows.back().val[0] == '\0';
+          if (!trailing_empty)
+            field_rows.emplace_back();
+        }
+
+        if (ImGui::BeginTable("##fields", 3,
+          ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersInnerV |
+          ImGuiTableFlags_SizingStretchProp))
+        {
+          ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthStretch, 0.35f);
+          ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch, 0.57f);
+          ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 28.f);
+          ImGui::TableHeadersRow();
+
+          int erase_idx = -1;
+          for (int fi = 0; fi < static_cast<int>(field_rows.size()); ++fi)
+          {
+            ImGui::TableNextRow();
+
+            ImGui::TableSetColumnIndex(0);
+            ImGui::SetNextItemWidth(-1.f);
+            char kid[32]; std::snprintf(kid, sizeof(kid), "##fk%d", fi);
+            if (ImGui::InputText(kid, field_rows[fi].key, sizeof(field_rows[fi].key)))
+            { sync_fields_to_json(); fields_dirty = true; }
+
+            ImGui::TableSetColumnIndex(1);
+            ImGui::SetNextItemWidth(-1.f);
+            char vid[32]; std::snprintf(vid, sizeof(vid), "##fv%d", fi);
+            if (ImGui::InputText(vid, field_rows[fi].val, sizeof(field_rows[fi].val)))
+            { sync_fields_to_json(); fields_dirty = true; }
+
+            ImGui::TableSetColumnIndex(2);
+            bool is_trailing_empty = (fi == static_cast<int>(field_rows.size()) - 1
+              && field_rows[fi].key[0] == '\0'
+              && field_rows[fi].val[0] == '\0');
+            if (!is_trailing_empty)
+            {
+              char rid[32]; std::snprintf(rid, sizeof(rid), "x##fr%d", fi);
+              if (ImGui::SmallButton(rid)) erase_idx = fi;
+            }
+          }
+
+          ImGui::EndTable();
+
+          if (erase_idx >= 0) {
+            field_rows.erase(field_rows.begin() + erase_idx);
+            sync_fields_to_json();
+            if (doc_id_buf[0] != '\0' && !selected_collection.empty())
+            {
+              std::string col = selected_collection;
+              std::string id = doc_id_buf;
+              std::string body = json_edit_buf;
+              Engine::Firebase::set_document(col, id, body,
+                [col, id](bool success, const std::string& data) {
+                  if (success) {
+                    set_status("Field deleted — " + id + " saved", true);
+                    push_log("DEL FIELD " + col + "/" + id, true, "OK");
+                    Engine::Firebase::query_collection(col,
+                      [col](bool ok, const std::string& d2) {
+                        if (ok) { has_fetched_once = true; parse_collection_response(d2); }
+                      });
+                  }
+                  else {
+                    set_status("Delete field failed: " + data, false);
+                    push_log("DEL FIELD", false, data);
+                  }
+                });
+            }
+          }
+        }
+
+        // ---- Update button ----
+        if (fields_dirty)
+        {
+          ImGui::Spacing();
+          if (can_act)
+          {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.15f, 0.55f, 0.15f, 1.f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.20f, 0.75f, 0.20f, 1.f));
+            if (ImGui::Button("Update##field_update", ImVec2(-1.f, 0)))
+            {
+              sync_fields_to_json();
+              std::string col = selected_collection;
+              std::string id = doc_id_buf;
+              std::string body = json_edit_buf;
+              Engine::Firebase::set_document(col, id, body,
+                [col, id](bool success, const std::string& data) {
+                  if (success) {
+                    fields_dirty = false;
+                    set_status("Updated " + id, true);
+                    push_log("UPDATE " + col + "/" + id, true, "OK");
+                    Engine::Firebase::query_collection(col,
+                      [col](bool ok, const std::string& d2) {
+                        if (ok) { has_fetched_once = true; parse_collection_response(d2); }
+                        else { push_log("REFRESH " + col, false, d2); }
+                      });
+                  }
+                  else {
+                    set_status("Update failed: " + data, false);
+                    push_log("UPDATE " + col + "/" + id, false, data);
+                  }
+                });
+            }
+            ImGui::PopStyleColor(2);
+          }
+          else
+          {
+            ImGui::TextColored(ImVec4(1.f, 0.85f, 0.f, 1.f), "Unsaved changes");
+          }
+        }
+
+        ImGui::Spacing();
+
+        // ---- Raw JSON (advanced) ----
+        if (ImGui::TreeNode("Raw JSON (advanced)"))
+        {
+          ImVec2 avail = ImGui::GetContentRegionAvail();
+          float editor_height = (avail.y > 400.f) ? 200.f : 150.f;
+          if (ImGui::InputTextMultiline("##json_body", json_edit_buf, sizeof(json_edit_buf),
+            ImVec2(-1.f, editor_height), ImGuiInputTextFlags_AllowTabInput))
+          {
+            sync_json_to_fields();
+            fields_dirty = true;
+          }
+          if (ImGui::Button("Format JSON"))
+          {
+            std::string formatted = pretty_json(json_edit_buf);
+            strncpy_s(json_edit_buf, formatted.c_str(), sizeof(json_edit_buf) - 1);
+            sync_json_to_fields();
+          }
+          ImGui::TreePop();
+        }
+      }
     }
   }
-
-  ImGui::Spacing();
-
-  // ========================================================================
-  // Document Editor
-  // ========================================================================
-  if (ImGui::CollapsingHeader("Document Editor", ImGuiTreeNodeFlags_DefaultOpen))
-  {
-    // ---- Document ID + Pull/Push ----
-    bool has_doc_id = (doc_id_buf[0] != '\0');
-    bool has_collection = !selected_collection.empty();
-    bool can_act = has_doc_id && has_collection && pending == 0;
-
-    ImGui::Text("Document ID:");
-    ImGui::SameLine();
-    if (doc_id_buf[0] != '\0')
-      ImGui::TextWrapped("%s", doc_id_buf);
-    else
-      ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.f), "(none selected)");
-
-    ImGui::Spacing();
-
-    // ---- Field-level editor ----
-    ImGui::Text("Fields:");
-
-    // Always keep one trailing empty placeholder row so the user can type
-    // a new field directly — no separate Add button needed.
-    {
-      bool trailing_empty = !field_rows.empty()
-        && field_rows.back().key[0] == '\0'
-        && field_rows.back().val[0] == '\0';
-      if (!trailing_empty)
-        field_rows.emplace_back();
-    }
-
-    if (ImGui::BeginTable("##fields", 3,
-      ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersInnerV |
-      ImGuiTableFlags_SizingStretchProp))
-    {
-      ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthStretch, 0.35f);
-      ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch, 0.57f);
-      ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 28.f);
-      ImGui::TableHeadersRow();
-
-      int erase_idx = -1;
-      for (int fi = 0; fi < static_cast<int>(field_rows.size()); ++fi)
-      {
-        ImGui::TableNextRow();
-
-        ImGui::TableSetColumnIndex(0);
-        ImGui::SetNextItemWidth(-1.f);
-        char kid[32]; std::snprintf(kid, sizeof(kid), "##fk%d", fi);
-        if (ImGui::InputText(kid, field_rows[fi].key, sizeof(field_rows[fi].key)))
-        {
-          sync_fields_to_json(); fields_dirty = true;
-        }
-
-        ImGui::TableSetColumnIndex(1);
-        ImGui::SetNextItemWidth(-1.f);
-        char vid[32]; std::snprintf(vid, sizeof(vid), "##fv%d", fi);
-        if (ImGui::InputText(vid, field_rows[fi].val, sizeof(field_rows[fi].val)))
-        {
-          sync_fields_to_json(); fields_dirty = true;
-        }
-
-        ImGui::TableSetColumnIndex(2);
-        // Hide the delete button on the trailing empty placeholder row
-        bool is_trailing_empty = (fi == static_cast<int>(field_rows.size()) - 1
-          && field_rows[fi].key[0] == '\0'
-          && field_rows[fi].val[0] == '\0');
-        if (!is_trailing_empty)
-        {
-          char rid[32]; std::snprintf(rid, sizeof(rid), "x##fr%d", fi);
-          if (ImGui::SmallButton(rid)) erase_idx = fi;
-        }
-      }
-
-      ImGui::EndTable();
-
-      if (erase_idx >= 0) {
-        field_rows.erase(field_rows.begin() + erase_idx);
-        sync_fields_to_json();
-        if (doc_id_buf[0] != '\0' && !selected_collection.empty())
-        {
-          std::string col = selected_collection;
-          std::string id = doc_id_buf;
-          std::string body = json_edit_buf;
-          Engine::Firebase::set_document(col, id, body,
-            [col, id](bool success, const std::string& data) {
-              if (success) {
-                set_status("Field deleted — " + id + " saved", true);
-                push_log("DEL FIELD " + col + "/" + id, true, "OK");
-                Engine::Firebase::query_collection(col,
-                  [col](bool ok, const std::string& d2) {
-                    if (ok) { has_fetched_once = true; parse_collection_response(d2); }
-                  });
-              }
-              else {
-                set_status("Delete field failed: " + data, false);
-                push_log("DEL FIELD", false, data);
-              }
-            });
-        }
-      }
-    }
-
-    // ---- Update button (shown only when a field was modified and not yet saved) ----
-    if (fields_dirty)
-    {
-      ImGui::Spacing();
-      if (can_act)
-      {
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.15f, 0.55f, 0.15f, 1.f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.20f, 0.75f, 0.20f, 1.f));
-        if (ImGui::Button("Update##field_update", ImVec2(-1.f, 0)))
-        {
-          sync_fields_to_json();
-          std::string col = selected_collection;
-          std::string id = doc_id_buf;
-          std::string body = json_edit_buf;
-          Engine::Firebase::set_document(col, id, body,
-            [col, id](bool success, const std::string& data) {
-              if (success) {
-                fields_dirty = false;
-                set_status("Updated " + id, true);
-                push_log("UPDATE " + col + "/" + id, true, "OK");
-                Engine::Firebase::query_collection(col,
-                  [col](bool ok, const std::string& d2) {
-                    if (ok) { has_fetched_once = true; parse_collection_response(d2); }
-                    else { push_log("REFRESH " + col, false, d2); }
-                  });
-              }
-              else {
-                set_status("Update failed: " + data, false);
-                push_log("UPDATE " + col + "/" + id, false, data);
-              }
-            });
-        }
-        ImGui::PopStyleColor(2);
-      }
-      else
-      {
-        ImGui::TextColored(ImVec4(1.f, 0.85f, 0.f, 1.f), "Unsaved changes");
-      }
-    }
-
-    ImGui::Spacing();
-
-    // ---- Raw JSON (advanced) ----
-    if (ImGui::TreeNode("Raw JSON (advanced)"))
-    {
-      ImVec2 avail = ImGui::GetContentRegionAvail();
-      float editor_height = (avail.y > 400.f) ? 200.f : 150.f;
-      if (ImGui::InputTextMultiline("##json_body", json_edit_buf, sizeof(json_edit_buf),
-        ImVec2(-1.f, editor_height), ImGuiInputTextFlags_AllowTabInput))
-      {
-        sync_json_to_fields();
-        fields_dirty = true;
-      }
-      if (ImGui::Button("Format JSON"))
-      {
-        std::string formatted = pretty_json(json_edit_buf);
-        strncpy_s(json_edit_buf, formatted.c_str(), sizeof(json_edit_buf) - 1);
-        sync_json_to_fields();
-      }
-      ImGui::TreePop();
-    }
-  }
-
-  if (!configured) ImGui::EndDisabled();
 
   ImGui::Spacing();
 
