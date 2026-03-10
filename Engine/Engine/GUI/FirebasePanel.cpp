@@ -140,6 +140,13 @@ namespace
     return buf.GetString();
   }
 
+  static bool is_empty_document_json(const std::string& json)
+  {
+    rapidjson::Document doc;
+    doc.Parse(json.c_str());
+    return !doc.HasParseError() && doc.IsObject() && doc.ObjectEmpty();
+  }
+
   // Parse the flat JSON array from query_collection into CachedDocument list.
   static void parse_collection_response(const std::string& json_array)
   {
@@ -402,7 +409,11 @@ void FirebasePanel::draw_panel()
       for (int i = 0; i < static_cast<int>(cached_docs.size()); ++i)
       {
         bool is_selected = (i == selected_doc_idx);
-        if (ImGui::Selectable(cached_docs[i].id.c_str(), is_selected))
+        std::string label = cached_docs[i].id;
+        if (is_empty_document_json(cached_docs[i].json))
+          label += " (empty)";
+
+        if (ImGui::Selectable(label.c_str(), is_selected))
         {
           selected_doc_idx = i;
           strncpy_s(doc_id_buf, cached_docs[i].id.c_str(), sizeof(doc_id_buf) - 1);
@@ -594,6 +605,14 @@ void FirebasePanel::draw_panel()
 
     // ---- Field-level editor ----
     ImGui::Text("Fields:");
+    if (has_doc_id && field_rows.empty())
+    {
+      ImGui::TextColored(ImVec4(1.f, 0.85f, 0.f, 1.f),
+        "This document has no fields.");
+      ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.f),
+        "Add a field below or push {} to keep it empty.");
+    }
+
     if (ImGui::BeginTable("##fields", 3,
       ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersInnerV |
       ImGuiTableFlags_SizingStretchProp))

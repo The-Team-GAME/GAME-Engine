@@ -268,8 +268,6 @@ namespace Engine
       if (src.IsObject() && src.HasMember("documents") && src["documents"].IsArray()) {
         for (rapidjson::SizeType i = 0; i < src["documents"].Size(); ++i) {
           const auto& doc = src["documents"][i];
-          if (!doc.HasMember("fields")) continue;
-
           rapidjson::Value obj(rapidjson::kObjectType);
 
           // Extract document ID from the full path
@@ -282,14 +280,17 @@ namespace Engine
             obj.AddMember("_id", rapidjson::Value(doc_id.c_str(), alloc), alloc);
           }
 
-          const auto& fields = doc["fields"];
-          for (auto it = fields.MemberBegin(); it != fields.MemberEnd(); ++it) {
-            rapidjson::Value val;
-            from_firestore_value(it->value, val, alloc);
-            obj.AddMember(
-              rapidjson::Value(it->name, alloc),
-              val, alloc);
+          if (doc.HasMember("fields") && doc["fields"].IsObject()) {
+            const auto& fields = doc["fields"];
+            for (auto it = fields.MemberBegin(); it != fields.MemberEnd(); ++it) {
+              rapidjson::Value val;
+              from_firestore_value(it->value, val, alloc);
+              obj.AddMember(
+                rapidjson::Value(it->name, alloc),
+                val, alloc);
+            }
           }
+
           dst.PushBack(obj, alloc);
         }
       }
