@@ -28,6 +28,7 @@
 #include "GameStates/PauseState.h"
 #include "GameStates/VictoryState.h"
 #include "GameStates/OptionsState.h"
+#include "GameStates/VideoPlaybackState.h"
 
 // Game systems
 #include "Systems/HealthSystem.h"
@@ -451,6 +452,7 @@ static void register_scenes()
   Engine::SceneManager::register_scene<PauseState>("PauseState");
   Engine::SceneManager::register_scene<VictoryState>("VictoryState");
   Engine::SceneManager::register_scene<OptionsState>("OptionsState");
+  Engine::SceneManager::register_scene<VideoPlaybackState>("VideoPlaybackState");
 }
 
 static void register_systems()
@@ -526,7 +528,7 @@ extern "C" __declspec(dllexport) void UnregisterGameLogic()
   Engine::ECS::unregister_component<Components::Player>();
   Engine::ECS::unregister_component<Components::LazyMonkey>();
   Engine::ECS::unregister_component<Components::TurretMonkey>();
-  Engine::ECS::unregister_component<Components::GamerMonkey>();
+  Engine::ECS::unregister_component<Components::SlingshotMonkey>();
   Engine::ECS::unregister_component<Components::SprayCanMonkey>();
   Engine::ECS::unregister_component<Components::Attack>();
   Engine::ECS::unregister_component<Components::PendingKnockback>();
