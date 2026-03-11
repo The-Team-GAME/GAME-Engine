@@ -125,6 +125,9 @@ namespace
   static const char* schema_type_labels[] = { "String", "Integer", "Number", "Boolean" };
   static constexpr int SCHEMA_TYPE_COUNT = 4;
 
+  // Validation error shown inline below the Update button
+  static std::string update_validation_error;
+
   // ====================================================================
   // Helpers
   // ====================================================================
@@ -461,7 +464,8 @@ namespace
     if (it != schemas.end()) {
       schema_editor_fields = it->second.fields;
       schema_editor_strict = it->second.strict;
-    } else {
+    }
+    else {
       schema_editor_fields.clear();
       schema_editor_strict = true;
     }
@@ -907,7 +911,8 @@ void FirebasePanel::draw_panel()
             if (!verr.empty()) {
               set_status("Schema violation: " + verr, false);
               push_log("VALIDATE " + col + "/" + id, false, verr);
-            } else {
+            }
+            else {
               Engine::Firebase::set_document(col, id, body,
                 [col, id](bool success, const std::string& data) {
                   if (success) { set_status("Created " + col + "/" + id, true);   push_log("CREATE " + col + "/" + id, true, "OK"); }
@@ -1026,6 +1031,9 @@ void FirebasePanel::draw_panel()
             ImGui::PushID(si);
             ImGui::TableNextRow();
 
+            bool is_trailing = (si == static_cast<int>(schema_editor_fields.size()) - 1
+              && schema_editor_fields[si].name.empty());
+
             // Field name
             ImGui::TableSetColumnIndex(0);
             ImGui::SetNextItemWidth(-1.f);
@@ -1033,6 +1041,9 @@ void FirebasePanel::draw_panel()
             strncpy_s(name_buf, schema_editor_fields[si].name.c_str(), sizeof(name_buf) - 1);
             if (ImGui::InputText("##sn", name_buf, sizeof(name_buf)))
               schema_editor_fields[si].name = name_buf;
+
+            // Grey out Type, Required, Delete for the trailing empty row
+            if (is_trailing) ImGui::BeginDisabled();
 
             // Type combo
             ImGui::TableSetColumnIndex(1);
@@ -1046,13 +1057,13 @@ void FirebasePanel::draw_panel()
 
             // Delete button (not on trailing empty row)
             ImGui::TableSetColumnIndex(3);
-            bool is_trailing = (si == static_cast<int>(schema_editor_fields.size()) - 1
-              && schema_editor_fields[si].name.empty());
             if (!is_trailing)
             {
               if (ImGui::SmallButton("x##sd"))
                 schema_erase_idx = si;
             }
+
+            if (is_trailing) ImGui::EndDisabled();
             ImGui::PopID();
           }
 
@@ -1193,6 +1204,7 @@ void FirebasePanel::draw_panel()
           {
             selected_doc_idx = i;
             fields_dirty = false;
+            update_validation_error.clear();
             strncpy_s(doc_id_buf, cached_docs[i].id.c_str(), sizeof(doc_id_buf) - 1);
             strncpy_s(json_edit_buf, cached_docs[i].json.c_str(), sizeof(json_edit_buf) - 1);
             sync_json_to_fields();
@@ -1293,7 +1305,8 @@ void FirebasePanel::draw_panel()
             if (!verr.empty()) {
               set_status("Schema violation: " + verr, false);
               push_log("VALIDATE " + col + "/" + id, false, verr);
-            } else {
+            }
+            else {
               Engine::Firebase::set_document(col, id, body,
                 [col, id](bool success, const std::string& data) {
                   if (success) { set_status("Created " + id, true);            push_log("CREATE " + col + "/" + id, true, "OK"); }
@@ -1394,22 +1407,29 @@ void FirebasePanel::draw_panel()
               if (!verr.empty()) {
                 set_status("Schema violation: " + verr, false);
                 push_log("VALIDATE " + col + "/" + id, false, verr);
-              } else
-              Engine::Firebase::set_document(col, id, body,
-                [col, id](bool success, const std::string& data) {
-                  if (success) {
-                    set_status("Field deleted — " + id + " saved", true);
-                    push_log("DEL FIELD " + col + "/" + id, true, "OK");
-                    Engine::Firebase::query_collection(col,
-                      [col](bool ok, const std::string& d2) {
-                        if (ok) { has_fetched_once = true; parse_collection_response(d2); }
-                      });
-                  }
-                  else {
-                    set_status("Delete field failed: " + data, false);
-                    push_log("DEL FIELD", false, data);
-                  }
-                });
+              }
+              else
+                Engine::Firebase::set_document(col, id, body,
+                  [col, id](bool success, const std::string& data) {
+                    if (success) {
+                      set_status("Field deleted — " + id + " saved", true);
+                      push_log("DEL FIELD " + col + "/" + id, true, "OK");
+                      Engine::Firebase::query_collection(col,
+                        [col](bool ok, const std::string& d2) {
+                          if (ok) {
+                            has_fetched_once = true;
+                            std::string prev_id(doc_id_buf);
+                            parse_collection_response(d2);
+                            for (int i = 0; i < static_cast<int>(cached_docs.size()); ++i)
+                              if (cached_docs[i].id == prev_id) { selected_doc_idx = i; break; }
+                          }
+                        });
+                    }
+                    else {
+                      set_status("Delete field failed: " + data, false);
+                      push_log("DEL FIELD", false, data);
+                    }
+                  });
             }
           }
         }
@@ -1430,28 +1450,40 @@ void FirebasePanel::draw_panel()
               std::string body = json_edit_buf;
               std::string verr = validate_document(col, body);
               if (!verr.empty()) {
+                update_validation_error = verr;
                 set_status("Schema violation: " + verr, false);
                 push_log("VALIDATE " + col + "/" + id, false, verr);
-              } else
-              Engine::Firebase::set_document(col, id, body,
-                [col, id](bool success, const std::string& data) {
-                  if (success) {
-                    fields_dirty = false;
-                    set_status("Updated " + id, true);
-                    push_log("UPDATE " + col + "/" + id, true, "OK");
-                    Engine::Firebase::query_collection(col,
-                      [col](bool ok, const std::string& d2) {
-                        if (ok) { has_fetched_once = true; parse_collection_response(d2); }
-                        else { push_log("REFRESH " + col, false, d2); }
-                      });
-                  }
-                  else {
-                    set_status("Update failed: " + data, false);
-                    push_log("UPDATE " + col + "/" + id, false, data);
-                  }
-                });
+              }
+              else {
+                update_validation_error.clear();
+                Engine::Firebase::set_document(col, id, body,
+                  [col, id](bool success, const std::string& data) {
+                    if (success) {
+                      fields_dirty = false;
+                      set_status("Updated " + id, true);
+                      push_log("UPDATE " + col + "/" + id, true, "OK");
+                      Engine::Firebase::query_collection(col,
+                        [col, id](bool ok, const std::string& d2) {
+                          if (ok) {
+                            has_fetched_once = true;
+                            parse_collection_response(d2);
+                            for (int i = 0; i < static_cast<int>(cached_docs.size()); ++i)
+                              if (cached_docs[i].id == id) { selected_doc_idx = i; break; }
+                          }
+                          else { push_log("REFRESH " + col, false, d2); }
+                        });
+                    }
+                    else {
+                      set_status("Update failed: " + data, false);
+                      push_log("UPDATE " + col + "/" + id, false, data);
+                    }
+                  });
+              }
             }
             ImGui::PopStyleColor(2);
+            // Show validation error inline below Update button
+            if (!update_validation_error.empty())
+              ImGui::TextColored(ImVec4(1.f, 0.3f, 0.2f, 1.f), "Failed: %s", update_validation_error.c_str());
           }
           else
           {
