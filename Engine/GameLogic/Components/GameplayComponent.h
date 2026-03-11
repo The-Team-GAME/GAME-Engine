@@ -23,14 +23,12 @@ namespace Components
   struct Action
   {
     f32 duration;
-    f32 timer;
+    f32 timer = 0.f;
     f32 cooldown;
-    f32 cd_timer;
+    f32 cd_timer = 0.f;
     bool no_cooldown = false;
 
     f32 speed;
-    f32 x_terminal_vel;
-    f32 y_terminal_vel;
     f32 impulse;
 
     Action(f32 dur = 0.f, f32 cd = 0.f, f32 spd = 0.f, f32 imp = 0.f)
@@ -95,11 +93,11 @@ namespace Components
     Action smash    { 0.f, 7.f, 2500.f, 0.f };
 
     // hitbox_offset_x hitbox_offset_y hitbox_width hitbox_height life_time dmg knockback
-    AttackData uppercut_data  { 60.0f, 0.0f, 100.0f, 128.0f, 1.0f, 5.0f, Vec2D(0.0f, 1000.0f)};
-    AttackData smash_data     { 0.0f, 48.0f, 384.0f, 32.0f, 0.1f, 5.0f, Vec2D(200.0f, 0.0f) };
-    AttackData attack1_data   { 60.0f, 0.0f, 100.0f, 64.0f, 0.1f, 1.0f, Vec2D(200.0f, 0.0f) };
-    AttackData attack2_data   { 60.0f, 0.0f, 100.0f, 64.0f, 0.1f, 1.0f, Vec2D(200.0f, 0.0f) };
-    AttackData attack3_data   { 60.0f, 0.0f, 100.0f, 64.0f, 0.1f, 3.0f, Vec2D(200.0f, 0.0f) };
+    AttackData uppercut_data  { 60.0f, 0.0f, 100.0f, 128.0f, 1.0f, 5.0f, Vec2D(0.0f, 2000.0f)};
+    AttackData smash_data     { 0.0f, 48.0f, 384.0f, 32.0f, 0.1f, 5.0f, Vec2D(500.0f, 0.0f) };
+    AttackData attack1_data   { 60.0f, 0.0f, 100.0f, 64.0f, 0.1f, 1.0f, Vec2D(500.0f, 0.0f) };
+    AttackData attack2_data   { 60.0f, 0.0f, 100.0f, 64.0f, 0.1f, 1.0f, Vec2D(500.0f, 0.0f) };
+    AttackData attack3_data   { 60.0f, 0.0f, 100.0f, 64.0f, 0.1f, 3.0f, Vec2D(500.0f, 0.0f) };
 
   };
 
@@ -169,7 +167,7 @@ namespace Components
 
   };
 
-  struct GamerMonkey
+  struct SlingshotMonkey
   {
     // Movement speeds
     float chase_speed = 100.0f;
@@ -290,14 +288,17 @@ namespace Components
 
 
 //REFLECT_FIELDS(Components::Player::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, dash_speed, damage, heartrate_cost, knockback)
-REFLECT_FIELDS(Components::Action, no_cooldown, duration, timer, cooldown, cd_timer, speed, x_terminal_vel, y_terminal_vel, impulse)
+REFLECT_FIELDS(Components::Action, no_cooldown, duration, timer, cooldown, cd_timer, speed, impulse)
 REFLECT_FIELDS(Components::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, dmg, knockback)
 
 
-REGISTER_COMPONENT(Components::Player, damage_immune, walk_speed, jump_force, dash, stunned, attack1, attack2, attack3, uppercut, smash)
+REGISTER_COMPONENT(Components::Player, 
+  damage_immune, walk_speed, jump_force, dash, stunned, 
+  attack1, attack2, attack3, uppercut, smash,
+  attack1_data, attack2_data, attack3_data, uppercut_data, smash_data)
 REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, attack_range)
 REGISTER_COMPONENT(Components::TurretMonkey, chase_speed, attack_cooldown, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, long_attack_range)
-REGISTER_COMPONENT(Components::GamerMonkey, chase_speed, dash_speed, dash_cooldown, dash_windup_duration, dash_indicator_height, leap_speed, leap_height, attack_cooldown, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, close_attack_range, dash_attack_range)
+REGISTER_COMPONENT(Components::SlingshotMonkey, chase_speed, dash_speed, dash_cooldown, dash_windup_duration, dash_indicator_height, leap_speed, leap_height, attack_cooldown, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, close_attack_range, dash_attack_range)
 REGISTER_COMPONENT(Components::SprayCanMonkey, chase_speed, attack_cooldown, last_attack_time, attack_windup, detection_range, chase_range, attack_range, spray_duration, spray_range, spray_width, knockback, damage, cloud_spawn_time, cloud_initial_vx)
 REGISTER_COMPONENT(Components::Attack, damage, knockback, is_continuous, damage_interval, impact_vfx_texture)
 REGISTER_COMPONENT(Components::PendingKnockback, knockback)

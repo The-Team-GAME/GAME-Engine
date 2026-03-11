@@ -3,141 +3,20 @@
         "components": [
             {
                 "data": {
-                    "drawIndex": 3,
-                    "tex_coords_list": [
-                        [
-                            {
-                                "x": 0.0,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.1666666716337204,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.1666666716337204,
-                                "y": 0.0
-                            },
-                            {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        ],
-                        [
-                            {
-                                "x": 0.1666666716337204,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.3333333432674408,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.3333333432674408,
-                                "y": 0.0
-                            },
-                            {
-                                "x": 0.1666666716337204,
-                                "y": 0.0
-                            }
-                        ],
-                        [
-                            {
-                                "x": 0.3333333432674408,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.5,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.5,
-                                "y": 0.0
-                            },
-                            {
-                                "x": 0.3333333432674408,
-                                "y": 0.0
-                            }
-                        ],
-                        [
-                            {
-                                "x": 0.5,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.6666666865348816,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.6666666865348816,
-                                "y": 0.0
-                            },
-                            {
-                                "x": 0.5,
-                                "y": 0.0
-                            }
-                        ],
-                        [
-                            {
-                                "x": 0.6666666865348816,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.8333333134651184,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.8333333134651184,
-                                "y": 0.0
-                            },
-                            {
-                                "x": 0.6666666865348816,
-                                "y": 0.0
-                            }
-                        ],
-                        [
-                            {
-                                "x": 0.8333333134651184,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 1.0,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 1.0,
-                                "y": 0.0
-                            },
-                            {
-                                "x": 0.8333333134651184,
-                                "y": 0.0
-                            }
-                        ]
-                    ]
-                },
-                "type": "Components::TextureAtlas"
-            },
-            {
-                "data": {
-                    "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                },
-                "type": "Components::Sound"
-            },
-            {
-                "data": {
                     "aabb": {
-                        "half_height": 37.96825408935547,
-                        "half_width": 24.793655395507813,
+                        "half_height": 38.70250701904297,
+                        "half_width": 36.043243408203125,
                         "pos": {
-                            "x": 220.49118041992188,
-                            "y": 768.2528076171875
+                            "x": 338.099609375,
+                            "y": 1177.8824462890625
                         }
                     },
-                    "height": 75.93650817871094,
+                    "collided": false,
+                    "height": 77.40501403808594,
                     "kinetic_friction": 0.800000011920929,
                     "offset": {
-                        "x": 9.682525634765625,
-                        "y": 26.03174591064453
+                        "x": -3.998380184173584,
+                        "y": 23.70148468017578
                     },
                     "polygon": {
                         "position": {
@@ -150,15 +29,15 @@
                     "radius": 0.0,
                     "resolve_collisions": false,
                     "type": "AABB",
-                    "width": 49.587310791015625
+                    "width": 72.08648681640625
                 },
                 "type": "Components::BoxCollider"
             },
             {
                 "data": {
                     "position": {
-                        "x": 221.29100036621094,
-                        "y": 768.2528076171875
+                        "x": 334.1012268066406,
+                        "y": 1153.903076171875
                     },
                     "rotation": 0.0,
                     "scale": {
@@ -171,7 +50,7 @@
             {
                 "data": {
                     "value": {
-                        "x": 1.0,
+                        "x": -1.0,
                         "y": 1.0
                     }
                 },
@@ -188,9 +67,107 @@
             },
             {
                 "data": {
-                    "path": "images/LazyMonkeySpriteSheets/LazyMonkey_Walk_Spritesheet.png"
+                    "path": "images/LazyMonkeySpriteSheets/LazyMonkey_Idle_Spritesheet.png"
                 },
                 "type": "Components::Texture"
+            },
+            {
+                "data": {
+                    "drawIndex": 2,
+                    "tex_coords_list": [
+                        [
+                            {
+                                "x": 0.0,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.20000000298023224,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.20000000298023224,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.20000000298023224,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.4000000059604645,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.4000000059604645,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.20000000298023224,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.4000000059604645,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.6000000238418579,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.6000000238418579,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.4000000059604645,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.6000000238418579,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.800000011920929,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.800000011920929,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.6000000238418579,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.800000011920929,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 1.0,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 1.0,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.800000011920929,
+                                "y": 0.0
+                            }
+                        ]
+                    ]
+                },
+                "type": "Components::TextureAtlas"
             },
             {
                 "data": {
@@ -199,35 +176,32 @@
                         1,
                         2,
                         3,
-                        4,
-                        5
+                        4
                     ],
                     "before_times": [
                         0.0,
-                        0.10000000149011612,
-                        0.20000000298023224,
+                        0.15000000596046448,
                         0.30000001192092896,
-                        0.4000000059604645,
-                        0.5
+                        0.45000001788139343,
+                        0.6000000238418579
                     ],
                     "durations": [
-                        0.10000000149011612,
-                        0.10000000149011612,
-                        0.10000000149011612,
-                        0.10000000149011612,
-                        0.10000000149011612,
-                        0.10000000149011612
+                        0.15000000596046448,
+                        0.15000000596046448,
+                        0.15000000596046448,
+                        0.15000000596046448,
+                        0.15000000596046448
                     ],
                     "is_looping": true,
-                    "startTime": 7.740355491638184,
-                    "totalDuration": 0.6000000238418579
+                    "startTime": 201.99049377441406,
+                    "totalDuration": 0.75
                 },
                 "type": "Components::Animation"
             },
             {
                 "data": {
                     "blueprint_id": "LazyMonkey",
-                    "current_state_name": "Chasing",
+                    "current_state_name": "Idle",
                     "states": [
                         {
                             "first": "Attacking",
@@ -256,17 +230,17 @@
                                             0.5
                                         ],
                                         "is_looping": true,
-                                        "startTime": 7.740355491638184,
+                                        "startTime": 201.99049377441406,
                                         "totalDuration": 1.0
                                     },
                                     "collider_data": {
-                                        "height": 41.14814758300781,
+                                        "height": 77.00601196289062,
                                         "offset": {
-                                            "x": 10.443492889404297,
-                                            "y": 43.425926208496094
+                                            "x": 4.979158401489258,
+                                            "y": 24.698989868164062
                                         },
                                         "vertices": [],
-                                        "width": 64.14334869384766
+                                        "width": 65.30345153808594
                                     },
                                     "scale": {
                                         "x": 192.0,
@@ -382,13 +356,13 @@
                                 "fmod_audio": null,
                                 "name": "Attacking",
                                 "on_enter_callback": {
-                                    "name": "lazy_monkey_attacking_enter"
+                                    "name": "LazyMonkeyStateCallbacks::attacking_on_enter"
                                 },
                                 "on_exit_callback": {
-                                    "name": "lazy_monkey_attacking_exit"
+                                    "name": "LazyMonkeyStateCallbacks::attacking_on_exit"
                                 },
                                 "on_update_callback": {
-                                    "name": "lazy_monkey_attacking_update"
+                                    "name": "LazyMonkeyStateCallbacks::attacking_on_update"
                                 }
                             }
                         },
@@ -419,17 +393,17 @@
                                             0.15000000596046448
                                         ],
                                         "is_looping": true,
-                                        "startTime": 7.740355491638184,
+                                        "startTime": 201.99049377441406,
                                         "totalDuration": 0.75
                                     },
                                     "collider_data": {
-                                        "height": 69.823974609375,
+                                        "height": 77.00601196289062,
                                         "offset": {
-                                            "x": 1.3881454467773438,
-                                            "y": 29.0880126953125
+                                            "x": 4.979158401489258,
+                                            "y": 24.698989868164062
                                         },
                                         "vertices": [],
-                                        "width": 50.14137268066406
+                                        "width": 65.30345153808594
                                     },
                                     "scale": {
                                         "x": 128.0,
@@ -538,13 +512,13 @@
                                 "fmod_audio": null,
                                 "name": "Idle",
                                 "on_enter_callback": {
-                                    "name": "lazy_monkey_idle_enter"
+                                    "name": "LazyMonkeyStateCallbacks::idle_on_enter"
                                 },
                                 "on_exit_callback": {
                                     "name": ""
                                 },
                                 "on_update_callback": {
-                                    "name": "lazy_monkey_idle_update"
+                                    "name": "LazyMonkeyStateCallbacks::idle_on_update"
                                 }
                             }
                         },
@@ -578,17 +552,17 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 7.740355491638184,
+                                        "startTime": 201.99049377441406,
                                         "totalDuration": 0.6000000238418579
                                     },
                                     "collider_data": {
-                                        "height": 71.09375,
+                                        "height": 77.00601196289062,
                                         "offset": {
-                                            "x": 14.403993606567383,
-                                            "y": 28.453125
+                                            "x": 4.979158401489258,
+                                            "y": 24.698989868164062
                                         },
                                         "vertices": [],
-                                        "width": 44.42708969116211
+                                        "width": 65.30345153808594
                                     },
                                     "scale": {
                                         "x": 128.0,
@@ -722,13 +696,13 @@
                                 "fmod_audio": null,
                                 "name": "Chasing",
                                 "on_enter_callback": {
-                                    "name": "lazy_monkey_chasing_enter"
+                                    "name": "LazyMonkeyStateCallbacks::chasing_on_enter"
                                 },
                                 "on_exit_callback": {
-                                    "name": "lazy_monkey_chasing_exit"
+                                    "name": "LazyMonkeyStateCallbacks::chasing_on_exit"
                                 },
                                 "on_update_callback": {
-                                    "name": "lazy_monkey_chasing_update"
+                                    "name": "LazyMonkeyStateCallbacks::chasing_on_update"
                                 }
                             }
                         },
@@ -747,17 +721,17 @@
                                             0.4000000059604645
                                         ],
                                         "is_looping": true,
-                                        "startTime": 7.740355491638184,
+                                        "startTime": 201.99049377441406,
                                         "totalDuration": 0.4000000059604645
                                     },
                                     "collider_data": {
-                                        "height": 61.61048889160156,
+                                        "height": 77.00601196289062,
                                         "offset": {
-                                            "x": -6.528110504150391,
-                                            "y": 33.19475555419922
+                                            "x": 4.979158401489258,
+                                            "y": 24.698989868164062
                                         },
                                         "vertices": [],
-                                        "width": 36.213722229003906
+                                        "width": 65.30345153808594
                                     },
                                     "scale": {
                                         "x": 128.0,
@@ -837,13 +811,13 @@
                                 "fmod_audio": null,
                                 "name": "Hit",
                                 "on_enter_callback": {
-                                    "name": "lazy_monkey_hit_enter"
+                                    "name": "LazyMonkeyStateCallbacks::hit_on_enter"
                                 },
                                 "on_exit_callback": {
-                                    "name": "lazy_monkey_hit_exit"
+                                    "name": "LazyMonkeyStateCallbacks::hit_on_exit"
                                 },
                                 "on_update_callback": {
-                                    "name": "lazy_monkey_hit_update"
+                                    "name": "LazyMonkeyStateCallbacks::hit_on_update"
                                 }
                             }
                         },
@@ -874,17 +848,17 @@
                                             0.15000000596046448
                                         ],
                                         "is_looping": true,
-                                        "startTime": 7.740355491638184,
+                                        "startTime": 201.99049377441406,
                                         "totalDuration": 0.75
                                     },
                                     "collider_data": {
-                                        "height": 63.71122741699219,
+                                        "height": 77.00601196289062,
                                         "offset": {
-                                            "x": 6.626186370849609,
-                                            "y": 32.144386291503906
+                                            "x": 4.979158401489258,
+                                            "y": 24.698989868164062
                                         },
                                         "vertices": [],
-                                        "width": 44.744544982910156
+                                        "width": 65.30345153808594
                                     },
                                     "scale": {
                                         "x": 128.0,
@@ -993,13 +967,13 @@
                                 "fmod_audio": null,
                                 "name": "Windup",
                                 "on_enter_callback": {
-                                    "name": "lazy_monkey_windup_enter"
+                                    "name": "LazyMonkeyStateCallbacks::windup_on_enter"
                                 },
                                 "on_exit_callback": {
                                     "name": ""
                                 },
                                 "on_update_callback": {
-                                    "name": "lazy_monkey_windup_update"
+                                    "name": "LazyMonkeyStateCallbacks::windup_on_update"
                                 }
                             }
                         },
@@ -1011,30 +985,45 @@
                                         "atlas_indices": [
                                             0,
                                             1,
-                                            2
+                                            2,
+                                            3,
+                                            4,
+                                            5,
+                                            6,
+                                            7
                                         ],
                                         "before_times": [
                                             0.0,
+                                            0.10000000149011612,
                                             0.20000000298023224,
-                                            0.30000001192092896
+                                            0.30000001192092896,
+                                            0.4000000059604645,
+                                            0.5,
+                                            0.6000000238418579,
+                                            0.7000000476837158
                                         ],
                                         "durations": [
-                                            0.20000000298023224,
                                             0.10000000149011612,
-                                            1.5
+                                            0.10000000149011612,
+                                            0.10000000149011612,
+                                            0.10000000149011612,
+                                            0.10000000149011612,
+                                            0.10000000149011612,
+                                            0.10000000149011612,
+                                            0.10000000149011612
                                         ],
-                                        "is_looping": true,
-                                        "startTime": 7.740355491638184,
-                                        "totalDuration": 1.7999999523162842
+                                        "is_looping": false,
+                                        "startTime": 201.99049377441406,
+                                        "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": {
-                                        "height": 43.076171875,
+                                        "height": 77.00601196289062,
                                         "offset": {
-                                            "x": -8.432912826538086,
-                                            "y": 42.4619140625
+                                            "x": 4.979158401489258,
+                                            "y": 24.698989868164062
                                         },
                                         "vertices": [],
-                                        "width": 62.88035202026367
+                                        "width": 65.30345153808594
                                     },
                                     "scale": {
                                         "x": 128.0,
@@ -1197,13 +1186,13 @@
                                 "fmod_audio": null,
                                 "name": "Death",
                                 "on_enter_callback": {
-                                    "name": "lazy_monkey_death_enter"
+                                    "name": "LazyMonkeyStateCallbacks::death_on_enter"
                                 },
                                 "on_exit_callback": {
-                                    "name": "lazy_monkey_death_exit"
+                                    "name": "LazyMonkeyStateCallbacks::death_on_exit"
                                 },
                                 "on_update_callback": {
-                                    "name": "lazy_monkey_death_update"
+                                    "name": "LazyMonkeyStateCallbacks::death_on_update"
                                 }
                             }
                         }
@@ -1215,11 +1204,7 @@
                 "data": {
                     "acceleration": {
                         "x": 0.0,
-                        "y": 0.0
-                    },
-                    "force_view": {
-                        "x": 0.0,
-                        "y": 0.0
+                        "y": 1000.0
                     },
                     "gravity": {
                         "x": 0.0,
@@ -1232,7 +1217,7 @@
                     "use_gravity": true,
                     "velocity": {
                         "x": 0.0,
-                        "y": 0.0
+                        "y": 16.666667938232422
                     },
                     "x_terminal_velocity": 500.0,
                     "y_terminal_velocity": 500.0
@@ -1256,7 +1241,7 @@
                         "x": 500.0,
                         "y": 0.0
                     },
-                    "last_attack_time": 139.53662109375,
+                    "last_attack_time": 201.94007873535156,
                     "leap_height": 300.0,
                     "leap_speed": 2000.0
                 },
@@ -1271,7 +1256,7 @@
                     },
                     "is_continuous": true,
                     "knockback": {
-                        "x": 500.0,
+                        "x": -500.0,
                         "y": -0.0
                     }
                 },

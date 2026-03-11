@@ -17,7 +17,6 @@
 #include "Resources.h"
 #include <memory>
 #include "Graphics/RendererInternal.h"
-#include "Audio/AudioPlayerInternal.h"
 #include "Logger.h"
 #include <fstream>
 #include <sstream>
@@ -37,7 +36,6 @@
 // Define the actual storage for the extern variables
 std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> Engine::Resources::texture_cache;
 std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> Engine::Resources::font_cache;
-std::unordered_map<std::string, std::weak_ptr<Engine::Audio::SoundData>> Engine::Resources::sound_cache;
 std::unordered_map<std::string, std::weak_ptr<Engine::ECS::PrefabImpl>> Engine::Resources::prefab_cache;
 std::unordered_map<std::string, Engine::EntityList> Engine::Resources::level_cache;
 
@@ -60,7 +58,6 @@ bool Engine::Resources::exit()
   // Clear all caches
   texture_cache.clear();
   font_cache.clear();
-  sound_cache.clear();
   prefab_cache.clear();
   level_cache.clear();
 
@@ -404,124 +401,6 @@ Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath,
   return font;
 }
 
-Engine::Audio::Sound Engine::Resources::load_sound(const std::string& filepath, bool append_resource_path, bool persist)
-{
-  // Construct full path using Path class
-  std::string full_path = append_resource_path ? Engine::Path(resource_path).join(filepath) : Engine::Path(filepath).normalize();
-
-  // If loading from outside resources and not appending resource path, copy to resources
-  std::string actual_filepath = filepath;
-  if (!append_resource_path)
-  {
-    std::string copied_path = Engine::Resources::copy_to_resources(filepath, "sounds");
-    if (!copied_path.empty())
-    {
-      actual_filepath = copied_path;
-      full_path = Engine::Path(resource_path).join(actual_filepath);
-    }
-  }
-
-  // Check if sound is already in cache
-  auto it = sound_cache.find(full_path);
-  if (it != sound_cache.end())
-  {
-    // Try to lock the weak_ptr
-    if (auto cached = it->second.lock())
-    {
-      // Log::info("Sound loaded from cache: " + full_path);
-      return cached;
-    }
-    else
-    {
-      // Expired, remove from cache
-      sound_cache.erase(it);
-    }
-  }
-
-  // Load new sound (not streamed)
-  auto sound = std::make_shared<Engine::Audio::SoundData>(full_path, false);
-
-  // Only cache if the sound was successfully loaded
-  if (sound->sound != nullptr)
-  {
-    sound_cache[full_path] = sound;
-    if (persist)
-    {
-      persistent_resources.push_back(sound);
-      Log::info("Sound loaded (persistent): {}", full_path);
-    }
-    else
-    {
-      Log::info("Sound loaded: {}", full_path);
-    }
-  }
-  else
-  {
-    Log::warning("Failed to load sound: {}", full_path);
-  }
-
-  return sound;
-}
-
-Engine::Audio::Sound Engine::Resources::load_music(const std::string& filepath, bool append_resource_path, bool persist)
-{
-  // Construct full path using Path class
-  std::string full_path = append_resource_path ? Engine::Path(resource_path).join(filepath) : Engine::Path(filepath).normalize();
-
-  // If loading from outside resources and not appending resource path, copy to resources
-  std::string actual_filepath = filepath;
-  if (!append_resource_path)
-  {
-    std::string copied_path = Engine::Resources::copy_to_resources(filepath, "sounds");
-    if (!copied_path.empty())
-    {
-      actual_filepath = copied_path;
-      full_path = Engine::Path(resource_path).join(actual_filepath);
-    }
-  }
-
-  // Check if music is already in cache
-  auto it = sound_cache.find(full_path);
-  if (it != sound_cache.end())
-  {
-    // Try to lock the weak_ptr
-    if (auto cached = it->second.lock())
-    {
-      // Log::info("Music loaded from cache: " + full_path);
-      return cached;
-    }
-    else
-    {
-      // Expired, remove from cache
-      sound_cache.erase(it);
-    }
-  }
-
-  // Load new music (streamed from disk)
-  auto music = std::make_shared<Engine::Audio::SoundData>(full_path, true);
-
-  // Only cache if the music was successfully loaded
-  if (music->sound != nullptr)
-  {
-    sound_cache[full_path] = music;
-    if (persist)
-    {
-      persistent_resources.push_back(music);
-      Log::info("Music loaded (persistent): {}", full_path);
-    }
-    else
-    {
-      Log::info("Music loaded: {}", full_path);
-    }
-  }
-  else
-  {
-    Log::warning("Failed to load music: {}", full_path);
-  }
-
-  return music;
-}
-
 Engine::Resources::Resource Engine::Resources::load(const std::string& filepath, bool append_resource_path, bool persist)
 {
   // Construct full path using Path class
@@ -555,23 +434,11 @@ Engine::Resources::Resource Engine::Resources::load(const std::string& filepath,
     return load_font(filepath, 32, append_resource_path, persist); // Default size 32
   }
 
-  // Audio extensions
+  // Audio extensions - no longer loaded via resource system (use FMOD Studio events)
   if (extension == "wav" || extension == "mp3" || extension == "ogg" || extension == "flac")
   {
-    // Check file size to determine if it should be streamed
-    std::ifstream file(full_path, std::ios::binary | std::ios::ate);
-    if (file.is_open())
-    {
-      std::streamsize size = file.tellg();
-      file.close();
-
-      // Files larger than 1MB are loaded as music (streamed)
-      if (size > 1024 * 1024)
-      {
-        return load_music(filepath, append_resource_path, persist);
-      }
-    }
-    return load_sound(filepath, append_resource_path, persist);
+    Log::warning("Audio files are now managed by FMOD Studio. Use AudioSystem events instead: {}", filepath);
+    return std::monostate{};
   }
 
   // JSON extensions - could be prefabs
@@ -733,6 +600,11 @@ void Engine::Resources::cache_prefab(const std::string& filepath, const Engine::
 {
   // Construct full path using Path class
   std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+
+  // Ensure the prefab impl has its filepath set
+  if (prefab.get_impl() && prefab.get_impl()->get_prefab_filepath().empty()) {
+    prefab.get_impl()->set_prefab_filepath(filepath);
+  }
 
   // Add to cache without saving to disk
   prefab_cache[full_path] = prefab.get_impl();
@@ -929,13 +801,6 @@ void Engine::Resources::remove_from_cache(const std::string& filepath, bool appe
     font_cache.erase(font_it);
   }
 
-  // Remove from sound cache
-  auto sound_it = sound_cache.find(path);
-  if (sound_it != sound_cache.end()) {
-    Log::info("Removed sound from cache: {}", path);
-    sound_cache.erase(sound_it);
-  }
-
   // Remove from prefab cache
   auto prefab_it = prefab_cache.find(path);
   if (prefab_it != prefab_cache.end()) {
@@ -971,20 +836,6 @@ void Engine::Resources::clear_unused_resources()
     {
       Log::info("Clearing unused font from cache: {}", it->first);
       it = font_cache.erase(it);
-    }
-    else
-    {
-      ++it;
-    }
-  }
-
-  // Clear expired sound cache entries
-  for (auto it = sound_cache.begin(); it != sound_cache.end();)
-  {
-    if (it->second.expired())
-    {
-      Log::info("Clearing unused sound from cache: {}", it->first);
-      it = sound_cache.erase(it);
     }
     else
     {
@@ -1029,15 +880,6 @@ Engine::Resources::ResourceStats Engine::Resources::get_resource_stats()
     }
   }
 
-  for (const auto& pair : sound_cache)
-  {
-    stats.sound_count++;
-    if (!pair.second.expired())
-    {
-      stats.sound_alive++;
-    }
-  }
-
   for (const auto& pair : prefab_cache)
   {
     stats.prefab_count++;
@@ -1075,7 +917,8 @@ bool Engine::Resources::save_postprocessing_settings(const std::string& filepath
   bool result = Engine::FileIO::write_string_to_file(full_path, json);
   if (result) {
     Log::info("Resources: Saved post-processing preset to {}", full_path);
-  } else {
+  }
+  else {
     Log::error("Resources: Failed to save post-processing preset to {}", full_path);
   }
   return result;

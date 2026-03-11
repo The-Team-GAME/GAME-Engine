@@ -18,6 +18,7 @@
 #include "../FileIO/Settings.h"
 #include "../FileIO/SettingsManager.h"
 #include "../UpgradeManager.h"
+#include "../UpgradeUIStateMachine.h"
 
 /*=================================================================================
 Function Brief:
@@ -595,6 +596,74 @@ inline void UpgradePanel()
   }
 
   // ==================================================================================
+  // Section 3.5: Upgrade Levels (Debug)
+  // ==================================================================================
+  if (ImGui::CollapsingHeader("Upgrade Levels (Debug)", ImGuiTreeNodeFlags_DefaultOpen))
+  {
+    ImGui::TextDisabled("Directly set each upgrade's current level. Does not apply stat effects.");
+    ImGui::Spacing();
+
+    if (ImGui::Button("Reset All Levels"))
+      mgr.reset();
+
+    ImGui::Spacing();
+
+    ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(4, 3));
+    if (ImGui::BeginTable("##debug_levels_tbl", 4,
+      ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingStretchProp))
+    {
+      ImGui::TableSetupColumn("Upgrade", ImGuiTableColumnFlags_WidthStretch);
+      ImGui::TableSetupColumn("Rarity", ImGuiTableColumnFlags_WidthFixed, 70.0f);
+      ImGui::TableSetupColumn("Level", ImGuiTableColumnFlags_WidthFixed, 130.0f);
+      ImGui::TableSetupColumn("Max", ImGuiTableColumnFlags_WidthFixed, 40.0f);
+      ImGui::TableHeadersRow();
+
+      for (auto& upg : settings.upgrades)
+      {
+        ImGui::PushID(upg.id.c_str());
+        ImGui::TableNextRow();
+
+        ImVec4 rarity_col = get_rarity_color(upg.rarity);
+
+        // Name
+        ImGui::TableNextColumn();
+        ImGui::TextColored(rarity_col, "%s", upg.display_name.c_str());
+
+        // Rarity
+        ImGui::TableNextColumn();
+        ImGui::TextColored(rarity_col, "%s", upg.rarity.c_str());
+
+        // Level editor: [-] [DragInt] [+]
+        ImGui::TableNextColumn();
+        {
+          int lvl = mgr.get_upgrade_level(upg.id);
+          int new_lvl = lvl;
+          bool changed = false;
+
+          if (ImGui::SmallButton("-")) { new_lvl = std::max(0, lvl - 1);               changed = true; }
+          ImGui::SameLine(0, 2);
+          ImGui::SetNextItemWidth(60.0f);
+          if (ImGui::DragInt("##lvl", &new_lvl, 0.1f, 0, upg.max_level))                changed = true;
+          ImGui::SameLine(0, 2);
+          if (ImGui::SmallButton("+")) { new_lvl = std::min(upg.max_level, lvl + 1);   changed = true; }
+
+          if (changed)
+            mgr.set_upgrade_level(upg.id, new_lvl);
+        }
+
+        // Max
+        ImGui::TableNextColumn();
+        ImGui::Text("%d", upg.max_level);
+
+        ImGui::PopID();
+      }
+
+      ImGui::EndTable();
+    }
+    ImGui::PopStyleVar();
+  }
+
+  // ==================================================================================
   // Section 4: Live Upgrade System
   // ==================================================================================
   if (ImGui::CollapsingHeader("Live Upgrade System", ImGuiTreeNodeFlags_DefaultOpen))
@@ -771,6 +840,161 @@ inline void UpgradePanel()
         }
 
         ImGui::EndTable();
+      }
+    }
+
+    // ---- Card Animation Effects ----
+    ImGui::Spacing();
+    if (ImGui::CollapsingHeader("Card Animation Effects"))
+    {
+      auto& anim = SettingsManager<CardAnimSettings>::get_mutable();
+
+      ImGui::Checkbox("Flip Reveal", &anim.enable_flip_reveal);
+      if (anim.enable_flip_reveal)
+      {
+        ImGui::Indent();
+        ImGui::DragFloat("Flip Duration", &anim.flip_duration, 0.01f, 0.01f, 2.0f);
+        ImGui::DragFloat("Flip Stagger", &anim.flip_stagger, 0.01f, 0.0f, 1.0f);
+        ImGui::Unindent();
+      }
+
+      ImGui::Checkbox("Idle Float", &anim.enable_idle_float);
+      if (anim.enable_idle_float)
+      {
+        ImGui::Indent();
+        ImGui::DragFloat("Float Amplitude", &anim.float_amplitude, 0.1f, 0.0f, 50.0f);
+        ImGui::DragFloat("Float Speed", &anim.float_speed, 0.01f, 0.0f, 5.0f);
+        ImGui::DragFloat("Float Phase Offset", &anim.float_phase_offset, 0.05f, 0.0f, 6.28f);
+        ImGui::Unindent();
+      }
+
+      ImGui::Checkbox("Hover Lift", &anim.enable_hover_lift);
+      if (anim.enable_hover_lift)
+      {
+        ImGui::Indent();
+        ImGui::DragFloat("Hover Lift Y", &anim.hover_lift_y, 0.5f, -100.0f, 0.0f);
+        ImGui::DragFloat("Hover Scale Boost", &anim.hover_scale_boost, 0.01f, 1.0f, 2.0f);
+        ImGui::DragFloat("Hover Speed", &anim.hover_speed, 0.1f, 0.1f, 50.0f);
+        ImGui::Unindent();
+      }
+
+      ImGui::Checkbox("Idle Tilt", &anim.enable_idle_tilt);
+      if (anim.enable_idle_tilt)
+      {
+        ImGui::Indent();
+        ImGui::DragFloat("Idle Tilt Amplitude", &anim.idle_tilt_amplitude, 0.1f, 0.0f, 30.0f);
+        ImGui::DragFloat("Idle Tilt Speed", &anim.idle_tilt_speed, 0.01f, 0.0f, 5.0f);
+        ImGui::DragFloat("Idle Tilt Phase", &anim.idle_tilt_phase, 0.05f, 0.0f, 6.28f);
+        ImGui::DragFloat("Idle Tilt Lerp", &anim.idle_tilt_lerp_speed, 0.1f, 0.1f, 50.0f);
+        ImGui::Unindent();
+      }
+
+      ImGui::Checkbox("Hover Tilt", &anim.enable_hover_tilt);
+      if (anim.enable_hover_tilt)
+      {
+        ImGui::Indent();
+        ImGui::DragFloat("Max Tilt Degrees", &anim.max_tilt_deg, 0.1f, 0.0f, 45.0f);
+        ImGui::DragFloat("Tilt Speed", &anim.tilt_speed, 0.1f, 0.1f, 50.0f);
+        ImGui::Unindent();
+      }
+
+      ImGui::Checkbox("Selection Stamp", &anim.enable_selection_stamp);
+      if (anim.enable_selection_stamp)
+      {
+        ImGui::Indent();
+        ImGui::DragFloat("Stamp Duration", &anim.stamp_duration, 0.01f, 0.01f, 2.0f);
+        ImGui::DragFloat("Stamp Squish", &anim.stamp_squish, 0.01f, 0.1f, 1.0f);
+        ImGui::Unindent();
+      }
+
+      ImGui::Checkbox("Card Arc", &anim.enable_card_arc);
+      if (anim.enable_card_arc)
+      {
+        ImGui::Indent();
+        ImGui::DragFloat("Arc Duration", &anim.arc_duration, 0.01f, 0.05f, 3.0f);
+        ImGui::DragFloat("Arc Peak", &anim.arc_peak, 1.0f, -500.0f, 500.0f);
+        ImGui::DragFloat("Arc Spin Degrees", &anim.arc_spin_deg, 0.5f, 0.0f, 360.0f);
+        ImGui::DragFloat("Smash Duration", &anim.smash_duration, 0.01f, 0.01f, 2.0f);
+        ImGui::DragFloat("Linger Duration", &anim.linger_duration, 0.01f, 0.0f, 5.0f);
+        ImGui::Unindent();
+      }
+
+      ImGui::Checkbox("Burst Particles", &anim.enable_burst_particles);
+      if (anim.enable_burst_particles)
+      {
+        ImGui::Indent();
+        ImGui::DragFloat("Particle Size", &anim.particle_size, 0.5f, 1.0f, 100.0f);
+        ImGui::DragFloat("Particle Gravity", &anim.particle_gravity, 10.0f, 0.0f, 5000.0f);
+        ImGui::DragFloat("Speed Min", &anim.particle_speed_min, 1.0f, 0.0f, 2000.0f);
+        ImGui::DragFloat("Speed Max", &anim.particle_speed_max, 1.0f, 0.0f, 2000.0f);
+        ImGui::DragFloat("Life Min", &anim.particle_life_min, 0.01f, 0.01f, 5.0f);
+        ImGui::DragFloat("Life Max", &anim.particle_life_max, 0.01f, 0.01f, 5.0f);
+        ImGui::DragInt("Count Min", &anim.particle_count_min, 1, 1, 100);
+        ImGui::DragInt("Count Max", &anim.particle_count_max, 1, 1, 100);
+        ImGui::DragFloat("Angle Min", &anim.particle_angle_min, 0.05f, 0.0f, 6.28f);
+        ImGui::DragFloat("Angle Max", &anim.particle_angle_max, 0.05f, 0.0f, 9.42f);
+        ImGui::Unindent();
+      }
+
+      ImGui::Checkbox("Card Stack", &anim.enable_card_stack);
+      if (anim.enable_card_stack)
+      {
+        ImGui::Indent();
+        ImGui::DragFloat("Stack Offset", &anim.card_stack_offset, 0.5f, 0.0f, 100.0f);
+        ImGui::DragFloat("Pre-Shift Duration", &anim.pre_shift_duration, 0.01f, 0.05f, 2.0f);
+        ImGui::Unindent();
+      }
+
+      ImGui::Checkbox("Mini-Card Wave", &anim.enable_mini_wave);
+      if (anim.enable_mini_wave)
+      {
+        ImGui::Indent();
+        ImGui::DragFloat("Wave Amplitude", &anim.mini_wave_amplitude, 0.1f, 0.0f, 20.0f);
+        ImGui::DragFloat("Wave Speed", &anim.mini_wave_speed, 0.05f, 0.0f, 5.0f);
+        ImGui::DragFloat("Wave Phase", &anim.mini_wave_phase, 0.05f, 0.0f, 6.28f);
+        ImGui::Unindent();
+      }
+
+      ImGui::Checkbox("Mini-Card Tilt", &anim.enable_mini_tilt);
+      if (anim.enable_mini_tilt)
+      {
+        ImGui::Indent();
+        ImGui::DragFloat("Mini Tilt Amplitude", &anim.mini_tilt_amplitude, 0.1f, 0.0f, 20.0f);
+        ImGui::DragFloat("Mini Tilt Speed", &anim.mini_tilt_speed, 0.05f, 0.0f, 5.0f);
+        ImGui::DragFloat("Mini Tilt Phase", &anim.mini_tilt_phase, 0.05f, 0.0f, 6.28f);
+        ImGui::Unindent();
+      }
+
+      ImGui::Checkbox("Mini-Card Hover", &anim.enable_mini_hover);
+      if (anim.enable_mini_hover)
+      {
+        ImGui::Indent();
+        ImGui::DragFloat("Mini Hover Lift", &anim.mini_hover_lift, 0.5f, -50.0f, 50.0f);
+        ImGui::DragFloat("Mini Hover Scale", &anim.mini_hover_scale, 0.05f, 1.0f, 3.0f);
+        ImGui::DragFloat("Mini Hover Speed", &anim.mini_hover_speed, 0.5f, 1.0f, 30.0f);
+        ImGui::DragFloat("Mini Hover Tilt", &anim.mini_hover_tilt_deg, 0.5f, 0.0f, 30.0f);
+        ImGui::DragFloat("Mini Tilt Speed##hover", &anim.mini_hover_tilt_speed, 0.5f, 1.0f, 30.0f);
+        ImGui::Unindent();
+      }
+
+      ImGui::Checkbox("Smash Ripple", &anim.enable_smash_ripple);
+      if (anim.enable_smash_ripple)
+      {
+        ImGui::Indent();
+        ImGui::DragFloat("Ripple Amplitude", &anim.ripple_amplitude, 0.5f, 0.0f, 50.0f);
+        ImGui::DragFloat("Ripple Speed", &anim.ripple_speed, 10.0f, 10.0f, 2000.0f);
+        ImGui::DragFloat("Ripple Decay", &anim.ripple_decay, 0.1f, 0.1f, 20.0f);
+        ImGui::Unindent();
+      }
+
+      ImGui::Spacing();
+      if (ImGui::Button("Save Anim Settings"))
+        SettingsManager<CardAnimSettings>::save();
+      ImGui::SameLine();
+      if (ImGui::Button("Reset Anim Settings"))
+      {
+        SettingsManager<CardAnimSettings>::reset();
+        SettingsManager<CardAnimSettings>::save();
       }
     }
 
