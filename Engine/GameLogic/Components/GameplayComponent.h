@@ -15,8 +15,8 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
-
 #include "../../Engine/MonkeyEngine.h"
+using namespace Engine;
 
 namespace Components
 {
@@ -78,7 +78,7 @@ namespace Components
     // These values are loaded from file
     f32 walk_speed = 300'000.f;
     f32 jump_force = -30'000'000.f;
-
+    Vec2D knockback_value;
     bool damage_immune = false;
 
     // The arguments are in the order of
@@ -93,11 +93,11 @@ namespace Components
     Action smash    { 0.f, 7.f, 2500.f, 0.f };
 
     // hitbox_offset_x hitbox_offset_y hitbox_width hitbox_height life_time dmg knockback
-    AttackData uppercut_data  { 60.0f, 0.0f, 100.0f, 128.0f, 1.0f, 5.0f, Vec2D(0.0f, 2000.0f)};
-    AttackData smash_data     { 0.0f, 48.0f, 384.0f, 32.0f, 0.1f, 5.0f, Vec2D(500.0f, 0.0f) };
-    AttackData attack1_data   { 60.0f, 0.0f, 100.0f, 64.0f, 0.1f, 1.0f, Vec2D(500.0f, 0.0f) };
-    AttackData attack2_data   { 60.0f, 0.0f, 100.0f, 64.0f, 0.1f, 1.0f, Vec2D(500.0f, 0.0f) };
-    AttackData attack3_data   { 60.0f, 0.0f, 100.0f, 64.0f, 0.1f, 3.0f, Vec2D(500.0f, 0.0f) };
+    AttackData uppercut_data  { 60.0f, 0.0f, 100.0f, 128.0f, 1.0f, 5.0f, Vec2D(5000.0f, 20000.0f)};
+    AttackData smash_data     { 0.0f, 48.0f, 384.0f, 32.0f, 0.1f, 5.0f, Vec2D(1000.0f, 5000.0f) };
+    AttackData attack1_data   { 60.0f, 0.0f, 100.0f, 64.0f, 0.1f, 1.0f, Vec2D(5000.0f, 0.0f) };
+    AttackData attack2_data   { 60.0f, 0.0f, 100.0f, 64.0f, 0.1f, 1.0f, Vec2D(5000.0f, 0.0f) };
+    AttackData attack3_data   { 60.0f, 0.0f, 100.0f, 64.0f, 0.1f, 3.0f, Vec2D(5000.0f, 0.0f) };
 
   };
 
@@ -284,8 +284,6 @@ namespace Components
   };
 
 } // namespace Components
-
-
 
 //REFLECT_FIELDS(Components::Player::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, dash_speed, damage, heartrate_cost, knockback)
 REFLECT_FIELDS(Components::Action, no_cooldown, duration, timer, cooldown, cd_timer, speed, impulse)
