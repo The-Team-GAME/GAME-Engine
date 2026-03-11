@@ -144,6 +144,9 @@ namespace Engine
     struct FirebaseSettings
     {
       std::string database_url = "";   // RTDB URL (e.g. "https://myproject-default-rtdb.firebaseio.com")
+      std::string api_key = "";        // Firebase Web API key (from Firebase Console → Project Settings)
+      std::string client_id = "";      // Google OAuth 2.0 client ID (Desktop type)
+      std::string client_secret = "";  // Google OAuth 2.0 client secret
     };
   }
 }
@@ -157,4 +160,4 @@ REFLECT_ENUM(Engine::FileIO::UpgradeType, Flat, Multiplier)
 REFLECT_FIELDS(Engine::FileIO::RarityTier, name, drop_rate)
 REFLECT_FIELDS(Engine::FileIO::UpgradeDefinition, id, display_name, rarity, stat_name, type, value, max_level)
 REFLECT_FIELDS(Engine::FileIO::UpgradeSettings, base_point_threshold, threshold_scaling, rarities, upgrades)
-REFLECT_FIELDS(Engine::FileIO::FirebaseSettings, database_url)
+REFLECT_FIELDS(Engine::FileIO::FirebaseSettings, database_url, api_key, client_id, client_secret)

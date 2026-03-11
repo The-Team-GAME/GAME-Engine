@@ -11,6 +11,7 @@
 #include "../Precompiled.h"
 #include "FirebasePanel.h"
 #include "../Firebase/FirebaseManager.h"
+#include "../Firebase/FirebaseAuth.h"
 #include "../FileIO/Settings.h"
 #include "../FileIO/SettingsManager.h"
 #include "../Time.h"
@@ -621,6 +622,67 @@ void FirebasePanel::draw_panel()
     status_timer -= Engine::Time::get_real_dt();
     if (status_timer <= 0.f) { status_message.clear(); status_timer = 0.f; }
   }
+
+  // ========================================================================
+  // Authentication
+  // ========================================================================
+  if (ImGui::CollapsingHeader("Authentication", ImGuiTreeNodeFlags_DefaultOpen))
+  {
+    using AS = Engine::Firebase::Auth::AuthState;
+    AS auth_state = Engine::Firebase::Auth::get_state();
+
+    ImGui::Text("Status:");
+    ImGui::SameLine();
+    switch (auth_state)
+    {
+    case AS::NotAuthenticated:
+      ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.f), "Not Authenticated");
+      break;
+    case AS::Pending:
+      ImGui::TextColored(ImVec4(1.f, 0.85f, 0.f, 1.f), "Waiting for browser...");
+      break;
+    case AS::Authenticated:
+      ImGui::TextColored(ImVec4(0.2f, 1.f, 0.3f, 1.f), "Authenticated");
+      break;
+    case AS::Error:
+      ImGui::TextColored(ImVec4(1.f, 0.3f, 0.2f, 1.f), "Error");
+      break;
+    }
+
+    if (auth_state == AS::Authenticated)
+    {
+      std::string name = Engine::Firebase::Auth::get_display_name();
+      std::string email = Engine::Firebase::Auth::get_email();
+      std::string uid = Engine::Firebase::Auth::get_uid();
+
+      if (!name.empty()) { ImGui::Text("Name:  "); ImGui::SameLine(); ImGui::TextWrapped("%s", name.c_str()); }
+      if (!email.empty()) { ImGui::Text("Email: "); ImGui::SameLine(); ImGui::TextWrapped("%s", email.c_str()); }
+      if (!uid.empty()) { ImGui::Text("UID:   "); ImGui::SameLine(); ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.f), "%s", uid.c_str()); }
+
+      if (ImGui::Button("Sign Out"))
+        Engine::Firebase::Auth::sign_out();
+    }
+    else if (auth_state == AS::Pending)
+    {
+      ImGui::TextWrapped("Complete sign-in in your browser.");
+    }
+    else if (auth_state == AS::Error)
+    {
+      std::string err = Engine::Firebase::Auth::get_error();
+      ImGui::TextColored(ImVec4(1.f, 0.3f, 0.2f, 1.f), "%s", err.c_str());
+      if (ImGui::Button("Retry Sign In"))
+        Engine::Firebase::Auth::sign_in_with_google();
+    }
+    else // NotAuthenticated
+    {
+      if (ImGui::Button("Sign in with Google"))
+        Engine::Firebase::Auth::sign_in_with_google();
+    }
+  }
+
+  ImGui::Spacing();
+  ImGui::Separator();
+  ImGui::Spacing();
 
   // ========================================================================
   // Connection Status

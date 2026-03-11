@@ -44,6 +44,7 @@
 #include "HotReloadManager.h"
 #include "GUI/TilemapPanel.h"
 #include "Firebase/FirebaseManager.h"
+#include "Firebase/FirebaseAuth.h"
 #include "Firebase/FirebaseLuaBindings.h"
 
 namespace Engine
@@ -143,6 +144,7 @@ namespace Engine
     if (!Engine::Firebase::init()) {
       Log::warning("Firebase initialization failed, cloud features disabled");
     }
+    Engine::Firebase::Auth::init();
 
     // Initialize Lua manager
     if (!Engine::LuaManager::init()) {
@@ -275,6 +277,7 @@ namespace Engine
       Engine::Audio::update();
       Engine::AudioSystem::update();  // Update FMOD Studio system
       Engine::Firebase::update();     // Poll async HTTP futures, dispatch callbacks
+      Engine::Firebase::Auth::update(); // Check token expiry, refresh if needed
       ImGuiManager::begin();
 
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
@@ -534,6 +537,7 @@ namespace Engine
 #ifndef GAME_BUILD
     ViewportPanel::exit();
 #endif
+    Engine::Firebase::Auth::shutdown();
     Engine::Firebase::shutdown();   // Shutdown Firebase / WinHTTP
     Engine::Audio::exit();
     Engine::AudioSystem::shutdown();  // Shutdown FMOD Studio system

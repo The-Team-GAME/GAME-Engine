@@ -13,6 +13,7 @@
 #include "FirebaseManager.h"
 #include "FirebaseHTTP.h"
 #include "FirebaseListener.h"
+#include "FirebaseAuth.h"
 #include "../Logger.h"
 #include "../FileIO/Settings.h"
 #include "../FileIO/SettingsManager.h"
@@ -51,6 +52,12 @@ namespace Engine
         url += "/" + doc_id;
       }
       url += ".json";
+
+      // Append auth token if signed in
+      std::string token = Auth::get_id_token();
+      if (!token.empty())
+        url += "?auth=" + token;
+
       return url;
     }
 
@@ -257,6 +264,11 @@ namespace Engine
 
       // GET /.json?shallow=true returns {"collection1":true,"collection2":true}
       std::string url = g_base_url + "/.json?shallow=true";
+
+      // Append auth token if signed in
+      std::string token = Auth::get_id_token();
+      if (!token.empty())
+        url += "&auth=" + token;
 
       enqueue(
         [url]() -> HttpResponse { return HTTP::get(url); },
