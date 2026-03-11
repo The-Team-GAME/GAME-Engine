@@ -21,6 +21,7 @@
 #include "../EngineExport.h"
 #include <memory>
 #include <string>
+#include <vector>
 
 
 namespace Engine {
@@ -67,7 +68,7 @@ namespace Engine {
     // ------------------------------------------------------------
     // 3D audio positioning
     // ------------------------------------------------------------
-    ENGINE_API void setListenerPosition(const Math::Vec2D& position);
+    ENGINE_API void setListenerPosition(const Math::Vec2D& position, float depth = 0.0f);
     ENGINE_API void setListenerAttributes(const Math::Vec2D& position, const Math::Vec2D& velocity, const Math::Vec2D& forward, const Math::Vec2D& up);
     ENGINE_API bool setEventInstancePosition(const std::string& instanceName, const Math::Vec2D& position);
     ENGINE_API bool setEventInstanceAttributes(const std::string& instanceName, const Math::Vec2D& position, const Math::Vec2D& velocity);
@@ -85,8 +86,26 @@ namespace Engine {
     // Global controls
     // ------------------------------------------------------------
     ENGINE_API void pauseAll(bool pause);
+    ENGINE_API void stopAll(bool immediate = false);
     ENGINE_API void setMasterVolume(float volume);
     ENGINE_API float getMasterVolume();
+
+    // Bus-based volume controls (maps to FMOD Studio buses)
+    ENGINE_API void setBGMVolume(float volume);
+    ENGINE_API void setSFXVolume(float volume);
+    ENGINE_API float getBGMVolume();
+    ENGINE_API float getSFXVolume();
+
+    // ------------------------------------------------------------
+    // Event enumeration (for editor dropdowns)
+    // ------------------------------------------------------------
+    ENGINE_API std::vector<std::string> getAllEventPaths();
+    ENGINE_API std::vector<std::string> getAllBusPaths();
+
+    // ------------------------------------------------------------
+    // FMOD Core access (for subsystems that need raw PCM playback)
+    // ------------------------------------------------------------
+    ENGINE_API void* getCoreSystem();
 
     // ------------------------------------------------------------
     // Utility

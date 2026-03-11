@@ -3,8 +3,7 @@
   <ItemGroup>
     <ClCompile Include="Audio\AudioSystem.cpp" />
     <ClCompile Include="Audio\AudioSystemExample.cpp" />
-    <ClCompile Include="Audio\AudioPlayer.cpp" />
-    <ClCompile Include="Audio\AudioPlayerInternal.cpp" />
+
     <ClCompile Include="Components\StateMachineBlueprintRegistry.cpp" />
     <ClCompile Include="ECS\PrefabMergeUtils.cpp" />
     <ClCompile Include="ECS\Types.cpp" />
@@ -27,6 +26,7 @@
     <ClCompile Include="Graphics\PostProcessing.cpp" />
     <ClCompile Include="Graphics\CubeLUT.cpp" />
     <ClCompile Include="GUI\ColliderEditorPanel.cpp" />
+    <ClCompile Include="GUI\AnimatorTimelinePanel.cpp" />
     <ClCompile Include="GUI\FrameAnimationEditorPanel.cpp" />
     <ClCompile Include="GUI\TextureAtlasEditorPanel.cpp" />
     <ClCompile Include="GUI\SelectiveLevelSavePanel.cpp" />
@@ -79,8 +79,7 @@
   <ItemGroup>
     <ClInclude Include="Audio\AudioSystem.h" />
     <ClInclude Include="Audio\GameAudio.h" />
-    <ClInclude Include="Audio\AudioPlayer.h" />
-    <ClInclude Include="Audio\AudioPlayerInternal.h" />
+
     <ClInclude Include="Components\GraphicsComponents.h" />
     <ClInclude Include="Components\PhysicsComponents.h" />
     <ClInclude Include="Components\UtilityComponents.h" />
@@ -118,6 +117,7 @@
     <ClInclude Include="Graphics\RendererInternal.h" />
     <ClInclude Include="Graphics\Renderer.h" />
     <ClInclude Include="GUI\ColliderEditorPanel.h" />
+    <ClInclude Include="GUI\AnimatorTimelinePanel.h" />
     <ClInclude Include="GUI\FPSOverlay.h" />
     <ClInclude Include="GUI\FrameAnimationEditorPanel.h" />
     <ClInclude Include="GUI\TextureAtlasEditorPanel.h" />

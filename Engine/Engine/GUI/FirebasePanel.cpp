@@ -1551,6 +1551,8 @@ void FirebasePanel::draw_panel()
       ImGui::Dummy(ImVec2(1.f, browser_min_height - browser_used));
   }
 
+  if (!configured) ImGui::EndDisabled();
+
   ImGui::Spacing();
 
   // ========================================================================

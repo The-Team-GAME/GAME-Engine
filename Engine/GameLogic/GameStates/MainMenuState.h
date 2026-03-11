@@ -272,16 +272,15 @@ class MainMenuState : public Engine::Scene
   }
 
 public:
-  Engine::Audio::Sound bgm;
-
   void load() {
     // Start with the start screen
     showing_start_screen = true;
     create_start_screen();
 
-    // Load and play background music
-    bgm = Engine::Resources::load_sound("sounds/BGM/Main Menu/Monomyth_8Bit.wav");
-    Engine::Audio::play_sound(bgm, 0.3f, true); // TODO: get from settings
+    // Load and play background music via FMOD Studio
+    Engine::AudioSystem::createEventInstance("mainmenu_bgm", "event:/Music/MainMenu");
+    Engine::AudioSystem::setEventInstanceVolume("mainmenu_bgm", 0.3f);
+    Engine::AudioSystem::startEventInstance("mainmenu_bgm");
   };
 
   void init() {
@@ -416,7 +415,8 @@ public:
   void free() {};
 
   void unload() {
-    Engine::Audio::stop_all_sounds();
+    Engine::AudioSystem::stopEventInstance("mainmenu_bgm", true);
+    Engine::AudioSystem::releaseEventInstance("mainmenu_bgm");
     start_screen_entities.clear();
   };
 };

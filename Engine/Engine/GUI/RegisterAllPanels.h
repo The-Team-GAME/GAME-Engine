@@ -35,6 +35,7 @@
 #include "LogConsolePanel.h"
 #include "PostProcessingPanel.h"
 #include "UpgradePanel.h"
+#include "AnimatorTimelinePanel.h"
 #include "FirebasePanel.h"
 #include "DiceMiniGamePanel.h"
 
@@ -59,6 +60,7 @@ void register_all_panels()
   ImGuiManager::register_panel("Log Console", LogConsolePanel);
   ImGuiManager::register_panel("Post Processing", PostProcessingPanel);
   ImGuiManager::register_panel("Upgrades", UpgradePanel);
+  ImGuiManager::register_panel("Animator Timeline", AnimatorTimelinePanel);
   ImGuiManager::register_panel("Firebase", FirebasePanel::draw_panel);
   ImGuiManager::register_panel("Dice Mini Game", DiceMiniGamePanel::draw_panel);
 }

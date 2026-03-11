@@ -64,17 +64,19 @@ private:
 
   Engine::Graphics::Texture background_texture;
 
-  Engine::Audio::Sound walk_sound;
-  Engine::Audio::Sound jump_sound;
-  Engine::Audio::Sound punch_sound;
-  Engine::Audio::Sound bgm_sound;
+  // FMOD event paths (these must match events in your FMOD Studio project)
+  const std::string WALK_EVENT = "event:/SFX/PlayerFootstep";
+  const std::string JUMP_EVENT = "event:/SFX/PlayerJump";
+  const std::string PUNCH_EVENT = "event:/SFX/PlayerSwing";
+  const std::string BGM_EVENT = "event:/Music/Gameplay";
 
   Engine::Graphics::Font title_font;
   Engine::Graphics::Font info_font;
 
-  // Audio channel handles
-  Engine::Audio::ChannelHandle walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
-  Engine::Audio::ChannelHandle bgm_channel = Engine::Audio::INVALID_CHANNEL;
+  // FMOD instance names for persistent sounds
+  const std::string WALK_INSTANCE = "showcase_walk";
+  const std::string BGM_INSTANCE = "showcase_bgm";
+  bool walk_playing = false;
 
   // Animation state names
   const std::string IDLE_STATE = "idle";

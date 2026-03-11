@@ -28,5 +28,6 @@
 #include "TilemapComponents.h"
 #include "GizmoComponents.h"
 #include "StateMachineComponents.h"
+#include "AnimatorComponents.h"
 #include "EffectComponents.h"
 #include "LevelComponent.h"

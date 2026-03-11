@@ -168,15 +168,16 @@
     </ClCompile>
     <ClCompile Include="GameLogicEntry.cpp" />
     <ClCompile Include="GameStates\BasicState.cpp" />
-    <ClCompile Include="GameStates\LeaderboardState.cpp" />
     <ClCompile Include="GameStates\OptionsState.cpp" />
+    <ClCompile Include="GameStates\VideoPlaybackState.cpp" />
     <ClCompile Include="GameStates\PauseState.cpp" />
     <ClCompile Include="GameStates\StressTestState.cpp" />
     <ClCompile Include="GameStates\VictoryState.cpp" />
-    <ClCompile Include="States\GamerMonkeyStateCallbacks.cpp" />
+    <ClCompile Include="States\EmptyStateCallbacks.cpp" />
+    <ClCompile Include="States\SlingshotMonkeyStateCallbacks.cpp" />
     <ClCompile Include="States\HealthBarStateCallbacks.cpp" />
     <ClCompile Include="States\LazyMonkeyStateCallbacks.cpp" />
-    <ClCompile Include="States\PlayerProfileStateCallbacks.cpp" />
+    <ClCompile Include="States\MainMenuCallbacks.cpp" />
     <ClCompile Include="States\PlayerStateCallbacks.cpp" />
     <ClCompile Include="States\SkillCooldownStateCallbacks.cpp" />
     <ClCompile Include="States\SprayCanMonkeyStateCallbacks.cpp" />
@@ -194,7 +195,7 @@
     <ClInclude Include="Components\InteractableComponents.h" />
     <ClInclude Include="GameStates\BehaviourState.h" />
     <ClInclude Include="GameStates\BasicState.h" />
-    <ClInclude Include="GameStates\LeaderboardState.h" />
+    <ClInclude Include="GameStates\VideoPlaybackState.h" />
     <ClInclude Include="GameStates\DistortionEffectState.h" />
     <ClInclude Include="GameStates\EmptyState.h" />
     <ClInclude Include="GameStates\GameMonkeyTestState.h" />
