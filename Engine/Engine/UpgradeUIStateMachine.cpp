@@ -664,6 +664,53 @@ namespace Engine
           ripple_origin_y_ = arc_end_y_;
         }
 
+        // Convert the flying card into a mini-card so it joins the wave
+        {
+          constexpr float ss_scale = 2.0f;
+          constexpr int   ss_card_w = 128;
+          constexpr int   ss_card_h = 224;
+          constexpr int   ss_rows = 1;
+          constexpr int   ss_cols = 8;
+          constexpr int   ss_total = 6;
+
+          auto& mgr_ref = UpgradeManager::instance();
+          auto& settings_ref = FileIO::SettingsManager<FileIO::UpgradeSettings>::get();
+          int rolled_idx = mgr_ref.get_rolled_card(arc_card_);
+
+          // Hide the big flying card
+          if (arc_card_ >= 0 && arc_card_ < 2)
+          {
+            ECS::EntityID fly_id = (arc_card_ == 0) ? card0_id_ : card1_id_;
+            if (fly_id != 0)
+            {
+              auto* fc = ECS::Entity(fly_id).get_component<Components::Color>();
+              if (fc) fc->a = 0.0f;
+            }
+          }
+
+          // Spawn a mini-card at the landing spot
+          if (rolled_idx >= 0 && rolled_idx < static_cast<int>(settings_ref.upgrades.size()))
+          {
+            auto spritesheet = Resources::load_texture("images/Upgrades/Cards_Spritesheet.png");
+            auto mc = ECS::create_entity()
+              .add_component<Components::Transform2D>(arc_end_x_, arc_end_y_, 0.0f, arc_end_sx_, arc_end_sy_)
+              .add_component<Components::Texture>(spritesheet)
+              .add_component<Components::TextureAtlas>(ss_card_w, ss_card_h, ss_rows, ss_cols, ss_total)
+              .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+              .add_component<Components::UI>()
+              .add_to_layer("main_menu_5");
+            if (auto* atlas = ECS::Entity(mc.get_id()).get_component<Components::TextureAtlas>())
+              atlas->drawIndex = settings_ref.upgrades[rolled_idx].card_index;
+
+            mini_card_ids_.push_back(mc.get_id());
+            mini_card_row_.push_back(arc_target_row_);
+            mini_card_base_x_.push_back(arc_end_x_);
+            mini_card_base_y_.push_back(arc_end_y_);
+            mini_card_start_x_.push_back(arc_end_x_);
+            mini_card_target_x_.push_back(arc_end_x_);
+          }
+        }
+
         smash_time_ = -1.0f;
         linger_time_ = 0.0f;  // hold the panel open while particles play
         return;
