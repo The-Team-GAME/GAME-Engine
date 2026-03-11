@@ -81,6 +81,9 @@ namespace Components
     Vec2D knockback_value;
     bool damage_immune = false;
 
+    Vec2D respawn_point{ 0.0f, 0.0f };
+    bool has_checkpoint = false;
+
     // The arguments are in the order of
     // duration, cooldown, speed, impluse
     Action dash{ 0.2f,5.f, 1250.f };
@@ -291,7 +294,7 @@ REFLECT_FIELDS(Components::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_
 
 
 REGISTER_COMPONENT(Components::Player, 
-  damage_immune, walk_speed, jump_force, dash, stunned, 
+  damage_immune, walk_speed, jump_force, respawn_point, has_checkpoint, dash, stunned,
   attack1, attack2, attack3, uppercut, smash,
   attack1_data, attack2_data, attack3_data, uppercut_data, smash_data)
 REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, attack_range)

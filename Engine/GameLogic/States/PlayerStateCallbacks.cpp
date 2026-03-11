@@ -810,8 +810,33 @@ namespace PlayerStateCallbacks
     //Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
     //assert(state_machine);
     //state_machine->change_state("Idle");
-    std::string scene = SceneManager::get_current_scene_name();
-    SceneManager::load_scene(scene);
+
+    //std::string scene = SceneManager::get_current_scene_name();
+    //SceneManager::load_scene(scene);
+
+    auto* player = entity.get_component<Components::Player>();
+
+    if (!player->has_checkpoint) {
+      std::string scene = SceneManager::get_current_scene_name();
+      SceneManager::load_scene(scene);
+    }
+
+    auto* transform = entity.get_component<Components::Transform2D>();
+    auto* rigidbody = entity.get_component<Components::RigidBody>();
+    auto* health = entity.get_component<Components::Health>();
+    auto* state_machine = entity.get_component<Components::StateMachine>();
+
+    if (!player || !transform || !rigidbody || !health || !state_machine) return;
+
+    if (player->has_checkpoint)
+      transform->position = player->respawn_point;
+
+    rigidbody->velocity = { 0.0f, 0.0f };
+    rigidbody->acceleration = { 0.0f, 0.0f };
+
+    health->value = health->max;
+
+    state_machine->change_state("Idle");
   }
 #pragma endregion
 

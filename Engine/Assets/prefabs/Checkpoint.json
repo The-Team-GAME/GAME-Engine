@@ -1,0 +1,199 @@
+{
+    "data": {
+        "components": [
+            {
+                "data": {
+                    "a": 1.0,
+                    "b": 1.0,
+                    "g": 1.0,
+                    "r": 1.0
+                },
+                "type": "Components::Color"
+            },
+            {
+                "data": {
+                    "local_offset": {
+                        "x": -1003.7039794921875,
+                        "y": 1023.86474609375
+                    },
+                    "offset_initialized": true,
+                    "parent_id": 1148,
+                    "prev_parent_pos": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "type": "Components::Parent"
+            },
+            {
+                "data": {
+                    "path": "images/OldManJorkin_Jorkin_Spritesheet.png"
+                },
+                "type": "Components::Texture"
+            },
+            {
+                "data": {
+                    "drawIndex": 2,
+                    "tex_coords_list": [
+                        [
+                            {
+                                "x": 0.0,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.20000000298023224,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.20000000298023224,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.20000000298023224,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.4000000059604645,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.4000000059604645,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.20000000298023224,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.4000000059604645,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.6000000238418579,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.6000000238418579,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.4000000059604645,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.6000000238418579,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.800000011920929,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.800000011920929,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.6000000238418579,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.800000011920929,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 1.0,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 1.0,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.800000011920929,
+                                "y": 0.0
+                            }
+                        ]
+                    ]
+                },
+                "type": "Components::TextureAtlas"
+            },
+            {
+                "data": {
+                    "atlas_indices": [
+                        0,
+                        1,
+                        2,
+                        3,
+                        4
+                    ],
+                    "before_times": [
+                        0.0,
+                        0.10000000149011612,
+                        0.20000000298023224,
+                        0.30000001192092896,
+                        0.4000000059604645
+                    ],
+                    "durations": [
+                        0.10000000149011612,
+                        0.10000000149011612,
+                        0.10000000149011612,
+                        0.10000000149011612,
+                        0.10000000149011612
+                    ],
+                    "is_looping": true,
+                    "startTime": 307.9277648925781,
+                    "totalDuration": 0.5
+                },
+                "type": "Components::Animation"
+            },
+            {
+                "data": {
+                    "position": {
+                        "x": -1003.7039794921875,
+                        "y": 1023.86474609375
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 128.0,
+                        "y": 128.0
+                    }
+                },
+                "type": "Components::Transform2D"
+            },
+            {
+                "data": {
+                    "on_enter": {
+                        "name": "CheckpointCallbacks::checkpoint_on_enter"
+                    },
+                    "on_exit": {
+                        "name": "CheckpointCallbacks::checkpoint_on_exit"
+                    },
+                    "on_update": {
+                        "name": "CheckpointCallbacks::checkpoint_on_update"
+                    },
+                    "radius": 100.0
+                },
+                "type": "Components::Interactable"
+            }
+        ],
+        "filepath": "prefabs/Checkpoint.json",
+        "layers": [
+            "default",
+            "player"
+        ],
+        "uuid": "6bc04a19-5887-40351-865e-290f7b389095"
+    },
+    "dataType": "Prefab"
+}
