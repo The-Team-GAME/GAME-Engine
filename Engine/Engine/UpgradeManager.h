@@ -89,6 +89,7 @@ namespace Engine
     // ---- Upgrade level queries ----
 
     ENGINE_API int  get_upgrade_level(const std::string& upgrade_id) const;
+    ENGINE_API void set_upgrade_level(const std::string& upgrade_id, int level);
     ENGINE_API bool is_upgrade_eligible(int upgrade_index) const;
 
     // ---- Reset ----

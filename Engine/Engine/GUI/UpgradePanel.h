@@ -596,6 +596,74 @@ inline void UpgradePanel()
   }
 
   // ==================================================================================
+  // Section 3.5: Upgrade Levels (Debug)
+  // ==================================================================================
+  if (ImGui::CollapsingHeader("Upgrade Levels (Debug)", ImGuiTreeNodeFlags_DefaultOpen))
+  {
+    ImGui::TextDisabled("Directly set each upgrade's current level. Does not apply stat effects.");
+    ImGui::Spacing();
+
+    if (ImGui::Button("Reset All Levels"))
+      mgr.reset();
+
+    ImGui::Spacing();
+
+    ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(4, 3));
+    if (ImGui::BeginTable("##debug_levels_tbl", 4,
+      ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingStretchProp))
+    {
+      ImGui::TableSetupColumn("Upgrade", ImGuiTableColumnFlags_WidthStretch);
+      ImGui::TableSetupColumn("Rarity", ImGuiTableColumnFlags_WidthFixed, 70.0f);
+      ImGui::TableSetupColumn("Level", ImGuiTableColumnFlags_WidthFixed, 130.0f);
+      ImGui::TableSetupColumn("Max", ImGuiTableColumnFlags_WidthFixed, 40.0f);
+      ImGui::TableHeadersRow();
+
+      for (auto& upg : settings.upgrades)
+      {
+        ImGui::PushID(upg.id.c_str());
+        ImGui::TableNextRow();
+
+        ImVec4 rarity_col = get_rarity_color(upg.rarity);
+
+        // Name
+        ImGui::TableNextColumn();
+        ImGui::TextColored(rarity_col, "%s", upg.display_name.c_str());
+
+        // Rarity
+        ImGui::TableNextColumn();
+        ImGui::TextColored(rarity_col, "%s", upg.rarity.c_str());
+
+        // Level editor: [-] [DragInt] [+]
+        ImGui::TableNextColumn();
+        {
+          int lvl = mgr.get_upgrade_level(upg.id);
+          int new_lvl = lvl;
+          bool changed = false;
+
+          if (ImGui::SmallButton("-")) { new_lvl = std::max(0, lvl - 1);               changed = true; }
+          ImGui::SameLine(0, 2);
+          ImGui::SetNextItemWidth(60.0f);
+          if (ImGui::DragInt("##lvl", &new_lvl, 0.1f, 0, upg.max_level))                changed = true;
+          ImGui::SameLine(0, 2);
+          if (ImGui::SmallButton("+")) { new_lvl = std::min(upg.max_level, lvl + 1);   changed = true; }
+
+          if (changed)
+            mgr.set_upgrade_level(upg.id, new_lvl);
+        }
+
+        // Max
+        ImGui::TableNextColumn();
+        ImGui::Text("%d", upg.max_level);
+
+        ImGui::PopID();
+      }
+
+      ImGui::EndTable();
+    }
+    ImGui::PopStyleVar();
+  }
+
+  // ==================================================================================
   // Section 4: Live Upgrade System
   // ==================================================================================
   if (ImGui::CollapsingHeader("Live Upgrade System", ImGuiTreeNodeFlags_DefaultOpen))

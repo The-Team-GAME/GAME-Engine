@@ -257,6 +257,21 @@ namespace Engine
     return (it != current_levels_.end()) ? it->second : 0;
   }
 
+  void UpgradeManager::set_upgrade_level(const std::string& upgrade_id, int level)
+  {
+    auto& settings = FileIO::SettingsManager<FileIO::UpgradeSettings>::get();
+    int max_level = 0;
+    for (auto& upg : settings.upgrades)
+    {
+      if (upg.id == upgrade_id) { max_level = upg.max_level; break; }
+    }
+    int clamped = std::max(0, std::min(level, max_level));
+    if (clamped == 0)
+      current_levels_.erase(upgrade_id);
+    else
+      current_levels_[upgrade_id] = clamped;
+  }
+
   bool UpgradeManager::is_upgrade_eligible(int upgrade_index) const
   {
     auto& settings = FileIO::SettingsManager<FileIO::UpgradeSettings>::get();
