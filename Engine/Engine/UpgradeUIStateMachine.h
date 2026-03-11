@@ -54,67 +54,6 @@ namespace Engine
     // Tell the FSM which entity is the upgrade button (call after button creation).
     ENGINE_API void set_upgrade_button(ECS::EntityID id);
 
-    // Animation effect toggles — can be changed at runtime (e.g. from ImGui panel).
-    bool enable_flip_reveal = true;
-    bool enable_idle_float = true;
-    bool enable_hover_lift = true;
-    bool enable_selection_stamp = true;
-    bool enable_hover_tilt = true;
-    bool enable_idle_tilt = true;
-    bool enable_card_arc = true;
-    bool enable_burst_particles = true;
-
-    // Flip Reveal params
-    float flip_duration = 0.3f;
-    float flip_stagger = 0.08f;
-
-    // Idle Float params
-    float float_amplitude = 3.0f;
-    float float_speed = 0.2f;
-    float float_phase_offset = 0.5f;
-
-    // Hover Lift params
-    float hover_lift_y = -15.0f;
-    float hover_scale_boost = 1.05f;
-    float hover_speed = 8.0f;
-
-    // Idle Tilt params
-    float idle_tilt_amplitude = 1.0f;
-    float idle_tilt_speed = 0.3f;
-    float idle_tilt_phase = 1.2f;
-    float idle_tilt_lerp_speed = 6.0f;
-
-    // Hover Tilt params
-    float max_tilt_deg = 3.0f;
-    float tilt_speed = 2.0f;
-
-    // Selection Stamp params
-    float stamp_duration = 0.15f;
-    float stamp_squish = 0.85f;
-
-    // Card Arc params
-    float arc_duration = 0.4f;
-    float arc_peak = -40.0f;
-    float arc_spin_deg = 8.0f;
-
-    // Smash Landing params
-    float smash_duration = 0.12f;
-
-    // Burst Particle params
-    float particle_speed_min = 80.0f;
-    float particle_speed_max = 180.0f;
-    float particle_life_min = 0.2f;
-    float particle_life_max = 0.35f;
-    int   particle_count_min = 6;
-    int   particle_count_max = 10;
-    float particle_size = 20.0f;
-    float particle_gravity = 1200.0f;
-    float particle_angle_min = 2.356f;   // 0.75π
-    float particle_angle_max = 7.069f;   // 2.25π
-
-    // Linger params
-    float linger_duration = 1.0f;
-
   private:
     UpgradeUIStateMachine() = default;
 

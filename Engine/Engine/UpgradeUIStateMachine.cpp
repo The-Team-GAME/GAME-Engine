@@ -97,6 +97,7 @@ namespace Engine
   void UpgradeUIStateMachine::on_enter(UpgradeFlowState new_state)
   {
     auto& mgr = UpgradeManager::instance();
+    auto& cfg = FileIO::SettingsManager<FileIO::CardAnimSettings>::get_mutable();
 
     switch (new_state)
     {
@@ -146,6 +147,7 @@ namespace Engine
   void UpgradeUIStateMachine::update()
   {
     auto& mgr = UpgradeManager::instance();
+    auto& cfg = FileIO::SettingsManager<FileIO::CardAnimSettings>::get_mutable();
 
     // Burst particles tick in any state (they outlive the PickerOpen state)
     if (!burst_particles_.empty())
@@ -207,7 +209,7 @@ namespace Engine
 
       // Don't process input during flip reveal, stamp, or arc animation
       if (!flip_done_) break;
-      if (enable_selection_stamp && stamp_time_ >= 0.0f) break;
+      if (cfg.enable_selection_stamp && stamp_time_ >= 0.0f) break;
       if (arc_active_ || smash_time_ >= 0.0f || linger_time_ >= 0.0f) break;
 
       glm::vec2 mouse = Input::get_mouse_position();
@@ -222,11 +224,11 @@ namespace Engine
         {
           if (Input::is_pressed(KeyCode::MouseLeft))
           {
-            if (enable_selection_stamp)
+            if (cfg.enable_selection_stamp)
             {
               stamp_card_ = 0; stamp_time_ = 0.0f;
             }
-            else if (enable_card_arc)
+            else if (cfg.enable_card_arc)
             {
               start_arc(0);
             }
@@ -249,11 +251,11 @@ namespace Engine
         {
           if (Input::is_pressed(KeyCode::MouseLeft))
           {
-            if (enable_selection_stamp)
+            if (cfg.enable_selection_stamp)
             {
               stamp_card_ = 1; stamp_time_ = 0.0f;
             }
-            else if (enable_card_arc)
+            else if (cfg.enable_card_arc)
             {
               start_arc(1);
             }
@@ -285,6 +287,7 @@ namespace Engine
 
   void UpgradeUIStateMachine::animate_cards()
   {
+    auto& cfg = FileIO::SettingsManager<FileIO::CardAnimSettings>::get_mutable();
     float dt = Time::get_unscaled_fixed_dt();
     picker_open_time_ += dt;
 
@@ -296,10 +299,10 @@ namespace Engine
     float scale_y[2] = { card_base_sy_[0], card_base_sy_[1] };
 
     // ---- Flip Reveal ----
-    if (enable_flip_reveal && !flip_done_)
+    if (cfg.enable_flip_reveal && !flip_done_)
     {
-      const float flip_duration = this->flip_duration;
-      const float flip_stagger = this->flip_stagger;
+      const float flip_duration = cfg.flip_duration;
+      const float flip_stagger = cfg.flip_stagger;
       bool all_done = true;
       for (int i = 0; i < 2; ++i)
       {
@@ -320,11 +323,11 @@ namespace Engine
     }
 
     // ---- Idle Float (only after flip completes) ----
-    if (enable_idle_float && flip_done_)
+    if (cfg.enable_idle_float && flip_done_)
     {
-      const float float_amplitude = this->float_amplitude;
-      const float float_speed = this->float_speed;
-      const float float_phase_offset = this->float_phase_offset;
+      const float float_amplitude = cfg.float_amplitude;
+      const float float_speed = cfg.float_speed;
+      const float float_phase_offset = cfg.float_phase_offset;
       constexpr float two_pi = 6.2831853f;
       for (int i = 0; i < 2; ++i)
       {
@@ -333,11 +336,11 @@ namespace Engine
     }
 
     // ---- Hover Lift (only after flip completes) ----
-    if (enable_hover_lift && flip_done_)
+    if (cfg.enable_hover_lift && flip_done_)
     {
-      const float hover_lift_y = this->hover_lift_y;
-      const float hover_scale_boost = this->hover_scale_boost;
-      const float hover_speed = this->hover_speed;
+      const float hover_lift_y = cfg.hover_lift_y;
+      const float hover_scale_boost = cfg.hover_scale_boost;
+      const float hover_speed = cfg.hover_speed;
 
       glm::vec2 mouse = Input::get_mouse_position();
       hovered_card_ = -1;
@@ -367,13 +370,11 @@ namespace Engine
       }
     }
 
-    // ---- Idle Tilt (gentle sine-wave oscillation when not hovered) ----
-    // Computed first so Hover Tilt can override when the card is hovered.
-    if (enable_idle_tilt && flip_done_)
+    if (cfg.enable_idle_tilt && flip_done_)
     {
-      const float idle_tilt_amplitude = this->idle_tilt_amplitude;
-      const float idle_tilt_speed = this->idle_tilt_speed;
-      const float idle_tilt_phase = this->idle_tilt_phase;
+      const float idle_tilt_amplitude = cfg.idle_tilt_amplitude;
+      const float idle_tilt_speed = cfg.idle_tilt_speed;
+      const float idle_tilt_phase = cfg.idle_tilt_phase;
       constexpr float two_pi = 6.2831853f;
       for (int i = 0; i < 2; ++i)
       {
@@ -381,16 +382,16 @@ namespace Engine
         {
           float target = idle_tilt_amplitude
             * sinf(picker_open_time_ * idle_tilt_speed * two_pi + i * idle_tilt_phase);
-          card_tilt_[i] += (target - card_tilt_[i]) * idle_tilt_lerp_speed * dt;
+          card_tilt_[i] += (target - card_tilt_[i]) * cfg.idle_tilt_lerp_speed * dt;
         }
       }
     }
 
     // ---- Hover Tilt (mouse-X-based tilt on the hovered card) ----
-    if (enable_hover_tilt && flip_done_)
+    if (cfg.enable_hover_tilt && flip_done_)
     {
-      const float max_tilt_deg = this->max_tilt_deg;
-      const float tilt_speed = this->tilt_speed;
+      const float max_tilt_deg = cfg.max_tilt_deg;
+      const float tilt_speed = cfg.tilt_speed;
 
       glm::vec2 mouse = Input::get_mouse_position();
       for (int i = 0; i < 2; ++i)
@@ -403,7 +404,7 @@ namespace Engine
           float target_tilt = max_tilt_deg * norm_x;
           card_tilt_[i] += (target_tilt - card_tilt_[i]) * tilt_speed * dt;
         }
-        else if (!enable_idle_tilt)
+        else if (!cfg.enable_idle_tilt)
         {
           // No idle tilt running — lerp back to 0
           card_tilt_[i] += (0.0f - card_tilt_[i]) * tilt_speed * dt;
@@ -412,17 +413,17 @@ namespace Engine
     }
 
     // If both tilt effects are off, snap to 0
-    if (!enable_hover_tilt && !enable_idle_tilt)
+    if (!cfg.enable_hover_tilt && !cfg.enable_idle_tilt)
     {
       card_tilt_[0] = 0.0f;
       card_tilt_[1] = 0.0f;
     }
 
     // ---- Selection Stamp ----
-    if (enable_selection_stamp && stamp_time_ >= 0.0f)
+    if (cfg.enable_selection_stamp && stamp_time_ >= 0.0f)
     {
-      const float stamp_duration = this->stamp_duration;
-      const float stamp_squish = this->stamp_squish;
+      const float stamp_duration = cfg.stamp_duration;
+      const float stamp_squish = cfg.stamp_squish;
       stamp_time_ += dt;
 
       if (stamp_time_ >= stamp_duration)
@@ -431,7 +432,7 @@ namespace Engine
         stamp_time_ = -1.0f;
         int sc = stamp_card_;
         stamp_card_ = -1;
-        if (enable_card_arc)
+        if (cfg.enable_card_arc)
         {
           start_arc(sc);
           return;
@@ -466,8 +467,8 @@ namespace Engine
     // ---- Arc-to-Panel Flight ----
     if (arc_active_)
     {
-      const float arc_duration = this->arc_duration;
-      const float arc_peak = this->arc_peak;
+      const float arc_duration = cfg.arc_duration;
+      const float arc_peak = cfg.arc_peak;
       constexpr float pi = 3.14159265f;
 
       arc_time_ += dt;
@@ -490,7 +491,7 @@ namespace Engine
         float sy = arc_start_sy_ + (arc_end_sy_ - arc_start_sy_) * se;
 
         // Gentle spin during flight
-        float rot = sinf(t * pi) * arc_spin_deg;
+        float rot = sinf(t * pi) * cfg.arc_spin_deg;
 
         auto* at = ECS::Entity(card_ids[ac]).get_component<Components::Transform2D>();
         if (at)
@@ -526,7 +527,7 @@ namespace Engine
     // ---- Smash Landing ----
     if (smash_time_ >= 0.0f)
     {
-      const float smash_duration = this->smash_duration;
+      const float smash_duration = cfg.smash_duration;
       smash_time_ += dt;
 
       int ac = arc_card_;
@@ -549,7 +550,7 @@ namespace Engine
 
       if (smash_time_ >= smash_duration)
       {
-        if (enable_burst_particles)
+        if (cfg.enable_burst_particles)
           spawn_burst_particles(arc_end_x_, arc_end_y_);
 
         smash_time_ = -1.0f;
@@ -562,7 +563,7 @@ namespace Engine
     // ---- Post-smash linger (keep panel visible while particles play) ----
     if (linger_time_ >= 0.0f)
     {
-      const float linger_duration = this->linger_duration;
+      const float linger_duration = cfg.linger_duration;
       linger_time_ += dt;
       if (linger_time_ >= linger_duration)
       {
@@ -595,6 +596,7 @@ namespace Engine
   {
     auto& mgr = UpgradeManager::instance();
     auto& settings = FileIO::SettingsManager<FileIO::UpgradeSettings>::get();
+    auto& cfg = FileIO::SettingsManager<FileIO::CardAnimSettings>::get_mutable();
 
     auto rect = Resources::get_rect_texture();
 
@@ -785,7 +787,7 @@ namespace Engine
     arc_card_ = -1;
     linger_time_ = -1.0f;
 
-    if (enable_flip_reveal)
+    if (cfg.enable_flip_reveal)
     {
       flip_done_ = false;
       // Start cards invisible (scale.x = 0) for flip-in
@@ -950,11 +952,12 @@ namespace Engine
 
   void UpgradeUIStateMachine::spawn_burst_particles(float x, float y)
   {
+    auto& cfg = FileIO::SettingsManager<FileIO::CardAnimSettings>::get_mutable();
     static std::mt19937 rng{ std::random_device{}() };
-    std::uniform_real_distribution<float> angle_dist(particle_angle_min, particle_angle_max);
-    std::uniform_real_distribution<float> speed_dist(particle_speed_min, particle_speed_max);
-    std::uniform_real_distribution<float> life_dist(particle_life_min, particle_life_max);
-    std::uniform_int_distribution<int>    count_dist(particle_count_min, particle_count_max);
+    std::uniform_real_distribution<float> angle_dist(cfg.particle_angle_min, cfg.particle_angle_max);
+    std::uniform_real_distribution<float> speed_dist(cfg.particle_speed_min, cfg.particle_speed_max);
+    std::uniform_real_distribution<float> life_dist(cfg.particle_life_min, cfg.particle_life_max);
+    std::uniform_int_distribution<int>    count_dist(cfg.particle_count_min, cfg.particle_count_max);
     std::uniform_int_distribution<int>    color_dist(0, 6);
 
     // Vivid palette: gold, orange, red, magenta, cyan, green, white
@@ -979,7 +982,7 @@ namespace Engine
       const float* c = palette[color_dist(rng)];
 
       auto e = ECS::create_entity()
-        .add_component<Components::Transform2D>(x, y, 0.0f, particle_size, particle_size)
+        .add_component<Components::Transform2D>(x, y, 0.0f, cfg.particle_size, cfg.particle_size)
         .add_component<Components::Texture>(rect)
         .add_component<Components::Color>(c[0], c[1], c[2], 1.0f)
         .add_component<Components::UI>()
@@ -1009,8 +1012,10 @@ namespace Engine
         continue;
       }
 
-      const float gravity = particle_gravity;
+      const float gravity = FileIO::SettingsManager<FileIO::CardAnimSettings>::get_mutable().particle_gravity;
       it->vy += gravity * dt;
+
+      const float particle_size = FileIO::SettingsManager<FileIO::CardAnimSettings>::get_mutable().particle_size;
 
       float t = 1.0f - (it->life / it->max_life); // 0 → 1 over lifetime
       auto* tr = ECS::Entity(it->id).get_component<Components::Transform2D>();

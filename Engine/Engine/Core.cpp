@@ -154,6 +154,11 @@ namespace Engine
       Log::warning("Failed to load upgrade settings, using defaults");
     }
 
+    // Load card animation settings (upgrade picker UI effect parameters)
+    if (!Engine::FileIO::SettingsManager<Engine::FileIO::CardAnimSettings>::load("Assets/settings/card_anim_settings.json")) {
+      Log::warning("Failed to load card animation settings, using defaults");
+    }
+
     // TODO: handle using custom reflector
     auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get_mutable();
     for (auto& atlas_entry : project_settings.loaded_tilemaps) {

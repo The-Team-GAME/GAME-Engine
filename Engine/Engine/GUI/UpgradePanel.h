@@ -779,93 +779,103 @@ inline void UpgradePanel()
     ImGui::Spacing();
     if (ImGui::CollapsingHeader("Card Animation Effects"))
     {
-      auto& ui = Engine::UpgradeUIStateMachine::instance();
+      auto& anim = SettingsManager<CardAnimSettings>::get_mutable();
 
-      ImGui::Checkbox("Flip Reveal", &ui.enable_flip_reveal);
-      if (ui.enable_flip_reveal)
+      ImGui::Checkbox("Flip Reveal", &anim.enable_flip_reveal);
+      if (anim.enable_flip_reveal)
       {
         ImGui::Indent();
-        ImGui::DragFloat("Flip Duration", &ui.flip_duration, 0.01f, 0.01f, 2.0f);
-        ImGui::DragFloat("Flip Stagger", &ui.flip_stagger, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat("Flip Duration", &anim.flip_duration, 0.01f, 0.01f, 2.0f);
+        ImGui::DragFloat("Flip Stagger", &anim.flip_stagger, 0.01f, 0.0f, 1.0f);
         ImGui::Unindent();
       }
 
-      ImGui::Checkbox("Idle Float", &ui.enable_idle_float);
-      if (ui.enable_idle_float)
+      ImGui::Checkbox("Idle Float", &anim.enable_idle_float);
+      if (anim.enable_idle_float)
       {
         ImGui::Indent();
-        ImGui::DragFloat("Float Amplitude", &ui.float_amplitude, 0.1f, 0.0f, 50.0f);
-        ImGui::DragFloat("Float Speed", &ui.float_speed, 0.01f, 0.0f, 5.0f);
-        ImGui::DragFloat("Float Phase Offset", &ui.float_phase_offset, 0.05f, 0.0f, 6.28f);
+        ImGui::DragFloat("Float Amplitude", &anim.float_amplitude, 0.1f, 0.0f, 50.0f);
+        ImGui::DragFloat("Float Speed", &anim.float_speed, 0.01f, 0.0f, 5.0f);
+        ImGui::DragFloat("Float Phase Offset", &anim.float_phase_offset, 0.05f, 0.0f, 6.28f);
         ImGui::Unindent();
       }
 
-      ImGui::Checkbox("Hover Lift", &ui.enable_hover_lift);
-      if (ui.enable_hover_lift)
+      ImGui::Checkbox("Hover Lift", &anim.enable_hover_lift);
+      if (anim.enable_hover_lift)
       {
         ImGui::Indent();
-        ImGui::DragFloat("Hover Lift Y", &ui.hover_lift_y, 0.5f, -100.0f, 0.0f);
-        ImGui::DragFloat("Hover Scale Boost", &ui.hover_scale_boost, 0.01f, 1.0f, 2.0f);
-        ImGui::DragFloat("Hover Speed", &ui.hover_speed, 0.1f, 0.1f, 50.0f);
+        ImGui::DragFloat("Hover Lift Y", &anim.hover_lift_y, 0.5f, -100.0f, 0.0f);
+        ImGui::DragFloat("Hover Scale Boost", &anim.hover_scale_boost, 0.01f, 1.0f, 2.0f);
+        ImGui::DragFloat("Hover Speed", &anim.hover_speed, 0.1f, 0.1f, 50.0f);
         ImGui::Unindent();
       }
 
-      ImGui::Checkbox("Idle Tilt", &ui.enable_idle_tilt);
-      if (ui.enable_idle_tilt)
+      ImGui::Checkbox("Idle Tilt", &anim.enable_idle_tilt);
+      if (anim.enable_idle_tilt)
       {
         ImGui::Indent();
-        ImGui::DragFloat("Idle Tilt Amplitude", &ui.idle_tilt_amplitude, 0.1f, 0.0f, 30.0f);
-        ImGui::DragFloat("Idle Tilt Speed", &ui.idle_tilt_speed, 0.01f, 0.0f, 5.0f);
-        ImGui::DragFloat("Idle Tilt Phase", &ui.idle_tilt_phase, 0.05f, 0.0f, 6.28f);
-        ImGui::DragFloat("Idle Tilt Lerp", &ui.idle_tilt_lerp_speed, 0.1f, 0.1f, 50.0f);
+        ImGui::DragFloat("Idle Tilt Amplitude", &anim.idle_tilt_amplitude, 0.1f, 0.0f, 30.0f);
+        ImGui::DragFloat("Idle Tilt Speed", &anim.idle_tilt_speed, 0.01f, 0.0f, 5.0f);
+        ImGui::DragFloat("Idle Tilt Phase", &anim.idle_tilt_phase, 0.05f, 0.0f, 6.28f);
+        ImGui::DragFloat("Idle Tilt Lerp", &anim.idle_tilt_lerp_speed, 0.1f, 0.1f, 50.0f);
         ImGui::Unindent();
       }
 
-      ImGui::Checkbox("Hover Tilt", &ui.enable_hover_tilt);
-      if (ui.enable_hover_tilt)
+      ImGui::Checkbox("Hover Tilt", &anim.enable_hover_tilt);
+      if (anim.enable_hover_tilt)
       {
         ImGui::Indent();
-        ImGui::DragFloat("Max Tilt Degrees", &ui.max_tilt_deg, 0.1f, 0.0f, 45.0f);
-        ImGui::DragFloat("Tilt Speed", &ui.tilt_speed, 0.1f, 0.1f, 50.0f);
+        ImGui::DragFloat("Max Tilt Degrees", &anim.max_tilt_deg, 0.1f, 0.0f, 45.0f);
+        ImGui::DragFloat("Tilt Speed", &anim.tilt_speed, 0.1f, 0.1f, 50.0f);
         ImGui::Unindent();
       }
 
-      ImGui::Checkbox("Selection Stamp", &ui.enable_selection_stamp);
-      if (ui.enable_selection_stamp)
+      ImGui::Checkbox("Selection Stamp", &anim.enable_selection_stamp);
+      if (anim.enable_selection_stamp)
       {
         ImGui::Indent();
-        ImGui::DragFloat("Stamp Duration", &ui.stamp_duration, 0.01f, 0.01f, 2.0f);
-        ImGui::DragFloat("Stamp Squish", &ui.stamp_squish, 0.01f, 0.1f, 1.0f);
+        ImGui::DragFloat("Stamp Duration", &anim.stamp_duration, 0.01f, 0.01f, 2.0f);
+        ImGui::DragFloat("Stamp Squish", &anim.stamp_squish, 0.01f, 0.1f, 1.0f);
         ImGui::Unindent();
       }
 
-      ImGui::Checkbox("Card Arc", &ui.enable_card_arc);
-      if (ui.enable_card_arc)
+      ImGui::Checkbox("Card Arc", &anim.enable_card_arc);
+      if (anim.enable_card_arc)
       {
         ImGui::Indent();
-        ImGui::DragFloat("Arc Duration", &ui.arc_duration, 0.01f, 0.05f, 3.0f);
-        ImGui::DragFloat("Arc Peak", &ui.arc_peak, 1.0f, -500.0f, 500.0f);
-        ImGui::DragFloat("Arc Spin Degrees", &ui.arc_spin_deg, 0.5f, 0.0f, 360.0f);
-        ImGui::DragFloat("Smash Duration", &ui.smash_duration, 0.01f, 0.01f, 2.0f);
-        ImGui::DragFloat("Linger Duration", &ui.linger_duration, 0.01f, 0.0f, 5.0f);
+        ImGui::DragFloat("Arc Duration", &anim.arc_duration, 0.01f, 0.05f, 3.0f);
+        ImGui::DragFloat("Arc Peak", &anim.arc_peak, 1.0f, -500.0f, 500.0f);
+        ImGui::DragFloat("Arc Spin Degrees", &anim.arc_spin_deg, 0.5f, 0.0f, 360.0f);
+        ImGui::DragFloat("Smash Duration", &anim.smash_duration, 0.01f, 0.01f, 2.0f);
+        ImGui::DragFloat("Linger Duration", &anim.linger_duration, 0.01f, 0.0f, 5.0f);
         ImGui::Unindent();
       }
 
-      ImGui::Checkbox("Burst Particles", &ui.enable_burst_particles);
-      if (ui.enable_burst_particles)
+      ImGui::Checkbox("Burst Particles", &anim.enable_burst_particles);
+      if (anim.enable_burst_particles)
       {
         ImGui::Indent();
-        ImGui::DragFloat("Particle Size", &ui.particle_size, 0.5f, 1.0f, 100.0f);
-        ImGui::DragFloat("Particle Gravity", &ui.particle_gravity, 10.0f, 0.0f, 5000.0f);
-        ImGui::DragFloat("Speed Min", &ui.particle_speed_min, 1.0f, 0.0f, 2000.0f);
-        ImGui::DragFloat("Speed Max", &ui.particle_speed_max, 1.0f, 0.0f, 2000.0f);
-        ImGui::DragFloat("Life Min", &ui.particle_life_min, 0.01f, 0.01f, 5.0f);
-        ImGui::DragFloat("Life Max", &ui.particle_life_max, 0.01f, 0.01f, 5.0f);
-        ImGui::DragInt("Count Min", &ui.particle_count_min, 1, 1, 100);
-        ImGui::DragInt("Count Max", &ui.particle_count_max, 1, 1, 100);
-        ImGui::DragFloat("Angle Min", &ui.particle_angle_min, 0.05f, 0.0f, 6.28f);
-        ImGui::DragFloat("Angle Max", &ui.particle_angle_max, 0.05f, 0.0f, 9.42f);
+        ImGui::DragFloat("Particle Size", &anim.particle_size, 0.5f, 1.0f, 100.0f);
+        ImGui::DragFloat("Particle Gravity", &anim.particle_gravity, 10.0f, 0.0f, 5000.0f);
+        ImGui::DragFloat("Speed Min", &anim.particle_speed_min, 1.0f, 0.0f, 2000.0f);
+        ImGui::DragFloat("Speed Max", &anim.particle_speed_max, 1.0f, 0.0f, 2000.0f);
+        ImGui::DragFloat("Life Min", &anim.particle_life_min, 0.01f, 0.01f, 5.0f);
+        ImGui::DragFloat("Life Max", &anim.particle_life_max, 0.01f, 0.01f, 5.0f);
+        ImGui::DragInt("Count Min", &anim.particle_count_min, 1, 1, 100);
+        ImGui::DragInt("Count Max", &anim.particle_count_max, 1, 1, 100);
+        ImGui::DragFloat("Angle Min", &anim.particle_angle_min, 0.05f, 0.0f, 6.28f);
+        ImGui::DragFloat("Angle Max", &anim.particle_angle_max, 0.05f, 0.0f, 9.42f);
         ImGui::Unindent();
+      }
+
+      ImGui::Spacing();
+      if (ImGui::Button("Save Anim Settings"))
+        SettingsManager<CardAnimSettings>::save();
+      ImGui::SameLine();
+      if (ImGui::Button("Reset Anim Settings"))
+      {
+        SettingsManager<CardAnimSettings>::reset();
+        SettingsManager<CardAnimSettings>::save();
       }
     }
 
