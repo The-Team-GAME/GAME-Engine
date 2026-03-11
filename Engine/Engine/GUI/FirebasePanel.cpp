@@ -1398,39 +1398,7 @@ void FirebasePanel::draw_panel()
           if (erase_idx >= 0) {
             field_rows.erase(field_rows.begin() + erase_idx);
             sync_fields_to_json();
-            if (doc_id_buf[0] != '\0' && !selected_collection.empty())
-            {
-              std::string col = selected_collection;
-              std::string id = doc_id_buf;
-              std::string body = json_edit_buf;
-              std::string verr = validate_document(col, body);
-              if (!verr.empty()) {
-                set_status("Schema violation: " + verr, false);
-                push_log("VALIDATE " + col + "/" + id, false, verr);
-              }
-              else
-                Engine::Firebase::set_document(col, id, body,
-                  [col, id](bool success, const std::string& data) {
-                    if (success) {
-                      set_status("Field deleted — " + id + " saved", true);
-                      push_log("DEL FIELD " + col + "/" + id, true, "OK");
-                      Engine::Firebase::query_collection(col,
-                        [col](bool ok, const std::string& d2) {
-                          if (ok) {
-                            has_fetched_once = true;
-                            std::string prev_id(doc_id_buf);
-                            parse_collection_response(d2);
-                            for (int i = 0; i < static_cast<int>(cached_docs.size()); ++i)
-                              if (cached_docs[i].id == prev_id) { selected_doc_idx = i; break; }
-                          }
-                        });
-                    }
-                    else {
-                      set_status("Delete field failed: " + data, false);
-                      push_log("DEL FIELD", false, data);
-                    }
-                  });
-            }
+            fields_dirty = true;
           }
         }
 
