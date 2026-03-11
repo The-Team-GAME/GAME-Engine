@@ -28,7 +28,6 @@
 #include "GameStates/PauseState.h"
 #include "GameStates/VictoryState.h"
 #include "GameStates/OptionsState.h"
-#include "GameStates/LeaderboardState.h"
 #include "GameStates/VideoPlaybackState.h"
 
 // Game systems
@@ -454,7 +453,6 @@ static void register_scenes()
   Engine::SceneManager::register_scene<VictoryState>("VictoryState");
   Engine::SceneManager::register_scene<OptionsState>("OptionsState");
   Engine::SceneManager::register_scene<VideoPlaybackState>("VideoPlaybackState");
-  Engine::SceneManager::register_scene<LeaderboardState>("LeaderboardState");
 }
 
 static void register_systems()
