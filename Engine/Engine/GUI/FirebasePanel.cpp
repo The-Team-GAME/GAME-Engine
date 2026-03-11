@@ -25,6 +25,7 @@
 #include <vector>
 #include <deque>
 #include <algorithm>
+#include <unordered_map>
 #include <chrono>
 #include <ctime>
 #include <cstring>
@@ -103,6 +104,26 @@ namespace
   static char new_doc_field_name[128] = "";
   static int  new_doc_field_type = 0;  // 0 = String, 1 = Number
   static char new_doc_field_value[256] = "";
+
+  // --- Schema Validation ---
+  struct SchemaField {
+    std::string name;
+    int         type = 0;     // 0=String, 1=Integer, 2=Number, 3=Boolean
+    bool        required = true;
+  };
+  struct CollectionSchema {
+    std::vector<SchemaField> fields;
+    bool strict = true;       // reject unknown fields
+  };
+  static std::unordered_map<std::string, CollectionSchema> schemas;
+  static bool schemas_fetched = false;
+
+  // Schema editor UI state
+  static std::string schema_editor_collection;  // currently editing
+  static std::vector<SchemaField> schema_editor_fields;
+  static bool schema_editor_strict = true;
+  static const char* schema_type_labels[] = { "String", "Integer", "Number", "Boolean" };
+  static constexpr int SCHEMA_TYPE_COUNT = 4;
 
   // ====================================================================
   // Helpers
@@ -258,8 +279,193 @@ namespace
     }
   }
 
-  // Forward declaration — defined below, but needed by start_live_watch callback.
+  // Forward declarations
   static void fetch_all_collections();
+  static void fetch_all_schemas();
+
+  // ====================================================================
+  // Schema validation helpers
+  // ====================================================================
+
+  static const char* type_label(int t)
+  {
+    switch (t) {
+    case 0: return "string";
+    case 1: return "integer";
+    case 2: return "number";
+    case 3: return "boolean";
+    default: return "unknown";
+    }
+  }
+
+  static std::string describe_value(const rapidjson::Value& v)
+  {
+    if (v.IsString())  return "string";
+    if (v.IsBool())    return "boolean";
+    if (v.IsInt() || v.IsInt64()) return "integer";
+    if (v.IsDouble())  return "number";
+    if (v.IsNull())    return "null";
+    if (v.IsArray())   return "array";
+    if (v.IsObject())  return "object";
+    return "unknown";
+  }
+
+  static std::string check_type(const rapidjson::Value& val, int expected)
+  {
+    switch (expected) {
+    case 0: // String
+      if (!val.IsString())
+        return "expected string but received " + describe_value(val);
+      break;
+    case 1: // Integer
+      if (!val.IsInt() && !val.IsInt64() && !val.IsUint() && !val.IsUint64())
+        return "expected integer but received " + describe_value(val);
+      break;
+    case 2: // Number
+      if (!val.IsNumber())
+        return "expected number but received " + describe_value(val);
+      break;
+    case 3: // Boolean
+      if (!val.IsBool())
+        return "expected boolean but received " + describe_value(val);
+      break;
+    }
+    return "";
+  }
+
+  // Returns empty string on success, or error message on failure.
+  static std::string validate_document(const std::string& collection,
+    const std::string& json_data)
+  {
+    auto it = schemas.find(collection);
+    if (it == schemas.end()) return "";  // no schema → always valid
+
+    const CollectionSchema& schema = it->second;
+    rapidjson::Document doc;
+    doc.Parse(json_data.c_str());
+    if (doc.HasParseError() || !doc.IsObject())
+      return "Document is not a valid JSON object";
+
+    // Check required fields + type match
+    for (const auto& sf : schema.fields) {
+      auto member = doc.FindMember(sf.name.c_str());
+      if (member == doc.MemberEnd()) {
+        if (sf.required)
+          return sf.name + " expected " + type_label(sf.type) + " but received null";
+        continue;
+      }
+      std::string err = check_type(member->value, sf.type);
+      if (!err.empty())
+        return sf.name + " " + err;
+    }
+
+    // Strict mode: reject unknown fields
+    if (schema.strict) {
+      for (auto m = doc.MemberBegin(); m != doc.MemberEnd(); ++m) {
+        std::string key = m->name.GetString();
+        bool found = false;
+        for (const auto& sf : schema.fields)
+          if (sf.name == key) { found = true; break; }
+        if (!found)
+          return key + " is an unknown field";
+      }
+    }
+    return "";
+  }
+
+  // Serialize a CollectionSchema to JSON for storage in _schemas/
+  static std::string serialize_schema(const CollectionSchema& schema)
+  {
+    rapidjson::Document doc;
+    doc.SetObject();
+    auto& alloc = doc.GetAllocator();
+
+    rapidjson::Value fields_obj(rapidjson::kObjectType);
+    for (const auto& sf : schema.fields) {
+      rapidjson::Value field_obj(rapidjson::kObjectType);
+      field_obj.AddMember("type",
+        rapidjson::Value(type_label(sf.type), alloc), alloc);
+      field_obj.AddMember("required", sf.required, alloc);
+      fields_obj.AddMember(
+        rapidjson::Value(sf.name.c_str(), alloc), field_obj, alloc);
+    }
+    doc.AddMember("fields", fields_obj, alloc);
+    doc.AddMember("strict", schema.strict, alloc);
+
+    rapidjson::StringBuffer buf;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buf);
+    doc.Accept(writer);
+    return buf.GetString();
+  }
+
+  // Parse a schema JSON into CollectionSchema
+  static CollectionSchema parse_schema(const std::string& json)
+  {
+    CollectionSchema schema;
+    rapidjson::Document doc;
+    doc.Parse(json.c_str());
+    if (doc.HasParseError() || !doc.IsObject()) return schema;
+
+    if (doc.HasMember("strict") && doc["strict"].IsBool())
+      schema.strict = doc["strict"].GetBool();
+
+    if (doc.HasMember("fields") && doc["fields"].IsObject()) {
+      const auto& fields = doc["fields"];
+      for (auto it = fields.MemberBegin(); it != fields.MemberEnd(); ++it) {
+        SchemaField sf;
+        sf.name = it->name.GetString();
+        if (it->value.IsObject()) {
+          if (it->value.HasMember("type") && it->value["type"].IsString()) {
+            std::string t = it->value["type"].GetString();
+            if (t == "string")       sf.type = 0;
+            else if (t == "integer") sf.type = 1;
+            else if (t == "number")  sf.type = 2;
+            else if (t == "boolean") sf.type = 3;
+          }
+          if (it->value.HasMember("required") && it->value["required"].IsBool())
+            sf.required = it->value["required"].GetBool();
+        }
+        schema.fields.push_back(sf);
+      }
+    }
+    return schema;
+  }
+
+  // Fetch all schemas from _schemas/ path
+  static void fetch_all_schemas()
+  {
+    Engine::Firebase::query_collection("_schemas",
+      [](bool ok, const std::string& data) {
+        schemas_fetched = true;
+        if (!ok) return;
+        schemas.clear();
+        rapidjson::Document doc;
+        doc.Parse(data.c_str());
+        if (doc.HasParseError() || !doc.IsObject()) return;
+        for (auto it = doc.MemberBegin(); it != doc.MemberEnd(); ++it) {
+          rapidjson::StringBuffer buf;
+          rapidjson::Writer<rapidjson::StringBuffer> w(buf);
+          it->value.Accept(w);
+          schemas[it->name.GetString()] = parse_schema(buf.GetString());
+        }
+        push_log("SCHEMAS", true,
+          std::to_string(schemas.size()) + " schema(s) loaded");
+      });
+  }
+
+  // Load schema editor fields from the schemas map for a given collection
+  static void load_schema_editor(const std::string& col)
+  {
+    schema_editor_collection = col;
+    auto it = schemas.find(col);
+    if (it != schemas.end()) {
+      schema_editor_fields = it->second.fields;
+      schema_editor_strict = it->second.strict;
+    } else {
+      schema_editor_fields.clear();
+      schema_editor_strict = true;
+    }
+  }
 
   // Start a root-level live-update watch on the entire database.
   static void start_live_watch()
@@ -272,8 +478,9 @@ namespace
         live_last_event_time = now_timestamp();
         push_log("SSE", true, event_json.substr(0, 120));
 
-        // Refresh the collection list
+        // Refresh the collection list and schemas
         fetch_all_collections();
+        fetch_all_schemas();
 
         // Refresh the currently viewed collection (if any)
         std::string col = selected_collection;
@@ -326,8 +533,11 @@ namespace
         rapidjson::Document doc;
         doc.Parse(data.c_str());
         if (!doc.HasParseError() && doc.IsObject()) {
-          for (auto it = doc.MemberBegin(); it != doc.MemberEnd(); ++it)
-            cached_collections.push_back(it->name.GetString());
+          for (auto it = doc.MemberBegin(); it != doc.MemberEnd(); ++it) {
+            std::string name = it->name.GetString();
+            if (name != "_schemas")
+              cached_collections.push_back(name);
+          }
           std::sort(cached_collections.begin(), cached_collections.end());
         }
         push_log("LIST COLLECTIONS", true,
@@ -498,6 +708,7 @@ void FirebasePanel::draw_panel()
   {
     auto_fetched = true;
     fetch_all_collections();
+    fetch_all_schemas();
     start_live_watch();
   }
 
@@ -551,7 +762,9 @@ void FirebasePanel::draw_panel()
       for (const auto& col_name : cached_collections)
       {
         bool is_selected = (col_name == selected_collection);
-        if (ImGui::Selectable(col_name.c_str(), is_selected))
+        bool has_schema = schemas.find(col_name) != schemas.end();
+        std::string label = has_schema ? (col_name + "  [S]") : col_name;
+        if (ImGui::Selectable(label.c_str(), is_selected))
         {
           if (!is_selected)
           {
@@ -689,13 +902,21 @@ void FirebasePanel::draw_panel()
           strncpy_s(doc_id_buf, id.c_str(), sizeof(doc_id_buf) - 1);
           strncpy_s(json_edit_buf, body.c_str(), sizeof(json_edit_buf) - 1);
           field_rows.clear(); sync_json_to_fields(); fields_dirty = false;
-          Engine::Firebase::set_document(col, id, body,
-            [col, id](bool success, const std::string& data) {
-              if (success) { set_status("Created " + col + "/" + id, true);   push_log("CREATE " + col + "/" + id, true, "OK"); }
-              else { set_status("Create failed: " + data, false); push_log("CREATE " + col + "/" + id, false, data); }
-            });
-          push_log("NEW COLLECTION+DOC", true, col + "/" + id);
-          ImGui::CloseCurrentPopup();
+          {
+            std::string verr = validate_document(col, body);
+            if (!verr.empty()) {
+              set_status("Schema violation: " + verr, false);
+              push_log("VALIDATE " + col + "/" + id, false, verr);
+            } else {
+              Engine::Firebase::set_document(col, id, body,
+                [col, id](bool success, const std::string& data) {
+                  if (success) { set_status("Created " + col + "/" + id, true);   push_log("CREATE " + col + "/" + id, true, "OK"); }
+                  else { set_status("Create failed: " + data, false); push_log("CREATE " + col + "/" + id, false, data); }
+                });
+              push_log("NEW COLLECTION+DOC", true, col + "/" + id);
+              ImGui::CloseCurrentPopup();
+            }
+          }
         }
         if (!can_create) ImGui::EndDisabled();
         ImGui::SameLine();
@@ -703,6 +924,192 @@ void FirebasePanel::draw_panel()
           ImGui::CloseCurrentPopup();
       }
       ImGui::EndPopup();
+    }
+  }
+
+  ImGui::Spacing();
+
+  // ========================================================================
+  // Schema Editor
+  // ========================================================================
+  if (ImGui::CollapsingHeader("Schema Editor"))
+  {
+    // ---- Collection selector ----
+    if (cached_collections.empty())
+    {
+      ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.f),
+        "No collections available. Create a collection first.");
+    }
+    else
+    {
+      ImGui::Text("Collection:");
+      ImGui::SameLine();
+      ImGui::SetNextItemWidth(200.f);
+      if (ImGui::BeginCombo("##schema_col", schema_editor_collection.empty()
+        ? "Select..." : schema_editor_collection.c_str()))
+      {
+        for (const auto& col_name : cached_collections)
+        {
+          bool is_sel = (col_name == schema_editor_collection);
+          if (ImGui::Selectable(col_name.c_str(), is_sel))
+            load_schema_editor(col_name);
+          if (is_sel) ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+      }
+
+      // ---- Delete Schema button ----
+      if (!schema_editor_collection.empty()
+        && schemas.find(schema_editor_collection) != schemas.end())
+      {
+        ImGui::SameLine();
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.15f, 0.15f, 1.f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.2f, 0.2f, 1.f));
+        if (ImGui::Button("Delete Schema"))
+        {
+          std::string col = schema_editor_collection;
+          Engine::Firebase::delete_document("_schemas", col,
+            [col](bool success, const std::string& data) {
+              if (success) {
+                schemas.erase(col);
+                set_status("Deleted schema for \"" + col + "\"", true);
+                push_log("DELETE SCHEMA", true, col);
+              }
+              else {
+                set_status("Delete schema failed: " + data, false);
+                push_log("DELETE SCHEMA", false, data);
+              }
+            });
+          schema_editor_fields.clear();
+          schema_editor_strict = true;
+        }
+        ImGui::PopStyleColor(2);
+      }
+
+      // ---- Schema body (only when a collection is selected) ----
+      if (!schema_editor_collection.empty())
+      {
+        bool has_schema = schemas.find(schema_editor_collection) != schemas.end();
+
+        ImGui::Spacing();
+        ImGui::Checkbox("Strict mode (reject unknown fields)", &schema_editor_strict);
+        ImGui::Spacing();
+
+        if (!has_schema && schema_editor_fields.empty())
+        {
+          ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.f),
+            "No schema defined for this collection. Add fields below to create one.");
+        }
+
+        // ---- Field table ----
+        // Ensure trailing empty row for adding
+        {
+          bool trailing_empty = !schema_editor_fields.empty()
+            && schema_editor_fields.back().name.empty();
+          if (!trailing_empty)
+            schema_editor_fields.push_back({});
+        }
+
+        if (ImGui::BeginTable("##schema_fields", 4,
+          ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersInnerV |
+          ImGuiTableFlags_SizingStretchProp))
+        {
+          ImGui::TableSetupColumn("Field Name", ImGuiTableColumnFlags_WidthStretch, 0.35f);
+          ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch, 0.25f);
+          ImGui::TableSetupColumn("Required", ImGuiTableColumnFlags_WidthFixed, 65.f);
+          ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 28.f);
+          ImGui::TableHeadersRow();
+
+          int schema_erase_idx = -1;
+          for (int si = 0; si < static_cast<int>(schema_editor_fields.size()); ++si)
+          {
+            ImGui::PushID(si);
+            ImGui::TableNextRow();
+
+            // Field name
+            ImGui::TableSetColumnIndex(0);
+            ImGui::SetNextItemWidth(-1.f);
+            char name_buf[256] = {};
+            strncpy_s(name_buf, schema_editor_fields[si].name.c_str(), sizeof(name_buf) - 1);
+            if (ImGui::InputText("##sn", name_buf, sizeof(name_buf)))
+              schema_editor_fields[si].name = name_buf;
+
+            // Type combo
+            ImGui::TableSetColumnIndex(1);
+            ImGui::SetNextItemWidth(-1.f);
+            ImGui::Combo("##st", &schema_editor_fields[si].type,
+              schema_type_labels, SCHEMA_TYPE_COUNT);
+
+            // Required checkbox
+            ImGui::TableSetColumnIndex(2);
+            ImGui::Checkbox("##sr", &schema_editor_fields[si].required);
+
+            // Delete button (not on trailing empty row)
+            ImGui::TableSetColumnIndex(3);
+            bool is_trailing = (si == static_cast<int>(schema_editor_fields.size()) - 1
+              && schema_editor_fields[si].name.empty());
+            if (!is_trailing)
+            {
+              if (ImGui::SmallButton("x##sd"))
+                schema_erase_idx = si;
+            }
+            ImGui::PopID();
+          }
+
+          ImGui::EndTable();
+
+          if (schema_erase_idx >= 0)
+            schema_editor_fields.erase(schema_editor_fields.begin() + schema_erase_idx);
+        }
+
+        // ---- Save Schema button ----
+        // Count non-empty fields
+        int real_fields = 0;
+        for (const auto& sf : schema_editor_fields)
+          if (!sf.name.empty()) real_fields++;
+
+        ImGui::Spacing();
+        bool can_save = (real_fields > 0 && pending == 0);
+        if (!can_save) ImGui::BeginDisabled();
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.15f, 0.55f, 0.15f, 1.f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.20f, 0.75f, 0.20f, 1.f));
+        if (ImGui::Button("Save Schema", ImVec2(-1.f, 0)))
+        {
+          // Build schema from editor fields (skip empty rows)
+          CollectionSchema new_schema;
+          new_schema.strict = schema_editor_strict;
+          for (const auto& sf : schema_editor_fields)
+            if (!sf.name.empty()) new_schema.fields.push_back(sf);
+
+          std::string col = schema_editor_collection;
+          std::string body = serialize_schema(new_schema);
+          schemas[col] = new_schema;
+
+          Engine::Firebase::set_document("_schemas", col, body,
+            [col](bool success, const std::string& data) {
+              if (success) {
+                set_status("Schema saved for \"" + col + "\"", true);
+                push_log("SAVE SCHEMA", true, col);
+              }
+              else {
+                set_status("Save schema failed: " + data, false);
+                push_log("SAVE SCHEMA", false, data);
+              }
+            });
+        }
+        ImGui::PopStyleColor(2);
+        if (!can_save) ImGui::EndDisabled();
+
+        // ---- Schema badge info ----
+        if (has_schema)
+        {
+          ImGui::Spacing();
+          const auto& s = schemas[schema_editor_collection];
+          ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.f),
+            "Active schema: %zu field(s), strict: %s",
+            s.fields.size(), s.strict ? "on" : "off");
+        }
+      }
     }
   }
 
@@ -881,13 +1288,21 @@ void FirebasePanel::draw_panel()
           strncpy_s(doc_id_buf, id.c_str(), sizeof(doc_id_buf) - 1);
           strncpy_s(json_edit_buf, body.c_str(), sizeof(json_edit_buf) - 1);
           field_rows.clear(); sync_json_to_fields(); fields_dirty = false;
-          Engine::Firebase::set_document(col, id, body,
-            [col, id](bool success, const std::string& data) {
-              if (success) { set_status("Created " + id, true);            push_log("CREATE " + col + "/" + id, true, "OK"); }
-              else { set_status("Create failed: " + data, false);  push_log("CREATE " + col + "/" + id, false, data); }
-            });
-          push_log("NEW DOC", true, col + "/" + id);
-          ImGui::CloseCurrentPopup();
+          {
+            std::string verr = validate_document(col, body);
+            if (!verr.empty()) {
+              set_status("Schema violation: " + verr, false);
+              push_log("VALIDATE " + col + "/" + id, false, verr);
+            } else {
+              Engine::Firebase::set_document(col, id, body,
+                [col, id](bool success, const std::string& data) {
+                  if (success) { set_status("Created " + id, true);            push_log("CREATE " + col + "/" + id, true, "OK"); }
+                  else { set_status("Create failed: " + data, false);  push_log("CREATE " + col + "/" + id, false, data); }
+                });
+              push_log("NEW DOC", true, col + "/" + id);
+              ImGui::CloseCurrentPopup();
+            }
+          }
         }
         if (!can_create) ImGui::EndDisabled();
         ImGui::SameLine();
@@ -975,6 +1390,11 @@ void FirebasePanel::draw_panel()
               std::string col = selected_collection;
               std::string id = doc_id_buf;
               std::string body = json_edit_buf;
+              std::string verr = validate_document(col, body);
+              if (!verr.empty()) {
+                set_status("Schema violation: " + verr, false);
+                push_log("VALIDATE " + col + "/" + id, false, verr);
+              } else
               Engine::Firebase::set_document(col, id, body,
                 [col, id](bool success, const std::string& data) {
                   if (success) {
@@ -1008,6 +1428,11 @@ void FirebasePanel::draw_panel()
               std::string col = selected_collection;
               std::string id = doc_id_buf;
               std::string body = json_edit_buf;
+              std::string verr = validate_document(col, body);
+              if (!verr.empty()) {
+                set_status("Schema violation: " + verr, false);
+                push_log("VALIDATE " + col + "/" + id, false, verr);
+              } else
               Engine::Firebase::set_document(col, id, body,
                 [col, id](bool success, const std::string& data) {
                   if (success) {
