@@ -145,11 +145,6 @@ namespace EnemyHealthBarStateCallbacks
       return;
     }
 
-    if (health->is_dead()) {
-      state_machine->change_state("Death");
-      return;
-    }
-
     if (health->current_hp < health->max_hp) {
       set_bar_alpha(entity, 1.0f);
       remember_current_hp(entity, health->current_hp);
@@ -198,6 +193,7 @@ namespace EnemyHealthBarStateCallbacks
     if (auto* health = get_parent_enemy_health(entity)) {
       remember_current_hp(entity, health->current_hp);
     }
+
   }
 
   inline void stable_on_update(Engine::ECS::Entity entity) {
@@ -205,13 +201,14 @@ namespace EnemyHealthBarStateCallbacks
   }
 
   inline void death_on_enter(Engine::ECS::Entity entity) {
-    set_bar_alpha(entity, 0.0f);
+    set_bar_alpha(entity, 1.0f);
+    restart_bar_animation(entity);
     clear_recorded_hp(entity);
   }
 
-  inline void death_on_update([[maybe_unused]] Engine::ECS::Entity entity) {
+  inline void death_on_update(Engine::ECS::Entity entity) {
+    set_bar_alpha(entity, 1.0f);
   }
-}
 
 REGISTER_STATE_MACHINE_BLUEPRINT(EnemyHealthBar, "Blank",
   STATE("Blank", EnemyHealthBarStateCallbacks::blank_on_enter, EnemyHealthBarStateCallbacks::blank_on_update, NO_CALLBACK)

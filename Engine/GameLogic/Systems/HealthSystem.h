@@ -109,25 +109,39 @@ namespace Engine {
         }
 
         // HUD
-        if (auto* ui = e.get_component<HealthBar>()) {
-          const float ratio = (hp->max > 0) ? (static_cast<float>(hp->value) / hp->max) : 0.0f;
-          const float t = std::clamp(ratio, 0.0f, 1.0f);
-          const float w = ui->width * t;
+          // Per-frame cleanup: keep only EnemyHealthBar sprites that are actually
+          // referenced by some EnemyHealthBarRect component. Any other
+          // EnemyHealthBar sprites (e.g. manually placed in the scene or
+          // duplicated on reload) are destroyed.
+          {
+            std::unordered_set<Engine::ECS::EntityID> active_bar_ids;
 
-          if (ui->bar_fill.is_valid()) {
-            auto bar = ui->bar_fill;
-            if (auto* tr = bar.get_component<Transform2D>()) {
-              tr->scale.x = w;
-              tr->scale.y = ui->height;
-              tr->position.x = ui->left + w * 0.5f;
-              tr->position.y = ui->top + ui->height * 0.5f;
-            }
-            if (auto* c = bar.get_component<Color>()) {
-              const float t2 = t * t;
-              float r = t2, g = 0.1f, b = 1.0f - t2, a = 1.0f;
-              if (t >= 0.80f) {
-                const float time = Engine::Time::get_time();
-                const float s = 0.5f * (std::sin(time * 6.0f) + 1.0f);
+            // Collect all bar sprite entities that are currently referenced by
+            // EnemyHealthBarRect components.
+            Engine::ECS::for_each_entity_with<Components::EnemyHealthBarRect>(
+              [&](Engine::ECS::Entity owner)
+              {
+                if (auto* eb = owner.get_component<Components::EnemyHealthBarRect>()) {
+                  if (eb->sprite.is_valid()) {
+                    active_bar_ids.insert(eb->sprite.get_id());
+                  }
+                }
+              }
+            );
+
+            // Destroy any EnemyHealthBar sprite that is not in the active set.
+            Engine::ECS::for_each_entity_with<Components::StateMachine>(
+              [&](Engine::ECS::Entity bar_entity)
+              {
+                auto* sm = bar_entity.get_component<Components::StateMachine>();
+                if (!sm || sm->blueprint_id != "EnemyHealthBar") return;
+
+                if (!active_bar_ids.contains(bar_entity.get_id())) {
+                  bar_entity.destroy();
+                }
+              }
+            );
+          }
                 const float baseA = 0.65f, ampA = 0.35f;
                 a = baseA + ampA * s;
                 const float glow = 0.90f + 0.10f * s;
@@ -376,6 +390,43 @@ namespace Engine {
 
       void update_entity(Engine::ECS::Entity e) override {
         using namespace Components;
+        // Per-frame cleanup: remove stray EnemyHealthBar sprites. However, if a
+        // bar is already playing its Death animation, allow it to survive even
+        // after the parent enemy is gone until that animation has finished.
+        Engine::ECS::for_each_entity_with<Components::StateMachine>(
+          [](Engine::ECS::Entity bar_entity)
+          {
+            auto* sm = bar_entity.get_component<Components::StateMachine>();
+            if (!sm || sm->blueprint_id != "EnemyHealthBar") return;
+
+            auto* anim = bar_entity.get_component<Components::Animation>();
+            const bool death_playing =
+              sm->get_current_state() == "Death" && anim && !anim->has_ended();
+
+            // Once the Death animation has finished, this bar can be cleaned up.
+            if (sm->get_current_state() == "Death" && (!anim || anim->has_ended())) {
+              bar_entity.destroy();
+              return;
+            }
+
+            auto* parent = bar_entity.get_component<Components::Parent>();
+            if (!parent || parent->parent_id == Engine::ECS::INVALID_ENTITY) {
+              if (!death_playing) {
+                bar_entity.destroy();
+              }
+              return;
+            }
+
+            Engine::ECS::Entity parent_entity(parent->parent_id);
+            if (!parent_entity.is_valid() ||
+              !parent_entity.has_component<Components::EnemyHealth>()) {
+              if (!death_playing) {
+                bar_entity.destroy();
+              }
+            }
+          }
+        );
+
         auto* hp = e.get_component<EnemyHealth>();
         auto* tr = e.get_component<Transform2D>();
         auto* bar = e.get_component<EnemyHealthBarRect>();
@@ -410,14 +461,61 @@ namespace Engine {
         bar->last_hp = cur;
         bar->last_max = mx;
 
-        const bool show = bar->persist_after_first_hit
-          ? (bar->has_been_hit && !hp->is_dead())
-          : (now <= bar->visible_until && !hp->is_dead());
+        bool death_anim_active = false;
+        if (bar->sprite.is_valid()) {
+          if (auto* sm = bar->sprite.get_component<Components::StateMachine>()) {
+            if (sm->get_current_state() == "Death") {
+              if (auto* anim = bar->sprite.get_component<Components::Animation>()) {
+                death_anim_active = !anim->has_ended();
+              }
+            }
+          }
+        }
 
-        if (show) layout_rect(e, *tr, *bar, cur, mx);
-        else      hide_rect(*bar);
+        const bool should_show_bar = death_anim_active ||
+          (bar->has_been_hit &&
+            (bar->persist_after_first_hit || now <= bar->visible_until));
 
-        if (hp->is_dead()) destroy_rect(*bar);
+        if (should_show_bar) {
+          layout_rect(e, *tr, *bar, cur, mx);
+        }
+        else {
+            if (bar->sprite.is_valid()) {
+              if (auto* sm = bar->sprite.get_component<Components::StateMachine>()) {
+                if (sm->get_current_state() != "Blank") {
+                  sm->set_state_immediate("Blank", bar->sprite);
+                }
+              }
+            }
+            hide_rect(*bar);
+        }
+
+        // When the enemy dies, play the health bar's "Death" animation
+        // fully before destroying the bar sprite.
+        if (hp->is_dead()) {
+          if (bar->sprite.is_valid()) {
+            if (auto* sm = bar->sprite.get_component<Components::StateMachine>()) {
+              if (sm->get_current_state() != "Death") {
+                // Switch immediately so the Death animation is applied this
+                // frame and cannot be skipped by system ordering.
+                sm->set_state_immediate("Death", bar->sprite);
+                return;
+              }
+            }
+
+            // Already in Death state: wait until the Death animation finishes
+            // before we destroy the bar.
+            if (auto* anim = bar->sprite.get_component<Components::Animation>()) {
+              if (!anim->has_ended()) {
+                return;
+              }
+            }
+          }
+
+          // Either no sprite/state machine, or Death animation has ended:
+          // safe to destroy the bar now.
+          destroy_rect(*bar);
+        }
       }
 
     private:
@@ -473,16 +571,19 @@ namespace Engine {
         if (auto* state_machine = bar.sprite.get_component<Components::StateMachine>()) {
           state_machine->blueprint_id = "EnemyHealthBar";
           state_machine->current_state_name = "Blank";
+          state_machine->set_state_immediate("Blank", bar.sprite);
         }
         else {
           bar.sprite.add_component<Components::StateMachine>();
           if (auto* new_state_machine = bar.sprite.get_component<Components::StateMachine>()) {
             new_state_machine->blueprint_id = "EnemyHealthBar";
             new_state_machine->current_state_name = "Blank";
+            new_state_machine->set_state_immediate("Blank", bar.sprite);
           }
         }
 
         restart_bar_animation(bar);
+        hide_rect(bar);
       }
 
       void hide_rect(Components::EnemyHealthBarRect& bar) {
