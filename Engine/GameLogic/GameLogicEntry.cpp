@@ -69,6 +69,9 @@ void apply_knockback_from_player(ECS::Entity entity)
   player_comp->knockback_value.x = player_xform->position.x > xform->position.x ?
     -player_comp->knockback_value.x : player_comp->knockback_value.x;
 
+  // Doing the flip here so on editor side we dont need to deal with negative values
+  player_comp->knockback_value.y = -player_comp->knockback_value.y;
+
   // Then we zero the forces and velocity of the monkey before they change state
   rigid->velocity.zero();
   rigid->force = player_comp->knockback_value;
