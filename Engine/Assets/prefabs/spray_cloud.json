@@ -3,86 +3,15 @@
         "components": [
             {
                 "data": {
-                    "a": 1.0,
-                    "b": 1.0,
-                    "g": 1.0,
-                    "r": 1.0
-                },
-                "type": "Components::Color"
-            },
-            {
-                "data": {
-                    "path": "images/SprayPaintMonkeySpriteSheets/GreenCloud.png"
-                },
-                "type": "Components::Texture"
-            },
-            {
-                "data": {
-                    "acceleration": {
-                        "x": 0.0,
-                        "y": 0.0
-                    },
-                    "force_view": {
-                        "x": 0.0,
-                        "y": 0.0
-                    },
-                    "gravity": {
-                        "x": 0.0,
-                        "y": 1000.0
-                    },
-                    "is_jumping": false,
-                    "is_static": true,
-                    "mass": 1.0,
-                    "on_ground": false,
-                    "use_gravity": false,
-                    "velocity": {
-                        "x": -83.53569030761719,
-                        "y": -16.666667938232422
-                    },
-                    "x_terminal_velocity": 500.0,
-                    "y_terminal_velocity": 500.0
-                },
-                "type": "Components::RigidBody"
-            },
-            {
-                "data": {
-                    "position": {
-                        "x": 8810.0048828125,
-                        "y": 1891.34765625
-                    },
-                    "rotation": 0.0,
-                    "scale": {
-                        "x": 160.0,
-                        "y": 160.0
-                    }
-                },
-                "type": "Components::Transform2D"
-            },
-            {
-                "data": {
-                    "damage": 1,
-                    "damage_interval": 0.5,
-                    "impact_vfx_texture": {
-                        "path": ""
-                    },
-                    "is_continuous": true,
-                    "knockback": {
-                        "x": 10.0,
-                        "y": 10.0
-                    }
-                },
-                "type": "Components::Attack"
-            },
-            {
-                "data": {
                     "aabb": {
                         "half_height": 34.71263122558594,
                         "half_width": 31.724124908447266,
                         "pos": {
-                            "x": 8812.7900390625,
-                            "y": 1891.9033203125
+                            "x": -218.99386596679688,
+                            "y": 717.8770141601563
                         }
                     },
+                    "collided": false,
                     "height": 69.42526245117188,
                     "kinetic_friction": 1.0,
                     "offset": {
@@ -103,9 +32,300 @@
                     "width": 63.44824981689453
                 },
                 "type": "Components::BoxCollider"
+            },
+            {
+                "data": {
+                    "acceleration": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "gravity": {
+                        "x": 0.0,
+                        "y": 1000.0
+                    },
+                    "is_jumping": false,
+                    "is_static": true,
+                    "mass": 1.0,
+                    "on_ground": false,
+                    "use_gravity": false,
+                    "velocity": {
+                        "x": -68.8916015625,
+                        "y": 0.0
+                    },
+                    "x_terminal_velocity": 500.0,
+                    "y_terminal_velocity": 0.0
+                },
+                "type": "Components::RigidBody"
+            },
+            {
+                "data": {
+                    "a": 1.0,
+                    "b": 1.0,
+                    "g": 1.0,
+                    "r": 1.0
+                },
+                "type": "Components::Color"
+            },
+            {
+                "data": {
+                    "path": "images/SprayPaintMonkeySpriteSheets/VFX_Gas_Spritesheet.png"
+                },
+                "type": "Components::Texture"
+            },
+            {
+                "data": {
+                    "drawIndex": 2,
+                    "tex_coords_list": [
+                        [
+                            {
+                                "x": 0.0,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.125,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.125,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.125,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.25,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.25,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.125,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.25,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.375,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.375,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.25,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.375,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.5,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.5,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.375,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.5,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.625,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.625,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.5,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.625,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.75,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.75,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.625,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.75,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.875,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.875,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.75,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.875,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 1.0,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 1.0,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.875,
+                                "y": 0.0
+                            }
+                        ]
+                    ]
+                },
+                "type": "Components::TextureAtlas"
+            },
+            {
+                "data": {
+                    "atlas_indices": [
+                        0,
+                        1,
+                        2,
+                        3,
+                        0,
+                        1,
+                        2,
+                        3,
+                        0,
+                        1,
+                        2,
+                        3,
+                        0,
+                        4,
+                        5,
+                        6,
+                        7
+                    ],
+                    "before_times": [
+                        0.0,
+                        0.20000000298023224,
+                        0.4000000059604645,
+                        0.6000000238418579,
+                        0.800000011920929,
+                        1.0,
+                        1.2000000476837158,
+                        1.4500000476837158,
+                        1.7000000476837158,
+                        1.9500000476837158,
+                        2.200000047683716,
+                        2.450000047683716,
+                        2.700000047683716,
+                        3.200000047683716,
+                        3.4000000953674316,
+                        3.6000001430511475,
+                        3.8000001907348633
+                    ],
+                    "durations": [
+                        0.20000000298023224,
+                        0.20000000298023224,
+                        0.20000000298023224,
+                        0.20000000298023224,
+                        0.20000000298023224,
+                        0.20000000298023224,
+                        0.25,
+                        0.25,
+                        0.25,
+                        0.25,
+                        0.25,
+                        0.25,
+                        0.5,
+                        0.20000000298023224,
+                        0.20000000298023224,
+                        0.20000000298023224,
+                        0.20000000298023224
+                    ],
+                    "is_looping": true,
+                    "startTime": 889.6826171875,
+                    "totalDuration": 4.0
+                },
+                "type": "Components::Animation"
+            },
+            {
+                "data": {
+                    "position": {
+                        "x": -221.29025268554688,
+                        "y": 718.566650390625
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 160.0,
+                        "y": 160.0
+                    }
+                },
+                "type": "Components::Transform2D"
+            },
+            {
+                "data": {
+                    "destroy_at": 434.3402404785156
+                },
+                "type": "Components::Lifetime"
+            },
+            {
+                "data": {
+                    "damage": 1,
+                    "damage_interval": 0.5,
+                    "impact_vfx_texture": {
+                        "path": ""
+                    },
+                    "is_continuous": true,
+                    "knockback": {
+                        "x": 10.0,
+                        "y": 10.0
+                    }
+                },
+                "type": "Components::Attack"
             }
         ],
-        "filepath": "prefabs/spray.json",
+        "filepath": "prefabs/spray_cloud.json",
         "layers": [
             "damage_player",
             "spray"

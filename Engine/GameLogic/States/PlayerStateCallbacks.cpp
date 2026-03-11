@@ -399,13 +399,14 @@ namespace PlayerStateCallbacks
     assert(rigid);
     assert(flip);
 
+    player_comp->knockback_value = player_comp->attack1_data.knockback;
     rigid->velocity.x = flip->value.x * player_comp->dash.speed;
     //=========================================================================//
     ECS::Entity hitbox = create_hitbox(entity, player_comp->attack1_data);
 
     Components::Attack* attack = hitbox.get_component<Components::Attack>();
     assert(attack);
-    attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactWhite_Spritesheet.png");
+    attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactBlue_Spritesheet.png");
   }
 
   inline void attack1_on_update(Engine::ECS::Entity entity) {
@@ -443,13 +444,14 @@ namespace PlayerStateCallbacks
     assert(rigid);
     assert(flip);
 
+    player_comp->knockback_value = player_comp->attack2_data.knockback;
     rigid->velocity.x = flip->value.x * player_comp->dash.speed;
     //=========================================================================//
     ECS::Entity hitbox = create_hitbox(entity, player_comp->attack2_data);
 
     Components::Attack* attack = hitbox.get_component<Components::Attack>();
     assert(attack);
-    attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactWhite_Spritesheet.png");
+    attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactBlue_Spritesheet.png");
   }
 
   inline void attack2_on_update(Engine::ECS::Entity entity) {
@@ -487,13 +489,14 @@ namespace PlayerStateCallbacks
     assert(rigid);
     assert(flip);
 
+    player_comp->knockback_value = player_comp->attack3_data.knockback;
     rigid->velocity.x = flip->value.x * player_comp->dash.speed;
     //=========================================================================//
     ECS::Entity hitbox = create_hitbox(entity, player_comp->attack3_data);
 
     Components::Attack* attack = hitbox.get_component<Components::Attack>();
     assert(attack);
-    attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactWhite_Spritesheet.png");
+    attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactBlue_Spritesheet.png");
   }
 
   inline void attack3_on_update(Engine::ECS::Entity entity) {
@@ -521,6 +524,7 @@ namespace PlayerStateCallbacks
     Log::info("Player: Entered Pre Uppercut state");
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
+    player_comp->knockback_value = player_comp->uppercut_data.knockback;
     player_comp->uppercut.reset_cooldown();
     player_comp->damage_immune = true;
 
@@ -743,6 +747,8 @@ namespace PlayerStateCallbacks
     Log::info("Player: Entered Post Smash state");
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
+
+    player_comp->knockback_value = player_comp->smash_data.knockback;
     //=========================================================================//
     ECS::Entity hitbox = create_hitbox(entity, player_comp->smash_data);
 
