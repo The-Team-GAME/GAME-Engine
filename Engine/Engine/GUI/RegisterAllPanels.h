@@ -36,6 +36,7 @@
 #include "PostProcessingPanel.h"
 #include "UpgradePanel.h"
 #include "FirebasePanel.h"
+#include "DiceMiniGamePanel.h"
 
 void register_all_panels()
 {
@@ -59,4 +60,5 @@ void register_all_panels()
   ImGuiManager::register_panel("Post Processing", PostProcessingPanel);
   ImGuiManager::register_panel("Upgrades", UpgradePanel);
   ImGuiManager::register_panel("Firebase", FirebasePanel::draw_panel);
+  ImGuiManager::register_panel("Dice Mini Game", DiceMiniGamePanel::draw_panel);
 }
