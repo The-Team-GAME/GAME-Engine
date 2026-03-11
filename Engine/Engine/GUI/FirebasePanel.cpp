@@ -352,10 +352,10 @@ namespace
     // Check required fields + type match
     for (const auto& sf : schema.fields) {
       auto member = doc.FindMember(sf.name.c_str());
-      if (member == doc.MemberEnd()) {
+      if (member == doc.MemberEnd() || member->value.IsNull()) {
         if (sf.required)
           return sf.name + " expected " + type_label(sf.type) + " but received null";
-        continue;
+        continue;  // optional and absent/null → OK
       }
       std::string err = check_type(member->value, sf.type);
       if (!err.empty())
