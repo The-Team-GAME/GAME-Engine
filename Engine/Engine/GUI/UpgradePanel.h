@@ -868,6 +868,14 @@ inline void UpgradePanel()
         ImGui::Unindent();
       }
 
+      ImGui::Checkbox("Card Stack", &anim.enable_card_stack);
+      if (anim.enable_card_stack)
+      {
+        ImGui::Indent();
+        ImGui::DragFloat("Stack Offset", &anim.card_stack_offset, 0.5f, 0.0f, 100.0f);
+        ImGui::Unindent();
+      }
+
       ImGui::Spacing();
       if (ImGui::Button("Save Anim Settings"))
         SettingsManager<CardAnimSettings>::save();

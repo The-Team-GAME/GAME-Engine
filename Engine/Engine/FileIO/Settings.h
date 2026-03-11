@@ -197,6 +197,10 @@ namespace Engine
       float particle_gravity = 1200.0f;
       float particle_angle_min = 2.356f;  // ~0.75π — upward-biased cone lower bound
       float particle_angle_max = 7.069f;  // ~2.25π — upward-biased cone upper bound
+
+      // Mini-card stack on panel
+      bool  enable_card_stack = true;
+      float card_stack_offset = 8.0f;   // px shift per card when stacking
     };
   }
 }
@@ -222,4 +226,5 @@ REFLECT_FIELDS(Engine::FileIO::CardAnimSettings,
   arc_duration, arc_peak, arc_spin_deg, smash_duration, linger_duration,
   particle_speed_min, particle_speed_max, particle_life_min, particle_life_max,
   particle_count_min, particle_count_max, particle_size, particle_gravity,
-  particle_angle_min, particle_angle_max)
+  particle_angle_min, particle_angle_max,
+  enable_card_stack, card_stack_offset)

@@ -694,13 +694,21 @@ namespace Engine
       if (cat >= 0) row_card_count[cat] += level;
     }
 
-    // Compute effective spacing per row (compress when > 4 cards)
-    constexpr float max_row_w = 4.0f * (mini_w + mini_gap);
+    // Compute effective spacing per row
+    // When stacking: uniform small offset so all cards overlap like a deck.
+    // When not stacking: spread each card side-by-side (mini_w + mini_gap).
     float row_spacing[4];
     for (int r = 0; r < 4; ++r)
-      row_spacing[r] = (row_card_count[r] <= 4)
-      ? (mini_w + mini_gap)
-      : (max_row_w / static_cast<float>(row_card_count[r]));
+    {
+      if (cfg.enable_card_stack)
+      {
+        row_spacing[r] = cfg.card_stack_offset;
+      }
+      else
+      {
+        row_spacing[r] = mini_w + mini_gap;
+      }
+    }
 
     // Reset counts for positioning pass
     int row_pos[4] = { 0, 0, 0, 0 };
