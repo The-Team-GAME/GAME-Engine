@@ -2,7 +2,7 @@
     "base_point_threshold": 100,
     "rarities": [
         {
-            "drop_rate": 0.699999988079071,
+            "drop_rate": 0.7,
             "name": "Common"
         },
         {
@@ -10,195 +10,71 @@
             "name": "Rare"
         },
         {
-            "drop_rate": 0.05000000074505806,
+            "drop_rate": 0.05,
             "name": "Epic"
-        },
-        {
-            "drop_rate": 0.009999999776482582,
-            "name": "Legendary"
         }
     ],
-    "threshold_scaling": 1.0199999809265137,
+    "threshold_scaling": 1.02,
     "upgrades": [
         {
-            "display_name": "Base Atk Damage Up I",
-            "id": "atk_dmg",
-            "max_level": 8,
-            "rarity": "Common",
-            "stat_name": "base_attack_damage",
+            "card_index": 0,
+            "display_name": "Basic Attack Damage +1",
+            "id": "flat_atk_dmg",
+            "max_level": 5,
+            "rarity": "Epic",
+            "stat_name": "attack_damage",
             "type": "Flat",
             "value": 1.0
         },
         {
-            "display_name": "Base Atk Damage Up II",
-            "id": "atk_dmg_II",
-            "max_level": 4,
+            "card_index": 1,
+            "display_name": "Uppercut Damage +1",
+            "id": "flat_upp_dmg",
+            "max_level": 5,
             "rarity": "Rare",
-            "stat_name": "base_attack_damage",
-            "type": "Flat",
-            "value": 2.0
-        },
-        {
-            "display_name": "Base Atk Damage Up III",
-            "id": "atk_dmg_III",
-            "max_level": 2,
-            "rarity": "Epic",
-            "stat_name": "base_attack_damage",
-            "type": "Flat",
-            "value": 3.0
-        },
-        {
-            "display_name": "Uppercut Damage Up",
-            "id": "upp_dmg",
-            "max_level": 8,
-            "rarity": "Common",
             "stat_name": "uppercut_damage",
             "type": "Flat",
             "value": 1.0
         },
         {
-            "display_name": "Uppercut Damage Up II",
-            "id": "upp_dmg_II",
-            "max_level": 4,
+            "card_index": 2,
+            "display_name": "Downsmash Damage +1",
+            "id": "flat_smash_dmg",
+            "max_level": 5,
             "rarity": "Rare",
-            "stat_name": "uppercut_damage",
+            "stat_name": "downsmash_damage",
             "type": "Flat",
-            "value": 2.0
+            "value": 1.0
         },
         {
-            "display_name": "Uppercut Damage Up III",
-            "id": "upp_dmg_III",
-            "max_level": 2,
-            "rarity": "Epic",
-            "stat_name": "uppercut_damage",
-            "type": "Flat",
-            "value": 3.0
-        },
-        {
-            "display_name": "Uppercut Cooldown",
-            "id": "upp_cd",
-            "max_level": 4,
-            "rarity": "Rare",
+            "card_index": 3,
+            "display_name": "Uppercut Cooldown -1",
+            "id": "upp_cd_reduce",
+            "max_level": 5,
+            "rarity": "Common",
             "stat_name": "uppercut_cooldown",
             "type": "Flat",
             "value": 1.0
         },
         {
-            "display_name": "Uppercut Cooldown II",
-            "id": "upp_cd_II",
-            "max_level": 2,
-            "rarity": "Epic",
-            "stat_name": "uppercut_cooldown",
-            "type": "Flat",
-            "value": 2.0
-        },
-        {
-            "display_name": "Uppercut Cooldown III",
-            "id": "upp_cd_III",
-            "max_level": 1,
-            "rarity": "Legendary",
-            "stat_name": "uppercut_cooldown",
-            "type": "Flat",
-            "value": 3.0
-        },
-        {
-            "display_name": "Smash Damage Up",
-            "id": "smash_dmg",
-            "max_level": 8,
+            "card_index": 4,
+            "display_name": "Downsmash Cooldown -1",
+            "id": "smash_cd_reduce",
+            "max_level": 5,
             "rarity": "Common",
-            "stat_name": "smash_damage",
+            "stat_name": "downsmash_cooldown",
             "type": "Flat",
             "value": 1.0
         },
         {
-            "display_name": "Smash Damage Up II",
-            "id": "smash_dmg_II",
-            "max_level": 4,
-            "rarity": "Rare",
-            "stat_name": "smash_damage",
-            "type": "Flat",
-            "value": 2.0
-        },
-        {
-            "display_name": "Smash Damage Up III",
-            "id": "smash_dmg_III",
-            "max_level": 2,
-            "rarity": "Epic",
-            "stat_name": "smash_damage",
-            "type": "Flat",
-            "value": 3.0
-        },
-        {
-            "display_name": "Smash Cooldown Reduction",
-            "id": "smash_cd",
-            "max_level": 4,
-            "rarity": "Rare",
-            "stat_name": "smash_cooldown",
-            "type": "Flat",
-            "value": 1.0
-        },
-        {
-            "display_name": "Smash Cooldown Reduction II",
-            "id": "smash_cd_II",
-            "max_level": 2,
-            "rarity": "Epic",
-            "stat_name": "smash_cooldown",
-            "type": "Flat",
-            "value": 2.0
-        },
-        {
-            "display_name": "Smash Cooldown Reduction III",
-            "id": "smash_cd_III",
-            "max_level": 1,
-            "rarity": "Legendary",
-            "stat_name": "smash_cooldown",
-            "type": "Flat",
-            "value": 3.0
-        },
-        {
-            "display_name": "Health Up",
-            "id": "hp",
-            "max_level": 30,
+            "card_index": 5,
+            "display_name": "Dash Cooldown -1",
+            "id": "dash_cd_reduce",
+            "max_level": 5,
             "rarity": "Common",
-            "stat_name": "health",
-            "type": "Flat",
-            "value": 1.0
-        },
-        {
-            "display_name": "Damage +20%",
-            "id": "mult_atk_dmg",
-            "max_level": 1,
-            "rarity": "Legendary",
-            "stat_name": "base_attack_damage",
-            "type": "Multiplier",
-            "value": 1.2000000476837158
-        },
-        {
-            "display_name": "Dash Cooldown",
-            "id": "dash_cd",
-            "max_level": 4,
-            "rarity": "Rare",
             "stat_name": "dash_cooldown",
             "type": "Flat",
             "value": 1.0
-        },
-        {
-            "display_name": "Dash Cooldown II",
-            "id": "dash_cd_II",
-            "max_level": 2,
-            "rarity": "Epic",
-            "stat_name": "dash_cooldown",
-            "type": "Flat",
-            "value": 2.0
-        },
-        {
-            "display_name": "Dash Cooldown III",
-            "id": "dash_cd_III",
-            "max_level": 1,
-            "rarity": "Legendary",
-            "stat_name": "dash_cooldown",
-            "type": "Flat",
-            "value": 3.0
         }
     ]
 }

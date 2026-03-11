@@ -41,6 +41,11 @@
 #include "Lua/LuaComponentBindings.h"
 #include "HotReloadManager.h"
 #include "GUI/TilemapPanel.h"
+#include "UpgradeManager.h"
+#include "UpgradeUIStateMachine.h"
+#include "Firebase/FirebaseManager.h"
+#include "Firebase/FirebaseAuth.h"
+#include "Firebase/FirebaseLuaBindings.h"
 
 namespace Engine
 {
@@ -130,11 +135,18 @@ namespace Engine
     Engine::AudioSystem::setBGMVolume(game_settings.bgm_volume);
     Engine::AudioSystem::setSFXVolume(game_settings.sfx_volume);
 
+    // Initialize Firebase Cloud Firestore
+    if (!Engine::Firebase::init()) {
+      Log::warning("Firebase initialization failed, cloud features disabled");
+    }
+    Engine::Firebase::Auth::init();
+
     // Initialize Lua manager
     if (!Engine::LuaManager::init()) {
       throw std::runtime_error("Failed to initialize Lua manager");
     }
 
+    Engine::Firebase::LuaBindings::register_bindings(); // Firebase "Cloud" table for Lua
     Engine::LuaBindings::register_all_bindings(); // For lua bindings
     Engine::LuaManager::load_script("Assets/scripts/LazyMonkeyStateCallbacks.lua");
 
@@ -150,6 +162,11 @@ namespace Engine
     // Load upgrade settings (roguelike upgrade system definitions)
     if (!Engine::FileIO::SettingsManager<Engine::FileIO::UpgradeSettings>::load("Assets/settings/upgrade_settings.json")) {
       Log::warning("Failed to load upgrade settings, using defaults");
+    }
+
+    // Load card animation settings (upgrade picker UI effect parameters)
+    if (!Engine::FileIO::SettingsManager<Engine::FileIO::CardAnimSettings>::load("Assets/settings/card_anim_settings.json")) {
+      Log::warning("Failed to load card animation settings, using defaults");
     }
 
     // TODO: handle using custom reflector
@@ -258,6 +275,8 @@ namespace Engine
       WindowManager::update_title();
 
       Engine::AudioSystem::update();  // Update FMOD Studio system
+      Engine::Firebase::update();     // Poll async HTTP futures, dispatch callbacks
+      Engine::Firebase::Auth::update(); // Check token expiry, refresh if needed
       ImGuiManager::begin();
 
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
@@ -500,6 +519,10 @@ namespace Engine
 
     Engine::SceneManager::cleanup();
 
+    // Destroy upgrade UI state machine before entities are wiped
+    Engine::UpgradeUIStateMachine::destroy_instance();
+    Engine::UpgradeManager::destroy_instance();
+
     // Force-destroy any entities that survived scene teardown so that
     // component destructors (including StateMachine callback name strings
     // and cached std::function objects) are freed before the CRT leak check.
@@ -517,7 +540,9 @@ namespace Engine
 #ifndef GAME_BUILD
     ViewportPanel::exit();
 #endif
-    Engine::AudioSystem::shutdown();
+    Engine::Firebase::Auth::shutdown();
+    Engine::Firebase::shutdown();   // Shutdown Firebase / WinHTTP
+    Engine::AudioSystem::shutdown();  // Shutdown FMOD Studio system
     Engine::Resources::exit();
     Engine::Graphics::exit_post_processing();
     Engine::Graphics::exit();

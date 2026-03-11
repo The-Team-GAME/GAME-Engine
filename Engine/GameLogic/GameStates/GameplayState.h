@@ -21,6 +21,7 @@
 #include "../Components/InteractableComponents.h"
 #include "../Components/HealthComponents.h"
 #include "../../Engine/UpgradeManager.h"
+#include "../../Engine/UpgradeUIStateMachine.h"
 #include "../../Engine/TempUpgradeUIManager.h"
 
 
@@ -95,6 +96,9 @@ public:
       .add_component<Components::UI>()
       .add_to_layer("main_menu_4");
     upgrade_btn_id = upg_btn.get_id();
+
+    // Register the upgrade button with the UI state machine
+    Engine::UpgradeUIStateMachine::instance().set_upgrade_button(upgrade_btn_id);
 
   };
 
@@ -175,35 +179,8 @@ public:
       }
     }
 
-    // Upgrade button — show/hide based on upgrade availability, click to open picker
-    auto& upg_mgr = Engine::UpgradeManager::instance();
-    if (upgrade_btn_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(upgrade_btn_id))) {
-      auto* upg_color = Engine::ECS::Entity(upgrade_btn_id).get_component<Components::Color>();
-      if (upg_color)
-        upg_color->a = upg_mgr.can_upgrade() ? 1.0f : 0.0f;
-
-      if (upg_mgr.can_upgrade()) {
-        auto* upg_t = Engine::ECS::Entity(upgrade_btn_id).get_component<Components::Transform2D>();
-        float uhw = upg_t->scale.x / 2.0f;
-        float uhh = upg_t->scale.y / 2.0f;
-
-        bool open_picker = Engine::Input::is_pressed(Engine::KeyCode::I);
-
-        if (mouse_pos.x >= upg_t->position.x - uhw &&
-          mouse_pos.x <= upg_t->position.x + uhw &&
-          mouse_pos.y >= upg_t->position.y - uhh &&
-          mouse_pos.y <= upg_t->position.y + uhh) {
-          if (Engine::Input::is_pressed(Engine::KeyCode::MouseLeft))
-            open_picker = true;
-        }
-
-        if (open_picker) {
-          if (!upg_mgr.has_rolled_cards())
-            upg_mgr.roll_cards();
-          upg_mgr.request_upgrade_picker();
-        }
-      }
-    }
+    // Upgrade UI state machine — handles button visibility, card rolling, picker overlay
+    Engine::UpgradeUIStateMachine::instance().update();
 
   };
 
@@ -260,6 +237,8 @@ public:
     if (tips_shown) {
       destroy_tips_overlay();
     }
+    // Reset upgrade UI state machine (destroys picker entities, resumes time)
+    Engine::UpgradeUIStateMachine::instance().reset();
   };
 
   void unload() {
