@@ -754,7 +754,7 @@ namespace Engine
               .add_component<Components::TextureAtlas>(ss_card_w, ss_card_h, ss_rows, ss_cols, ss_total)
               .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
               .add_component<Components::UI>()
-              .add_to_layer("main_menu_5");
+              .add_to_layer("upgrade_ui_fg");
             if (auto* atlas = ECS::Entity(mc.get_id()).get_component<Components::TextureAtlas>())
               atlas->drawIndex = settings_ref.upgrades[rolled_idx].card_index;
 
@@ -865,7 +865,7 @@ namespace Engine
       .add_component<Components::Texture>(rect)
       .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.6f)
       .add_component<Components::UI>()
-      .add_to_layer("main_menu_4");
+      .add_to_layer("upgrade_ui_bg");
     dimmer_id_ = dimmer.get_id();
 
     // Layout sizing — derived from image sizes and scale factors above
@@ -890,7 +890,7 @@ namespace Engine
       .add_component<Components::Texture>(panel_tex)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()
-      .add_to_layer("main_menu_5");
+      .add_to_layer("upgrade_ui_fg");
     panel_id_ = panel.get_id();
 
     // ---- Mini-cards showing acquired upgrades on the panel ----
@@ -981,7 +981,7 @@ namespace Engine
           .add_component<Components::TextureAtlas>(ss_card_w, ss_card_h, ss_rows, ss_cols, ss_total)
           .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
           .add_component<Components::UI>()
-          .add_to_layer("main_menu_5");
+          .add_to_layer("upgrade_ui_fg");
         if (auto* atlas = ECS::Entity(mc.get_id()).get_component<Components::TextureAtlas>())
           atlas->drawIndex = upg.card_index;
         mini_card_ids_.push_back(mc.get_id());
@@ -1006,7 +1006,7 @@ namespace Engine
       .add_component<Components::TextureAtlas>(ss_card_w, ss_card_h, ss_rows, ss_cols, ss_total)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()
-      .add_to_layer("main_menu_5");
+      .add_to_layer("upgrade_ui_fg");
     if (auto* atlas = ECS::Entity(c0.get_id()).get_component<Components::TextureAtlas>())
       atlas->drawIndex = draw0;
     card0_id_ = c0.get_id();
@@ -1022,7 +1022,7 @@ namespace Engine
       .add_component<Components::TextureAtlas>(ss_card_w, ss_card_h, ss_rows, ss_cols, ss_total)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()
-      .add_to_layer("main_menu_5");
+      .add_to_layer("upgrade_ui_fg");
     if (auto* atlas = ECS::Entity(c1.get_id()).get_component<Components::TextureAtlas>())
       atlas->drawIndex = draw1;
     card1_id_ = c1.get_id();
@@ -1319,7 +1319,7 @@ namespace Engine
         .add_component<Components::Texture>(rect)
         .add_component<Components::Color>(c[0], c[1], c[2], 1.0f)
         .add_component<Components::UI>()
-        .add_to_layer("main_menu_5");
+        .add_to_layer("upgrade_ui_fg");
 
       BurstParticle bp;
       bp.id = e.get_id();
