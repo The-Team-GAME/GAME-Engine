@@ -36,6 +36,7 @@
     "particle_size": 20.0,
     "particle_speed_max": 180.0,
     "particle_speed_min": 80.0,
+    "pre_shift_duration": 0.25,
     "smash_duration": 0.11999999731779099,
     "stamp_duration": 0.15000000596046448,
     "stamp_squish": 0.8500000238418579,

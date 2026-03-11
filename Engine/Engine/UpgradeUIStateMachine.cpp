@@ -210,7 +210,7 @@ namespace Engine
       // Don't process input during flip reveal, stamp, or arc animation
       if (!flip_done_) break;
       if (cfg.enable_selection_stamp && stamp_time_ >= 0.0f) break;
-      if (arc_active_ || smash_time_ >= 0.0f || linger_time_ >= 0.0f) break;
+      if (arc_active_ || pre_shift_time_ >= 0.0f || smash_time_ >= 0.0f || linger_time_ >= 0.0f) break;
 
       glm::vec2 mouse = Input::get_mouse_position();
 
@@ -428,13 +428,36 @@ namespace Engine
 
       if (stamp_time_ >= stamp_duration)
       {
-        // Stamp finished — start arc or apply immediately
+        // Stamp finished — start pre-shift, arc, or apply immediately
         stamp_time_ = -1.0f;
         int sc = stamp_card_;
         stamp_card_ = -1;
         if (cfg.enable_card_arc)
         {
-          start_arc(sc);
+          // Populate shift data first (needed for pre-shift and arc target)
+          start_arc(sc);  // sets arc state + computes shift targets
+          // Check if any mini-cards actually need to shift
+          bool needs_shift = false;
+          if (cfg.enable_card_stack)
+          {
+            for (size_t i = 0; i < mini_card_ids_.size(); ++i)
+            {
+              if (mini_card_row_[i] == arc_target_row_ &&
+                mini_card_start_x_[i] != mini_card_target_x_[i])
+              {
+                needs_shift = true;
+                break;
+              }
+            }
+          }
+          if (needs_shift)
+          {
+            // Pause the arc and run pre-shift first
+            arc_active_ = false;
+            arc_time_ = 0.0f;
+            pre_shift_time_ = 0.0f;
+            pre_shift_card_ = sc;
+          }
           return;
         }
         picked_slot_ = sc;
@@ -462,6 +485,34 @@ namespace Engine
         scale_x[c] *= squish_factor;
         scale_y[c] *= squish_factor;
       }
+    }
+
+    // ---- Pre-Shift: slide existing mini-cards before arc starts ----
+    if (pre_shift_time_ >= 0.0f)
+    {
+      const float pre_dur = cfg.pre_shift_duration;
+      pre_shift_time_ += dt;
+      float t = pre_shift_time_ / pre_dur;
+      if (t > 1.0f) t = 1.0f;
+
+      float shift_t = Easing::EaseQuadInOut(t, 0.0f, 1.0f, 1.0f);
+      for (size_t i = 0; i < mini_card_ids_.size(); ++i)
+      {
+        if (mini_card_row_[i] != arc_target_row_) continue;
+        auto* mt = ECS::Entity(mini_card_ids_[i]).get_component<Components::Transform2D>();
+        if (mt)
+          mt->position.x = mini_card_start_x_[i] + (mini_card_target_x_[i] - mini_card_start_x_[i]) * shift_t;
+      }
+
+      if (t >= 1.0f)
+      {
+        // Pre-shift done — now start the arc
+        pre_shift_time_ = -1.0f;
+        pre_shift_card_ = -1;
+        arc_active_ = true;
+        arc_time_ = 0.0f;
+      }
+      return;
     }
 
     // ---- Arc-to-Panel Flight ----
@@ -513,19 +564,6 @@ namespace Engine
         {
           float fade_t = Easing::EaseQuadIn(t, 0.0f, 1.0f, 1.0f);
           oc->a = 1.0f - fade_t;
-        }
-      }
-
-      // Shift existing mini-cards to compressed positions during arc flight
-      if (cfg.enable_card_stack && !mini_card_start_x_.empty())
-      {
-        float shift_t = Easing::EaseQuadInOut(t, 0.0f, 1.0f, 1.0f);
-        for (size_t i = 0; i < mini_card_ids_.size(); ++i)
-        {
-          if (mini_card_row_[i] != arc_target_row_) continue;
-          auto* mt = ECS::Entity(mini_card_ids_[i]).get_component<Components::Transform2D>();
-          if (mt)
-            mt->position.x = mini_card_start_x_[i] + (mini_card_target_x_[i] - mini_card_start_x_[i]) * shift_t;
         }
       }
 
@@ -893,6 +931,8 @@ namespace Engine
     smash_time_ = -1.0f;
     arc_card_ = -1;
     linger_time_ = -1.0f;
+    pre_shift_time_ = -1.0f;
+    pre_shift_card_ = -1;
     // Also clean up any lingering burst particles on hard reset
     {
       auto destroy_if_active = [](ECS::EntityID& id)
@@ -1022,7 +1062,7 @@ namespace Engine
       if (stat_name == "downsmash_damage" || stat_name == "downsmash_cooldown") return 2;
       if (stat_name == "dash_cooldown")                                   return 3;
       return -1;
-    };
+      };
 
     int idx = mgr.get_rolled_card(card_slot);
     arc_target_row_ = -1;

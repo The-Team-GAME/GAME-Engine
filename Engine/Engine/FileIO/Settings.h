@@ -201,6 +201,7 @@ namespace Engine
       // Mini-card stack on panel
       bool  enable_card_stack = true;
       float card_stack_offset = 8.0f;   // px shift per card when stacking
+      float pre_shift_duration = 0.25f; // seconds for existing cards to slide before arc
     };
   }
 }
@@ -227,4 +228,4 @@ REFLECT_FIELDS(Engine::FileIO::CardAnimSettings,
   particle_speed_min, particle_speed_max, particle_life_min, particle_life_max,
   particle_count_min, particle_count_max, particle_size, particle_gravity,
   particle_angle_min, particle_angle_max,
-  enable_card_stack, card_stack_offset)
+  enable_card_stack, card_stack_offset, pre_shift_duration)

@@ -873,6 +873,7 @@ inline void UpgradePanel()
       {
         ImGui::Indent();
         ImGui::DragFloat("Stack Offset", &anim.card_stack_offset, 0.5f, 0.0f, 100.0f);
+        ImGui::DragFloat("Pre-Shift Duration", &anim.pre_shift_duration, 0.01f, 0.05f, 2.0f);
         ImGui::Unindent();
       }
 
