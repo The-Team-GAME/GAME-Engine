@@ -56,14 +56,13 @@
 // Helper function to apply knockback to the enemy (any maybe vise versa -> not tested yet )
 void apply_knockback_from_player(ECS::Entity entity)
 {
-  // Check which direction the punching bag is being hit from
   ECS::Entity player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
   Components::Transform2D* player_xform = player_entity.get_component<Components::Transform2D>();
   Components::Player* player_comp = player_entity.get_component<Components::Player>();
-
+  assert(player_xform && player_comp);
   Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
   Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
-
+  assert(xform && rigid);
   // First we check which direction to apply knockback for the enemy
   // If the player is to the right we want the knockback to be to the left
   player_comp->knockback_value.x = player_xform->position.x > xform->position.x ?
@@ -75,6 +74,29 @@ void apply_knockback_from_player(ECS::Entity entity)
   // Then we zero the forces and velocity of the monkey before they change state
   rigid->velocity.zero();
   rigid->force = player_comp->knockback_value;
+}
+
+void apply_knockback_to_player(ECS::Entity player_entity, ECS::Entity attack_entity)
+{
+  Components::Transform2D* player_xform = player_entity.get_component<Components::Transform2D>();
+  Components::Player* player_comp = player_entity.get_component<Components::Player>();
+  Components::RigidBody* player_rigid = player_entity.get_component<Components::RigidBody>();
+  assert(player_xform && player_comp && player_rigid);
+  Vec2D knockback_value = player_comp->knockback_recieved;
+
+  Components::Transform2D* xform = attack_entity.get_component<Components::Transform2D>();
+  assert(xform);
+  // First we check which direction to apply knockback for the enemy
+  // If the player is to the right we want the knockback to be to the right
+  knockback_value.x = player_xform->position.x < xform->position.x ?
+    -knockback_value.x : knockback_value.x;
+
+  // Doing the flip here so on editor side we dont need to deal with negative values
+  knockback_value.y = -knockback_value.y;
+
+  // Then we zero the forces and velocity of the monkey before they change state
+  player_rigid->velocity.zero();
+  player_rigid->force = knockback_value;
 }
 
 // =============================================================================
@@ -170,6 +192,7 @@ static void register_collision_callbacks()
     });
 #pragma endregion
   // Enemy attacks hitting player
+#pragma region player getting hit
   Engine::ECS::LayerRegistry::register_collision_callback("damage_player", "player",
     [](Engine::ECS::Entity attack_entity, Engine::ECS::Entity player_entity)
     {
@@ -202,8 +225,6 @@ static void register_collision_callbacks()
         Engine::AudioSystem::playEvent("event:/SFX/PlayerHurt");
         Log::info("Playing FMOD event: event:/SFX/PlayerHurt");
 
-        Log::info("Player knocked back! Force applied: ({}, {})", attack->knockback.x, attack->knockback.y);
-
         // Trigger death state immediately when HP reaches 0
         if (health->is_dead())
         {
@@ -220,12 +241,13 @@ static void register_collision_callbacks()
           assert(sm);
           sm->change_state("Stunned");
         }
+        apply_knockback_to_player(player_entity, attack_entity);
       }
       else {
         Log::error("Error: Health or RigidBody component missing from player!");
       }
     });
-
+#pragma endregion
   // Projectiles hitting tilemap (despawn)
   Engine::ECS::LayerRegistry::register_collision_callback("projectiles", "tilemap_foreground_mid",
     [](Engine::ECS::Entity projectile_entity, [[maybe_unused]] Engine::ECS::Entity tile_entity)
@@ -331,14 +353,14 @@ static void register_upgrade_applicators()
     [](Engine::FileIO::UpgradeType type, float value) {
       auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
       if (!player_entity.is_valid()) return;
-      auto* player = player_entity.get_component<Components::Player>();
-      if (!player) return;
+      auto* player_comp = player_entity.get_component<Components::Player>();
+      if (!player_comp) return;
 
       if (type == Engine::FileIO::UpgradeType::Flat)
-        player->smash.cooldown = std::max(0.0f, player->smash.cooldown - value);
+        player_comp->smash.cooldown = std::max(0.0f, player_comp->smash.cooldown - value);
       else
-        player->smash.cooldown = std::max(0.0f, player->smash.cooldown * value);
-      Log::info("[UpgradeApplicator] downsmash_cooldown applied — cd:{}", player->smash.cooldown);
+        player_comp->smash.cooldown = std::max(0.0f, player_comp->smash.cooldown * value);
+      Log::info("[UpgradeApplicator] downsmash_cooldown applied — cd:{}", player_comp->smash.cooldown);
     });
 
   // "dash_cooldown" — Flat: cooldown = max(0, cooldown - value)
