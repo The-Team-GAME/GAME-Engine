@@ -422,6 +422,52 @@ namespace Engine {
       return true;
     }
 
+    bool stopEvent(const ::std::string& eventPath, bool immediate)
+    {
+      if (!gStudioSystem)
+        return false;
+
+      FMOD::Studio::EventDescription* desc = nullptr;
+
+      auto cacheIt = gEventDescriptions.find(eventPath);
+      if (cacheIt != gEventDescriptions.end())
+      {
+        desc = cacheIt->second;
+      }
+      else
+      {
+        if (!FMOD_Check(
+          gStudioSystem->getEvent(eventPath.c_str(), &desc), "getEvent"))
+          return false;
+
+        gEventDescriptions[eventPath] = desc;
+      }
+
+      int instanceCount = 0;
+      if (!FMOD_Check(desc->getInstanceCount(&instanceCount), "getInstanceCount"))
+        return false;
+
+      if (instanceCount <= 0)
+        return true;
+
+      ::std::vector<FMOD::Studio::EventInstance*> instances(instanceCount, nullptr);
+      int retrieved = 0;
+      if (!FMOD_Check(desc->getInstanceList(instances.data(), instanceCount, &retrieved), "getInstanceList"))
+        return false;
+
+      FMOD_STUDIO_STOP_MODE mode = immediate ? FMOD_STUDIO_STOP_IMMEDIATE : FMOD_STUDIO_STOP_ALLOWFADEOUT;
+      bool allOk = true;
+      for (int i = 0; i < retrieved; ++i)
+      {
+        if (instances[i])
+        {
+          allOk = FMOD_Check(instances[i]->stop(mode), "stopEvent") && allOk;
+        }
+      }
+
+      return allOk;
+    }
+
     bool playEventAtPosition(const ::std::string& eventPath, const Math::Vec2D& position, float minDistance, float maxDistance, float soundSpread)
     {
       if (!gStudioSystem)

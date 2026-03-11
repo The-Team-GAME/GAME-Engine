@@ -55,6 +55,8 @@
 // =============================================================================
 static void register_collision_callbacks()
 {
+  static constexpr int PLAYER_LOW_HEALTH_VALUE_THRESHOLD = 2;
+
   // Collision between gameplay and ui layers (example)
   Engine::ECS::LayerRegistry::register_collision_callback("gameplay", "ui",
     [](Engine::ECS::Entity entityA, Engine::ECS::Entity entityB)
@@ -83,12 +85,17 @@ static void register_collision_callbacks()
 
         int damage = attack->damage;
         enemy_health->take_damage(damage);
+        
         Engine::Systems::add_camera_shake(42.0f, 0.16f);
         Log::info("camera shake requested on enemy hit");
         Log::info("Enemy took {} damage! HP: {}/{}", damage, enemy_health->current_hp, enemy_health->max_hp);
 
-        Engine::AudioSystem::playEvent("event:/SFX/PlayerHit");
-        Log::info("Playing FMOD event: event:/SFX/PlayerHit");
+        if (attack->play_punch_hit_sfx) {
+          Engine::AudioSystem::playEvent("event:/SFX/PlayerPunch");
+          Log::info("Playing FMOD event: event:/SFX/PlayerPunch");
+          Engine::AudioSystem::playEvent("event:/SFX/PlayerOnHit");
+          Log::info("Playing FMOD event: event:/SFX/PlayerOnHit");
+        }
 
         if (enemy_health->current_hp <= 0) {
           if (state_machine->get_current_state() != "Death") {
@@ -181,6 +188,13 @@ static void register_collision_callbacks()
 
         // Decrease HP by 1 per hit
         health->damage(1);
+
+        const bool should_play_heartbeat = (health->value > 0) && (health->value <= PLAYER_LOW_HEALTH_VALUE_THRESHOLD);
+        if (should_play_heartbeat) {
+          Engine::AudioSystem::playEvent("event:/SFX/PlayerHeartBeat");
+          Log::info("Playing FMOD event: event:/SFX/PlayerHeartBeat");
+        }
+
         Log::info("Player took damage! HP: {}/{}", health->value, health->max);
 
         // Trigger red vignette flash
@@ -197,6 +211,8 @@ static void register_collision_callbacks()
         if (health->is_dead())
         {
           Log::info("Player is dead!");
+          Engine::AudioSystem::stopEvent("event:/SFX/PlayerHeartBeat", true);
+          Log::info("Stopped FMOD event: event:/SFX/PlayerHeartBeat (player dead)");
           Components::StateMachine* state_machine = player_entity.get_component<Components::StateMachine>();
           if (state_machine && state_machine->get_current_state() != "Death")
           {
@@ -442,6 +458,11 @@ static void register_upgrade_applicators()
           health->value, health->max,
           gained
         );
+      }
+
+      if (health->value >= 3) {
+        Engine::AudioSystem::stopEvent("event:/SFX/PlayerHeartBeat", true);
+        Log::info("Stopped FMOD event: event:/SFX/PlayerHeartBeat (HP is full)");
       }
     });
 

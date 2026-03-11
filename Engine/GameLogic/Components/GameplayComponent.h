@@ -233,14 +233,15 @@ namespace Components
   {
     int damage = 10;
     Math::Vec2D knockback = Math::Vec2D(0.0f, 0.0f);
+    bool play_punch_hit_sfx = true;
     bool is_continuous = false;
     float damage_interval = 0.1f; // Time in seconds between damage ticks for continuous attacks
     std::vector<std::pair<Engine::ECS::Entity, float>> hit_entities; // Track entity and last hit time
     Components::Texture impact_vfx_texture;
 
     Attack() = default;
-    explicit Attack(int dmg, Math::Vec2D kb = Math::Vec2D(0.0f, 0.0f), bool continuous = false, float interval = 0.1f)
-      : damage(dmg), knockback(kb), is_continuous(continuous), damage_interval(interval) {
+    explicit Attack(int dmg, Math::Vec2D kb = Math::Vec2D(0.0f, 0.0f), bool continuous = false, float interval = 0.1f, bool play_hit_sfx = true)
+      : damage(dmg), knockback(kb), play_punch_hit_sfx(play_hit_sfx), is_continuous(continuous), damage_interval(interval) {
     }
 
     bool should_apply_damage(Engine::ECS::Entity entity) {
@@ -300,5 +301,5 @@ REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height,
 REGISTER_COMPONENT(Components::TurretMonkey, chase_speed, attack_cooldown, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, long_attack_range)
 REGISTER_COMPONENT(Components::SlingshotMonkey, chase_speed, dash_speed, dash_cooldown, dash_windup_duration, dash_indicator_height, leap_speed, leap_height, attack_cooldown, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, close_attack_range, dash_attack_range)
 REGISTER_COMPONENT(Components::SprayCanMonkey, chase_speed, attack_cooldown, last_attack_time, attack_windup, detection_range, chase_range, attack_range, spray_duration, spray_range, spray_width, knockback, damage, cloud_spawn_time, cloud_initial_vx)
-REGISTER_COMPONENT(Components::Attack, damage, knockback, is_continuous, damage_interval, impact_vfx_texture)
+REGISTER_COMPONENT(Components::Attack, damage, knockback, play_punch_hit_sfx, is_continuous, damage_interval, impact_vfx_texture)
 REGISTER_COMPONENT(Components::PendingKnockback, knockback)

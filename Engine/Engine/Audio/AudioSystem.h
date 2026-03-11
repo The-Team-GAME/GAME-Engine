@@ -46,6 +46,7 @@ namespace Engine {
     // Event playback (one-shot)
     // ------------------------------------------------------------
     ENGINE_API bool playEvent(const std::string& eventPath);
+    ENGINE_API bool stopEvent(const std::string& eventPath, bool immediate = true);
     // minDistance: radius where sound is full volume and mostly centered (default 500)
     // maxDistance: radius where sound fades to silence (default 2000)
     // soundSpread: 0-100, how much sound spreads between speakers when close (0=point source, 100=wide stereo)
