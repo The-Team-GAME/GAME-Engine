@@ -13,6 +13,7 @@
 #include "DiceMiniGamePanel.h"
 
 #include "../Firebase/FirebaseManager.h"
+#include "../Firebase/FirebaseAuth.h"
 #include "../Time.h"
 
 #include <imgui.h>
@@ -28,6 +29,7 @@
 #include <random>
 #include <chrono>
 #include <ctime>
+#include <cmath>
 
 // ============================================================================
 // Panel-local state
@@ -60,6 +62,13 @@ namespace
   static std::vector<LeaderboardEntry> leaderboard;
   static int  watch_id = -1;
   static bool is_fetching = false;
+
+  // --- Live update flash ---
+  static float live_flash_timer = 0.f;  // Briefly highlights the leaderboard header on each SSE event
+  static int   live_update_count = 0;    // Cumulative count of SSE events received
+
+  // --- Auth tracking ---
+  static std::string last_auth_name;    // Display name last auto-set from Google auth
 
   // ================================================================
   // Helpers
@@ -140,7 +149,9 @@ namespace
     if (watch_id >= 0) return;
     watch_id = Engine::Firebase::watch_collection("leaderboard",
       [](bool /*ok*/, const std::string& /*event_json*/) {
-        // Any change → re-fetch the full leaderboard
+        // Any change → flash the indicator and re-fetch the full leaderboard
+        live_flash_timer = 2.5f;
+        ++live_update_count;
         fetch_leaderboard();
       });
   }
@@ -202,37 +213,84 @@ void DiceMiniGamePanel::draw_panel()
   // Tick timers
   if (status_timer > 0.f) status_timer -= dt;
   if (roll_anim_timer > 0.f) roll_anim_timer -= dt;
+  if (live_flash_timer > 0.f) live_flash_timer -= dt;
 
   // Auto-start the leaderboard watch on first configured frame
   if (watch_id < 0 && Engine::Firebase::is_configured())
     start_leaderboard_watch();
+
+  // Auto-set player name from Google sign-in when authenticated
+  {
+    if (Engine::Firebase::Auth::is_authenticated())
+    {
+      std::string disp = Engine::Firebase::Auth::get_display_name();
+      if (disp.empty()) disp = Engine::Firebase::Auth::get_email();
+      if (!disp.empty() && disp != last_auth_name)
+      {
+        last_auth_name = disp;
+        active_player = disp;
+        my_score = 0;
+        last_roll = 0;
+        fetch_leaderboard();
+      }
+    }
+    else if (!last_auth_name.empty())
+    {
+      // Signed out — allow manual input again
+      last_auth_name.clear();
+    }
+  }
 
   // ======================================================================
   // Player Setup
   // ======================================================================
   if (ImGui::CollapsingHeader("Player Setup", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    ImGui::SetNextItemWidth(200.f);
-    ImGui::InputText("##name", player_name_buf, sizeof(player_name_buf));
-    ImGui::SameLine();
-    if (ImGui::Button("Set Name"))
+    if (Engine::Firebase::Auth::is_authenticated())
     {
-      // Trim surrounding spaces
-      std::string trimmed = player_name_buf;
-      while (!trimmed.empty() && trimmed.front() == ' ') trimmed.erase(trimmed.begin());
-      while (!trimmed.empty() && trimmed.back() == ' ') trimmed.pop_back();
-
-      if (!trimmed.empty())
+      ImGui::TextColored(ImVec4(0.4f, 0.85f, 1.f, 1.f), "[Google] Signed in — player name set automatically");
+      ImGui::SameLine();
+      ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.1f, 0.1f, 1.f));
+      ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.2f, 0.2f, 1.f));
+      ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.05f, 0.05f, 1.f));
+      if (ImGui::SmallButton("Sign Out"))
       {
-        active_player = trimmed;
+        Engine::Firebase::Auth::sign_out();
+        active_player.clear();
         my_score = 0;
         last_roll = 0;
-        set_status("Player set to: " + active_player, true);
-        fetch_leaderboard();
       }
+      ImGui::PopStyleColor(3);
     }
-    ImGui::SameLine();
-    ImGui::TextDisabled("Player Name");
+    else
+    {
+      ImGui::SetNextItemWidth(200.f);
+      ImGui::InputText("##name", player_name_buf, sizeof(player_name_buf));
+      ImGui::SameLine();
+      if (ImGui::Button("Set Name"))
+      {
+        // Trim surrounding spaces
+        std::string trimmed = player_name_buf;
+        while (!trimmed.empty() && trimmed.front() == ' ') trimmed.erase(trimmed.begin());
+        while (!trimmed.empty() && trimmed.back() == ' ') trimmed.pop_back();
+
+        if (!trimmed.empty())
+        {
+          active_player = trimmed;
+          my_score = 0;
+          last_roll = 0;
+          set_status("Player set to: " + active_player, true);
+          fetch_leaderboard();
+        }
+      }
+      ImGui::SameLine();
+      ImGui::TextDisabled("Player Name");
+
+      ImGui::Spacing();
+      ImGui::TextColored(ImVec4(0.55f, 0.75f, 1.f, 1.f), "(i)");
+      ImGui::SameLine();
+      ImGui::TextWrapped("Sign in with Google (Firebase panel > Authentication) to have your name filled in automatically.");
+    }
 
     if (!active_player.empty())
     {
@@ -313,7 +371,17 @@ void DiceMiniGamePanel::draw_panel()
     ImGui::Text("Live Update:");
     ImGui::SameLine();
     if (watch_id >= 0)
-      ImGui::TextColored(ImVec4(0.2f, 1.f, 0.3f, 1.f), "connected");
+    {
+      if (live_flash_timer > 0.f)
+      {
+        // Pulse between green and cyan each time an SSE push fires
+        float pulse = static_cast<float>(std::sin(ImGui::GetTime() * 12.0) * 0.5 + 0.5);
+        ImGui::TextColored(ImVec4(0.1f, 1.f, 0.5f + 0.5f * pulse, 1.f),
+          "** LIVE UPDATE #%d received! **", live_update_count);
+      }
+      else
+        ImGui::TextColored(ImVec4(0.2f, 1.f, 0.3f, 1.f), "connected");
+    }
     else
       ImGui::TextColored(ImVec4(1.f, 0.85f, 0.f, 1.f), "connecting...");
 
