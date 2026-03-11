@@ -209,6 +209,12 @@ namespace Engine
       float mini_wave_speed = 1.2f;     // cycles per second
       float mini_wave_phase = 0.4f;     // phase offset between adjacent cards
 
+      // Mini-card tilt
+      bool  enable_mini_tilt = true;
+      float mini_tilt_amplitude = 3.0f; // degrees
+      float mini_tilt_speed = 0.8f;     // cycles per second
+      float mini_tilt_phase = 0.5f;     // phase offset between adjacent cards
+
       // Smash ripple on mini-cards
       bool  enable_smash_ripple = true;
       float ripple_amplitude = 8.0f;    // px peak displacement
@@ -242,4 +248,5 @@ REFLECT_FIELDS(Engine::FileIO::CardAnimSettings,
   particle_angle_min, particle_angle_max,
   enable_card_stack, card_stack_offset, pre_shift_duration,
   enable_mini_wave, mini_wave_amplitude, mini_wave_speed, mini_wave_phase,
+  enable_mini_tilt, mini_tilt_amplitude, mini_tilt_speed, mini_tilt_phase,
   enable_smash_ripple, ripple_amplitude, ripple_speed, ripple_decay)

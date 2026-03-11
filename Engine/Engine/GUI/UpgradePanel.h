@@ -887,6 +887,16 @@ inline void UpgradePanel()
         ImGui::Unindent();
       }
 
+      ImGui::Checkbox("Mini-Card Tilt", &anim.enable_mini_tilt);
+      if (anim.enable_mini_tilt)
+      {
+        ImGui::Indent();
+        ImGui::DragFloat("Mini Tilt Amplitude", &anim.mini_tilt_amplitude, 0.1f, 0.0f, 20.0f);
+        ImGui::DragFloat("Mini Tilt Speed", &anim.mini_tilt_speed, 0.05f, 0.0f, 5.0f);
+        ImGui::DragFloat("Mini Tilt Phase", &anim.mini_tilt_phase, 0.05f, 0.0f, 6.28f);
+        ImGui::Unindent();
+      }
+
       ImGui::Checkbox("Smash Ripple", &anim.enable_smash_ripple);
       if (anim.enable_smash_ripple)
       {

@@ -338,6 +338,14 @@ namespace Engine
         }
 
         mt->position.y = mini_card_base_y_[i] + y_offset;
+
+        // Mini-card idle tilt
+        if (cfg.enable_mini_tilt)
+        {
+          mt->rotation = cfg.mini_tilt_amplitude
+            * sinf(picker_open_time_ * cfg.mini_tilt_speed * two_pi
+              + static_cast<float>(i) * cfg.mini_tilt_phase);
+        }
       }
 
       // Auto-expire ripple after it's faded enough
