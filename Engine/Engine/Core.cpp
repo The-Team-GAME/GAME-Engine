@@ -542,7 +542,6 @@ namespace Engine
 #endif
     Engine::Firebase::Auth::shutdown();
     Engine::Firebase::shutdown();   // Shutdown Firebase / WinHTTP
-    Engine::Audio::exit();
     Engine::AudioSystem::shutdown();  // Shutdown FMOD Studio system
     Engine::Resources::exit();
     Engine::Graphics::exit_post_processing();

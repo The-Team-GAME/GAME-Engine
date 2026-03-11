@@ -250,6 +250,7 @@ REFLECT_FIELDS(Engine::FileIO::EngineSettings, window_title, window_width, windo
 REFLECT_FIELDS(Engine::FileIO::ProjectSettings, loaded_tilemaps, layer_collision_pairs)
 REFLECT_FIELDS(Engine::FileIO::LocalSettings, imgui_theme, imgui_layout, auto_reload)
 REFLECT_FIELDS(Engine::FileIO::GameSettings, fullscreen, vsync, bgm_volume, sfx_volume)
+REFLECT_FIELDS(Engine::FileIO::FirebaseSettings, database_url, api_key, client_id, client_secret)
 
 REFLECT_ENUM(Engine::FileIO::UpgradeType, Flat, Multiplier)
 REFLECT_FIELDS(Engine::FileIO::RarityTier, name, drop_rate)
