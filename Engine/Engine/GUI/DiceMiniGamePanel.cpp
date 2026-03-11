@@ -337,24 +337,58 @@ void DiceMiniGamePanel::draw_panel()
       ImGui::TextColored(ImVec4(1.f, 0.85f, 0.f, 1.f), "Submitting...");
     }
 
-    // Dice result display
-    if (last_roll > 0)
+    // Dice result display — always shown; uses Dices as placeholder before first roll
     {
       ImGui::Spacing();
 
-      // Fade the highlight after the animation window
-      const float bright = roll_anim_timer > 0.f ? 1.f : 0.55f;
-      ImGui::TextColored(ImVec4(1.f, 0.85f * bright, 0.f, 1.f), "You rolled:");
-      ImGui::SameLine();
-      // Draw the Lucide dice icon in the icon font
+      const bool rolled    = last_roll > 0;
+      const float bright   = (!rolled || roll_anim_timer > 0.f) ? 1.f : 0.55f;
+      const ImVec4 col     = rolled
+        ? ImVec4(1.f, 0.5f * bright, 0.1f, 1.f)
+        : ImVec4(0.4f, 0.4f, 0.4f, 1.f);
+      const char* icon     = rolled ? dice_icon(last_roll) : LucideIcons::Dices;
+
       if (auto* font = static_cast<ImFont*>(ViewportToolbar::get_icon_font()))
       {
         ImGui::PushFont(font);
-        ImGui::TextColored(ImVec4(1.f, 0.5f * bright, 0.1f, 1.f), "%s", dice_icon(last_roll));
+        ImGui::SetWindowFontScale(3.5f);
+
+        const float avail  = ImGui::GetContentRegionAvail().x;
+        const float icon_w = ImGui::CalcTextSize(icon).x;
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (avail - icon_w) * 0.5f);
+        ImGui::TextColored(col, "%s", icon);
+
+        ImGui::SetWindowFontScale(1.f);
         ImGui::PopFont();
+
+        // Label beneath
+        if (rolled)
+        {
+          const char* label = "You rolled:";
+          char num_buf[8];
+          std::snprintf(num_buf, sizeof(num_buf), " %d", last_roll);
+          const float label_w = ImGui::CalcTextSize(label).x + ImGui::CalcTextSize(num_buf).x;
+          ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (avail - label_w) * 0.5f);
+          ImGui::TextColored(ImVec4(1.f, 0.85f * bright, 0.f, 1.f), "%s", label);
+          ImGui::SameLine(0.f, 0.f);
+          ImGui::TextColored(col, "%s", num_buf);
+        }
+        else
+        {
+          const char* hint = "Roll to play!";
+          const float hint_w = ImGui::CalcTextSize(hint).x;
+          ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (avail - hint_w) * 0.5f);
+          ImGui::TextDisabled("%s", hint);
+        }
       }
-      ImGui::SameLine();
-      ImGui::TextColored(ImVec4(1.f, 0.5f * bright, 0.1f, 1.f), " %d", last_roll);
+      else if (rolled)
+      {
+        char buf[32];
+        std::snprintf(buf, sizeof(buf), "You rolled: %d", last_roll);
+        const float avail = ImGui::GetContentRegionAvail().x;
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (avail - ImGui::CalcTextSize(buf).x) * 0.5f);
+        ImGui::TextColored(col, "%s", buf);
+      }
     }
   }
 
