@@ -134,6 +134,29 @@ namespace Engine
       }
 
       // ================================================================
+      // URL-decode a string (for parsing OAuth redirect parameters)
+      // ================================================================
+      static std::string url_decode(const std::string& value)
+      {
+        std::string result;
+        result.reserve(value.size());
+        for (size_t i = 0; i < value.size(); ++i)
+        {
+          if (value[i] == '%' && i + 2 < value.size())
+          {
+            char hex[3] = { value[i + 1], value[i + 2], '\0' };
+            result += static_cast<char>(std::strtol(hex, nullptr, 16));
+            i += 2;
+          }
+          else if (value[i] == '+')
+            result += ' ';
+          else
+            result += value[i];
+        }
+        return result;
+      }
+
+      // ================================================================
       // POST helper using WinHTTP (form-urlencoded or JSON)
       // ================================================================
       static HttpResponse post_form(const std::string& url, const std::string& body)
@@ -357,7 +380,7 @@ namespace Engine
           size_t start = code_pos + 5;
           size_t end = request_str.find_first_of("& \r\n", start);
           if (end == std::string::npos) end = request_str.size();
-          code = request_str.substr(start, end - start);
+          code = url_decode(request_str.substr(start, end - start));
         }
 
         // Check for error parameter
@@ -658,7 +681,7 @@ namespace Engine
           size_t start = code_pos + 5;
           size_t end = request_str.find_first_of("& \r\n", start);
           if (end == std::string::npos) end = request_str.size();
-          auth_code = request_str.substr(start, end - start);
+          auth_code = url_decode(request_str.substr(start, end - start));
         }
 
         if (auth_code.empty())
