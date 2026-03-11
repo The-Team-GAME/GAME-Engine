@@ -97,12 +97,11 @@ namespace EnemyHealthBarStateCallbacks
       ? static_cast<float>(health.current_hp) / static_cast<float>(health.max_hp)
       : 0.0f;
 
-    if (ratio > (5.0f / 6.0f)) return "Blue";
-    if (ratio > (4.0f / 6.0f)) return "Green";
-    if (ratio > (3.0f / 6.0f)) return "Yellow";
-    if (ratio > (2.0f / 6.0f)) return "Orange";
-    if (ratio > (1.0f / 6.0f)) return "Red";
-    return "Break";
+    if (ratio > (4.0f / 5.0f)) return "1";
+    if (ratio > (3.0f / 5.0f)) return "2";
+    if (ratio > (2.0f / 5.0f)) return "3";
+    if (ratio > (1.0f / 5.0f)) return "4";
+    return "5";
   }
 
   inline void update_stable_state(Engine::ECS::Entity entity) {
@@ -155,9 +154,8 @@ namespace EnemyHealthBarStateCallbacks
       return;
     }
 
-    if (health->current_hp < health->max_hp) {
+    if (detect_damage_and_remember(entity, *health)) {
       set_bar_alpha(entity, 1.0f);
-      remember_current_hp(entity, health->current_hp);
       state_machine->change_state("Damaged");
     }
   }
@@ -229,11 +227,10 @@ namespace EnemyHealthBarStateCallbacks
 REGISTER_STATE_MACHINE_BLUEPRINT(EnemyHealthBar, "Blank",
   STATE("Blank", EnemyHealthBarStateCallbacks::blank_on_enter, EnemyHealthBarStateCallbacks::blank_on_update, NO_CALLBACK)
   STATE("Damaged", EnemyHealthBarStateCallbacks::damaged_on_enter, EnemyHealthBarStateCallbacks::damaged_on_update, NO_CALLBACK)
-  STATE("Blue", EnemyHealthBarStateCallbacks::stable_on_enter, EnemyHealthBarStateCallbacks::stable_on_update, NO_CALLBACK)
-  STATE("Green", EnemyHealthBarStateCallbacks::stable_on_enter, EnemyHealthBarStateCallbacks::stable_on_update, NO_CALLBACK)
-  STATE("Yellow", EnemyHealthBarStateCallbacks::stable_on_enter, EnemyHealthBarStateCallbacks::stable_on_update, NO_CALLBACK)
-  STATE("Orange", EnemyHealthBarStateCallbacks::stable_on_enter, EnemyHealthBarStateCallbacks::stable_on_update, NO_CALLBACK)
-  STATE("Red", EnemyHealthBarStateCallbacks::stable_on_enter, EnemyHealthBarStateCallbacks::stable_on_update, NO_CALLBACK)
-  STATE("Break", EnemyHealthBarStateCallbacks::stable_on_enter, EnemyHealthBarStateCallbacks::stable_on_update, NO_CALLBACK)
+  STATE("1", EnemyHealthBarStateCallbacks::stable_on_enter, EnemyHealthBarStateCallbacks::stable_on_update, NO_CALLBACK)
+  STATE("2", EnemyHealthBarStateCallbacks::stable_on_enter, EnemyHealthBarStateCallbacks::stable_on_update, NO_CALLBACK)
+  STATE("3", EnemyHealthBarStateCallbacks::stable_on_enter, EnemyHealthBarStateCallbacks::stable_on_update, NO_CALLBACK)
+  STATE("4", EnemyHealthBarStateCallbacks::stable_on_enter, EnemyHealthBarStateCallbacks::stable_on_update, NO_CALLBACK)
+  STATE("5", EnemyHealthBarStateCallbacks::stable_on_enter, EnemyHealthBarStateCallbacks::stable_on_update, NO_CALLBACK)
   STATE("Death", EnemyHealthBarStateCallbacks::death_on_enter, EnemyHealthBarStateCallbacks::death_on_update, NO_CALLBACK)
 )

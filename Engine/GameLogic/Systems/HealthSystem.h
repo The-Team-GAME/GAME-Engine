@@ -421,6 +421,9 @@ namespace Engine {
         auto* bar = e.get_component<EnemyHealthBarRect>();
         if (!hp || !tr || !bar) return;
 
+        // Don't recreate a destroyed bar for a dead enemy.
+        if (hp->is_dead() && !bar->initialized) return;
+
         const float now = Engine::Time::get_time();
 
         const int cur = std::max(0, hp->current_hp);
