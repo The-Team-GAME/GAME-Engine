@@ -51,6 +51,30 @@
 #include "Components/InteractableComponents.h"
 
 // =============================================================================
+// Knockback Helper Function
+// =============================================================================
+// Helper function to apply knockback to the enemy (any maybe vise versa -> not tested yet )
+void apply_knockback_from_player(ECS::Entity entity)
+{
+  // Check which direction the punching bag is being hit from
+  ECS::Entity player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+  Components::Transform2D* player_xform = player_entity.get_component<Components::Transform2D>();
+  Components::Player* player_comp = player_entity.get_component<Components::Player>();
+
+  Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
+  Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+
+  // First we check which direction to apply knockback for the enemy
+  // If the player is to the right we want the knockback to be to the left
+  player_comp->knockback_value.x = player_xform->position.x > xform->position.x ?
+    -player_comp->knockback_value.x : player_comp->knockback_value.x;
+
+  // Then we zero the forces and velocity of the monkey before they change state
+  rigid->velocity.zero();
+  rigid->force = player_comp->knockback_value;
+}
+
+// =============================================================================
 // Collision callback registrations
 // =============================================================================
 static void register_collision_callbacks()
@@ -63,6 +87,7 @@ static void register_collision_callbacks()
     });
 
   // Player attacks hitting enemies
+#pragma region hitting enemies
   Engine::ECS::LayerRegistry::register_collision_callback("damage_enemy", "enemy",
     [](Engine::ECS::Entity attack_entity, Engine::ECS::Entity enemy_entity)
     {
@@ -75,11 +100,8 @@ static void register_collision_callbacks()
         Log::error("Error: Attack component missing from attack hitbox, on entity {}", attack_entity.get_id());
         return;
       }
-
       if (enemy_health && state_machine) {
-        if (!attack->should_apply_damage(enemy_entity)) {
-          return;
-        }
+        if (!attack->should_apply_damage(enemy_entity)) { return; }
 
         int damage = attack->damage;
         enemy_health->take_damage(damage);
@@ -100,21 +122,7 @@ static void register_collision_callbacks()
         else if (state_machine->get_current_state() != "Hit") {
           state_machine->change_state("Hit");
         }
-
-        auto* rigid = enemy_entity.get_component<Components::RigidBody>();
-        if (rigid) {
-          enemy_entity.add_component<Components::Parent>(attack_entity.get_id());
-          enemy_entity.add_component<Components::PendingKnockback>(attack->knockback);
-
-          auto* attack_transform = attack_entity.get_component<Components::Transform2D>();
-          if (attack_transform) {
-            Math::Vec2D dir = attack_transform->position - transform->position;
-            transform->position += dir * 0.2f;
-          }
-
-          transform->position.y += -10.0f;
-          rigid->velocity.zero();
-        }
+        apply_knockback_from_player(enemy_entity);
 
         // Spawn Impact VFX
         if (attack->impact_vfx_texture.texture_handle) {
@@ -157,7 +165,7 @@ static void register_collision_callbacks()
         Log::error("Error: EnemyHealth or StateMachine component missing!");
       }
     });
-
+#pragma endregion
   // Enemy attacks hitting player
   Engine::ECS::LayerRegistry::register_collision_callback("damage_player", "player",
     [](Engine::ECS::Entity attack_entity, Engine::ECS::Entity player_entity)
