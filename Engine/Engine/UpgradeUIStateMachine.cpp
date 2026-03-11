@@ -298,8 +298,8 @@ namespace Engine
     // ---- Flip Reveal ----
     if (enable_flip_reveal && !flip_done_)
     {
-      constexpr float flip_duration = 0.3f;
-      constexpr float flip_stagger = 0.08f;
+      const float flip_duration = this->flip_duration;
+      const float flip_stagger = this->flip_stagger;
       bool all_done = true;
       for (int i = 0; i < 2; ++i)
       {
@@ -322,9 +322,9 @@ namespace Engine
     // ---- Idle Float (only after flip completes) ----
     if (enable_idle_float && flip_done_)
     {
-      constexpr float float_amplitude = 3.0f;
-      constexpr float float_speed = 0.2f;
-      constexpr float float_phase_offset = 0.5f;
+      const float float_amplitude = this->float_amplitude;
+      const float float_speed = this->float_speed;
+      const float float_phase_offset = this->float_phase_offset;
       constexpr float two_pi = 6.2831853f;
       for (int i = 0; i < 2; ++i)
       {
@@ -335,9 +335,9 @@ namespace Engine
     // ---- Hover Lift (only after flip completes) ----
     if (enable_hover_lift && flip_done_)
     {
-      constexpr float hover_lift_y = -15.0f;
-      constexpr float hover_scale_boost = 1.05f;
-      constexpr float hover_speed = 8.0f;
+      const float hover_lift_y = this->hover_lift_y;
+      const float hover_scale_boost = this->hover_scale_boost;
+      const float hover_speed = this->hover_speed;
 
       glm::vec2 mouse = Input::get_mouse_position();
       hovered_card_ = -1;
@@ -371,9 +371,9 @@ namespace Engine
     // Computed first so Hover Tilt can override when the card is hovered.
     if (enable_idle_tilt && flip_done_)
     {
-      constexpr float idle_tilt_amplitude = 1.0f;   // degrees
-      constexpr float idle_tilt_speed = 0.3f;   // Hz
-      constexpr float idle_tilt_phase = 1.2f;   // phase offset between cards
+      const float idle_tilt_amplitude = this->idle_tilt_amplitude;
+      const float idle_tilt_speed = this->idle_tilt_speed;
+      const float idle_tilt_phase = this->idle_tilt_phase;
       constexpr float two_pi = 6.2831853f;
       for (int i = 0; i < 2; ++i)
       {
@@ -381,7 +381,7 @@ namespace Engine
         {
           float target = idle_tilt_amplitude
             * sinf(picker_open_time_ * idle_tilt_speed * two_pi + i * idle_tilt_phase);
-          card_tilt_[i] += (target - card_tilt_[i]) * 6.0f * dt;
+          card_tilt_[i] += (target - card_tilt_[i]) * idle_tilt_lerp_speed * dt;
         }
       }
     }
@@ -389,8 +389,8 @@ namespace Engine
     // ---- Hover Tilt (mouse-X-based tilt on the hovered card) ----
     if (enable_hover_tilt && flip_done_)
     {
-      constexpr float max_tilt_deg = 3.0f;  // degrees at card edge
-      constexpr float tilt_speed = 2.0f;  // lerp speed
+      const float max_tilt_deg = this->max_tilt_deg;
+      const float tilt_speed = this->tilt_speed;
 
       glm::vec2 mouse = Input::get_mouse_position();
       for (int i = 0; i < 2; ++i)
@@ -421,8 +421,8 @@ namespace Engine
     // ---- Selection Stamp ----
     if (enable_selection_stamp && stamp_time_ >= 0.0f)
     {
-      constexpr float stamp_duration = 0.15f;
-      constexpr float stamp_squish = 0.85f;
+      const float stamp_duration = this->stamp_duration;
+      const float stamp_squish = this->stamp_squish;
       stamp_time_ += dt;
 
       if (stamp_time_ >= stamp_duration)
@@ -466,8 +466,8 @@ namespace Engine
     // ---- Arc-to-Panel Flight ----
     if (arc_active_)
     {
-      constexpr float arc_duration = 0.4f;
-      constexpr float arc_peak = -40.0f;   // slight upward arc offset in pixels
+      const float arc_duration = this->arc_duration;
+      const float arc_peak = this->arc_peak;
       constexpr float pi = 3.14159265f;
 
       arc_time_ += dt;
@@ -490,7 +490,7 @@ namespace Engine
         float sy = arc_start_sy_ + (arc_end_sy_ - arc_start_sy_) * se;
 
         // Gentle spin during flight
-        float rot = sinf(t * pi) * 8.0f;
+        float rot = sinf(t * pi) * arc_spin_deg;
 
         auto* at = ECS::Entity(card_ids[ac]).get_component<Components::Transform2D>();
         if (at)
@@ -526,7 +526,7 @@ namespace Engine
     // ---- Smash Landing ----
     if (smash_time_ >= 0.0f)
     {
-      constexpr float smash_duration = 0.12f;
+      const float smash_duration = this->smash_duration;
       smash_time_ += dt;
 
       int ac = arc_card_;
@@ -562,8 +562,7 @@ namespace Engine
     // ---- Post-smash linger (keep panel visible while particles play) ----
     if (linger_time_ >= 0.0f)
     {
-      // max particle life = 0.35s + 0.2s extra breathing room
-      constexpr float linger_duration = 0.55f;
+      const float linger_duration = this->linger_duration;
       linger_time_ += dt;
       if (linger_time_ >= linger_duration)
       {
@@ -952,10 +951,22 @@ namespace Engine
   void UpgradeUIStateMachine::spawn_burst_particles(float x, float y)
   {
     static std::mt19937 rng{ std::random_device{}() };
-    std::uniform_real_distribution<float> angle_dist(0.0f, 6.2831853f);
-    std::uniform_real_distribution<float> speed_dist(200.0f, 400.0f);
-    std::uniform_real_distribution<float> life_dist(0.2f, 0.35f);
-    std::uniform_int_distribution<int>    count_dist(6, 10);
+    std::uniform_real_distribution<float> angle_dist(particle_angle_min, particle_angle_max);
+    std::uniform_real_distribution<float> speed_dist(particle_speed_min, particle_speed_max);
+    std::uniform_real_distribution<float> life_dist(particle_life_min, particle_life_max);
+    std::uniform_int_distribution<int>    count_dist(particle_count_min, particle_count_max);
+    std::uniform_int_distribution<int>    color_dist(0, 6);
+
+    // Vivid palette: gold, orange, red, magenta, cyan, green, white
+    static const float palette[7][3] = {
+      {1.0f, 0.85f, 0.0f},  // gold
+      {1.0f, 0.45f, 0.0f},  // orange
+      {1.0f, 0.15f, 0.15f}, // red
+      {1.0f, 0.0f,  1.0f},  // magenta
+      {0.0f, 0.9f,  1.0f},  // cyan
+      {0.2f, 1.0f,  0.2f},  // green
+      {1.0f, 1.0f,  1.0f},  // white
+    };
 
     auto rect = Resources::get_rect_texture();
     int count = count_dist(rng);
@@ -965,11 +976,12 @@ namespace Engine
       float angle = angle_dist(rng);
       float speed = speed_dist(rng);
       float life = life_dist(rng);
+      const float* c = palette[color_dist(rng)];
 
       auto e = ECS::create_entity()
-        .add_component<Components::Transform2D>(x, y, 0.0f, 6.0f, 6.0f)
+        .add_component<Components::Transform2D>(x, y, 0.0f, particle_size, particle_size)
         .add_component<Components::Texture>(rect)
-        .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+        .add_component<Components::Color>(c[0], c[1], c[2], 1.0f)
         .add_component<Components::UI>()
         .add_to_layer("main_menu_5");
 
@@ -977,6 +989,7 @@ namespace Engine
       bp.id = e.get_id();
       bp.vx = cosf(angle) * speed;
       bp.vy = sinf(angle) * speed;
+      bp.r = c[0]; bp.g = c[1]; bp.b = c[2];
       bp.life = life;
       bp.max_life = life;
       burst_particles_.push_back(bp);
@@ -996,6 +1009,9 @@ namespace Engine
         continue;
       }
 
+      const float gravity = particle_gravity;
+      it->vy += gravity * dt;
+
       float t = 1.0f - (it->life / it->max_life); // 0 → 1 over lifetime
       auto* tr = ECS::Entity(it->id).get_component<Components::Transform2D>();
       if (tr)
@@ -1003,12 +1019,17 @@ namespace Engine
         tr->position.x += it->vx * dt;
         tr->position.y += it->vy * dt;
         float shrink = 1.0f - t;  // 1 → 0
-        tr->scale.x = 6.0f * shrink;
-        tr->scale.y = 6.0f * shrink;
+        tr->scale.x = particle_size * shrink;
+        tr->scale.y = particle_size * shrink;
       }
       auto* col = ECS::Entity(it->id).get_component<Components::Color>();
       if (col)
-        col->a = 1.0f - t;  // fade out
+      {
+        col->r = it->r;
+        col->g = it->g;
+        col->b = it->b;
+        col->a = 1.0f;
+      }
 
       ++it;
     }
