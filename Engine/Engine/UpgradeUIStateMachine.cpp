@@ -20,6 +20,7 @@
 #include "FileIO/SettingsManager.h"
 #include "Easing.h"
 #include <cmath>
+#include <random>
 
 namespace Engine
 {
@@ -146,6 +147,10 @@ namespace Engine
   {
     auto& mgr = UpgradeManager::instance();
 
+    // Burst particles tick in any state (they outlive the PickerOpen state)
+    if (!burst_particles_.empty())
+      update_burst_particles(Time::get_unscaled_fixed_dt());
+
     switch (state_)
     {
     case UpgradeFlowState::Idle:
@@ -203,7 +208,7 @@ namespace Engine
       // Don't process input during flip reveal, stamp, or arc animation
       if (!flip_done_) break;
       if (enable_selection_stamp && stamp_time_ >= 0.0f) break;
-      if (arc_active_ || smash_time_ >= 0.0f) break;
+      if (arc_active_ || smash_time_ >= 0.0f || linger_time_ >= 0.0f) break;
 
       glm::vec2 mouse = Input::get_mouse_position();
 
@@ -544,13 +549,31 @@ namespace Engine
 
       if (smash_time_ >= smash_duration)
       {
+        if (enable_burst_particles)
+          spawn_burst_particles(arc_end_x_, arc_end_y_);
+
         smash_time_ = -1.0f;
+        linger_time_ = 0.0f;  // hold the panel open while particles play
+        return;
+      }
+      return;  // skip normal write during smash
+    }
+
+    // ---- Post-smash linger (keep panel visible while particles play) ----
+    if (linger_time_ >= 0.0f)
+    {
+      // max particle life = 0.35s + 0.2s extra breathing room
+      constexpr float linger_duration = 0.55f;
+      linger_time_ += dt;
+      if (linger_time_ >= linger_duration)
+      {
+        linger_time_ = -1.0f;
         picked_slot_ = arc_card_;
         arc_card_ = -1;
         transition_to(UpgradeFlowState::Applying);
         return;
       }
-      return;  // skip normal write during smash
+      return;  // keep PickerOpen (panel stays visible)
     }
 
     // ---- Write final values to entities ----
@@ -761,6 +784,7 @@ namespace Engine
     arc_time_ = 0.0f;
     smash_time_ = -1.0f;
     arc_card_ = -1;
+    linger_time_ = -1.0f;
 
     if (enable_flip_reveal)
     {
@@ -793,6 +817,7 @@ namespace Engine
     mini_card_ids_.clear();
     destroy_if_active(card0_id_);
     destroy_if_active(card1_id_);
+    // burst_particles_ intentionally NOT destroyed here — they outlive the picker
   }
 
   // ---- Reset ----
@@ -810,6 +835,19 @@ namespace Engine
     arc_time_ = 0.0f;
     smash_time_ = -1.0f;
     arc_card_ = -1;
+    linger_time_ = -1.0f;
+    // Also clean up any lingering burst particles on hard reset
+    {
+      auto destroy_if_active = [](ECS::EntityID& id)
+        {
+          if (id != 0 && ECS::is_entity_active(ECS::Entity(id)))
+            ECS::destroy_entity(ECS::Entity(id));
+          id = 0;
+        };
+      for (auto& p : burst_particles_)
+        destroy_if_active(p.id);
+      burst_particles_.clear();
+    }
   }
 
   // ---- Arc helpers ----
@@ -907,6 +945,73 @@ namespace Engine
     arc_end_sx_ = mini_w;
     arc_end_sy_ = mini_h;
     compute_arc_target(card_slot, arc_end_x_, arc_end_y_);
+  }
+
+  // ---- Burst particle helpers ----
+
+  void UpgradeUIStateMachine::spawn_burst_particles(float x, float y)
+  {
+    static std::mt19937 rng{ std::random_device{}() };
+    std::uniform_real_distribution<float> angle_dist(0.0f, 6.2831853f);
+    std::uniform_real_distribution<float> speed_dist(200.0f, 400.0f);
+    std::uniform_real_distribution<float> life_dist(0.2f, 0.35f);
+    std::uniform_int_distribution<int>    count_dist(6, 10);
+
+    auto rect = Resources::get_rect_texture();
+    int count = count_dist(rng);
+
+    for (int i = 0; i < count; ++i)
+    {
+      float angle = angle_dist(rng);
+      float speed = speed_dist(rng);
+      float life = life_dist(rng);
+
+      auto e = ECS::create_entity()
+        .add_component<Components::Transform2D>(x, y, 0.0f, 6.0f, 6.0f)
+        .add_component<Components::Texture>(rect)
+        .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+        .add_component<Components::UI>()
+        .add_to_layer("main_menu_5");
+
+      BurstParticle bp;
+      bp.id = e.get_id();
+      bp.vx = cosf(angle) * speed;
+      bp.vy = sinf(angle) * speed;
+      bp.life = life;
+      bp.max_life = life;
+      burst_particles_.push_back(bp);
+    }
+  }
+
+  void UpgradeUIStateMachine::update_burst_particles(float dt)
+  {
+    for (auto it = burst_particles_.begin(); it != burst_particles_.end(); )
+    {
+      it->life -= dt;
+      if (it->life <= 0.0f)
+      {
+        if (it->id != 0 && ECS::is_entity_active(ECS::Entity(it->id)))
+          ECS::destroy_entity(ECS::Entity(it->id));
+        it = burst_particles_.erase(it);
+        continue;
+      }
+
+      float t = 1.0f - (it->life / it->max_life); // 0 → 1 over lifetime
+      auto* tr = ECS::Entity(it->id).get_component<Components::Transform2D>();
+      if (tr)
+      {
+        tr->position.x += it->vx * dt;
+        tr->position.y += it->vy * dt;
+        float shrink = 1.0f - t;  // 1 → 0
+        tr->scale.x = 6.0f * shrink;
+        tr->scale.y = 6.0f * shrink;
+      }
+      auto* col = ECS::Entity(it->id).get_component<Components::Color>();
+      if (col)
+        col->a = 1.0f - t;  // fade out
+
+      ++it;
+    }
   }
 
 } // namespace Engine

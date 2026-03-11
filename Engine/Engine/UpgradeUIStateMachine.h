@@ -17,6 +17,14 @@
 
 namespace Engine
 {
+  // Lightweight particle used for the smash-landing burst effect.
+  struct BurstParticle
+  {
+    ECS::EntityID id = 0;
+    float vx = 0.0f, vy = 0.0f;  // velocity (px/s)
+    float life = 0.0f;            // remaining lifetime (s)
+    float max_life = 0.0f;        // initial lifetime (s)
+  };
   enum class UpgradeFlowState
   {
     Idle,       // Points < threshold or all maxed. Button hidden.
@@ -53,6 +61,7 @@ namespace Engine
     bool enable_hover_tilt = true;
     bool enable_idle_tilt = true;
     bool enable_card_arc = true;
+    bool enable_burst_particles = true;
 
   private:
     UpgradeUIStateMachine() = default;
@@ -107,6 +116,12 @@ namespace Engine
     float arc_start_sx_ = 0.0f, arc_start_sy_ = 0.0f;
     float arc_end_sx_ = 0.0f, arc_end_sy_ = 0.0f;
     float smash_time_ = -1.0f;   // landing bounce timer (-1 = inactive)
+    float linger_time_ = -1.0f;  // post-smash hold before transitioning (-1 = inactive)
+
+    // Pixel particle burst on smash impact
+    std::vector<BurstParticle> burst_particles_;
+    void spawn_burst_particles(float x, float y);
+    void update_burst_particles(float dt);
   };
 
 } // namespace Engine

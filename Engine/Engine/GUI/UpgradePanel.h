@@ -787,6 +787,7 @@ inline void UpgradePanel()
       ImGui::Checkbox("Hover Tilt", &ui.enable_hover_tilt);
       ImGui::Checkbox("Idle Tilt", &ui.enable_idle_tilt);
       ImGui::Checkbox("Card Arc", &ui.enable_card_arc);
+      ImGui::Checkbox("Burst Particles", &ui.enable_burst_particles);
     }
 
     // ---- Reset ----
