@@ -109,39 +109,16 @@ namespace Engine {
         }
 
         // HUD
-          // Per-frame cleanup: keep only EnemyHealthBar sprites that are actually
-          // referenced by some EnemyHealthBarRect component. Any other
-          // EnemyHealthBar sprites (e.g. manually placed in the scene or
-          // duplicated on reload) are destroyed.
-          {
-            std::unordered_set<Engine::ECS::EntityID> active_bar_ids;
-
-            // Collect all bar sprite entities that are currently referenced by
-            // EnemyHealthBarRect components.
-            Engine::ECS::for_each_entity_with<Components::EnemyHealthBarRect>(
-              [&](Engine::ECS::Entity owner)
-              {
-                if (auto* eb = owner.get_component<Components::EnemyHealthBarRect>()) {
-                  if (eb->sprite.is_valid()) {
-                    active_bar_ids.insert(eb->sprite.get_id());
-                  }
-                }
-              }
-            );
-
-            // Destroy any EnemyHealthBar sprite that is not in the active set.
-            Engine::ECS::for_each_entity_with<Components::StateMachine>(
-              [&](Engine::ECS::Entity bar_entity)
-              {
-                auto* sm = bar_entity.get_component<Components::StateMachine>();
-                if (!sm || sm->blueprint_id != "EnemyHealthBar") return;
-
-                if (!active_bar_ids.contains(bar_entity.get_id())) {
-                  bar_entity.destroy();
-                }
-              }
-            );
-          }
+        if (auto* ui = e.get_component<HealthBar>()) {
+          if (ui->bar_fill.is_valid()) {
+            if (auto* c = ui->bar_fill.get_component<Color>()) {
+              const float ratio = static_cast<float>(hp->value) / static_cast<float>(std::max(1, hp->max));
+              float r = (ratio < 0.5f) ? 1.0f : 1.0f - 2.0f * (ratio - 0.5f);
+              float g = (ratio < 0.5f) ? 2.0f * ratio : 1.0f;
+              float b = 0.0f;
+              float a = 1.0f;
+              if (ratio < 0.3f) {
+                float s = 0.5f + 0.5f * std::sin(Engine::Time::get_time() * 6.0f);
                 const float baseA = 0.65f, ampA = 0.35f;
                 a = baseA + ampA * s;
                 const float glow = 0.90f + 0.10f * s;
@@ -388,11 +365,12 @@ namespace Engine {
         require_components<Components::EnemyHealth, Components::Transform2D, Components::EnemyHealthBarRect>();
       }
 
-      void update_entity(Engine::ECS::Entity e) override {
-        using namespace Components;
-        // Per-frame cleanup: remove stray EnemyHealthBar sprites. However, if a
-        // bar is already playing its Death animation, allow it to survive even
-        // after the parent enemy is gone until that animation has finished.
+      void update() override {
+        // Per-frame cleanup (runs once, not per-entity): remove stray
+        // EnemyHealthBar sprites.  If a bar is already playing its Death
+        // animation, let it survive until the animation finishes.  If a bar
+        // is orphaned but NOT yet in Death, transition it to Death so the
+        // animation can play before final cleanup.
         Engine::ECS::for_each_entity_with<Components::StateMachine>(
           [](Engine::ECS::Entity bar_entity)
           {
@@ -400,32 +378,43 @@ namespace Engine {
             if (!sm || sm->blueprint_id != "EnemyHealthBar") return;
 
             auto* anim = bar_entity.get_component<Components::Animation>();
-            const bool death_playing =
-              sm->get_current_state() == "Death" && anim && !anim->has_ended();
 
-            // Once the Death animation has finished, this bar can be cleaned up.
+            // Death animation finished → safe to destroy.
             if (sm->get_current_state() == "Death" && (!anim || anim->has_ended())) {
               bar_entity.destroy();
               return;
             }
 
-            auto* parent = bar_entity.get_component<Components::Parent>();
-            if (!parent || parent->parent_id == Engine::ECS::INVALID_ENTITY) {
-              if (!death_playing) {
-                bar_entity.destroy();
-              }
+            // Still playing Death animation → keep alive.
+            if (sm->get_current_state() == "Death" && anim && !anim->has_ended()) {
               return;
             }
 
-            Engine::ECS::Entity parent_entity(parent->parent_id);
-            if (!parent_entity.is_valid() ||
-              !parent_entity.has_component<Components::EnemyHealth>()) {
-              if (!death_playing) {
-                bar_entity.destroy();
+            // Check if the bar's parent enemy is still valid.
+            bool parent_valid = false;
+            auto* parent = bar_entity.get_component<Components::Parent>();
+            if (parent && parent->parent_id != Engine::ECS::INVALID_ENTITY) {
+              Engine::ECS::Entity parent_entity(parent->parent_id);
+              if (parent_entity.is_valid() &&
+                parent_entity.has_component<Components::EnemyHealth>()) {
+                parent_valid = true;
               }
+            }
+
+            // Orphaned bar not yet in Death → transition to Death so the
+            // animation plays before the bar is removed.
+            if (!parent_valid) {
+              sm->set_state_immediate("Death", bar_entity);
             }
           }
         );
+
+        // Now run the normal per-entity update via the base class.
+        System::update();
+      }
+
+      void update_entity(Engine::ECS::Entity e) override {
+        using namespace Components;
 
         auto* hp = e.get_component<EnemyHealth>();
         auto* tr = e.get_component<Transform2D>();

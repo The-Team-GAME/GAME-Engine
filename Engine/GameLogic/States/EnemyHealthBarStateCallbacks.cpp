@@ -108,7 +108,12 @@ namespace EnemyHealthBarStateCallbacks
   inline void update_stable_state(Engine::ECS::Entity entity) {
     auto* health = get_parent_enemy_health(entity);
     auto* state_machine = entity.get_component<Components::StateMachine>();
-    if (!health || !state_machine) {
+    if (!state_machine) {
+      return;
+    }
+
+    if (!health) {
+      state_machine->change_state("Death");
       return;
     }
 
@@ -141,7 +146,12 @@ namespace EnemyHealthBarStateCallbacks
   inline void blank_on_update(Engine::ECS::Entity entity) {
     auto* health = get_parent_enemy_health(entity);
     auto* state_machine = entity.get_component<Components::StateMachine>();
-    if (!health || !state_machine) {
+    if (!state_machine) {
+      return;
+    }
+
+    if (!health) {
+      state_machine->change_state("Death");
       return;
     }
 
@@ -165,7 +175,12 @@ namespace EnemyHealthBarStateCallbacks
   inline void damaged_on_update(Engine::ECS::Entity entity) {
     auto* health = get_parent_enemy_health(entity);
     auto* state_machine = entity.get_component<Components::StateMachine>();
-    if (!health || !state_machine) {
+    if (!state_machine) {
+      return;
+    }
+
+    if (!health) {
+      state_machine->change_state("Death");
       return;
     }
 
@@ -209,6 +224,7 @@ namespace EnemyHealthBarStateCallbacks
   inline void death_on_update(Engine::ECS::Entity entity) {
     set_bar_alpha(entity, 1.0f);
   }
+}
 
 REGISTER_STATE_MACHINE_BLUEPRINT(EnemyHealthBar, "Blank",
   STATE("Blank", EnemyHealthBarStateCallbacks::blank_on_enter, EnemyHealthBarStateCallbacks::blank_on_update, NO_CALLBACK)
