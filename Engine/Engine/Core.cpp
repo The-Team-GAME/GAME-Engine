@@ -41,6 +41,8 @@
 #include "Lua/LuaComponentBindings.h"
 #include "HotReloadManager.h"
 #include "GUI/TilemapPanel.h"
+#include "UpgradeManager.h"
+#include "UpgradeUIStateMachine.h"
 
 namespace Engine
 {
@@ -150,6 +152,11 @@ namespace Engine
     // Load upgrade settings (roguelike upgrade system definitions)
     if (!Engine::FileIO::SettingsManager<Engine::FileIO::UpgradeSettings>::load("Assets/settings/upgrade_settings.json")) {
       Log::warning("Failed to load upgrade settings, using defaults");
+    }
+
+    // Load card animation settings (upgrade picker UI effect parameters)
+    if (!Engine::FileIO::SettingsManager<Engine::FileIO::CardAnimSettings>::load("Assets/settings/card_anim_settings.json")) {
+      Log::warning("Failed to load card animation settings, using defaults");
     }
 
     // TODO: handle using custom reflector
@@ -499,6 +506,10 @@ namespace Engine
     entity_clipboard.reset();
 
     Engine::SceneManager::cleanup();
+
+    // Destroy upgrade UI state machine before entities are wiped
+    Engine::UpgradeUIStateMachine::destroy_instance();
+    Engine::UpgradeManager::destroy_instance();
 
     // Force-destroy any entities that survived scene teardown so that
     // component destructors (including StateMachine callback name strings
