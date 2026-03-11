@@ -897,6 +897,18 @@ inline void UpgradePanel()
         ImGui::Unindent();
       }
 
+      ImGui::Checkbox("Mini-Card Hover", &anim.enable_mini_hover);
+      if (anim.enable_mini_hover)
+      {
+        ImGui::Indent();
+        ImGui::DragFloat("Mini Hover Lift", &anim.mini_hover_lift, 0.5f, -50.0f, 50.0f);
+        ImGui::DragFloat("Mini Hover Scale", &anim.mini_hover_scale, 0.05f, 1.0f, 3.0f);
+        ImGui::DragFloat("Mini Hover Speed", &anim.mini_hover_speed, 0.5f, 1.0f, 30.0f);
+        ImGui::DragFloat("Mini Hover Tilt", &anim.mini_hover_tilt_deg, 0.5f, 0.0f, 30.0f);
+        ImGui::DragFloat("Mini Tilt Speed##hover", &anim.mini_hover_tilt_speed, 0.5f, 1.0f, 30.0f);
+        ImGui::Unindent();
+      }
+
       ImGui::Checkbox("Smash Ripple", &anim.enable_smash_ripple);
       if (anim.enable_smash_ripple)
       {

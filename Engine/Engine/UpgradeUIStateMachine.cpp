@@ -301,10 +301,16 @@ namespace Engine
     // ---- Mini-card idle wave + smash ripple (applied every frame) ----
     {
       constexpr float two_pi = 6.2831853f;
+      constexpr float ss_scale = 2.0f;
+      constexpr float mini_w = 128.0f * ss_scale / 6.0f;
+      constexpr float mini_h = 224.0f * ss_scale / 6.0f;
 
       // Advance ripple timer
       if (ripple_time_ >= 0.0f)
         ripple_time_ += dt;
+
+      // Hit-test for mini-card hover
+      glm::vec2 mouse = Input::get_mouse_position();
 
       for (size_t i = 0; i < mini_card_ids_.size(); ++i)
       {
@@ -337,15 +343,57 @@ namespace Engine
           }
         }
 
+        // Mini-card hover: lift + scale
+        bool is_hovered = false;
+        if (cfg.enable_mini_hover)
+        {
+          float cx = mt->position.x;
+          float cy = mini_card_base_y_[i];
+          float hw = mini_w / 2.0f;
+          float hh = mini_h / 2.0f;
+          is_hovered = (mouse.x >= cx - hw && mouse.x <= cx + hw &&
+                        mouse.y >= cy - hh && mouse.y <= cy + hh);
+          float target = is_hovered ? 1.0f : 0.0f;
+          mini_hover_lerp_[i] += (target - mini_hover_lerp_[i]) * cfg.mini_hover_speed * dt;
+          if (mini_hover_lerp_[i] < 0.001f) mini_hover_lerp_[i] = 0.0f;
+          if (mini_hover_lerp_[i] > 0.999f) mini_hover_lerp_[i] = 1.0f;
+
+          y_offset += cfg.mini_hover_lift * mini_hover_lerp_[i];
+          float s = 1.0f + (cfg.mini_hover_scale - 1.0f) * mini_hover_lerp_[i];
+          mt->scale.x = mini_w * s;
+          mt->scale.y = mini_h * s;
+        }
+        else
+        {
+          mt->scale.x = mini_w;
+          mt->scale.y = mini_h;
+        }
+
         mt->position.y = mini_card_base_y_[i] + y_offset;
 
-        // Mini-card idle tilt
-        if (cfg.enable_mini_tilt)
+        // Tilt: hover tilt (mouse-X-based) when hovered, idle tilt when not
+        if (is_hovered && cfg.enable_mini_hover)
         {
-          mt->rotation = cfg.mini_tilt_amplitude
+          float cx = mt->position.x;
+          float hw = mt->scale.x / 2.0f;
+          float norm_x = (mouse.x - cx) / hw;
+          if (norm_x < -1.0f) norm_x = -1.0f;
+          if (norm_x > 1.0f) norm_x = 1.0f;
+          float target_tilt = cfg.mini_hover_tilt_deg * norm_x;
+          mini_card_tilt_[i] += (target_tilt - mini_card_tilt_[i]) * cfg.mini_hover_tilt_speed * dt;
+        }
+        else if (cfg.enable_mini_tilt)
+        {
+          float target_tilt = cfg.mini_tilt_amplitude
             * sinf(picker_open_time_ * cfg.mini_tilt_speed * two_pi
               + static_cast<float>(i) * cfg.mini_tilt_phase);
+          mini_card_tilt_[i] += (target_tilt - mini_card_tilt_[i]) * cfg.mini_tilt_speed * 6.0f * dt;
         }
+        else
+        {
+          mini_card_tilt_[i] += (0.0f - mini_card_tilt_[i]) * 8.0f * dt;
+        }
+        mt->rotation = mini_card_tilt_[i];
       }
 
       // Auto-expire ripple after it's faded enough
@@ -716,6 +764,8 @@ namespace Engine
             mini_card_base_y_.push_back(arc_end_y_);
             mini_card_start_x_.push_back(arc_end_x_);
             mini_card_target_x_.push_back(arc_end_x_);
+            mini_hover_lerp_.push_back(0.0f);
+            mini_card_tilt_.push_back(0.0f);
           }
         }
 
@@ -938,6 +988,8 @@ namespace Engine
         mini_card_row_.push_back(cat);
         mini_card_base_x_.push_back(x);
         mini_card_base_y_.push_back(y);
+        mini_hover_lerp_.push_back(0.0f);
+        mini_card_tilt_.push_back(0.0f);
 
         ++row_pos[cat];
       }
@@ -1029,6 +1081,8 @@ namespace Engine
     mini_card_target_x_.clear();
     mini_card_base_x_.clear();
     mini_card_base_y_.clear();
+    mini_hover_lerp_.clear();
+    mini_card_tilt_.clear();
     destroy_if_active(card0_id_);
     destroy_if_active(card1_id_);
     // burst_particles_ intentionally NOT destroyed here — they outlive the picker

@@ -126,6 +126,10 @@ namespace Engine
     float ripple_origin_x_ = 0.0f;
     float ripple_origin_y_ = 0.0f;
 
+    // Mini-card hover state
+    std::vector<float> mini_hover_lerp_;  // 0..1 per mini-card
+    std::vector<float> mini_card_tilt_;   // current tilt degrees per mini-card
+
     // Pixel particle burst on smash impact
     std::vector<BurstParticle> burst_particles_;
     void spawn_burst_particles(float x, float y);

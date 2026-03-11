@@ -215,6 +215,14 @@ namespace Engine
       float mini_tilt_speed = 0.8f;     // cycles per second
       float mini_tilt_phase = 0.5f;     // phase offset between adjacent cards
 
+      // Mini-card hover
+      bool  enable_mini_hover = true;
+      float mini_hover_lift = -8.0f;   // px upward shift (negative = up)
+      float mini_hover_scale = 1.4f;    // scale multiplier on hover
+      float mini_hover_speed = 10.0f;   // lerp speed
+      float mini_hover_tilt_deg = 5.0f; // max tilt degrees on hover (mouse-X-based)
+      float mini_hover_tilt_speed = 8.0f; // tilt lerp speed
+
       // Smash ripple on mini-cards
       bool  enable_smash_ripple = true;
       float ripple_amplitude = 8.0f;    // px peak displacement
@@ -249,4 +257,5 @@ REFLECT_FIELDS(Engine::FileIO::CardAnimSettings,
   enable_card_stack, card_stack_offset, pre_shift_duration,
   enable_mini_wave, mini_wave_amplitude, mini_wave_speed, mini_wave_phase,
   enable_mini_tilt, mini_tilt_amplitude, mini_tilt_speed, mini_tilt_phase,
+  enable_mini_hover, mini_hover_lift, mini_hover_scale, mini_hover_speed, mini_hover_tilt_deg, mini_hover_tilt_speed,
   enable_smash_ripple, ripple_amplitude, ripple_speed, ripple_decay)
