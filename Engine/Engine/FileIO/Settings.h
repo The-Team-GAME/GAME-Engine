@@ -137,6 +137,20 @@ namespace Engine
     };
 
     // ==================================================================================
+    // Firebase Cloud Firestore Settings
+    // ==================================================================================
+
+    // Configuration for connecting to a Firebase Realtime Database project.
+    // Game developers fill in their Firebase project details in firebase_settings.json.
+    struct FirebaseSettings
+    {
+      std::string database_url = "";   // RTDB URL (e.g. "https://myproject-default-rtdb.firebaseio.com")
+      std::string api_key = "";        // Firebase Web API key (from Firebase Console → Project Settings)
+      std::string client_id = "";      // Google OAuth 2.0 client ID (Desktop type)
+      std::string client_secret = "";  // Google OAuth 2.0 client secret
+    };
+
+    // ==================================================================================
     // Card Animation Settings (upgrade picker UI effects)
     // ==================================================================================
     struct CardAnimSettings
@@ -236,6 +250,7 @@ REFLECT_FIELDS(Engine::FileIO::EngineSettings, window_title, window_width, windo
 REFLECT_FIELDS(Engine::FileIO::ProjectSettings, loaded_tilemaps, layer_collision_pairs)
 REFLECT_FIELDS(Engine::FileIO::LocalSettings, imgui_theme, imgui_layout, auto_reload)
 REFLECT_FIELDS(Engine::FileIO::GameSettings, fullscreen, vsync, bgm_volume, sfx_volume)
+REFLECT_FIELDS(Engine::FileIO::FirebaseSettings, database_url, api_key, client_id, client_secret)
 
 REFLECT_ENUM(Engine::FileIO::UpgradeType, Flat, Multiplier)
 REFLECT_FIELDS(Engine::FileIO::RarityTier, name, drop_rate)
