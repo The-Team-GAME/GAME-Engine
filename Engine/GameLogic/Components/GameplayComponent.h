@@ -79,6 +79,7 @@ namespace Components
     f32 walk_speed = 300'000.f;
     f32 jump_force = -30'000'000.f;
     Vec2D knockback_value;
+    Vec2D knockback_recieved{ 100'000.f, 50'000.f };
     bool damage_immune = false;
 
     // The arguments are in the order of
@@ -291,7 +292,7 @@ REFLECT_FIELDS(Components::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_
 
 
 REGISTER_COMPONENT(Components::Player, 
-  damage_immune, walk_speed, jump_force, dash, stunned, 
+  damage_immune, walk_speed, jump_force, dash, stunned, knockback_recieved,
   attack1, attack2, attack3, uppercut, smash,
   attack1_data, attack2_data, attack3_data, uppercut_data, smash_data)
 REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, attack_range)

@@ -348,7 +348,7 @@ namespace PlayerStateCallbacks
   // Stunned State Callbacks
   // ========================================================================
 
-  inline void stunned_on_enter([[maybe_unused]] ECS::Entity entity)
+  inline void stunned_on_enter(ECS::Entity entity)
   {
     Log::info("Player: Stunned!");
     Components::Player* player_comp = entity.get_component<Components::Player>();
@@ -359,18 +359,10 @@ namespace PlayerStateCallbacks
 
   inline void stunned_on_update(ECS::Entity entity)
   {
-    /*Components::Player* player_comp = entity.get_component<Components::Player>();
-    assert(player_comp);
-    if (player_comp->stunned.timer_end())
-    {
-      Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
-      assert(sm);
-      sm->change_state("Idle");
-    }
-    player_comp->stunned.timer -= Time::get_fixed_dt();*/
     Components::Animation* animation = entity.get_component<Components::Animation>();
     assert(animation);
-    if (animation->has_ended()) {
+    if (animation->has_ended()) 
+    {
       Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
       assert(sm);
       sm->change_state("Idle");

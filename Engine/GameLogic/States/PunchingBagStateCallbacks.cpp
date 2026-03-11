@@ -23,24 +23,44 @@ namespace PunchingBagStateCallbacks
 
   inline void hit_on_enter(Engine::ECS::Entity entity) 
   {
-    // Check which direction the punching bag is being hit from
-    ECS::Entity player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
-    Components::Transform2D* player_xform = player_entity.get_component<Components::Transform2D>();
-
-    Components::Transform2D* bag_xform = entity.get_component<Components::Transform2D>();
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
+    assert(rigid && sm);
+    if (rigid->force.x > 0.f) // right
+    {
+      sm->change_state("Right");
+    }
+    else
+    {
+      sm->change_state("Left");
+    }
   }
 
-  inline void left_on_update([[maybe_unused]] Engine::ECS::Entity entity) {
-    // Empty as designed
+  inline void left_on_update(Engine::ECS::Entity entity) {
+    Components::Animation* animation = entity.get_component<Components::Animation>();
+    assert(animation);
+    if (animation->has_ended())
+    {
+      Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
+      assert(sm);
+      sm->change_state("Idle");
+    }
   }
 
-  inline void right_on_update([[maybe_unused]] Engine::ECS::Entity entity) {
-    // Empty as designed
+  inline void right_on_update(Engine::ECS::Entity entity) {
+    Components::Animation* animation = entity.get_component<Components::Animation>();
+    assert(animation);
+    if (animation->has_ended())
+    {
+      Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
+      assert(sm);
+      sm->change_state("Idle");
+    }
   }
 }
 REGISTER_STATE_MACHINE_BLUEPRINT(EmptyState, "Idle",
   STATE("Idle", NO_CALLBACK, PunchingBagStateCallbacks::idle_on_update, NO_CALLBACK)
-  STATE("Hit", NO_CALLBACK, NO_CALLBACK, NO_CALLBACK)
-  STATE("Left", NO_CALLBACK, NO_CALLBACK, NO_CALLBACK)
-  STATE("Right", NO_CALLBACK, NO_CALLBACK, NO_CALLBACK)
+  STATE("Hit", PunchingBagStateCallbacks::hit_on_enter, NO_CALLBACK, NO_CALLBACK)
+  STATE("Left", NO_CALLBACK, PunchingBagStateCallbacks::left_on_update, NO_CALLBACK)
+  STATE("Right", NO_CALLBACK, PunchingBagStateCallbacks::right_on_update, NO_CALLBACK)
 )
