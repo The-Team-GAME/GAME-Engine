@@ -877,6 +877,26 @@ inline void UpgradePanel()
         ImGui::Unindent();
       }
 
+      ImGui::Checkbox("Mini-Card Wave", &anim.enable_mini_wave);
+      if (anim.enable_mini_wave)
+      {
+        ImGui::Indent();
+        ImGui::DragFloat("Wave Amplitude", &anim.mini_wave_amplitude, 0.1f, 0.0f, 20.0f);
+        ImGui::DragFloat("Wave Speed", &anim.mini_wave_speed, 0.05f, 0.0f, 5.0f);
+        ImGui::DragFloat("Wave Phase", &anim.mini_wave_phase, 0.05f, 0.0f, 6.28f);
+        ImGui::Unindent();
+      }
+
+      ImGui::Checkbox("Smash Ripple", &anim.enable_smash_ripple);
+      if (anim.enable_smash_ripple)
+      {
+        ImGui::Indent();
+        ImGui::DragFloat("Ripple Amplitude", &anim.ripple_amplitude, 0.5f, 0.0f, 50.0f);
+        ImGui::DragFloat("Ripple Speed", &anim.ripple_speed, 10.0f, 10.0f, 2000.0f);
+        ImGui::DragFloat("Ripple Decay", &anim.ripple_decay, 0.1f, 0.1f, 20.0f);
+        ImGui::Unindent();
+      }
+
       ImGui::Spacing();
       if (ImGui::Button("Save Anim Settings"))
         SettingsManager<CardAnimSettings>::save();

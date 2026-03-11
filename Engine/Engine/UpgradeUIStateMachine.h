@@ -112,12 +112,19 @@ namespace Engine
     // Mini-card shift during arc (existing cards compress to make room)
     std::vector<float> mini_card_start_x_;  // original X per mini-card
     std::vector<float> mini_card_target_x_; // compressed X per mini-card
+    std::vector<float> mini_card_base_x_;   // resting X per mini-card
+    std::vector<float> mini_card_base_y_;   // resting Y per mini-card
     std::vector<int>   mini_card_row_;       // category row per mini-card
     int arc_target_row_ = -1;               // which row the arc card targets
 
     // Pre-shift phase: existing cards slide to make room before arc starts
     float pre_shift_time_ = -1.0f;
     int   pre_shift_card_ = -1;
+
+    // Smash ripple state
+    float ripple_time_ = -1.0f;  // -1 = inactive
+    float ripple_origin_x_ = 0.0f;
+    float ripple_origin_y_ = 0.0f;
 
     // Pixel particle burst on smash impact
     std::vector<BurstParticle> burst_particles_;

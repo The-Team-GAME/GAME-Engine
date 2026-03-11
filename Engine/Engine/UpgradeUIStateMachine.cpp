@@ -298,6 +298,53 @@ namespace Engine
     float scale_x[2] = { card_base_sx_[0], card_base_sx_[1] };
     float scale_y[2] = { card_base_sy_[0], card_base_sy_[1] };
 
+    // ---- Mini-card idle wave + smash ripple (applied every frame) ----
+    {
+      constexpr float two_pi = 6.2831853f;
+
+      // Advance ripple timer
+      if (ripple_time_ >= 0.0f)
+        ripple_time_ += dt;
+
+      for (size_t i = 0; i < mini_card_ids_.size(); ++i)
+      {
+        if (!ECS::is_entity_active(ECS::Entity(mini_card_ids_[i]))) continue;
+        auto* mt = ECS::Entity(mini_card_ids_[i]).get_component<Components::Transform2D>();
+        if (!mt) continue;
+
+        float y_offset = 0.0f;
+
+        // Sine wave idle bob
+        if (cfg.enable_mini_wave)
+        {
+          y_offset += cfg.mini_wave_amplitude
+            * sinf(picker_open_time_ * cfg.mini_wave_speed * two_pi
+              + static_cast<float>(i) * cfg.mini_wave_phase);
+        }
+
+        // Smash ripple
+        if (cfg.enable_smash_ripple && ripple_time_ >= 0.0f)
+        {
+          float dx = mini_card_base_x_[i] - ripple_origin_x_;
+          float dy = mini_card_base_y_[i] - ripple_origin_y_;
+          float dist = sqrtf(dx * dx + dy * dy);
+          float arrival = dist / cfg.ripple_speed;
+          float local_t = ripple_time_ - arrival;
+          if (local_t > 0.0f)
+          {
+            float envelope = expf(-cfg.ripple_decay * local_t);
+            y_offset += cfg.ripple_amplitude * sinf(local_t * two_pi * 4.0f) * envelope;
+          }
+        }
+
+        mt->position.y = mini_card_base_y_[i] + y_offset;
+      }
+
+      // Auto-expire ripple after it's faded enough
+      if (ripple_time_ > 3.0f)
+        ripple_time_ = -1.0f;
+    }
+
     // ---- Flip Reveal ----
     if (cfg.enable_flip_reveal && !flip_done_)
     {
@@ -506,7 +553,12 @@ namespace Engine
 
       if (t >= 1.0f)
       {
-        // Pre-shift done — now start the arc
+        // Pre-shift done — update base X positions, then start the arc
+        for (size_t i = 0; i < mini_card_ids_.size(); ++i)
+        {
+          if (mini_card_row_[i] == arc_target_row_)
+            mini_card_base_x_[i] = mini_card_target_x_[i];
+        }
         pre_shift_time_ = -1.0f;
         pre_shift_card_ = -1;
         arc_active_ = true;
@@ -603,6 +655,14 @@ namespace Engine
       {
         if (cfg.enable_burst_particles)
           spawn_burst_particles(arc_end_x_, arc_end_y_);
+
+        // Trigger ripple from smash impact point
+        if (cfg.enable_smash_ripple)
+        {
+          ripple_time_ = 0.0f;
+          ripple_origin_x_ = arc_end_x_;
+          ripple_origin_y_ = arc_end_y_;
+        }
 
         smash_time_ = -1.0f;
         linger_time_ = 0.0f;  // hold the panel open while particles play
@@ -821,6 +881,8 @@ namespace Engine
           atlas->drawIndex = upg.card_index;
         mini_card_ids_.push_back(mc.get_id());
         mini_card_row_.push_back(cat);
+        mini_card_base_x_.push_back(x);
+        mini_card_base_y_.push_back(y);
 
         ++row_pos[cat];
       }
@@ -910,6 +972,8 @@ namespace Engine
     mini_card_row_.clear();
     mini_card_start_x_.clear();
     mini_card_target_x_.clear();
+    mini_card_base_x_.clear();
+    mini_card_base_y_.clear();
     destroy_if_active(card0_id_);
     destroy_if_active(card1_id_);
     // burst_particles_ intentionally NOT destroyed here — they outlive the picker
@@ -933,6 +997,7 @@ namespace Engine
     linger_time_ = -1.0f;
     pre_shift_time_ = -1.0f;
     pre_shift_card_ = -1;
+    ripple_time_ = -1.0f;
     // Also clean up any lingering burst particles on hard reset
     {
       auto destroy_if_active = [](ECS::EntityID& id)

@@ -202,6 +202,18 @@ namespace Engine
       bool  enable_card_stack = true;
       float card_stack_offset = 8.0f;   // px shift per card when stacking
       float pre_shift_duration = 0.25f; // seconds for existing cards to slide before arc
+
+      // Mini-card idle wave
+      bool  enable_mini_wave = true;
+      float mini_wave_amplitude = 3.0f; // px vertical bob
+      float mini_wave_speed = 1.2f;     // cycles per second
+      float mini_wave_phase = 0.4f;     // phase offset between adjacent cards
+
+      // Smash ripple on mini-cards
+      bool  enable_smash_ripple = true;
+      float ripple_amplitude = 8.0f;    // px peak displacement
+      float ripple_speed = 300.0f;      // px/s propagation speed
+      float ripple_decay = 4.0f;        // how fast ripple fades (1/s)
     };
   }
 }
@@ -228,4 +240,6 @@ REFLECT_FIELDS(Engine::FileIO::CardAnimSettings,
   particle_speed_min, particle_speed_max, particle_life_min, particle_life_max,
   particle_count_min, particle_count_max, particle_size, particle_gravity,
   particle_angle_min, particle_angle_max,
-  enable_card_stack, card_stack_offset, pre_shift_duration)
+  enable_card_stack, card_stack_offset, pre_shift_duration,
+  enable_mini_wave, mini_wave_amplitude, mini_wave_speed, mini_wave_phase,
+  enable_smash_ripple, ripple_amplitude, ripple_speed, ripple_decay)
