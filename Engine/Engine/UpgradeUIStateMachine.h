@@ -109,6 +109,12 @@ namespace Engine
     float smash_time_ = -1.0f;   // landing bounce timer (-1 = inactive)
     float linger_time_ = -1.0f;  // post-smash hold before transitioning (-1 = inactive)
 
+    // Mini-card shift during arc (existing cards compress to make room)
+    std::vector<float> mini_card_start_x_;  // original X per mini-card
+    std::vector<float> mini_card_target_x_; // compressed X per mini-card
+    std::vector<int>   mini_card_row_;       // category row per mini-card
+    int arc_target_row_ = -1;               // which row the arc card targets
+
     // Pixel particle burst on smash impact
     std::vector<BurstParticle> burst_particles_;
     void spawn_burst_particles(float x, float y);

@@ -516,6 +516,19 @@ namespace Engine
         }
       }
 
+      // Shift existing mini-cards to compressed positions during arc flight
+      if (cfg.enable_card_stack && !mini_card_start_x_.empty())
+      {
+        float shift_t = Easing::EaseQuadInOut(t, 0.0f, 1.0f, 1.0f);
+        for (size_t i = 0; i < mini_card_ids_.size(); ++i)
+        {
+          if (mini_card_row_[i] != arc_target_row_) continue;
+          auto* mt = ECS::Entity(mini_card_ids_[i]).get_component<Components::Transform2D>();
+          if (mt)
+            mt->position.x = mini_card_start_x_[i] + (mini_card_target_x_[i] - mini_card_start_x_[i]) * shift_t;
+        }
+      }
+
       if (t >= 1.0f)
       {
         arc_active_ = false;
@@ -557,6 +570,18 @@ namespace Engine
         linger_time_ = 0.0f;  // hold the panel open while particles play
         return;
       }
+
+      // Keep mini-cards at compressed positions during smash
+      if (cfg.enable_card_stack && !mini_card_target_x_.empty())
+      {
+        for (size_t i = 0; i < mini_card_ids_.size(); ++i)
+        {
+          if (mini_card_row_[i] != arc_target_row_) continue;
+          auto* mt = ECS::Entity(mini_card_ids_[i]).get_component<Components::Transform2D>();
+          if (mt) mt->position.x = mini_card_target_x_[i];
+        }
+      }
+
       return;  // skip normal write during smash
     }
 
@@ -565,6 +590,18 @@ namespace Engine
     {
       const float linger_duration = cfg.linger_duration;
       linger_time_ += dt;
+
+      // Keep mini-cards at compressed positions during linger
+      if (cfg.enable_card_stack && !mini_card_target_x_.empty())
+      {
+        for (size_t i = 0; i < mini_card_ids_.size(); ++i)
+        {
+          if (mini_card_row_[i] != arc_target_row_) continue;
+          auto* mt = ECS::Entity(mini_card_ids_[i]).get_component<Components::Transform2D>();
+          if (mt) mt->position.x = mini_card_target_x_[i];
+        }
+      }
+
       if (linger_time_ >= linger_duration)
       {
         linger_time_ = -1.0f;
@@ -694,21 +731,11 @@ namespace Engine
       if (cat >= 0) row_card_count[cat] += level;
     }
 
-    // Compute effective spacing per row
-    // When stacking: uniform small offset so all cards overlap like a deck.
-    // When not stacking: spread each card side-by-side (mini_w + mini_gap).
-    float row_spacing[4];
-    for (int r = 0; r < 4; ++r)
-    {
-      if (cfg.enable_card_stack)
-      {
-        row_spacing[r] = cfg.card_stack_offset;
-      }
-      else
-      {
-        row_spacing[r] = mini_w + mini_gap;
-      }
-    }
+    // Compute effective spacing per row.
+    // When stacking: the last card sits at the Nth full-spacing slot.
+    // All previous cards are compressed together with stack_offset.
+    // When not stacking: all cards evenly spaced.
+    float row_base_spacing = mini_w + mini_gap;  // full spacing
 
     // Reset counts for positioning pass
     int row_pos[4] = { 0, 0, 0, 0 };
@@ -724,8 +751,25 @@ namespace Engine
 
       for (int lv = 0; lv < level; ++lv)
       {
-        float x = panel_left + row_start_x + mini_w / 2.0f
-          + row_pos[cat] * row_spacing[cat];
+        int idx_in_row = row_pos[cat];
+        int total_in_row = row_card_count[cat];
+        bool is_last = (idx_in_row == total_in_row - 1);
+
+        float x;
+        if (!cfg.enable_card_stack || total_in_row <= 4)
+        {
+          // 4 or fewer — normal full spacing
+          x = panel_left + row_start_x + mini_w / 2.0f
+            + idx_in_row * row_base_spacing;
+        }
+        else
+        {
+          // >4: evenly distribute so last card lands at slot 3 position
+          float span = 3.0f * row_base_spacing;
+          float step = span / (total_in_row - 1);
+          x = panel_left + row_start_x + mini_w / 2.0f
+            + idx_in_row * step;
+        }
         float y = panel_top + row_y[cat];
 
         auto mc = ECS::create_entity()
@@ -738,6 +782,7 @@ namespace Engine
         if (auto* atlas = ECS::Entity(mc.get_id()).get_component<Components::TextureAtlas>())
           atlas->drawIndex = upg.card_index;
         mini_card_ids_.push_back(mc.get_id());
+        mini_card_row_.push_back(cat);
 
         ++row_pos[cat];
       }
@@ -824,6 +869,9 @@ namespace Engine
     for (auto& id : mini_card_ids_)
       destroy_if_active(id);
     mini_card_ids_.clear();
+    mini_card_row_.clear();
+    mini_card_start_x_.clear();
+    mini_card_target_x_.clear();
     destroy_if_active(card0_id_);
     destroy_if_active(card1_id_);
     // burst_particles_ intentionally NOT destroyed here — they outlive the picker
@@ -926,15 +974,20 @@ namespace Engine
 
     // The new card will be at position row_card_count[cat] (0-indexed)
     int new_count = row_card_count[cat] + 1;
+    auto& cfg = FileIO::SettingsManager<FileIO::CardAnimSettings>::get_mutable();
 
-    // Compute stacking spacing (same formula as spawn)
-    constexpr float max_row_w = 4.0f * (mini_w + mini_gap);
-    float spacing = (new_count <= 4)
-      ? (mini_w + mini_gap)
-      : (max_row_w / static_cast<float>(new_count));
-
-    int target_slot = row_card_count[cat]; // 0-indexed slot for the new card
-    out_x = panel_left + row_start_x + mini_w / 2.0f + target_slot * spacing;
+    float full_spacing = mini_w + mini_gap;
+    int target_slot;
+    if (cfg.enable_card_stack && new_count > 4)
+    {
+      // Stacking: last card always at the 4th slot (index 3)
+      target_slot = 3;
+    }
+    else
+    {
+      target_slot = new_count - 1;
+    }
+    out_x = panel_left + row_start_x + mini_w / 2.0f + target_slot * full_spacing;
     out_y = panel_top + row_y[cat];
   }
 
@@ -943,6 +996,8 @@ namespace Engine
     constexpr float ss_scale = 2.0f;
     constexpr float mini_w = 128.0f * ss_scale / 6.0f;
     constexpr float mini_h = 224.0f * ss_scale / 6.0f;
+    constexpr float mini_gap = 2.0f;
+    constexpr float row_base_spacing = mini_w + mini_gap;
 
     arc_active_ = true;
     arc_time_ = 0.0f;
@@ -954,6 +1009,62 @@ namespace Engine
     arc_end_sx_ = mini_w;
     arc_end_sy_ = mini_h;
     compute_arc_target(card_slot, arc_end_x_, arc_end_y_);
+
+    // Compute mini-card shift: figure out which row the arc targets,
+    // then compute compressed positions for existing cards in that row.
+    auto& mgr = UpgradeManager::instance();
+    auto& settings = FileIO::SettingsManager<FileIO::UpgradeSettings>::get();
+    auto& cfg = FileIO::SettingsManager<FileIO::CardAnimSettings>::get_mutable();
+
+    auto get_category = [](const std::string& stat_name) -> int {
+      if (stat_name == "attack_damage")                                   return 0;
+      if (stat_name == "uppercut_damage" || stat_name == "uppercut_cooldown")  return 1;
+      if (stat_name == "downsmash_damage" || stat_name == "downsmash_cooldown") return 2;
+      if (stat_name == "dash_cooldown")                                   return 3;
+      return -1;
+    };
+
+    int idx = mgr.get_rolled_card(card_slot);
+    arc_target_row_ = -1;
+    if (idx >= 0 && idx < static_cast<int>(settings.upgrades.size()))
+      arc_target_row_ = get_category(settings.upgrades[idx].stat_name);
+
+    // Count cards in the target row (current state, before pick is applied)
+    int row_count = 0;
+    for (size_t i = 0; i < mini_card_ids_.size(); ++i)
+      if (mini_card_row_[i] == arc_target_row_) ++row_count;
+
+    // After the new card lands, total becomes row_count + 1.
+    int new_total = row_count + 1;
+
+    // Store current X positions and compute compressed targets.
+    mini_card_start_x_.resize(mini_card_ids_.size());
+    mini_card_target_x_.resize(mini_card_ids_.size());
+
+    for (size_t i = 0; i < mini_card_ids_.size(); ++i)
+    {
+      auto* tr = ECS::Entity(mini_card_ids_[i]).get_component<Components::Transform2D>();
+      mini_card_start_x_[i] = tr ? tr->position.x : 0.0f;
+
+      if (cfg.enable_card_stack && mini_card_row_[i] == arc_target_row_ && new_total > 4)
+      {
+        // >4: evenly redistribute so incoming card (at slot 3) and all
+        // existing cards are equally spaced.
+        int row_idx = 0;
+        for (size_t j = 0; j < i; ++j)
+          if (mini_card_row_[j] == arc_target_row_) ++row_idx;
+
+        float span = 3.0f * row_base_spacing;
+        float step = span / (new_total - 1);
+        float base_x = arc_end_x_ - 3.0f * row_base_spacing;
+        mini_card_target_x_[i] = base_x + row_idx * step;
+      }
+      else
+      {
+        // Not in the target row or stacking disabled — no movement
+        mini_card_target_x_[i] = mini_card_start_x_[i];
+      }
+    }
   }
 
   // ---- Burst particle helpers ----
