@@ -704,9 +704,6 @@ namespace PlayerStateCallbacks
   inline void uppercut_falling_on_exit([[maybe_unused]] ECS::Entity entity)
   {
     default_state = false;
-    Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
-    assert(xform);
-    xform->position.y += 32.f;
   }
 #pragma endregion
 
