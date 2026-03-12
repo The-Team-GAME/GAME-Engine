@@ -20,6 +20,7 @@
 #include <vector>
 #include "EngineExport.h"
 #include "Reflection/ReflectionLibrary/GenericValue.h"
+#include "ECS/Types.h"
 
 namespace Engine {
 
@@ -31,7 +32,9 @@ namespace Engine {
   LevelState - Stores the cached state of an open level.
   ==================================================================================*/
   struct LevelState {
-    EntityList cached_entities;  // Entity data when not active (empty when active)
+    EntityList cached_entities;                      // Serialized entity data (cold-load path)
+    std::vector<ECS::EntityID> live_entity_ids;      // Deactivated entity IDs (fast-switch path)
+    bool has_live_entities = false;                   // True if entities are alive but deactivated
   };
 
   namespace LevelManager {

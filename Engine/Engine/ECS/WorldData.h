@@ -47,6 +47,7 @@ namespace Engine {
         LayerID next_layer_id = 2; // Start at 2 (0 = INVALID_LAYER, 1 = DEFAULT_LAYER)
         SparseSet<EntityID> active_entities;
         SparseSet<EntityID> entities_to_destroy;
+        SparseSet<EntityID> deactivated_entities; // Entities suspended (kept alive but not iterated/rendered)
         std::vector<ComponentSignature> entity_signatures;  // Indexed by EntityID — O(1) direct access
         std::vector<LayerID> entity_highest_layer; // Cached highest layer per entity (indexed by EntityID)
         std::vector<LayerSignature> entity_layers;  // Indexed by EntityID — O(1) direct access

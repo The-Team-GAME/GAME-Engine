@@ -241,6 +241,15 @@ namespace Engine {
       {
         containers.entities_to_destroy.insert(entityId);
       }
+
+      // Also mark all deactivated entities for destruction
+      for (EntityID entityId : containers.deactivated_entities)
+      {
+        // Re-add to active set so process_housekeeping can clean them up
+        containers.active_entities.insert(entityId);
+        containers.entities_to_destroy.insert(entityId);
+      }
+      containers.deactivated_entities.clear();
     }
 
     void clear_world()
@@ -263,6 +272,7 @@ namespace Engine {
       containers.entity_layers.clear();
       containers.entity_highest_layer.clear();
       containers.active_entities.clear();
+      containers.deactivated_entities.clear();
       containers.entities_to_destroy.clear();
       containers.components_to_remove.clear();
       containers.layer_name_to_id.clear();
@@ -288,6 +298,69 @@ namespace Engine {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
       return containers.active_entities.contains(id);
+    }
+
+    void deactivate_entity(EntityID id)
+    {
+      auto& containers = Internal::get_containers();
+
+      // Must be currently active and not already deactivated
+      if (!containers.active_entities.contains(id)) return;
+      if (containers.deactivated_entities.contains(id)) return;
+
+      // Remove from layer sets (stops rendering/system iteration)
+      if (id < containers.entity_layers.size()) {
+        const auto& layers = containers.entity_layers[id];
+        for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
+          if (layers.test(layer)) {
+            Internal::remove_entity_from_layer_set(id, layer);
+          }
+        }
+      }
+
+      // Remove from active set (stops all queries/iteration)
+      containers.active_entities.erase(id);
+
+      // Remove from all systems
+      for (auto& system : containers.systems) {
+        system->remove_entity(id);
+      }
+
+      // Track as deactivated (component data, signatures, layers, names all preserved)
+      containers.deactivated_entities.insert(id);
+    }
+
+    void activate_entity(EntityID id)
+    {
+      auto& containers = Internal::get_containers();
+
+      // Must be deactivated
+      if (!containers.deactivated_entities.contains(id)) return;
+
+      // Re-add to active set
+      containers.active_entities.insert(id);
+
+      // Re-add to layer sets
+      if (id < containers.entity_layers.size()) {
+        const auto& layers = containers.entity_layers[id];
+        for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
+          if (layers.test(layer)) {
+            Internal::add_entity_to_layer_set(id, layer);
+          }
+        }
+      }
+
+      // Re-register with matching systems
+      Internal::entity_component_changed(id);
+
+      // Remove from deactivated tracking
+      containers.deactivated_entities.erase(id);
+    }
+
+    bool is_entity_deactivated(EntityID id)
+    {
+      auto& containers = Internal::get_containers();
+      return containers.deactivated_entities.contains(id);
     }
 
     void set_entity_name(const Entity entity, const std::string& name)

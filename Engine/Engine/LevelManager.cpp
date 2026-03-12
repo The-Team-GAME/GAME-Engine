@@ -142,6 +142,60 @@ namespace {
 namespace Engine {
   namespace LevelManager {
 
+    // Reactivates a level's deactivated entities. This is the fast path — no deserialization.
+    void activate_level(LevelState& state)
+    {
+      for (ECS::EntityID id : state.live_entity_ids) {
+        ECS::activate_entity(id);
+      }
+      state.live_entity_ids.clear();
+      state.has_live_entities = false;
+    }
+
+    // Destroys all deactivated entities owned by a level state.
+    void destroy_level_entities(LevelState& state)
+    {
+      if (state.has_live_entities) {
+        for (ECS::EntityID id : state.live_entity_ids) {
+          // Re-activate so process_housekeeping can destroy them properly
+          ECS::activate_entity(id);
+          ECS::Entity(id).destroy();
+        }
+        state.live_entity_ids.clear();
+        state.has_live_entities = false;
+        ECS::process_housekeeping();
+      }
+    }
+
+    // Deactivates all current world entities and stores their IDs in the level state.
+    // This is the fast path — no serialization needed.
+    void deactivate_active_level()
+    {
+      if (active_level_id.empty()) return;
+
+      auto it = open_levels.find(active_level_id);
+      if (it == open_levels.end()) return;
+
+      LevelState& state = it->second;
+      state.live_entity_ids.clear();
+
+      ECS::for_each_entity([&](ECS::Entity entity) {
+        state.live_entity_ids.push_back(entity.get_id());
+        });
+
+      // Deactivate all entities (removes from active set and layer sets, preserves data)
+      for (ECS::EntityID id : state.live_entity_ids) {
+        ECS::deactivate_entity(id);
+      }
+
+      state.has_live_entities = true;
+      state.cached_entities.clear(); // No serialized cache needed
+
+      Log::info("Deactivated level: {} ({} entities)",
+        active_level_id,
+        state.live_entity_ids.size());
+    }
+
     std::string open_level(const std::string& filepath, bool append_resource_path)
     {
       // Get the full normalized path - this becomes the level ID
@@ -258,9 +312,15 @@ namespace Engine {
 
       LevelState& state = open_levels[level_id];
 
-      // Instantiate cached level into world
-      instantiate_entities(state.cached_entities, true);
-      state.cached_entities = EntityList();  // Clear cache
+      if (state.has_live_entities) {
+        // Fast path: reactivate deactivated entities
+        activate_level(state);
+      }
+      else {
+        // Cold path: deserialize from cached EntityList
+        instantiate_entities(state.cached_entities, true);
+        state.cached_entities = EntityList();
+      }
 
       // Call on_init (via Level component if present)
       call_level_init();
@@ -284,17 +344,35 @@ namespace Engine {
       auto it = std::find(level_order.begin(), level_order.end(), level_id);
       size_t index = std::distance(level_order.begin(), it);
 
+      // If closing a non-active level with live entities, destroy them
+      if (level_id != active_level_id) {
+        LevelState& closing_state = open_levels[level_id];
+        destroy_level_entities(closing_state);
+      }
+
       // If closing active level, switch to another
       if (level_id == active_level_id) {
         if (level_order.size() > 1) {
           size_t new_index = (index > 0) ? index - 1 : 1;
           std::string new_active = level_order[new_index];
 
-          LevelState& state = open_levels[new_active];
-          current_level_path = new_active.starts_with("__new_") ? "" : new_active;
-          instantiate_entities(state.cached_entities, true);
-          state.cached_entities = EntityList();
+          // Destroy active entities first
+          ECS::for_each_entity([](ECS::Entity entity) {
+            entity.destroy();
+            });
+          ECS::process_housekeeping();
+
           active_level_id = new_active;
+          current_level_path = new_active.starts_with("__new_") ? "" : new_active;
+
+          LevelState& state = open_levels[new_active];
+          if (state.has_live_entities) {
+            activate_level(state);
+          }
+          else {
+            instantiate_entities(state.cached_entities, true);
+            state.cached_entities = EntityList();
+          }
 
           call_level_init();
         }
@@ -444,12 +522,8 @@ namespace Engine {
       auto it = open_levels.find(active_level_id);
       if (it == open_levels.end()) return;
 
-      LevelState& state = it->second;
-      state.cached_entities = capture_world_entities();
-
-      Log::info("Cached level: {} ({} entities)",
-        active_level_id,
-        state.cached_entities.size());
+      // Use fast deactivation path instead of full serialization
+      deactivate_active_level();
     }
 
     EntityList get_entities_for_save(const std::string& level_id)
@@ -461,13 +535,32 @@ namespace Engine {
 
       LevelState& state = it->second;
 
-      // Get entities from world if active, otherwise from cache
+      // Get entities from world if active
       if (level_id == active_level_id) {
         return capture_world_entities();
       }
-      else {
-        return state.cached_entities;
+
+      // If level has live deactivated entities, temporarily activate to serialize
+      if (state.has_live_entities) {
+        // Activate, serialize, then deactivate again
+        activate_level(state);
+        EntityList result = capture_world_entities();
+
+        // Re-deactivate them
+        state.live_entity_ids.clear();
+        ECS::for_each_entity([&](ECS::Entity entity) {
+          state.live_entity_ids.push_back(entity.get_id());
+          });
+        for (ECS::EntityID id : state.live_entity_ids) {
+          ECS::deactivate_entity(id);
+        }
+        state.has_live_entities = true;
+
+        return result;
       }
+
+      // Fall back to serialized cache
+      return state.cached_entities;
     }
 
     void clear_all()
@@ -475,6 +568,13 @@ namespace Engine {
       // Call on_exit for active level
       if (!active_level_id.empty() && is_level_open(active_level_id)) {
         call_level_exit();
+      }
+
+      // Destroy all deactivated entities from non-active levels
+      for (auto& [id, state] : open_levels) {
+        if (id != active_level_id) {
+          destroy_level_entities(state);
+        }
       }
 
       open_levels.clear();

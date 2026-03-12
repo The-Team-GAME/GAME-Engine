@@ -198,6 +198,22 @@ namespace Engine {
     ==================================================================================*/
     ENGINE_API bool is_entity_active(const Entity entity);
 
+    // ============================================================================
+    // Entity Activation / Deactivation (for level switching optimization)
+    // ============================================================================
+
+    // Deactivates an entity: removes it from active_entities and layer sets,
+    // but preserves all component data, signatures, layers, names, and prefab data.
+    // Deactivated entities are invisible to all systems, queries, and iteration.
+    ENGINE_API void deactivate_entity(EntityID id);
+
+    // Reactivates a previously deactivated entity: re-inserts it into active_entities
+    // and layer sets, and re-registers it with matching systems.
+    ENGINE_API void activate_entity(EntityID id);
+
+    // Returns true if the entity is currently deactivated (alive but suspended).
+    ENGINE_API bool is_entity_deactivated(EntityID id);
+
     /* =================== //
     // Entity naming        //
     // =================== */
