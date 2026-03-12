@@ -3,11 +3,17 @@
         "components": [
             {
                 "data": {
+                    "destroy_at": 122.92263793945313
+                },
+                "type": "Components::Lifetime"
+            },
+            {
+                "data": {
                     "aabb": {
                         "half_height": 34.71263122558594,
                         "half_width": 31.724124908447266,
                         "pos": {
-                            "x": -218.99386596679688,
+                            "x": -176.58071899414063,
                             "y": 717.8770141601563
                         }
                     },
@@ -32,30 +38,6 @@
                     "width": 63.44824981689453
                 },
                 "type": "Components::BoxCollider"
-            },
-            {
-                "data": {
-                    "acceleration": {
-                        "x": 0.0,
-                        "y": 0.0
-                    },
-                    "gravity": {
-                        "x": 0.0,
-                        "y": 1000.0
-                    },
-                    "is_jumping": false,
-                    "is_static": true,
-                    "mass": 1.0,
-                    "on_ground": false,
-                    "use_gravity": false,
-                    "velocity": {
-                        "x": -68.8916015625,
-                        "y": 0.0
-                    },
-                    "x_terminal_velocity": 500.0,
-                    "y_terminal_velocity": 0.0
-                },
-                "type": "Components::RigidBody"
             },
             {
                 "data": {
@@ -230,7 +212,19 @@
                         0,
                         1,
                         2,
-                        3,
+                        1,
+                        0,
+                        1,
+                        2,
+                        1,
+                        0,
+                        1,
+                        2,
+                        1,
+                        0,
+                        1,
+                        2,
+                        1,
                         0,
                         1,
                         2,
@@ -259,10 +253,22 @@
                         2.200000047683716,
                         2.450000047683716,
                         2.700000047683716,
+                        2.950000047683716,
                         3.200000047683716,
-                        3.4000000953674316,
-                        3.6000001430511475,
-                        3.8000001907348633
+                        3.450000047683716,
+                        3.700000047683716,
+                        3.950000047683716,
+                        4.199999809265137,
+                        4.449999809265137,
+                        4.699999809265137,
+                        4.949999809265137,
+                        5.199999809265137,
+                        5.449999809265137,
+                        5.699999809265137,
+                        6.199999809265137,
+                        6.399999618530273,
+                        6.59999942779541,
+                        6.799999237060547
                     ],
                     "durations": [
                         0.20000000298023224,
@@ -277,6 +283,18 @@
                         0.25,
                         0.25,
                         0.25,
+                        0.25,
+                        0.25,
+                        0.25,
+                        0.25,
+                        0.25,
+                        0.25,
+                        0.25,
+                        0.25,
+                        0.25,
+                        0.25,
+                        0.25,
+                        0.25,
                         0.5,
                         0.20000000298023224,
                         0.20000000298023224,
@@ -284,15 +302,39 @@
                         0.20000000298023224
                     ],
                     "is_looping": true,
-                    "startTime": 889.6826171875,
-                    "totalDuration": 4.0
+                    "startTime": 212.8612823486328,
+                    "totalDuration": 6.999999046325684
                 },
                 "type": "Components::Animation"
             },
             {
                 "data": {
+                    "acceleration": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "gravity": {
+                        "x": 0.0,
+                        "y": 1000.0
+                    },
+                    "is_jumping": false,
+                    "is_static": true,
+                    "mass": 1.0,
+                    "on_ground": false,
+                    "use_gravity": false,
+                    "velocity": {
+                        "x": -30.0,
+                        "y": 0.0
+                    },
+                    "x_terminal_velocity": 50.0,
+                    "y_terminal_velocity": 0.0
+                },
+                "type": "Components::RigidBody"
+            },
+            {
+                "data": {
                     "position": {
-                        "x": -221.29025268554688,
+                        "x": -177.58071899414063,
                         "y": 718.566650390625
                     },
                     "rotation": 0.0,
@@ -305,16 +347,10 @@
             },
             {
                 "data": {
-                    "destroy_at": 434.3402404785156
-                },
-                "type": "Components::Lifetime"
-            },
-            {
-                "data": {
                     "damage": 1,
-                    "damage_interval": 0.5,
+                    "damage_interval": 1.0,
                     "impact_vfx_texture": {
-                        "path": ""
+                        "path": "images/SprayPaintMonkeySpriteSheets/VFX_Gas_Spritesheet.png"
                     },
                     "is_continuous": true,
                     "knockback": {

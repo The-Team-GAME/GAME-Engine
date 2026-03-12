@@ -125,7 +125,7 @@ namespace Components
     float attack_range = 500.0f;
 
     // Spray-specific properties
-    float spray_duration = 4.0f;
+    float spray_duration = 7.0f;
     float spray_range = 150.0f;
     float spray_width = 80.0f;
 
