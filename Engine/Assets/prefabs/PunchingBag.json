@@ -5,11 +5,11 @@
                 "data": {
                     "acceleration": {
                         "x": 0.0,
-                        "y": 1000.0
+                        "y": 2000.0
                     },
                     "gravity": {
                         "x": 0.0,
-                        "y": 1000.0
+                        "y": 2000.0
                     },
                     "is_jumping": false,
                     "is_static": false,
@@ -18,7 +18,7 @@
                     "use_gravity": true,
                     "velocity": {
                         "x": 0.0,
-                        "y": 16.666667938232422
+                        "y": 33.333335876464844
                     },
                     "x_terminal_velocity": 500.0,
                     "y_terminal_velocity": 500.0
@@ -37,19 +37,19 @@
             {
                 "data": {
                     "aabb": {
-                        "half_height": 45.97529602050781,
-                        "half_width": 15.679586410522461,
+                        "half_height": 68.88287353515625,
+                        "half_width": 52.67508316040039,
                         "pos": {
-                            "x": -655.39453125,
-                            "y": 1042.331787109375
+                            "x": -807.1389770507813,
+                            "y": 1019.701904296875
                         }
                     },
                     "collided": false,
-                    "height": 91.95059204101563,
+                    "height": 137.7657470703125,
                     "kinetic_friction": 0.800000011920929,
                     "offset": {
-                        "x": -1.089303970336914,
-                        "y": 16.428695678710938
+                        "x": -2.181690216064453,
+                        "y": 26.493728637695313
                     },
                     "polygon": {
                         "position": {
@@ -62,7 +62,7 @@
                     "radius": 0.0,
                     "resolve_collisions": false,
                     "type": "AABB",
-                    "width": 31.359172821044922
+                    "width": 105.35016632080078
                 },
                 "type": "Components::BoxCollider"
             },
@@ -278,24 +278,24 @@
                         0.0
                     ],
                     "durations": [
-                        0.15000000596046448
+                        0.10000000149011612
                     ],
-                    "is_looping": false,
-                    "startTime": 2405.67138671875,
-                    "totalDuration": 0.15000000596046448
+                    "is_looping": true,
+                    "startTime": 329.0193176269531,
+                    "totalDuration": 0.10000000149011612
                 },
                 "type": "Components::Animation"
             },
             {
                 "data": {
                     "position": {
-                        "x": -654.3052368164063,
-                        "y": 1026.180908203125
+                        "x": -804.957275390625,
+                        "y": 993.2081909179688
                     },
                     "rotation": 0.0,
                     "scale": {
-                        "x": 128.0,
-                        "y": 128.0
+                        "x": 192.0,
+                        "y": 192.0
                     }
                 },
                 "type": "Components::Transform2D"
@@ -303,8 +303,8 @@
             {
                 "data": {
                     "local_offset": {
-                        "x": -654.3052368164063,
-                        "y": 1025.903076171875
+                        "x": -804.957275390625,
+                        "y": 993.2081909179688
                     },
                     "offset_initialized": true,
                     "parent_id": 18,
@@ -326,26 +326,29 @@
                             "second": {
                                 "animation": {
                                     "animation": {
-                                        "atlas_indices": [],
-                                        "before_times": [],
-                                        "durations": [],
+                                        "atlas_indices": [
+                                            0
+                                        ],
+                                        "before_times": [
+                                            0.0
+                                        ],
+                                        "durations": [
+                                            0.10000000149011612
+                                        ],
                                         "is_looping": true,
-                                        "startTime": 2405.67138671875,
-                                        "totalDuration": 0.0
+                                        "startTime": 329.0193176269531,
+                                        "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": {
-                                        "height": 91.38279724121094,
+                                        "height": 137.7657470703125,
                                         "offset": {
-                                            "x": -0.9214649200439453,
-                                            "y": 17.92578887939453
+                                            "x": -2.181690216064453,
+                                            "y": 26.493728637695313
                                         },
                                         "vertices": [],
-                                        "width": 30.93326187133789
+                                        "width": 105.35016632080078
                                     },
-                                    "scale": {
-                                        "x": 256.0,
-                                        "y": 256.0
-                                    },
+                                    "scale": null,
                                     "texture": {
                                         "path": "images/PunchingBag_spritesheet.png"
                                     },
@@ -568,22 +571,19 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 2405.67138671875,
+                                        "startTime": 329.0193176269531,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": {
-                                        "height": 91.38279724121094,
+                                        "height": 137.7657470703125,
                                         "offset": {
-                                            "x": -0.9214649200439453,
-                                            "y": 17.92578887939453
+                                            "x": -2.181690216064453,
+                                            "y": 26.493728637695313
                                         },
                                         "vertices": [],
-                                        "width": 30.93326187133789
+                                        "width": 105.35016632080078
                                     },
-                                    "scale": {
-                                        "x": 256.0,
-                                        "y": 256.0
-                                    },
+                                    "scale": null,
                                     "texture": {
                                         "path": "images/PunchingBag_spritesheet.png"
                                     },
@@ -811,22 +811,19 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": false,
-                                        "startTime": 2405.67138671875,
+                                        "startTime": 329.0193176269531,
                                         "totalDuration": 0.4000000059604645
                                     },
                                     "collider_data": {
-                                        "height": 91.38279724121094,
+                                        "height": 137.7657470703125,
                                         "offset": {
-                                            "x": -0.9214649200439453,
-                                            "y": 17.92578887939453
+                                            "x": -2.181690216064453,
+                                            "y": 26.493728637695313
                                         },
                                         "vertices": [],
-                                        "width": 30.93326187133789
+                                        "width": 105.35016632080078
                                     },
-                                    "scale": {
-                                        "x": 256.0,
-                                        "y": 256.0
-                                    },
+                                    "scale": null,
                                     "texture": {
                                         "path": "images/PunchingBag_spritesheet.png"
                                     },
@@ -1054,22 +1051,19 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": false,
-                                        "startTime": 2405.67138671875,
+                                        "startTime": 329.0193176269531,
                                         "totalDuration": 0.4000000059604645
                                     },
                                     "collider_data": {
-                                        "height": 91.38279724121094,
+                                        "height": 137.7657470703125,
                                         "offset": {
-                                            "x": -0.9214649200439453,
-                                            "y": 17.92578887939453
+                                            "x": -2.181690216064453,
+                                            "y": 26.493728637695313
                                         },
                                         "vertices": [],
-                                        "width": 30.93326187133789
+                                        "width": 105.35016632080078
                                     },
-                                    "scale": {
-                                        "x": 256.0,
-                                        "y": 256.0
-                                    },
+                                    "scale": null,
                                     "texture": {
                                         "path": "images/PunchingBag_spritesheet.png"
                                     },
@@ -1294,8 +1288,8 @@
             },
             {
                 "data": {
-                    "current_hp": 0,
-                    "max_hp": 5
+                    "current_hp": 6767,
+                    "max_hp": 6767
                 },
                 "type": "Components::EnemyHealth"
             }

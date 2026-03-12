@@ -299,21 +299,21 @@ static void register_upgrade_applicators()
     [](Engine::FileIO::UpgradeType type, float value) {
       auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
       if (!player_entity.is_valid()) return;
-      auto* player = player_entity.get_component<Components::Player>();
-      if (!player) return;
+      auto* player_comp = player_entity.get_component<Components::Player>();
+      if (!player_comp) return;
 
       if (type == Engine::FileIO::UpgradeType::Flat) {
-        player->attack1_data.dmg += value;
-        player->attack2_data.dmg += value;
-        player->attack3_data.dmg += value;
+        player_comp->attack1_data.dmg += value;
+        player_comp->attack2_data.dmg += value;
+        player_comp->attack3_data.dmg += value;
       }
       else {
-        player->attack1_data.dmg *= value;
-        player->attack2_data.dmg *= value;
-        player->attack3_data.dmg *= value;
+        player_comp->attack1_data.dmg *= value;
+        player_comp->attack2_data.dmg *= value;
+        player_comp->attack3_data.dmg *= value;
       }
       Log::info("[UpgradeApplicator] attack_damage applied — atk1:{} atk2:{} atk3:{}",
-        player->attack1_data.dmg, player->attack2_data.dmg, player->attack3_data.dmg);
+        player_comp->attack1_data.dmg, player_comp->attack2_data.dmg, player_comp->attack3_data.dmg);
     });
 
   // "uppercut_damage" — modifies uppercut_data.dmg
@@ -321,14 +321,14 @@ static void register_upgrade_applicators()
     [](Engine::FileIO::UpgradeType type, float value) {
       auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
       if (!player_entity.is_valid()) return;
-      auto* player = player_entity.get_component<Components::Player>();
-      if (!player) return;
+      auto* player_comp = player_entity.get_component<Components::Player>();
+      if (!player_comp) return;
 
       if (type == Engine::FileIO::UpgradeType::Flat)
-        player->uppercut_data.dmg += value;
+        player_comp->uppercut_data.dmg += value;
       else
-        player->uppercut_data.dmg *= value;
-      Log::info("[UpgradeApplicator] uppercut_damage applied — dmg:{}", player->uppercut_data.dmg);
+        player_comp->uppercut_data.dmg *= value;
+      Log::info("[UpgradeApplicator] uppercut_damage applied — dmg:{}", player_comp->uppercut_data.dmg);
     });
 
   // "downsmash_damage" — modifies smash_data.dmg
@@ -336,14 +336,14 @@ static void register_upgrade_applicators()
     [](Engine::FileIO::UpgradeType type, float value) {
       auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
       if (!player_entity.is_valid()) return;
-      auto* player = player_entity.get_component<Components::Player>();
-      if (!player) return;
+      auto* player_comp = player_entity.get_component<Components::Player>();
+      if (!player_comp) return;
 
       if (type == Engine::FileIO::UpgradeType::Flat)
-        player->smash_data.dmg += value;
+        player_comp->smash_data.dmg += value;
       else
-        player->smash_data.dmg *= value;
-      Log::info("[UpgradeApplicator] downsmash_damage applied — dmg:{}", player->smash_data.dmg);
+        player_comp->smash_data.dmg *= value;
+      Log::info("[UpgradeApplicator] downsmash_damage applied — dmg:{}", player_comp->smash_data.dmg);
     });
 
   // "uppercut_cooldown" — Flat: cooldown = max(0, cooldown - value)
@@ -351,14 +351,14 @@ static void register_upgrade_applicators()
     [](Engine::FileIO::UpgradeType type, float value) {
       auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
       if (!player_entity.is_valid()) return;
-      auto* player = player_entity.get_component<Components::Player>();
-      if (!player) return;
+      auto* player_comp = player_entity.get_component<Components::Player>();
+      if (!player_comp) return;
 
       if (type == Engine::FileIO::UpgradeType::Flat)
-        player->uppercut.cooldown = std::max(0.0f, player->uppercut.cooldown - value);
+        player_comp->uppercut.cooldown = std::max(0.0f, player_comp->uppercut.cooldown - value);
       else
-        player->uppercut.cooldown = std::max(0.0f, player->uppercut.cooldown * value);
-      Log::info("[UpgradeApplicator] uppercut_cooldown applied — cd:{}", player->uppercut.cooldown);
+        player_comp->uppercut.cooldown = std::max(0.0f, player_comp->uppercut.cooldown * value);
+      Log::info("[UpgradeApplicator] uppercut_cooldown applied — cd:{}", player_comp->uppercut.cooldown);
     });
 
   // "downsmash_cooldown" — Flat: cooldown = max(0, cooldown - value)
@@ -381,14 +381,14 @@ static void register_upgrade_applicators()
     [](Engine::FileIO::UpgradeType type, float value) {
       auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
       if (!player_entity.is_valid()) return;
-      auto* player = player_entity.get_component<Components::Player>();
-      if (!player) return;
+      auto* player_comp = player_entity.get_component<Components::Player>();
+      if (!player_comp) return;
 
       if (type == Engine::FileIO::UpgradeType::Flat)
-        player->dash.cooldown = std::max(0.0f, player->dash.cooldown - value);
+        player_comp->dash.cooldown = std::max(0.0f, player_comp->dash.cooldown - value);
       else
-        player->dash.cooldown = std::max(0.0f, player->dash.cooldown * value);
-      Log::info("[UpgradeApplicator] dash_cooldown applied — cd:{}", player->dash.cooldown);
+        player_comp->dash.cooldown = std::max(0.0f, player_comp->dash.cooldown * value);
+      Log::info("[UpgradeApplicator] dash_cooldown applied — cd:{}", player_comp->dash.cooldown);
     });
 }
 
