@@ -45,10 +45,10 @@ namespace Components
     f32 pause_timer = 1.5f;
     f32 direction = 1.f;
     f32 sight_distance = 250.f;
-    f32 left_patrol_bound;
-    f32 right_patrol_bound;
-    f32 left_chase_bound;
-    f32 right_chase_bound;
+    f32 left_patrol_bound = 0.f;
+    f32 right_patrol_bound = 0.f;
+    f32 left_chase_bound = 0.f;
+    f32 right_chase_bound = 0.f;
     // The patrol limit, pls set it a little under the length of the platform
 
 
