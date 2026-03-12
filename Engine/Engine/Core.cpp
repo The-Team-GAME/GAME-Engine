@@ -117,6 +117,7 @@ namespace Engine
     Engine::AudioSystem::loadBank("Assets/fmodstudio/Build/Desktop/Master.strings.bank");
     Engine::AudioSystem::loadBank("Assets/fmodstudio/Build/Desktop/SFX.bank");
     Engine::AudioSystem::loadBank("Assets/fmodstudio/Build/Desktop/SFXAmbient.bank");
+    Engine::AudioSystem::loadBank("Assets/fmodstudio/Build/Desktop/SFXUI.bank");
     Engine::AudioSystem::loadBank("Assets/fmodstudio/Build/Desktop/BGM.bank");
     Log::info("FMOD sound banks loaded successfully");
 

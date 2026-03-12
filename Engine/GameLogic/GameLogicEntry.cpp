@@ -50,6 +50,10 @@
 #include "Components/HealthComponents.h"
 #include "Components/InteractableComponents.h"
 
+namespace {
+  static constexpr const char* PLAYER_HEARTBEAT_EVENT = "event:/SFX/PlayerHeartBeat";
+}
+
 // =============================================================================
 // Knockback Helper Function
 // =============================================================================
@@ -134,8 +138,8 @@ static void register_collision_callbacks()
         Log::info("camera shake requested on enemy hit");
         Log::info("Enemy took {} damage! HP: {}/{}", damage, enemy_health->current_hp, enemy_health->max_hp);
 
-        Engine::AudioSystem::playEvent("event:/SFX/PlayerHit");
-        Log::info("Playing FMOD event: event:/SFX/PlayerHit");
+        Engine::AudioSystem::playEvent("event:/SFX/PlayerPunch");
+        Log::info("Playing FMOD event: event:/SFX/PlayerPunch");
 
         if (enemy_health->current_hp <= 0) {
           if (state_machine->get_current_state() != "Death") {
@@ -213,6 +217,8 @@ static void register_collision_callbacks()
           return;
         }
 
+        const int previous_health = health->value;
+
         // Decrease HP by 1 per hit
         health->damage(1);
         Log::info("Player took damage! HP: {}/{}", health->value, health->max);
@@ -225,9 +231,16 @@ static void register_collision_callbacks()
         Engine::AudioSystem::playEvent("event:/SFX/PlayerHurt");
         Log::info("Playing FMOD event: event:/SFX/PlayerHurt");
 
+        if (previous_health > 2 && health->value > 0 && health->value <= 2)
+        {
+          Engine::AudioSystem::playEvent(PLAYER_HEARTBEAT_EVENT);
+          Log::info("Playing FMOD event: {}", PLAYER_HEARTBEAT_EVENT);
+        }
+
         // Trigger death state immediately when HP reaches 0
         if (health->is_dead())
         {
+          Engine::AudioSystem::stopEvent(PLAYER_HEARTBEAT_EVENT, true);
           Log::info("Player is dead!");
           Components::StateMachine* state_machine = player_entity.get_component<Components::StateMachine>();
           if (state_machine && state_machine->get_current_state() != "Death")

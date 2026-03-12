@@ -29,6 +29,8 @@ Engine::Graphics::Texture PauseState::exit_selected_tex;
 namespace {
   static constexpr const char* PAUSE_LOWPASS_SNAPSHOT_INSTANCE = "pause_lowpass_snapshot";
   static constexpr const char* PAUSE_LOWPASS_SNAPSHOT_EVENT = "snapshot:/LowpassSnapshot";
+  static constexpr const char* PAUSE_BUTTON_HOVER_EVENT = "event:/SFXUI/ButtonHover";
+  static constexpr const char* PAUSE_BUTTON_CLICK_EVENT = "event:/SFXUI/ButtonClick";
   static bool gPauseLowpassSnapshotActive = false;
 
   void set_pause_menu_texture(const Engine::Graphics::Texture& tex) {
@@ -177,6 +179,16 @@ void PauseState::update()
 {
   // Track previous hover state to detect when we stop hovering
   static int prev_hovered = 0;
+
+  // Play hover SFX when cursor enters a different pause button.
+  if (hovered_button != 0 && hovered_button != prev_hovered) {
+    Engine::AudioSystem::playEvent(PAUSE_BUTTON_HOVER_EVENT);
+  }
+
+  // Play click SFX only when clicking while hovering a pause button.
+  if (hovered_button != 0 && Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
+    Engine::AudioSystem::playEvent(PAUSE_BUTTON_CLICK_EVENT);
+  }
 
   // If we were hovering a button but now we're not, reset to nothing selected
   if (prev_hovered != 0 && hovered_button == 0) {

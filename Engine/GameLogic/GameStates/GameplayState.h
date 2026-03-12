@@ -39,6 +39,7 @@ public:
   void load() {
     Engine::Resources::open_level("levels/LevelOneTestingExtra.json");
 
+    Engine::AudioSystem::stopEvent("event:/SFX/PlayerHeartBeat", true);
 
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
 
