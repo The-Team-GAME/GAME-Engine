@@ -149,6 +149,43 @@ namespace {
 namespace Engine {
   namespace LevelManager {
 
+#ifdef GAME_BUILD
+    void reset_level_world(const std::string& level_id, LevelState& state)
+    {
+      if (state.cached_entities.empty()) {
+        Log::warning("[LevelManager] Cannot reset level with no cached snapshot: {}", level_id);
+        return;
+      }
+
+      ECS::WorldID previously_active_world = ECS::get_active_world();
+      ECS::WorldID old_world = state.world_id;
+      ECS::WorldID new_world = ECS::create_world();
+
+      ECS::set_active_world(new_world);
+      instantiate_entities(state.cached_entities, true);
+
+      auto level_entity = ECS::get_first_entity_with<Components::Level>();
+      if (level_entity.is_valid()) {
+        auto* level_comp = level_entity.get_component<Components::Level>();
+        if (level_comp) {
+          level_comp->level_path = level_id;
+        }
+      }
+
+      state.world_id = new_world;
+
+      if (previously_active_world != old_world && previously_active_world != ECS::INVALID_WORLD) {
+        ECS::set_active_world(previously_active_world);
+      }
+
+      if (old_world != ECS::INVALID_WORLD && old_world != ECS::get_active_world()) {
+        ECS::destroy_world(old_world);
+      }
+
+      Log::info("[LevelManager] Reset level world to initial state: {}", level_id);
+    }
+#endif
+
     // Reactivates a level's deactivated entities. This is the fast path — no deserialization.
     void activate_level(LevelState& state)
     {
@@ -210,6 +247,16 @@ namespace Engine {
 
       // Check if this level is already open
       if (is_level_open(full_path)) {
+#ifdef GAME_BUILD
+        auto it = open_levels.find(full_path);
+        if (it != open_levels.end() && full_path == active_level_id) {
+          reset_level_world(full_path, it->second);
+          current_level_path = full_path;
+          call_level_init();
+          Log::info("Reset active level to initial state: {}", full_path);
+          return full_path;
+        }
+#endif
         switch_to_level(full_path);
         Log::info("Switched to existing level: {}", full_path);
         return full_path;
@@ -234,6 +281,7 @@ namespace Engine {
 
       LevelState new_state;
       new_state.world_id = new_world;
+  new_state.cached_entities = entities;
       new_state.keep_loaded = false;
 
       open_levels[full_path] = std::move(new_state);
@@ -320,6 +368,7 @@ namespace Engine {
 
       LevelState new_state;
       new_state.world_id = preload_world;
+      new_state.cached_entities = entities;
       new_state.keep_loaded = true;
 
       // Switch back to the original world
@@ -423,7 +472,8 @@ namespace Engine {
       LevelState& state = open_levels[level_id];
 
 #ifdef GAME_BUILD
-      // Multi-world: swap active world
+  // Multi-world: rebuild the target world from its pristine snapshot, then activate it
+  reset_level_world(level_id, state);
       if (state.world_id != ECS::INVALID_WORLD) {
         ECS::set_active_world(state.world_id);
         Log::info("Switched to level (world {}): {}", state.world_id, level_id);

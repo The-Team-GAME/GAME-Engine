@@ -319,6 +319,14 @@ namespace Engine {
       world->collision_matrix = active.collision_matrix;
       world->collision_callbacks = active.collision_callbacks;
 
+      // Clone component array structure (not data) from active world
+      // This ensures all registered component types are available in the new world
+      for (size_t i = 0; i < MAX_COMPONENTS; ++i) {
+        if (active.component_arrays[i] != nullptr) {
+          world->component_arrays[i] = active.component_arrays[i]->create_empty();
+        }
+      }
+
       Internal::get_world_registry()[id] = world;
       return id;
     }
