@@ -29,6 +29,7 @@
 #include "GameStates/VictoryState.h"
 #include "GameStates/OptionsState.h"
 #include "GameStates/VideoPlaybackState.h"
+#include "GameStates/OpeningCutsceneState.h"
 
 // Game systems
 #include "Systems/HealthSystem.h"
@@ -457,7 +458,7 @@ static void register_function_callbacks()
 
   // Main menu button callbacks
   reg.register_function<void()>("start_game", std::function<void()>([]() {
-    Engine::SceneManager::load_scene("GameplayState");
+    Engine::SceneManager::load_scene("OpeningCutsceneState");
     }));
   reg.register_function<void()>("options_menu", std::function<void()>([]() {
     }));
@@ -499,6 +500,7 @@ static void register_scenes()
   Engine::SceneManager::register_scene<VictoryState>("VictoryState");
   Engine::SceneManager::register_scene<OptionsState>("OptionsState");
   Engine::SceneManager::register_scene<VideoPlaybackState>("VideoPlaybackState");
+  Engine::SceneManager::register_scene<OpeningCutsceneState>("OpeningCutsceneState");
 }
 
 static void register_systems()
