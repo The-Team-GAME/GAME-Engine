@@ -299,21 +299,21 @@ static void register_upgrade_applicators()
     [](Engine::FileIO::UpgradeType type, float value) {
       auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
       if (!player_entity.is_valid()) return;
-      auto* player = player_entity.get_component<Components::Player>();
-      if (!player) return;
+      auto* player_comp = player_entity.get_component<Components::Player>();
+      if (!player_comp) return;
 
       if (type == Engine::FileIO::UpgradeType::Flat) {
-        player->attack1_data.dmg += value;
-        player->attack2_data.dmg += value;
-        player->attack3_data.dmg += value;
+        player_comp->attack1_data.dmg += value;
+        player_comp->attack2_data.dmg += value;
+        player_comp->attack3_data.dmg += value;
       }
       else {
-        player->attack1_data.dmg *= value;
-        player->attack2_data.dmg *= value;
-        player->attack3_data.dmg *= value;
+        player_comp->attack1_data.dmg *= value;
+        player_comp->attack2_data.dmg *= value;
+        player_comp->attack3_data.dmg *= value;
       }
       Log::info("[UpgradeApplicator] attack_damage applied — atk1:{} atk2:{} atk3:{}",
-        player->attack1_data.dmg, player->attack2_data.dmg, player->attack3_data.dmg);
+        player_comp->attack1_data.dmg, player_comp->attack2_data.dmg, player_comp->attack3_data.dmg);
     });
 
   // "uppercut_damage" — modifies uppercut_data.dmg
