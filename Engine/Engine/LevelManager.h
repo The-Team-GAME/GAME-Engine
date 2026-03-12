@@ -33,6 +33,7 @@ namespace Engine {
   ==================================================================================*/
   struct LevelState {
     ECS::WorldID world_id = ECS::INVALID_WORLD;      // World containing this level's entities
+    ECS::WorldID preloaded_world_id = ECS::INVALID_WORLD; // Ready-to-swap world for instant reload
     EntityList cached_entities;                        // Serialized entity snapshot used for reload
     EntityList preloaded_entities;                     // Hot reload snapshot for fast level reload
     bool preload_ready = false;                        // Preloaded snapshot is ready

@@ -154,6 +154,28 @@ namespace {
   {
     return !level_id.empty() && !level_id.starts_with("__new_");
   }
+
+  bool swap_in_preloaded_world(const std::string& level_id, Engine::LevelState& state)
+  {
+    if (state.preloaded_world_id == Engine::ECS::INVALID_WORLD) {
+      return false;
+    }
+
+    Engine::ECS::WorldID old_world = state.world_id;
+    Engine::ECS::WorldID new_world = state.preloaded_world_id;
+
+    state.world_id = new_world;
+    state.preloaded_world_id = Engine::ECS::INVALID_WORLD;
+
+    Engine::ECS::set_active_world(new_world);
+
+    if (old_world != Engine::ECS::INVALID_WORLD && old_world != new_world) {
+      Engine::ECS::destroy_world(old_world);
+    }
+
+    Log::info("[LevelManager] Swapped to preloaded world {} for {}", new_world, level_id);
+    return true;
+  }
 }
 
 namespace Engine {
@@ -242,6 +264,20 @@ namespace Engine {
         }
 
         LevelState& state = it->second;
+        ECS::WorldID prev_active = ECS::get_active_world();
+        ECS::WorldID new_preload_world = ECS::create_world();
+        ECS::set_active_world(new_preload_world);
+        instantiate_entities(entities, true);
+
+        if (prev_active != new_preload_world && prev_active != ECS::INVALID_WORLD) {
+          ECS::set_active_world(prev_active);
+        }
+
+        if (state.preloaded_world_id != ECS::INVALID_WORLD && state.preloaded_world_id != state.world_id) {
+          ECS::destroy_world(state.preloaded_world_id);
+        }
+
+        state.preloaded_world_id = new_preload_world;
         state.preloaded_entities = std::move(entities);
         state.preload_ready = !state.preloaded_entities.empty();
         state.preload_in_progress = false;
@@ -299,6 +335,7 @@ namespace Engine {
 
       LevelState new_state;
       new_state.world_id = new_world;
+      new_state.preloaded_world_id = ECS::INVALID_WORLD;
       new_state.cached_entities = entities;
       new_state.preloaded_entities = entities;
       new_state.preload_ready = true;
@@ -311,6 +348,17 @@ namespace Engine {
 
       // Instantiate into the new world (clear_world=true since it's fresh)
       instantiate_entities(entities, true);
+
+      // Build a preloaded world for instant reloads
+      if (is_reloadable_level_id(full_path)) {
+        ECS::WorldID prev_active = ECS::get_active_world();
+        ECS::WorldID preload_world = ECS::create_world();
+        ECS::set_active_world(preload_world);
+        instantiate_entities(entities, true);
+        ECS::set_active_world(prev_active);
+
+        open_levels[full_path].preloaded_world_id = preload_world;
+      }
 
       // Destroy the previous world if it's not a preloaded level
       if (prev_world != ECS::INVALID_WORLD && prev_world != new_world) {
@@ -376,6 +424,7 @@ namespace Engine {
 
       LevelState new_state;
       new_state.world_id = preload_world;
+      new_state.preloaded_world_id = preload_world;
       new_state.cached_entities = entities;
       new_state.preloaded_entities = entities;
       new_state.preload_ready = true;
@@ -409,6 +458,7 @@ namespace Engine {
       // Create a new empty level state
       LevelState new_state;
       new_state.world_id = new_world;
+      new_state.preloaded_world_id = ECS::INVALID_WORLD;
       new_state.cached_entities = EntityList();
       new_state.keep_loaded = false;
 
@@ -448,15 +498,25 @@ namespace Engine {
 
       LevelState& state = open_levels[level_id];
 
-      // Multi-world: rebuild the target world from its pristine snapshot, then activate it
-      reset_level_world(level_id, state);
-      if (state.world_id != ECS::INVALID_WORLD) {
-        ECS::set_active_world(state.world_id);
-        Log::info("Switched to level (world {}): {}", state.world_id, level_id);
+      if (!swap_in_preloaded_world(level_id, state)) {
+        if (state.world_id != ECS::INVALID_WORLD) {
+          ECS::set_active_world(state.world_id);
+        }
+        else {
+          // Multi-world: rebuild the target world from its pristine snapshot, then activate it
+          reset_level_world(level_id, state);
+          if (state.world_id != ECS::INVALID_WORLD) {
+            ECS::set_active_world(state.world_id);
+          }
+        }
       }
+
+      Log::info("Switched to level (world {}): {}", state.world_id, level_id);
 
       // Call on_init (via Level component if present)
       call_level_init();
+
+      queue_preload_refresh(level_id);
     }
 
     void reload_level(const std::string& level_id)
@@ -469,7 +529,7 @@ namespace Engine {
       if (!is_reloadable_level_id(level_id)) {
         Log::warning("Cannot reload level without a file path: {}", level_id);
         return;
-    }
+      }
 
       auto it = open_levels.find(level_id);
       if (it == open_levels.end()) {
@@ -477,22 +537,26 @@ namespace Engine {
       }
 
       LevelState& state = it->second;
-      EntityList reload_entities = get_preloaded_or_disk(state, level_id);
-      if (reload_entities.empty()) {
-        Log::warning("Reload failed - no entities loaded: {}", level_id);
-        return;
-      }
-
-      state.cached_entities = reload_entities;
-      state.preloaded_entities = reload_entities;
-      state.preload_ready = true;
-
       const bool is_active = (level_id == active_level_id);
       if (is_active) {
         call_level_exit();
       }
 
-      reset_level_world(level_id, state);
+      bool swapped = swap_in_preloaded_world(level_id, state);
+      if (!swapped) {
+        EntityList reload_entities = get_preloaded_or_disk(state, level_id);
+        if (reload_entities.empty()) {
+          Log::warning("Reload failed - no entities loaded: {}", level_id);
+          return;
+        }
+
+        state.cached_entities = reload_entities;
+        state.preloaded_entities = reload_entities;
+        state.preload_ready = true;
+
+        reset_level_world(level_id, state);
+      }
+
       if (is_active && state.world_id != ECS::INVALID_WORLD) {
         ECS::set_active_world(state.world_id);
         current_level_path = level_id;
@@ -501,7 +565,7 @@ namespace Engine {
 
       queue_preload_refresh(level_id);
       Log::info("[LevelManager] Reloaded level: {}", level_id);
-  }
+    }
 
     bool close_level(const std::string& level_id)
     {
@@ -522,6 +586,7 @@ namespace Engine {
       // Multi-world: destroy the world if it's not the active one
       LevelState& closing_state = open_levels[level_id];
       ECS::WorldID closing_world = closing_state.world_id;
+      ECS::WorldID closing_preload_world = closing_state.preloaded_world_id;
 
       if (level_id == active_level_id) {
         if (level_order.size() > 1) {
@@ -538,6 +603,9 @@ namespace Engine {
           }
           // The old world is no longer active, safe to destroy
           ECS::destroy_world(closing_world);
+          if (closing_preload_world != ECS::INVALID_WORLD && closing_preload_world != closing_world) {
+            ECS::destroy_world(closing_preload_world);
+          }
 
           call_level_init();
         }
@@ -547,6 +615,9 @@ namespace Engine {
             entity.destroy();
             });
           ECS::process_housekeeping();
+          if (closing_preload_world != ECS::INVALID_WORLD && closing_preload_world != closing_world) {
+            ECS::destroy_world(closing_preload_world);
+          }
           active_level_id = "";
           current_level_path = "";
         }
@@ -554,6 +625,9 @@ namespace Engine {
       else {
         // Non-active level: just destroy its world
         ECS::destroy_world(closing_world);
+        if (closing_preload_world != ECS::INVALID_WORLD && closing_preload_world != closing_world) {
+          ECS::destroy_world(closing_preload_world);
+        }
       }
 
       // Remove from containers
@@ -616,6 +690,7 @@ namespace Engine {
       LevelState old_state = std::move(open_levels[level_id]);
       old_state.preload_in_progress = false;
       old_state.preload_refresh_queued = false;
+      old_state.preloaded_world_id = ECS::INVALID_WORLD;
 
       auto it = std::find(level_order.begin(), level_order.end(), level_id);
       *it = new_level_id;
@@ -701,6 +776,7 @@ namespace Engine {
       state.cached_entities = capture_world_entities();
       state.preloaded_entities = state.cached_entities;
       state.preload_ready = !state.preloaded_entities.empty();
+      state.preloaded_world_id = ECS::INVALID_WORLD;
     }
 
     EntityList get_entities_for_save(const std::string& level_id)
@@ -749,6 +825,14 @@ namespace Engine {
         else if (state.world_id != active_world) {
           // Destroy non-active worlds directly
           ECS::destroy_world(state.world_id);
+          if (state.preloaded_world_id != ECS::INVALID_WORLD && state.preloaded_world_id != state.world_id) {
+            ECS::destroy_world(state.preloaded_world_id);
+          }
+        }
+        else {
+          if (state.preloaded_world_id != ECS::INVALID_WORLD && state.preloaded_world_id != state.world_id) {
+            ECS::destroy_world(state.preloaded_world_id);
+          }
         }
       }
 
