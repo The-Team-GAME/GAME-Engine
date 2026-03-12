@@ -11,6 +11,7 @@
                             "y": 963.5847778320312
                         }
                     },
+                    "collided": false,
                     "height": 250.0,
                     "kinetic_friction": 1.0,
                     "offset": {
@@ -34,6 +35,15 @@
             },
             {
                 "data": {
+                    "value": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "type": "Components::Flip"
+            },
+            {
+                "data": {
                     "position": {
                         "x": -2576.341552734375,
                         "y": 963.3070068359375
@@ -45,15 +55,6 @@
                     }
                 },
                 "type": "Components::Transform2D"
-            },
-            {
-                "data": {
-                    "value": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "type": "Components::Flip"
             },
             {
                 "data": {
@@ -83,7 +84,7 @@
                     "before_times": [],
                     "durations": [],
                     "is_looping": true,
-                    "startTime": 1959.9344482421875,
+                    "startTime": 431.4499816894531,
                     "totalDuration": 0.0
                 },
                 "type": "Components::Animation"
@@ -92,6 +93,7 @@
                 "data": {
                     "blueprint_id": "GamerMonkey",
                     "current_state_name": "Attacking",
+                    "property_anim_playing": false,
                     "states": [
                         {
                             "first": "Idle",
@@ -102,7 +104,7 @@
                                         "before_times": [],
                                         "durations": [],
                                         "is_looping": true,
-                                        "startTime": 2163.857177734375,
+                                        "startTime": 431.76129150390625,
                                         "totalDuration": 0.0
                                     },
                                     "collider_data": null,
@@ -238,7 +240,8 @@
                                 },
                                 "on_update_callback": {
                                     "name": "GamerMonkeyStateCallbacks::idle_on_update"
-                                }
+                                },
+                                "property_animation": null
                             }
                         },
                         {
@@ -325,7 +328,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 2163.857177734375,
+                                        "startTime": 431.76129150390625,
                                         "totalDuration": 2.378000020980835
                                     },
                                     "collider_data": null,
@@ -803,7 +806,8 @@
                                 },
                                 "on_update_callback": {
                                     "name": "GamerMonkeyStateCallbacks::attacking_on_update"
-                                }
+                                },
+                                "property_animation": null
                             }
                         },
                         {
@@ -836,7 +840,7 @@
                                             0.25
                                         ],
                                         "is_looping": true,
-                                        "startTime": 2163.857177734375,
+                                        "startTime": 431.76129150390625,
                                         "totalDuration": 1.5
                                     },
                                     "collider_data": null,
@@ -972,7 +976,8 @@
                                 },
                                 "on_update_callback": {
                                     "name": "GamerMonkeyStateCallbacks::chasing_on_update"
-                                }
+                                },
+                                "property_animation": null
                             }
                         },
                         {
@@ -990,7 +995,8 @@
                                 },
                                 "on_update_callback": {
                                     "name": "GamerMonkeyStateCallbacks::death_on_update"
-                                }
+                                },
+                                "property_animation": null
                             }
                         },
                         {
@@ -1035,7 +1041,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 2163.857177734375,
+                                        "startTime": 431.76129150390625,
                                         "totalDuration": 1.0000001192092896
                                     },
                                     "collider_data": null,
@@ -1513,7 +1519,8 @@
                                 },
                                 "on_update_callback": {
                                     "name": "GamerMonkeyStateCallbacks::dashing_on_update"
-                                }
+                                },
+                                "property_animation": null
                             }
                         },
                         {
@@ -1525,7 +1532,7 @@
                                         "before_times": [],
                                         "durations": [],
                                         "is_looping": true,
-                                        "startTime": 2163.857177734375,
+                                        "startTime": 431.76129150390625,
                                         "totalDuration": 0.0
                                     },
                                     "collider_data": null,
@@ -1552,7 +1559,8 @@
                                 },
                                 "on_update_callback": {
                                     "name": "GamerMonkeyStateCallbacks::windup_on_update"
-                                }
+                                },
+                                "property_animation": null
                             }
                         },
                         {
@@ -1564,7 +1572,7 @@
                                         "before_times": [],
                                         "durations": [],
                                         "is_looping": true,
-                                        "startTime": 2163.857177734375,
+                                        "startTime": 431.76129150390625,
                                         "totalDuration": 0.0
                                     },
                                     "collider_data": null,
@@ -1581,7 +1589,12 @@
                                     }
                                 },
                                 "audio": null,
-                                "fmod_audio": null,
+                                "fmod_audio": {
+                                    "event_path": "",
+                                    "loop": false,
+                                    "stop_on_state_exit": true,
+                                    "volume": 1.0
+                                },
                                 "name": "Hit",
                                 "on_enter_callback": {
                                     "name": "GamerMonkeyStateCallbacks::hit_on_enter"
@@ -1591,7 +1604,8 @@
                                 },
                                 "on_update_callback": {
                                     "name": "GamerMonkeyStateCallbacks::hit_on_update"
-                                }
+                                },
+                                "property_animation": null
                             }
                         },
                         {
@@ -1645,7 +1659,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 2163.857177734375,
+                                        "startTime": 431.76129150390625,
                                         "totalDuration": 1.3000001907348633
                                     },
                                     "collider_data": null,
@@ -2123,7 +2137,8 @@
                                 },
                                 "on_update_callback": {
                                     "name": "GamerMonkeyStateCallbacks::dash_windup_on_update"
-                                }
+                                },
+                                "property_animation": null
                             }
                         }
                     ]

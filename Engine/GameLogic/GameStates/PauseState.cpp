@@ -14,6 +14,7 @@
 #include "pch.h"
 #include "PauseState.h"
 #include "../../Engine/Engine/Systems/GraphicsSystem.h"
+#include "../../Engine/Engine/Audio/AudioSystem.h"
 
 // Static member definitions
 Engine::ECS::EntityID PauseState::menu_sprite_id = 0;
@@ -26,6 +27,11 @@ Engine::Graphics::Texture PauseState::exit_selected_tex;
 
 // Helper to update menu sprite texture
 namespace {
+  static constexpr const char* PAUSE_LOWPASS_SNAPSHOT_INSTANCE = "pause_lowpass_snapshot";
+  static constexpr const char* PAUSE_LOWPASS_SNAPSHOT_EVENT = "snapshot:/LowpassSnapshot";
+
+  static bool gPauseLowpassSnapshotActive = false;
+
   void set_pause_menu_texture(const Engine::Graphics::Texture& tex) {
     if (PauseState::menu_sprite_id == 0) return;
     if (!Engine::ECS::is_entity_active(Engine::ECS::Entity(PauseState::menu_sprite_id))) return;
@@ -35,10 +41,35 @@ namespace {
       *texture_comp = tex;
     }
   }
+
+  void start_pause_lowpass_snapshot() {
+    if (gPauseLowpassSnapshotActive) return;
+
+    if (!Engine::AudioSystem::createEventInstance(PAUSE_LOWPASS_SNAPSHOT_INSTANCE, PAUSE_LOWPASS_SNAPSHOT_EVENT)) {
+      return;
+    }
+
+    if (!Engine::AudioSystem::startEventInstance(PAUSE_LOWPASS_SNAPSHOT_INSTANCE)) {
+      Engine::AudioSystem::releaseEventInstance(PAUSE_LOWPASS_SNAPSHOT_INSTANCE);
+      return;
+    }
+
+    gPauseLowpassSnapshotActive = true;
+  }
+
+  void stop_pause_lowpass_snapshot() {
+    if (!gPauseLowpassSnapshotActive) return;
+
+    Engine::AudioSystem::stopEventInstance(PAUSE_LOWPASS_SNAPSHOT_INSTANCE, false);
+    Engine::AudioSystem::releaseEventInstance(PAUSE_LOWPASS_SNAPSHOT_INSTANCE);
+    gPauseLowpassSnapshotActive = false;
+  }
 }
 
 void PauseState::load()
 {
+  start_pause_lowpass_snapshot();
+
   // Load textures
   nothing_selected_tex = Engine::Resources::load_texture("images/UI/In-Game Pause/States/NothingSelectedPausedMenu.png");
   resume_selected_tex = Engine::Resources::load_texture("images/UI/In-Game Pause/States/ResumeButton.png");
@@ -148,6 +179,7 @@ void PauseState::update()
   // Track previous hover state to detect when we stop hovering
   static int prev_hovered = 0;
 
+
   // If we were hovering a button but now we're not, reset to nothing selected
   if (prev_hovered != 0 && hovered_button == 0) {
     if (menu_sprite_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(menu_sprite_id))) {
@@ -174,6 +206,8 @@ void PauseState::free()
 
 void PauseState::unload()
 {
+  stop_pause_lowpass_snapshot();
+
   // Destroy pause menu entities
   if (background_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(background_id))) {
     Engine::ECS::destroy_entity(Engine::ECS::Entity(background_id));

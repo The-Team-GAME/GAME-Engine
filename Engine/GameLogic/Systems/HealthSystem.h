@@ -139,6 +139,7 @@ namespace Engine {
           }
         }
         bool is_player = e.has_component<Player>();
+
         // Don't destroy the player here — let the Death state machine handle it
         if (!is_player && hp->value <= 0) {
           e.destroy();

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{6d3bd13f-a5df-4773-9a79-891606d0f6c8}">
+		<property name="assetPath">
+			<value>Heart Beat_SFX.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>0.50848072562358282</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{6705423e-ca5e-45ab-9fba-198807b0541c}</destination>
+		</relationship>
+	</object>
+</objects>

@@ -734,7 +734,7 @@ namespace PlayerStateCallbacks
   // Post Smash State Callbacks
   // ========================================================================
 
-  inline void post_smash_on_enter([[maybe_unused]] ECS::Entity entity)
+  inline void post_smash_on_enter(ECS::Entity entity)
   {
     Log::info("Player: Entered Post Smash state");
     Components::Player* player_comp = entity.get_component<Components::Player>();
@@ -743,6 +743,11 @@ namespace PlayerStateCallbacks
     player_comp->knockback_value = player_comp->smash_data.knockback;
     //=========================================================================//
     ECS::Entity hitbox = create_hitbox(entity, player_comp->smash_data);
+
+    Components::Attack* attack = hitbox.get_component<Components::Attack>();
+    if (attack) {
+      attack->play_punch_hit_sfx = false;
+    }
 
     /*Components::Attack* attack = hitbox.get_component<Components::Attack>();
     assert(attack);

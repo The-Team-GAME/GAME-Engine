@@ -17,6 +17,12 @@
 
 #include "pch.h"
 
+namespace {
+  static constexpr const char* MAIN_MENU_BGM_EVENT = "event:/BGM/MainMenu";
+  static constexpr const char* SPLASH_SFX_SNORE_EVENT = "event:/SFX/SplashSnoreSFX";
+  static constexpr const char* SPLASH_SFX_TRAIN_EVENT = "event:/SFX/SplashTrainSFX";
+}
+
 
 class MainMenuState : public Engine::Scene
 {
@@ -277,10 +283,11 @@ public:
     showing_start_screen = true;
     create_start_screen();
 
-    // Load and play background music via FMOD Studio
-    Engine::AudioSystem::createEventInstance("mainmenu_bgm", "event:/Music/MainMenu");
-    Engine::AudioSystem::setEventInstanceVolume("mainmenu_bgm", 0.3f);
-    Engine::AudioSystem::startEventInstance("mainmenu_bgm");
+    Engine::AudioSystem::stopSceneMusic(true);
+    Engine::AudioSystem::stopEvent(SPLASH_SFX_SNORE_EVENT, true);
+    Engine::AudioSystem::playEvent(SPLASH_SFX_SNORE_EVENT);
+    Engine::AudioSystem::stopEvent(SPLASH_SFX_TRAIN_EVENT, true);
+    Engine::AudioSystem::playEvent(SPLASH_SFX_TRAIN_EVENT);
   };
 
   void init() {
@@ -385,6 +392,9 @@ public:
 
       // Check for any key press to transition to main menu
       if (any_key_pressed()) {
+        Engine::AudioSystem::stopEvent(SPLASH_SFX_SNORE_EVENT, true);
+        Engine::AudioSystem::stopEvent(SPLASH_SFX_TRAIN_EVENT, true);
+        Engine::AudioSystem::playSceneMusic(MAIN_MENU_BGM_EVENT, 0.3f, true);
         destroy_start_screen();
         create_main_menu();
         showing_start_screen = false;
@@ -415,8 +425,9 @@ public:
   void free() {};
 
   void unload() {
-    Engine::AudioSystem::stopEventInstance("mainmenu_bgm", true);
-    Engine::AudioSystem::releaseEventInstance("mainmenu_bgm");
+    Engine::AudioSystem::stopEvent(SPLASH_SFX_SNORE_EVENT, true);
+    Engine::AudioSystem::stopEvent(SPLASH_SFX_TRAIN_EVENT, true);
+    Engine::AudioSystem::stopSceneMusic(true);
     start_screen_entities.clear();
   };
 };

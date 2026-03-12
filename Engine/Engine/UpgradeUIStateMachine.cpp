@@ -16,6 +16,7 @@
 #include "InputManager.h"
 #include "Time.h"
 #include "Logger.h"
+#include "Audio/AudioSystem.h"
 #include "FileIO/Settings.h"
 #include "FileIO/SettingsManager.h"
 #include "Easing.h"
@@ -29,7 +30,37 @@ namespace Engine
 
   // ---- Singleton ----
 
-  namespace { UpgradeUIStateMachine* g_upgrade_ui_sm = nullptr; }
+  namespace {
+    UpgradeUIStateMachine* g_upgrade_ui_sm = nullptr;
+    static constexpr const char* UPGRADE_LOWPASS_SNAPSHOT_INSTANCE = "upgrade_lowpass_snapshot";
+    static constexpr const char* UPGRADE_LOWPASS_SNAPSHOT_EVENT = "snapshot:/LowpassSnapshot";
+    static bool gUpgradeLowpassSnapshotActive = false;
+
+    void start_upgrade_lowpass_snapshot()
+    {
+      if (gUpgradeLowpassSnapshotActive) return;
+
+      if (!Engine::AudioSystem::createEventInstance(UPGRADE_LOWPASS_SNAPSHOT_INSTANCE, UPGRADE_LOWPASS_SNAPSHOT_EVENT)) {
+        return;
+      }
+
+      if (!Engine::AudioSystem::startEventInstance(UPGRADE_LOWPASS_SNAPSHOT_INSTANCE)) {
+        Engine::AudioSystem::releaseEventInstance(UPGRADE_LOWPASS_SNAPSHOT_INSTANCE);
+        return;
+      }
+
+      gUpgradeLowpassSnapshotActive = true;
+    }
+
+    void stop_upgrade_lowpass_snapshot()
+    {
+      if (!gUpgradeLowpassSnapshotActive) return;
+
+      Engine::AudioSystem::stopEventInstance(UPGRADE_LOWPASS_SNAPSHOT_INSTANCE, false);
+      Engine::AudioSystem::releaseEventInstance(UPGRADE_LOWPASS_SNAPSHOT_INSTANCE);
+      gUpgradeLowpassSnapshotActive = false;
+    }
+  }
 
   UpgradeUIStateMachine& UpgradeUIStateMachine::instance()
   {
@@ -87,6 +118,7 @@ namespace Engine
       // Destroy picker entities and resume time
       destroy_picker_entities();
       Time::set_time_scale(1.0f);
+      stop_upgrade_lowpass_snapshot();
       break;
     }
     default:
@@ -122,6 +154,7 @@ namespace Engine
       // Pause time and spawn picker UI
       Time::set_time_scale(0.0001f);
       spawn_picker_entities();
+      start_upgrade_lowpass_snapshot();
       break;
     }
     case UpgradeFlowState::Applying:
@@ -1092,6 +1125,8 @@ namespace Engine
 
   void UpgradeUIStateMachine::reset()
   {
+    stop_upgrade_lowpass_snapshot();
+
     if (state_ == UpgradeFlowState::PickerOpen)
     {
       destroy_picker_entities();
