@@ -73,10 +73,16 @@ namespace PlayerStateCallbacks
     }
 
     if (Engine::Input::is_pressed(Engine::KeyCode::L)
-      && !player_rigid->on_ground
       && player_comp->smash.ready())
     {
-      state_machine->change_state("PreSmash");
+      if (player_rigid->on_ground)
+      {
+        state_machine->change_state("Leap");
+      }
+      else
+      {
+        state_machine->change_state("PreSmash");
+      }
       return;
     }
 
@@ -114,7 +120,25 @@ namespace PlayerStateCallbacks
       {
         flip->value.x = 1.f;
       }
-      player_rigid->force.x += player_comp->walk_speed * flip->value.x;
+
+      player_rigid->force.x = player_comp->walk_speed * flip->value.x;
+      // This part to deal with walking on slopes (WIP)
+      //if (player_rigid->on_ground)
+      //{
+      //  // we need to check if the direction vector of the slope is the same as the flip value
+      //  Vec2D direction = player_rigid->last_surface_dir_vector;
+      //  if (dot_product(direction, Vec2D(flip->value.x, 0.f)) < 0)
+      //  {
+      //    direction *= -1;
+      //  }
+      //  std::cout << direction << std::endl;
+      //  player_rigid->force = direction * player_comp->walk_speed;
+      //}
+      //else
+      //{
+      //  player_rigid->force.x = player_comp->walk_speed * flip->value.x;
+      //}
+
       if (!default_state)
       {
         state_machine->change_state("Walking");
@@ -574,14 +598,12 @@ namespace PlayerStateCallbacks
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
 
-    // Exit Condition 1
     if (player_comp->uppercut.timer_end())
     {
       Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
       assert(sm);
       sm->change_state("PostUppercut");
     }
-    // Exit Condition 2
 
     player_comp->uppercut.timer -= Time::get_fixed_dt();
   }
@@ -663,6 +685,44 @@ namespace PlayerStateCallbacks
 #pragma endregion
 
 #pragma region smash
+  // ========================================================================
+  // Leap into Smash State Callbacks
+  // ========================================================================
+
+  inline void leap_on_enter(ECS::Entity entity)
+  {
+    Log::info("Player: Entered Pre Smash state");
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    player_comp->damage_immune = true;
+    player_comp->leap.set_timer();
+
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    Components::Flip* flip = entity.get_component<Components::Flip>();
+    assert(rigid);
+    rigid->apply_force = true;
+    rigid->force = player_comp->leap.impulse;
+    rigid->velocity.zero();
+  }
+
+  inline void leap_on_update(ECS::Entity entity)
+  {
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    if (player_comp->leap.timer_end())
+    {
+      Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
+      assert(sm);
+      sm->change_state("PreSmash");
+    }
+    player_comp->leap.timer -= Time::get_fixed_dt();
+  }
+
+  inline void leap_on_exit([[maybe_unused]] ECS::Entity entity)
+  {
+    // Empty as designed
+  }
+
   // ========================================================================
   // Pre Smash State Callbacks
   // ========================================================================
@@ -830,7 +890,8 @@ REGISTER_STATE_MACHINE_BLUEPRINT(Player, "Idle",
   STATE("Uppercut", PlayerStateCallbacks::uppercut_on_enter, PlayerStateCallbacks::uppercut_on_update, PlayerStateCallbacks::uppercut_on_exit)
   STATE("PostUppercut", PlayerStateCallbacks::post_uppercut_on_enter, PlayerStateCallbacks::post_uppercut_on_update, PlayerStateCallbacks::post_uppercut_on_exit)
   STATE("UppercutFalling", PlayerStateCallbacks::uppercut_falling_on_enter, PlayerStateCallbacks::uppercut_falling_on_update, PlayerStateCallbacks::uppercut_falling_on_exit)
-
+  
+  STATE("Leap", PlayerStateCallbacks::leap_on_enter, PlayerStateCallbacks::leap_on_update, PlayerStateCallbacks::leap_on_exit)
   STATE("PreSmash", PlayerStateCallbacks::pre_smash_on_enter, PlayerStateCallbacks::pre_smash_on_update, PlayerStateCallbacks::pre_smash_on_exit)
   STATE("Smash", PlayerStateCallbacks::smash_on_enter, PlayerStateCallbacks::smash_on_update, PlayerStateCallbacks::smash_on_exit)
   STATE("PostSmash", PlayerStateCallbacks::post_smash_on_enter, PlayerStateCallbacks::post_smash_on_update, PlayerStateCallbacks::post_smash_on_exit)
