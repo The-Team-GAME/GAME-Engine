@@ -132,7 +132,7 @@ namespace Engine
     {
       char exe_path[MAX_PATH];
       GetModuleFileNameA(nullptr, exe_path, MAX_PATH);
-      // exe is at  <SolutionDir>/x64/<Config>/Engine.exe
+      // exe is at  <SolutionDir>/x64/<Config>/Game.exe
       return std::filesystem::path(exe_path).parent_path().parent_path().parent_path();
     }
 

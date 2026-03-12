@@ -21,21 +21,24 @@
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup>
+    <TargetName>MonkeyEngine</TargetName>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -61,15 +64,7 @@
     <SafeSolutionDir>$([System.String]::Copy('$(SolutionDir)').TrimEnd('\\'))</SafeSolutionDir>
     <SafeOutDir>$([System.String]::Copy('$(OutDir)').TrimEnd('\\'))</SafeOutDir>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerWorkingDirectory>$(ProjectDir)..</LocalDebuggerWorkingDirectory>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerWorkingDirectory>$(ProjectDir)..</LocalDebuggerWorkingDirectory>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game|x64'">
-    <LocalDebuggerWorkingDirectory>$(ProjectDir)..</LocalDebuggerWorkingDirectory>
-  </PropertyGroup>
+
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
@@ -83,35 +78,9 @@
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
     </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+    <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\FMOD\lib;$(SolutionDir)Dependencies\FreeType\objs;$(SolutionDir)Dependencies\GLFW\lib-vc2022;$(SolutionDir)Dependencies\GLEW\lib;$(SolutionDir)Dependencies\ImGui\out-debug;$(SolutionDir)Dependencies\Lua;$(SolutionDir)Dependencies\FMOD Studio\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glew32s.lib;glfw3.lib;opengl32.lib;freetype.lib;fmod_vc.lib;imgui.obj;imgui_demo.obj;imgui_draw.obj;imgui_impl_glfw.obj;imgui_impl_opengl3.obj;imgui_tables.obj;imgui_widgets.obj;lua54.lib;fmodstudio_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <IgnoreSpecificDefaultLibraries>LIBCMT;MSVCRT</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>$(OutDir)Engine.lib</ImportLibrary>
-    </Link>
-    <PostBuildEvent>
-      <Command>if not exist "$(SafeOutDir)\Assets" mkdir "$(SafeOutDir)\Assets"
-    xcopy "$(SafeSolutionDir)\Engine\Assets\*" "$(SafeOutDir)\Assets" /s /r /y /q /i
-
-
-
-
-xcopy "$(SafeSolutionDir)\Dependencies\FMOD\lib\fmod.dll" "$(SafeOutDir)" /s /r /y /q /i
-
-
-
-
-xcopy "$(SafeSolutionDir)\Dependencies\FMOD Studio\lib\fmodstudio.dll" "$(SafeOutDir)" /s /r /y /q /i
-
-
-xcopy "$(SafeSolutionDir)\Dependencies\Lua\lua54.dll" "$(SafeOutDir)" /s /r /y /q /i
-
-
-"$(MSBuildBinPath)\MSBuild.exe" "$(SafeSolutionDir)\Engine\GameLogic\GameLogic.vcxproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform) "/p:SolutionDir=$(SafeSolutionDir)\\" /v:minimal
-</Command>
-    </PostBuildEvent>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -128,35 +97,9 @@ xcopy "$(SafeSolutionDir)\Dependencies\Lua\lua54.dll" "$(SafeOutDir)" /s /r /y /
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
     </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+    <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\FMOD\lib;$(SolutionDir)Dependencies\FreeType\objs;$(SolutionDir)Dependencies\GLFW\lib-vc2022;$(SolutionDir)Dependencies\GLEW\lib;$(SolutionDir)Dependencies\ImGui\out-release;$(SolutionDir)Dependencies\Lua;$(SolutionDir)Dependencies\FMOD Studio\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glew32s.lib;glfw3.lib;opengl32.lib;freetype.lib;fmod_vc.lib;imgui.obj;imgui_demo.obj;imgui_draw.obj;imgui_impl_glfw.obj;imgui_impl_opengl3.obj;imgui_tables.obj;imgui_widgets.obj;lua54.lib;fmodstudio_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <IgnoreSpecificDefaultLibraries>LIBCMTD;MSVCRTD;LIBCMT</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>$(OutDir)Engine.lib</ImportLibrary>
-    </Link>
-    <PostBuildEvent>
-      <Command>if not exist "$(SafeOutDir)\Assets" mkdir "$(SafeOutDir)\Assets"
-    xcopy "$(SafeSolutionDir)\Engine\Assets\*" "$(SafeOutDir)\Assets" /s /r /y /q /i
-
-
-
-
-xcopy "$(SafeSolutionDir)\Dependencies\FMOD\lib\fmod.dll" "$(SafeOutDir)" /s /r /y /q /i
-
-
-
-
-xcopy "$(SafeSolutionDir)\Dependencies\FMOD Studio\lib\fmodstudio.dll" "$(SafeOutDir)" /s /r /y /q /i
-
-
-xcopy "$(SafeSolutionDir)\Dependencies\Lua\lua54.dll" "$(SafeOutDir)" /s /r /y /q /i
-
-
-"$(MSBuildBinPath)\MSBuild.exe" "$(SafeSolutionDir)\Engine\GameLogic\GameLogic.vcxproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform) "/p:SolutionDir=$(SafeSolutionDir)\\" /v:minimal
-</Command>
-    </PostBuildEvent>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Game|x64'">
     <ClCompile>
@@ -173,35 +116,9 @@ xcopy "$(SafeSolutionDir)\Dependencies\Lua\lua54.dll" "$(SafeOutDir)" /s /r /y /
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
     </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+    <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\FMOD\lib;$(SolutionDir)Dependencies\FreeType\objs;$(SolutionDir)Dependencies\GLFW\lib-vc2022;$(SolutionDir)Dependencies\GLEW\lib;$(SolutionDir)Dependencies\ImGui\out-release;$(SolutionDir)Dependencies\Lua;$(SolutionDir)Dependencies\FMOD Studio\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glew32s.lib;glfw3.lib;opengl32.lib;freetype.lib;fmod_vc.lib;imgui.obj;imgui_demo.obj;imgui_draw.obj;imgui_impl_glfw.obj;imgui_impl_opengl3.obj;imgui_tables.obj;imgui_widgets.obj;lua54.lib;fmodstudio_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <IgnoreSpecificDefaultLibraries>LIBCMTD;MSVCRTD;LIBCMT</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>$(OutDir)Engine.lib</ImportLibrary>
-    </Link>
-    <PostBuildEvent>
-      <Command>if not exist "$(SafeOutDir)\Assets" mkdir "$(SafeOutDir)\Assets"
-    xcopy "$(SafeSolutionDir)\Engine\Assets\*" "$(SafeOutDir)\Assets" /s /r /y /q /i
-
-
-
-
-xcopy "$(SafeSolutionDir)\Dependencies\FMOD\lib\fmod.dll" "$(SafeOutDir)" /s /r /y /q /i
-
-
-
-
-xcopy "$(SafeSolutionDir)\Dependencies\FMOD Studio\lib\fmodstudio.dll" "$(SafeOutDir)" /s /r /y /q /i
-
-
-xcopy "$(SafeSolutionDir)\Dependencies\Lua\lua54.dll" "$(SafeOutDir)" /s /r /y /q /i
-
-
-"$(MSBuildBinPath)\MSBuild.exe" "$(SafeSolutionDir)\Engine\GameLogic\GameLogic.vcxproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform) "/p:SolutionDir=$(SafeSolutionDir)\\" /v:minimal
-</Command>
-    </PostBuildEvent>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Audio\AudioSystem.cpp" />
@@ -256,7 +173,6 @@ xcopy "$(SafeSolutionDir)\Dependencies\Lua\lua54.dll" "$(SafeOutDir)" /s /r /y /
     <ClCompile Include="GUI\widgets\TextureAtlasWidget.cpp" />
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="TIlemapManager.cpp" />
-    <ClCompile Include="EntryPoint.cpp" />
     <ClCompile Include="HotReloadManager.cpp" />
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="ECS\ComponentManager.cpp" />
