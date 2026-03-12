@@ -700,9 +700,8 @@ namespace PlayerStateCallbacks
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     Components::Flip* flip = entity.get_component<Components::Flip>();
     assert(rigid);
-    rigid->apply_force = true;
-    rigid->force = player_comp->leap.impulse;
-    rigid->velocity.zero();
+    rigid->velocity = Vec2D{ flip->value.x * player_comp->leap.speed,
+                             -player_comp->leap.speed };
   }
 
   inline void leap_on_update(ECS::Entity entity)
