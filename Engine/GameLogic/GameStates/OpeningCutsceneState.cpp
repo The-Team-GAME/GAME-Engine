@@ -49,8 +49,9 @@ void OpeningCutsceneState::init()
 
 void OpeningCutsceneState::update()
 {
-  // Allow skipping the cutscene with Escape
-  if (Engine::Input::is_pressed(Engine::KeyCode::Escape))
+  // Allow skipping the cutscene with Escape or Space
+  if (Engine::Input::is_pressed(Engine::KeyCode::Escape) ||
+    Engine::Input::is_pressed(Engine::KeyCode::Space))
   {
     player.stop();
     Engine::SceneManager::load_scene("GameplayState");
@@ -64,12 +65,6 @@ void OpeningCutsceneState::update()
     Engine::SceneManager::load_scene("GameplayState");
     return;
   }
-
-  // Optional: Allow pausing with Space (uncomment if desired)
-  // if (Engine::Input::is_pressed(Engine::KeyCode::Space))
-  // {
-  //   player.pause(!player.is_paused());
-  // }
 }
 
 void OpeningCutsceneState::draw()
