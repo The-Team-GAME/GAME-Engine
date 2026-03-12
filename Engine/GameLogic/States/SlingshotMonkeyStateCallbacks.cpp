@@ -18,6 +18,52 @@
 
 namespace SlingshotMonkeyStateCallbacks
 {
+  inline Math::Vec2D get_slingshot_detection_center(
+    Engine::ECS::Entity entity,
+    const Components::SlingshotMonkey& slingshot_monkey,
+    const Components::Transform2D& transform
+  ) {
+    auto* collider = entity.get_component<Components::BoxCollider>();
+    if (collider) {
+      return collider->aabb.pos;
+    }
+
+    return Math::Vec2D(
+      transform.position.x,
+      transform.position.y + slingshot_monkey.hitbox_offset_y
+    );
+  }
+
+  inline float get_slingshot_detection_half_height(
+    Engine::ECS::Entity entity,
+    const Components::SlingshotMonkey& slingshot_monkey
+  ) {
+    auto* collider = entity.get_component<Components::BoxCollider>();
+    if (collider) {
+      return std::max(collider->height * 0.5f, 1.0f);
+    }
+
+    return std::max(slingshot_monkey.hitbox_height * 0.5f, 1.0f);
+  }
+
+  inline float get_slingshot_detection_enter_buffer(const Components::SlingshotMonkey& slingshot_monkey) {
+    return std::max(12.0f, slingshot_monkey.hitbox_width * 0.1f);
+  }
+
+  inline float get_slingshot_detection_exit_buffer(const Components::SlingshotMonkey& slingshot_monkey) {
+    return std::max(20.0f, slingshot_monkey.hitbox_width * 0.2f);
+  }
+
+  inline bool is_player_within_detection_box(
+    Engine::ECS::Entity entity,
+    const Components::SlingshotMonkey& slingshot_monkey,
+    float distance_x,
+    float delta_y,
+    float horizontal_range
+  ) {
+    return distance_x <= horizontal_range && std::abs(delta_y) <= get_slingshot_detection_half_height(entity, slingshot_monkey);
+  }
+
   inline bool get_player_detection_metrics(
     Engine::ECS::Entity entity,
     float& out_distance,
@@ -31,25 +77,24 @@ namespace SlingshotMonkeyStateCallbacks
       return false;
     }
 
+    auto* slingshot_monkey = entity.get_component<Components::SlingshotMonkey>();
     out_monkey_transform = entity.get_component<Components::Transform2D>();
     out_player_transform = player_entity.get_component<Components::Transform2D>();
-    if (!out_monkey_transform || !out_player_transform) {
+    if (!slingshot_monkey || !out_monkey_transform || !out_player_transform) {
       return false;
     }
 
-    out_dx = out_player_transform->position.x - out_monkey_transform->position.x;
-    out_dy = out_player_transform->position.y - out_monkey_transform->position.y;
+    const Math::Vec2D detection_center = get_slingshot_detection_center(entity, *slingshot_monkey, *out_monkey_transform);
+
+    out_dx = out_player_transform->position.x - detection_center.x;
+    out_dy = out_player_transform->position.y - detection_center.y;
     out_distance = std::abs(out_dx);
     return true;
   }
 
-  inline bool is_player_within_vertical_detection_band(const Components::SlingshotMonkey& slingshot_monkey, float dy) {
-    const float vertical_tolerance = std::clamp(slingshot_monkey.hitbox_height * 0.25f, 24.0f, 40.0f);
-    return std::abs(dy) <= vertical_tolerance;
-  }
-
   inline float get_slingshot_engage_range(const Components::SlingshotMonkey& slingshot_monkey) {
-    return std::max(slingshot_monkey.close_attack_range, slingshot_monkey.dash_attack_range);
+    return std::max(slingshot_monkey.detection_range,
+      std::max(slingshot_monkey.close_attack_range, slingshot_monkey.dash_attack_range));
   }
 
   inline float clamp_dash_target_x(const Components::SlingshotMonkey& slingshot_monkey, float monkey_x, float target_x) {
@@ -126,9 +171,10 @@ namespace SlingshotMonkeyStateCallbacks
     if (get_player_detection_metrics(entity, distance, dx, dy, Slingshot_monkey_transform, player_transform)) {
       // Check if dash is ready
       bool dash_ready = (current_time - Slingshot_monkey->last_dash_time) >= Slingshot_monkey->dash_cooldown;
+      const float detection_enter_range = std::max(0.0f,
+        Slingshot_monkey->detection_range - get_slingshot_detection_enter_buffer(*Slingshot_monkey));
 
-      if (distance < get_slingshot_engage_range(*Slingshot_monkey) &&
-        is_player_within_vertical_detection_band(*Slingshot_monkey, dy)) {
+      if (is_player_within_detection_box(entity, *Slingshot_monkey, distance, dy, detection_enter_range)) {
         if (dash_ready) {
           state_machine->change_state("DashWindup");
         }
@@ -214,45 +260,22 @@ namespace SlingshotMonkeyStateCallbacks
     float elapsed = current_time - Slingshot_monkey->dash_windup_start_time;
     float progress = std::min(elapsed / Slingshot_monkey->dash_windup_duration, 1.0f);
 
-    // Get current player position
-    auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
-    if (!player_entity.is_valid()) {
-      state_machine->change_state("Idle");
-      return;
-    }
-
-    auto* player_transform = player_entity.get_component<Components::Transform2D>();
-    if (!player_transform) {
-      state_machine->change_state("Idle");
-      return;
-    }
-
     float monkey_x = Slingshot_monkey_transform->position.x;
     float monkey_y = Slingshot_monkey_transform->position.y;
-    float player_x = player_transform->position.x;
-    float dy = player_transform->position.y - monkey_y;
+    float target_x = Slingshot_monkey->dash_target_x;
 
-    if (!is_player_within_vertical_detection_band(*Slingshot_monkey, dy)) {
-      state_machine->change_state("Idle");
-      return;
-    }
+    float direction = (target_x >= monkey_x) ? 1.0f : -1.0f;
 
-    float direction = (player_x >= monkey_x) ? 1.0f : -1.0f;
-
-    // Update flip to face player
+    // Keep facing the stored dash target throughout the windup.
     if (flip) {
       flip->value.x = direction;
     }
 
-    // Calculate target distance and current rectangle width based on progress
-    float distance_to_player = std::abs(player_x - monkey_x);
-    if (distance_to_player > Slingshot_monkey->dash_attack_range) {
-      state_machine->change_state("Idle");
-      return;
-    }
+    // Grow the warning toward the stored target for a committed windup.
+    float distance_to_target = std::abs(target_x - monkey_x);
 
     float min_width = 50.0f;
-    float target_width = distance_to_player + 50.0f; // Extend slightly past player
+    float target_width = distance_to_target + 50.0f; // Extend slightly past target
     float current_width = min_width + (target_width - min_width) * progress;
 
     // Update the warning indicator rectangle
@@ -283,8 +306,6 @@ namespace SlingshotMonkeyStateCallbacks
 
     // When windup is complete, store the target position and transition to dash
     if (progress >= 1.0f) {
-      // Store the player's current X as the dash target (where the monkey will dash to)
-      Slingshot_monkey->dash_target_x = clamp_dash_target_x(*Slingshot_monkey, monkey_x, player_x);
       state_machine->change_state("Dash");
     }
   }
@@ -447,21 +468,22 @@ namespace SlingshotMonkeyStateCallbacks
       if (get_player_detection_metrics(entity, distance, dx, dy, monkey_transform_unused, player_transform)) {
         float small_gap_threshold = Slingshot_monkey->close_attack_range;
         bool dash_ready = (current_time - Slingshot_monkey->last_dash_time) >= Slingshot_monkey->dash_cooldown;
-
-        if (!is_player_within_vertical_detection_band(*Slingshot_monkey, dy)) {
-          rigid->velocity.x = 0.0f;
-          state_machine->change_state("Idle");
-          return;
-        }
+        const float range_enter_buffer = get_slingshot_detection_enter_buffer(*Slingshot_monkey);
+        const float dash_trigger_range = std::max(20.0f, Slingshot_monkey->dash_attack_range - range_enter_buffer);
+        const float close_attack_trigger_range = std::max(0.0f, small_gap_threshold - range_enter_buffer);
+        const float disengage_range = get_slingshot_engage_range(*Slingshot_monkey) +
+          get_slingshot_detection_exit_buffer(*Slingshot_monkey);
 
         // If dash is back up, immediately swap back to dash attack.
-        if (dash_ready && distance > 20.0f && distance <= Slingshot_monkey->dash_attack_range) {
+        if (dash_ready && distance > 20.0f &&
+          is_player_within_detection_box(entity, *Slingshot_monkey, distance, dy, dash_trigger_range)) {
           state_machine->change_state("DashWindup");
           return;
         }
 
         // While waiting for dash cooldown: if near enough, use close-range attack.
-        if (!dash_ready && distance <= small_gap_threshold &&
+        if (!dash_ready &&
+          is_player_within_detection_box(entity, *Slingshot_monkey, distance, dy, close_attack_trigger_range) &&
           (current_time - Slingshot_monkey->last_attack_time) >= Slingshot_monkey->attack_cooldown) {
           state_machine->change_state("Windup");
           return;
@@ -490,7 +512,7 @@ namespace SlingshotMonkeyStateCallbacks
         }
 
         // Return to idle if player is completely out of range
-        if (distance > get_slingshot_engage_range(*Slingshot_monkey)) {
+        if (!is_player_within_detection_box(entity, *Slingshot_monkey, distance, dy, disengage_range)) {
           rigid->velocity.x = 0.0f;
           state_machine->change_state("Idle");
           return;

@@ -177,6 +177,7 @@
     <ClCompile Include="States\PunchingBagStateCallbacks.cpp" />
     <ClCompile Include="States\SlingshotMonkeyStateCallbacks.cpp" />
     <ClCompile Include="States\HealthBarStateCallbacks.cpp" />
+    <ClCompile Include="States\EnemyHealthBarStateCallbacks.cpp" />
     <ClCompile Include="States\LazyMonkeyStateCallbacks.cpp" />
     <ClCompile Include="States\MainMenuCallbacks.cpp" />
     <ClCompile Include="States\PlayerStateCallbacks.cpp" />
