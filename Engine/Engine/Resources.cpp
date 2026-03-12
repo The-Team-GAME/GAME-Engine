@@ -470,13 +470,13 @@ Engine::Resources::Resource Engine::Resources::load(const std::string& filepath,
       // Check if it's an Entity (prefab)
       if (data_type == "Prefab")
       {
-        return load_prefab(filepath, append_resource_path, persist);
+        return load_prefab_from_generic_value(filepath, value, append_resource_path, persist);
       }
 
       // Check if it's a Level
       if (data_type == "Level")
       {
-        return load_level(filepath, append_resource_path, persist);
+        return load_level_from_generic_value(filepath, value, append_resource_path, persist);
       }
     }
 
@@ -580,6 +580,79 @@ Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, 
   return prefab;
 }
 
+Engine::ECS::Prefab Engine::Resources::load_prefab_from_generic_value(const std::string& filepath, const ReflectionLibrary::GenericValue& parsed_value, bool append_resource_path, bool persist)
+{
+  // Construct full path using Path class
+  std::string full_path = append_resource_path ? Engine::Path(resource_path).join(filepath) : Engine::Path(filepath).normalize();
+  std::string actual_filepath = filepath;
+
+  // Check if prefab is already in cache
+  auto it = prefab_cache.find(full_path);
+  if (it != prefab_cache.end())
+  {
+    if (auto cached = it->second.lock())
+    {
+      return Engine::ECS::Prefab(cached);
+    }
+    else
+    {
+      prefab_cache.erase(it);
+    }
+  }
+
+  // Deserialize prefab from the already-parsed GenericValue
+  Engine::ECS::Prefab prefab = Engine::FileIO::deserialize_prefab_from_generic_value(parsed_value);
+
+  if (!prefab.is_valid())
+  {
+    Log::warning("Failed to deserialize prefab: {}", full_path);
+    Engine::EventManager::send_event<Engine::Events::ToastEvent>(
+      "Failed to load prefab: " + actual_filepath,
+      Engine::Events::ToastType::Error,
+      5.0f
+    );
+    return Engine::ECS::Prefab();
+  }
+
+  // Check for loading errors (corrupted data, missing components, etc.)
+  if (prefab.get_impl()->has_load_errors())
+  {
+    const auto& errors = prefab.get_impl()->get_load_errors();
+    std::string error_summary = "Prefab '" + actual_filepath + "' loaded with errors:\n";
+    for (size_t i = 0; i < errors.size() && i < 3; ++i)
+    {
+      error_summary += "- " + errors[i] + "\n";
+    }
+    if (errors.size() > 3)
+    {
+      error_summary += "... and " + std::to_string(errors.size() - 3) + " more errors";
+    }
+    Log::warning("{}", error_summary);
+    Engine::EventManager::send_event<Engine::Events::ToastEvent>(
+      error_summary,
+      Engine::Events::ToastType::Warning,
+      8.0f
+    );
+  }
+
+  // Set the filepath in the prefab
+  prefab.get_impl()->set_prefab_filepath(actual_filepath);
+
+  // Cache the prefab implementation
+  prefab_cache[full_path] = prefab.get_impl();
+  if (persist)
+  {
+    persistent_resources.push_back(prefab);
+    Log::info("Prefab loaded (persistent): {}", full_path);
+  }
+  else
+  {
+    Log::info("Prefab loaded: {}", full_path);
+  }
+
+  return prefab;
+}
+
 bool Engine::Resources::save_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab, bool append_resource_path)
 {
   // Construct full path using Path class
@@ -645,6 +718,36 @@ Engine::EntityList Engine::Resources::load_level(const std::string& filepath, bo
 
   // Deserialize level
   Engine::EntityList entities = Engine::FileIO::deserialize_level_from_json_file(full_path);
+
+  // Cache the level
+  level_cache[full_path] = entities;
+  if (persist)
+  {
+    persistent_resources.push_back(entities);
+    Log::info("Level loaded (persistent): {}", full_path);
+  }
+  else
+  {
+    Log::info("Level loaded: {}", full_path);
+  }
+
+  return entities;
+}
+
+Engine::EntityList Engine::Resources::load_level_from_generic_value(const std::string& filepath, const ReflectionLibrary::GenericValue& parsed_value, bool append_resource_path, bool persist)
+{
+  // Construct full path using Path class
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+
+  // Check if level is already in cache
+  auto it = level_cache.find(full_path);
+  if (it != level_cache.end())
+  {
+    return it->second;
+  }
+
+  // Deserialize level from the already-parsed GenericValue
+  Engine::EntityList entities = Engine::FileIO::deserialize_level_from_generic_value(parsed_value);
 
   // Cache the level
   level_cache[full_path] = entities;

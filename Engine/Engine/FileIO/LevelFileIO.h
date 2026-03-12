@@ -56,6 +56,9 @@ namespace Engine {
     Engine::EntityList deserialize_level_from_json(const std::string& json_str);
 
 
+    // Deserializes an EntityList from an already-parsed GenericValue (the root object with dataType/data).
+    Engine::EntityList deserialize_level_from_generic_value(const ReflectionLibrary::GenericValue& level_value);
+
     bool serialize_level_to_json_file(const std::string& filepath, const Engine::EntityList& entities);
     Engine::EntityList deserialize_level_from_json_file(const std::string& filepath);
 

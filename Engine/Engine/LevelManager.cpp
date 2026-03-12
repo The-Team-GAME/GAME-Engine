@@ -516,6 +516,60 @@ namespace Engine {
     {
       Log::info("Instantiating level with {} entities.", entities.size());
 
+      // Pre-scan all entities to warm the texture and font caches before instantiation.
+      // This avoids redundant cache lookups during component deserialization and ensures
+      // all unique resources are loaded once upfront.
+      {
+        std::unordered_set<std::string> texture_paths;
+        std::unordered_set<std::string> font_keys; // "path|size" to deduplicate
+        struct FontEntry { std::string path; int size; };
+        std::vector<FontEntry> font_entries;
+
+        for (const auto& entity_value : entities) {
+          if (!entity_value.has("components") || !entity_value["components"].isArray()) continue;
+
+          const auto& components = entity_value["components"].getArray();
+          for (const auto& comp : components) {
+            if (!comp.has("type") || !comp.has("data")) continue;
+
+            const std::string& type = comp["type"].getString();
+            const auto& data = comp["data"];
+
+            if (type == "Components::Texture") {
+              if (data.isObject() && data.has("path") && data["path"].isString()) {
+                const std::string& path = data["path"].getString();
+                if (!path.empty()) {
+                  texture_paths.insert(path);
+                }
+              }
+            }
+            else if (type == "Components::Font") {
+              if (data.isObject() && data.has("path") && data["path"].isString()) {
+                const std::string& path = data["path"].getString();
+                int font_size = 32; // default
+                if (data.has("font_size") && data["font_size"].isInt()) {
+                  font_size = data["font_size"].getInt();
+                }
+                if (!path.empty()) {
+                  std::string key = path + "|" + std::to_string(font_size);
+                  if (font_keys.insert(key).second) {
+                    font_entries.push_back({ path, font_size });
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // Batch-load all unique textures and fonts to warm the cache
+        for (const auto& path : texture_paths) {
+          Resources::load_texture(path, true);
+        }
+        for (const auto& entry : font_entries) {
+          Resources::load_font(entry.path, entry.size, true);
+        }
+      }
+
       if (clear_world) {
         ECS::for_each_entity([](ECS::Entity entity) {
           entity.destroy();
