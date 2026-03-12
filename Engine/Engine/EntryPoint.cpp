@@ -97,10 +97,10 @@ void RunGame()
   // prefab deserialization tries to look them up.
   Engine::Resources::load_all_prefabs();
 
-  // Start parsing the gameplay level on a worker thread. ECS/resource finalization
-  // will happen later on the main thread while the menu is already running.
-  Log::info("[EntryPoint] Requesting async preload for gameplay level: {}", PRELOADED_GAMEPLAY_LEVEL);
-  Engine::LevelManager::preload_level_async(PRELOADED_GAMEPLAY_LEVEL);
+  // Warm the gameplay level once at startup so the first transition into gameplay
+  // can reuse the instantiated entities instead of loading from disk again.
+  Log::info("[EntryPoint] Requesting preload for gameplay level: {}", PRELOADED_GAMEPLAY_LEVEL);
+  Engine::LevelManager::preload_level(PRELOADED_GAMEPLAY_LEVEL);
 
 #ifndef GAME_BUILD
   // ── Start source file watcher ───────────────────────────────────────

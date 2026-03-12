@@ -249,8 +249,6 @@ namespace Engine
 
     Log::info("Loaded {} layer collision pairs from settings", project_settings.layer_collision_pairs.size());
 
-    LevelManager::process_pending_preloads();
-
     SceneManager::load_scene(first_scene);
 
     while (!glfwWindowShouldClose(WindowManager::get_window()) && is_running)
@@ -278,8 +276,6 @@ namespace Engine
 
       // Update window title with FPS
       WindowManager::update_title();
-
-      LevelManager::process_pending_preloads();
 
       Engine::AudioSystem::update();  // Update FMOD Studio system
       Engine::Firebase::update();     // Poll async HTTP futures, dispatch callbacks

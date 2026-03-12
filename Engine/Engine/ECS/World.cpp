@@ -30,7 +30,7 @@ namespace Engine {
       void entity_component_changed(EntityID entity)
       {
         auto& containers = get_containers();
-        for (auto& system : containers.systems)
+        for (auto& system : get_systems())
         {
           if (system_matches_entity(*system, entity))
           {
@@ -256,41 +256,119 @@ namespace Engine {
     {
       // Guard in case the containers were never initialised.
       if (!Internal::g_containers) return;
-      auto& containers = *Internal::g_containers;
 
-      // Free every ComponentArray (and its SparseSet storage).
-      // These are the largest allocations that survive destroy_all_entities().
-      for (auto& arr : containers.component_arrays)
-        arr.reset();
+      // Clear ALL worlds' component arrays (not just active) so DLL-defined
+      // component destructors run while vtables are still valid.
+      for (auto& [id, world] : Internal::get_world_registry()) {
+        if (!world) continue;
+        for (auto& arr : world->component_arrays)
+          arr.reset();
+        world->entity_names.clear();
+        world->prefab_instances.clear();
+        world->entity_signatures.clear();
+        world->entity_layers.clear();
+        world->entity_highest_layer.clear();
+        world->active_entities.clear();
+        world->deactivated_entities.clear();
+        world->entities_to_destroy.clear();
+        world->components_to_remove.clear();
+        world->layer_name_to_id.clear();
+        world->layer_id_to_name.clear();
+        world->layer_entities.clear();
+        world->collision_callbacks.clear();
+        world->systems_to_update_once.clear();
+        world->entities_to_update_once.clear();
+      }
 
-      // Clear all remaining containers. Content is freed here;
-      // capacity/structural overhead is freed later by destroy_world().
-      containers.systems.clear();
-      containers.entity_names.clear();
-      containers.prefab_instances.clear();
-      containers.entity_signatures.clear();
-      containers.entity_layers.clear();
-      containers.entity_highest_layer.clear();
-      containers.active_entities.clear();
-      containers.deactivated_entities.clear();
-      containers.entities_to_destroy.clear();
-      containers.components_to_remove.clear();
-      containers.layer_name_to_id.clear();
-      containers.layer_id_to_name.clear();
-      containers.layer_entities.clear();
-      containers.collision_callbacks.clear();
-      containers.systems_to_update_once.clear();
-      containers.entities_to_update_once.clear();
+      Internal::g_systems.clear();
     }
 
     void destroy_world()
     {
-      // Delete the WorldContainers singleton entirely, freeing the struct and
-      // all remaining STL structural overhead (sentinels, proxies).
-      // Safe to call only when the DLL is still loaded or already unloaded
-      // AND all DLL-dependent contents have been cleared first via clear_world().
+      // Destroy ALL worlds in the registry, then the active world pointer.
+      auto& registry = Internal::get_world_registry();
+      for (auto& [id, world] : registry) {
+        if (world != Internal::g_containers) {
+          delete world;
+        }
+      }
+      registry.clear();
       delete Internal::g_containers;
       Internal::g_containers = nullptr;
+    }
+
+    // ============================================================================
+    // Multi-World Management
+    // ============================================================================
+
+    WorldID create_world()
+    {
+      // Ensure the primary world exists (initializes if needed)
+      auto& active = Internal::get_containers();
+
+      auto* world = new Internal::WorldContainers();
+      WorldID id = Internal::get_next_world_id();
+      world->world_id = id;
+
+      // Clone layer configuration from active world
+      world->next_layer_id = active.next_layer_id;
+      world->layer_name_to_id = active.layer_name_to_id;
+      world->layer_id_to_name = active.layer_id_to_name;
+      world->layer_entities.resize(active.layer_entities.size());
+      world->layer_active_state = active.layer_active_state;
+      world->collision_matrix = active.collision_matrix;
+      world->collision_callbacks = active.collision_callbacks;
+
+      Internal::get_world_registry()[id] = world;
+      return id;
+    }
+
+    bool destroy_world(WorldID id)
+    {
+      if (id == INVALID_WORLD) return false;
+
+      auto& registry = Internal::get_world_registry();
+      auto it = registry.find(id);
+      if (it == registry.end()) return false;
+
+      // Cannot destroy the active world through this API
+      if (it->second == Internal::g_containers) return false;
+
+      delete it->second;
+      registry.erase(it);
+      return true;
+    }
+
+    void set_active_world(WorldID id)
+    {
+      auto& registry = Internal::get_world_registry();
+      auto it = registry.find(id);
+      if (it == registry.end()) return;
+      if (it->second == Internal::g_containers) return; // Already active
+
+      // Process pending housekeeping in the current world before switching
+      process_housekeeping();
+
+      // Switch active world
+      Internal::g_containers = it->second;
+
+      // Rebuild system entity tracking for the new world's entities
+      auto& systems = Internal::get_systems();
+      auto& containers = *Internal::g_containers;
+      for (auto& system : systems) {
+        system->reset_entity_tracking();
+        for (EntityID entity : containers.active_entities) {
+          if (Internal::system_matches_entity(*system, entity)) {
+            system->add_entity(entity);
+          }
+        }
+      }
+    }
+
+    WorldID get_active_world()
+    {
+      if (!Internal::g_containers) return INVALID_WORLD;
+      return Internal::g_containers->world_id;
     }
 
     bool is_entity_active(const Entity entity)
@@ -322,7 +400,7 @@ namespace Engine {
       containers.active_entities.erase(id);
 
       // Remove from all systems
-      for (auto& system : containers.systems) {
+      for (auto& system : Internal::get_systems()) {
         system->remove_entity(id);
       }
 
@@ -387,14 +465,13 @@ namespace Engine {
 
     void update()
     {
-      auto& containers = Internal::get_containers();
       Engine::Perf::start("ECS Update");
 
       // Dispatch all queued events to handlers and systems
-      EventManager::update_events(containers.systems);
+      EventManager::update_events(Internal::get_systems());
 
       // Update all systems
-      for (auto& system : containers.systems)
+      for (auto& system : Internal::get_systems())
       {
         system->update();
       }
@@ -404,11 +481,10 @@ namespace Engine {
 
     void update_game()
     {
-      auto& containers = Internal::get_containers();
       Engine::Perf::start("ECS Update Game");
 
       // Update only game systems (SystemType::Game)
-      for (auto& system : containers.systems)
+      for (auto& system : Internal::get_systems())
       {
         if (system->get_system_type() == SystemType::Game)
         {
@@ -425,10 +501,10 @@ namespace Engine {
       Engine::Perf::start("ECS Update Editor");
 
       // Always dispatch events (needed for editor systems to work when paused)
-      EventManager::update_events(containers.systems);
+      EventManager::update_events(Internal::get_systems());
 
       // Update only editor systems (SystemType::Editor)
-      for (auto& system : containers.systems)
+      for (auto& system : Internal::get_systems())
       {
         if (system->get_system_type() == SystemType::Editor)
         {
@@ -454,7 +530,7 @@ namespace Engine {
           if (!entity.is_valid()) continue;
 
           // Run update_entity on all systems that track this entity
-          for (auto& system : containers.systems)
+          for (auto& system : Internal::get_systems())
           {
             if (system->get_entities().contains(entityId))
             {
@@ -531,7 +607,7 @@ namespace Engine {
           containers.entity_names.erase(entityId);
           containers.prefab_instances.erase(entityId); // Clean up prefab instance data
 
-          for (auto& system : containers.systems)
+          for (auto& system : Internal::get_systems())
           {
             system->remove_entity(entityId);
           }
@@ -560,7 +636,7 @@ namespace Engine {
           continue;
 
         // For each system, draw entities on this layer
-        for (auto& system : containers.systems) {
+        for (auto& system : Internal::get_systems()) {
           // Skip if system doesn't process this layer
           if (!system->get_layer_signature().test(layer))
             continue;
@@ -616,7 +692,7 @@ namespace Engine {
 
       // After layer-based entity drawing, call draw() on each system for global drawing operations
       // TODO: Holiday: DEPRECATE
-      for (auto& system : containers.systems) {
+      for (auto& system : Internal::get_systems()) {
         system->draw();
       }
 

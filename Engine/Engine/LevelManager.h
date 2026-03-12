@@ -32,10 +32,11 @@ namespace Engine {
   LevelState - Stores the cached state of an open level.
   ==================================================================================*/
   struct LevelState {
-    EntityList cached_entities;                      // Serialized entity data (cold-load path)
-    std::vector<ECS::EntityID> live_entity_ids;      // Deactivated entity IDs (fast-switch path)
-    bool has_live_entities = false;                   // True if entities are alive but deactivated
-    bool keep_loaded = false;                         // Keep this level resident until manually unloaded
+    ECS::WorldID world_id = ECS::INVALID_WORLD;      // World containing this level's entities
+    EntityList cached_entities;                        // Serialized entity data (editor cold-load path)
+    std::vector<ECS::EntityID> live_entity_ids;        // Deactivated entity IDs (editor fast-switch path)
+    bool has_live_entities = false;                     // True if entities are alive but deactivated (editor)
+    bool keep_loaded = false;                          // Keep this level resident until manually unloaded
   };
 
   namespace LevelManager {
@@ -51,10 +52,6 @@ namespace Engine {
     // Preloads a level from disk into the ECS world as inactive entities.
     // Returns the level ID (normalized path). Preloaded levels stay resident until closed.
     ENGINE_API std::string preload_level(const std::string& filepath, bool append_resource_path = true);
-
-    // Starts preloading a level on a worker thread. Parsing happens in the background,
-    // but ECS/resource finalization still occurs on the main thread.
-    ENGINE_API std::string preload_level_async(const std::string& filepath, bool append_resource_path = true);
 
     // Creates a new empty level. Returns the level ID (__new_X format).
     ENGINE_API std::string create_new_level();
@@ -116,9 +113,6 @@ namespace Engine {
 
     // Clears all open levels and the world.
     ENGINE_API void clear_all(bool preserve_preloaded_levels = true);
-
-    // Finalizes any async preload jobs that have completed parsing.
-    ENGINE_API void process_pending_preloads();
 
     // ============================================================================
     // Entity Serialization Utilities

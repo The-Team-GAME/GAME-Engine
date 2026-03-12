@@ -25,25 +25,14 @@
 #include "Components/HierarchyComponents.h"
 #include "TilemapManager.h"
 #include <algorithm>
-#include <chrono>
-#include <future>
-#include <mutex>
 #include <unordered_set>
 
 namespace {
-  struct AsyncPreloadJob {
-    std::string filepath;
-    bool append_resource_path = true;
-    std::future<Engine::EntityList> future;
-  };
-
   std::unordered_map<std::string, Engine::LevelState> open_levels;
-  std::unordered_map<std::string, AsyncPreloadJob> pending_preload_jobs;
   std::vector<std::string> level_order;  // Maintains order of open levels
   std::string active_level_id;
   std::string current_level_path;  // Actual file path (empty for new levels)
   const std::string empty_string;
-  std::mutex pending_preload_jobs_mutex;
 
   // Helper function to check if a serialized entity is a tile collision entity
   // These are temporary entities rebuilt by TilemapManager and should not be loaded from files
@@ -134,80 +123,6 @@ namespace {
       : Engine::Path(filepath).normalize().to_string();
   }
 
-  Engine::LevelState build_preloaded_level_state(const Engine::EntityList& entities)
-  {
-    std::unordered_set<Engine::ECS::EntityID> existing_ids;
-    Engine::ECS::for_each_entity([&](Engine::ECS::Entity entity) {
-      existing_ids.insert(entity.get_id());
-      });
-
-    Engine::LevelManager::instantiate_entities(entities, false);
-
-    Engine::LevelState new_state;
-    Engine::ECS::for_each_entity([&](Engine::ECS::Entity entity) {
-      if (existing_ids.find(entity.get_id()) == existing_ids.end()) {
-        new_state.live_entity_ids.push_back(entity.get_id());
-      }
-      });
-
-    for (Engine::ECS::EntityID id : new_state.live_entity_ids) {
-      Engine::ECS::deactivate_entity(id);
-    }
-
-    new_state.has_live_entities = !new_state.live_entity_ids.empty();
-    new_state.keep_loaded = true;
-    return new_state;
-  }
-
-  bool finalize_async_preload(const std::string& full_path, bool block_if_pending)
-  {
-    AsyncPreloadJob job;
-
-    {
-      std::lock_guard<std::mutex> lock(pending_preload_jobs_mutex);
-      auto it = pending_preload_jobs.find(full_path);
-      if (it == pending_preload_jobs.end()) {
-        return false;
-      }
-
-      if (!block_if_pending && it->second.future.wait_for(std::chrono::milliseconds(0)) != std::future_status::ready) {
-        return false;
-      }
-
-      job = std::move(it->second);
-      pending_preload_jobs.erase(it);
-    }
-
-    try {
-      Engine::EntityList entities = job.future.get();
-
-      if (Engine::LevelManager::is_level_open(full_path)) {
-        if (Engine::LevelState* existing_state = Engine::LevelManager::get_level_state(full_path)) {
-          existing_state->keep_loaded = true;
-        }
-        Log::info("[LevelManager] Async preload finished after level was already opened: {}", full_path);
-        return true;
-      }
-
-      Engine::Resources::cache_level(job.filepath, entities, job.append_resource_path, false);
-      Engine::LevelState new_state = build_preloaded_level_state(entities);
-
-      open_levels[full_path] = std::move(new_state);
-      level_order.push_back(full_path);
-
-      Log::info("[LevelManager] Async preload finalized as inactive: {} ({} entities)", full_path, open_levels[full_path].live_entity_ids.size());
-      return true;
-    }
-    catch (const std::exception& exception) {
-      Log::error("[LevelManager] Async preload failed for {}: {}", full_path, exception.what());
-      return false;
-    }
-    catch (...) {
-      Log::error("[LevelManager] Async preload failed for {} with unknown error", full_path);
-      return false;
-    }
-  }
-
   // Call on_exit via the Level component in the world (if exists)
   void call_level_exit() {
     auto level_entity = Engine::ECS::get_first_entity_with<Components::Level>();
@@ -293,12 +208,6 @@ namespace Engine {
       // Get the full normalized path - this becomes the level ID
       std::string full_path = normalize_level_path(filepath, append_resource_path);
 
-      if (finalize_async_preload(full_path, false)) {
-        switch_to_level(full_path);
-        Log::info("Switched to asynchronously preloaded level: {}", full_path);
-        return full_path;
-      }
-
       // Check if this level is already open
       if (is_level_open(full_path)) {
         switch_to_level(full_path);
@@ -306,29 +215,50 @@ namespace Engine {
         return full_path;
       }
 
-      {
-        std::lock_guard<std::mutex> lock(pending_preload_jobs_mutex);
-        if (pending_preload_jobs.find(full_path) != pending_preload_jobs.end()) {
-          Log::info("[LevelManager] Waiting for async preload to finish before opening: {}", full_path);
-        }
-      }
-
-      if (finalize_async_preload(full_path, true) && is_level_open(full_path)) {
-        switch_to_level(full_path);
-        Log::info("Switched to asynchronously preloaded level after waiting: {}", full_path);
-        return full_path;
-      }
-
       // Call on_exit for current level before switching
       if (!active_level_id.empty() && is_level_open(active_level_id)) {
         call_level_exit();
+#ifndef GAME_BUILD
         cache_active_level();
+#endif
       }
 
       // Load the level from disk
       EntityList entities = Resources::load_level(filepath, append_resource_path, false);
 
-      // Create a new level state
+#ifdef GAME_BUILD
+      // Multi-world: create a new world, load into it
+      ECS::WorldID prev_world = ECS::get_active_world();
+      ECS::WorldID new_world = ECS::create_world();
+      ECS::set_active_world(new_world);
+
+      LevelState new_state;
+      new_state.world_id = new_world;
+      new_state.keep_loaded = false;
+
+      open_levels[full_path] = std::move(new_state);
+      level_order.push_back(full_path);
+      active_level_id = full_path;
+      current_level_path = full_path;
+
+      // Instantiate into the new world (clear_world=true since it's fresh)
+      instantiate_entities(entities, true);
+
+      // Destroy the previous world if it's not a preloaded level
+      if (prev_world != ECS::INVALID_WORLD && prev_world != new_world) {
+        bool prev_is_kept = false;
+        for (auto& [id, state] : open_levels) {
+          if (state.world_id == prev_world && state.keep_loaded) {
+            prev_is_kept = true;
+            break;
+          }
+        }
+        if (!prev_is_kept) {
+          ECS::destroy_world(prev_world);
+        }
+      }
+#else
+      // Editor: single-world approach
       LevelState new_state;
       new_state.cached_entities = EntityList();  // Empty - entities go into world
       new_state.keep_loaded = false;
@@ -340,6 +270,7 @@ namespace Engine {
 
       // Instantiate into world
       instantiate_entities(entities, true);
+#endif
 
       // Set the level path on the Level component
       auto level_entity = ECS::get_first_entity_with<Components::Level>();
@@ -369,11 +300,6 @@ namespace Engine {
 
       Log::info("[LevelManager] Preload requested: {}", full_path);
 
-      if (finalize_async_preload(full_path, false)) {
-        Log::info("[LevelManager] Finalized completed async preload before sync preload path: {}", full_path);
-        return full_path;
-      }
-
       auto existing = open_levels.find(full_path);
       if (existing != open_levels.end()) {
         existing->second.keep_loaded = true;
@@ -382,48 +308,55 @@ namespace Engine {
       }
 
       EntityList entities = Resources::load_level(filepath, append_resource_path, false);
-      LevelState new_state = build_preloaded_level_state(entities);
+
+#ifdef GAME_BUILD
+      // Multi-world: load into a separate world, then switch back
+      ECS::WorldID prev_world = ECS::get_active_world();
+      ECS::WorldID preload_world = ECS::create_world();
+      ECS::set_active_world(preload_world);
+
+      // Instantiate entities into the new world
+      instantiate_entities(entities, true);
+
+      LevelState new_state;
+      new_state.world_id = preload_world;
+      new_state.keep_loaded = true;
+
+      // Switch back to the original world
+      ECS::set_active_world(prev_world);
+
+      open_levels[full_path] = std::move(new_state);
+      level_order.push_back(full_path);
+
+      Log::info("[LevelManager] Preloaded level into world {}: {}", preload_world, full_path);
+#else
+      // Editor: single-world approach with deactivation
+      std::unordered_set<ECS::EntityID> existing_ids;
+      ECS::for_each_entity([&](ECS::Entity entity) {
+        existing_ids.insert(entity.get_id());
+        });
+
+      instantiate_entities(entities, false);
+
+      LevelState new_state;
+      ECS::for_each_entity([&](ECS::Entity entity) {
+        if (existing_ids.find(entity.get_id()) == existing_ids.end()) {
+          new_state.live_entity_ids.push_back(entity.get_id());
+        }
+        });
+
+      for (ECS::EntityID id : new_state.live_entity_ids) {
+        ECS::deactivate_entity(id);
+      }
+
+      new_state.has_live_entities = !new_state.live_entity_ids.empty();
+      new_state.keep_loaded = true;
 
       open_levels[full_path] = std::move(new_state);
       level_order.push_back(full_path);
 
       Log::info("[LevelManager] Preloaded level as inactive: {} ({} entities)", full_path, open_levels[full_path].live_entity_ids.size());
-      return full_path;
-    }
-
-    std::string preload_level_async(const std::string& filepath, bool append_resource_path)
-    {
-      std::string full_path = normalize_level_path(filepath, append_resource_path);
-
-      Log::info("[LevelManager] Async preload requested: {}", full_path);
-
-      if (is_level_open(full_path)) {
-        if (LevelState* existing_state = get_level_state(full_path)) {
-          existing_state->keep_loaded = true;
-        }
-        Log::info("[LevelManager] Level already resident, skipping async preload: {}", full_path);
-        return full_path;
-      }
-
-      {
-        std::lock_guard<std::mutex> lock(pending_preload_jobs_mutex);
-        auto existing_job = pending_preload_jobs.find(full_path);
-        if (existing_job != pending_preload_jobs.end()) {
-          Log::info("[LevelManager] Async preload already in progress: {}", full_path);
-          return full_path;
-        }
-
-        AsyncPreloadJob job;
-        job.filepath = filepath;
-        job.append_resource_path = append_resource_path;
-        job.future = std::async(std::launch::async, [full_path]() {
-          Log::info("[LevelManager] Async preload worker parsing level: {}", full_path);
-          return Engine::FileIO::deserialize_level_from_json_file(full_path);
-          });
-
-        pending_preload_jobs.emplace(full_path, std::move(job));
-      }
-
+#endif
       return full_path;
     }
 
@@ -478,7 +411,9 @@ namespace Engine {
       // Call on_exit for current level
       if (!active_level_id.empty() && is_level_open(active_level_id)) {
         call_level_exit();
+#ifndef GAME_BUILD
         cache_active_level();
+#endif
       }
 
       // Switch to new level
@@ -487,6 +422,14 @@ namespace Engine {
 
       LevelState& state = open_levels[level_id];
 
+#ifdef GAME_BUILD
+      // Multi-world: swap active world
+      if (state.world_id != ECS::INVALID_WORLD) {
+        ECS::set_active_world(state.world_id);
+        Log::info("Switched to level (world {}): {}", state.world_id, level_id);
+      }
+#else
+      // Editor: single-world approach
       if (state.has_live_entities) {
         // Fast path: reactivate deactivated entities
         activate_level(state);
@@ -497,10 +440,11 @@ namespace Engine {
         state.cached_entities = EntityList();
       }
 
+      Log::info("Switched to level: {}", level_id);
+#endif
+
       // Call on_init (via Level component if present)
       call_level_init();
-
-      Log::info("Switched to level: {}", level_id);
     }
 
     bool close_level(const std::string& level_id)
@@ -519,6 +463,44 @@ namespace Engine {
       auto it = std::find(level_order.begin(), level_order.end(), level_id);
       size_t index = std::distance(level_order.begin(), it);
 
+#ifdef GAME_BUILD
+      // Multi-world: destroy the world if it's not the active one
+      LevelState& closing_state = open_levels[level_id];
+      ECS::WorldID closing_world = closing_state.world_id;
+
+      if (level_id == active_level_id) {
+        if (level_order.size() > 1) {
+          size_t new_index = (index > 0) ? index - 1 : 1;
+          std::string new_active = level_order[new_index];
+
+          active_level_id = new_active;
+          current_level_path = new_active.starts_with("__new_") ? "" : new_active;
+
+          LevelState& state = open_levels[new_active];
+          if (state.world_id != ECS::INVALID_WORLD) {
+            ECS::set_active_world(state.world_id);
+          }
+          // The old world is no longer active, safe to destroy
+          ECS::destroy_world(closing_world);
+
+          call_level_init();
+        }
+        else {
+          // Closing last level — clear world entities
+          ECS::for_each_entity([](ECS::Entity entity) {
+            entity.destroy();
+            });
+          ECS::process_housekeeping();
+          active_level_id = "";
+          current_level_path = "";
+        }
+      }
+      else {
+        // Non-active level: just destroy its world
+        ECS::destroy_world(closing_world);
+      }
+#else
+      // Editor: single-world approach
       // If closing a non-active level with live entities, destroy them
       if (level_id != active_level_id) {
         LevelState& closing_state = open_levels[level_id];
@@ -561,6 +543,7 @@ namespace Engine {
           current_level_path = "";
         }
       }
+#endif
 
       // Remove from containers
       open_levels.erase(level_id);
@@ -747,6 +730,40 @@ namespace Engine {
         call_level_exit();
       }
 
+#ifdef GAME_BUILD
+      // Multi-world: destroy non-preserved worlds
+      ECS::WorldID active_world = ECS::get_active_world();
+      std::unordered_map<std::string, LevelState> preserved_levels;
+      std::vector<std::string> preserved_order;
+
+      for (auto& [id, state] : open_levels) {
+        const bool preserve_state = preserve_preloaded_levels && state.keep_loaded;
+
+        if (preserve_state) {
+          Log::info("[LevelManager] Preserving preloaded world {} across scene clear: {}", state.world_id, id);
+          preserved_order.push_back(id);
+          preserved_levels.emplace(id, std::move(state));
+        }
+        else if (state.world_id != active_world) {
+          // Destroy non-active worlds directly
+          ECS::destroy_world(state.world_id);
+        }
+      }
+
+      open_levels = std::move(preserved_levels);
+      level_order = std::move(preserved_order);
+      active_level_id = "";
+      current_level_path = "";
+
+      // Destroy active entities in the current world
+      ECS::for_each_entity([](ECS::Entity entity) {
+        entity.destroy();
+        });
+      ECS::process_housekeeping();
+
+      Log::info("Cleared levels. Preserved {} preloaded levels.", open_levels.size());
+#else
+      // Editor: single-world approach
       if (preserve_preloaded_levels && !active_level_id.empty()) {
         auto active_it = open_levels.find(active_level_id);
         if (active_it != open_levels.end() && active_it->second.keep_loaded) {
@@ -783,24 +800,7 @@ namespace Engine {
       ECS::process_housekeeping();
 
       Log::info("Cleared levels. Preserved {} preloaded levels.", open_levels.size());
-    }
-
-    void process_pending_preloads()
-    {
-      std::vector<std::string> ready_jobs;
-
-      {
-        std::lock_guard<std::mutex> lock(pending_preload_jobs_mutex);
-        for (auto& [full_path, job] : pending_preload_jobs) {
-          if (job.future.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
-            ready_jobs.push_back(full_path);
-          }
-        }
-      }
-
-      for (const std::string& full_path : ready_jobs) {
-        finalize_async_preload(full_path, false);
-      }
+#endif
     }
 
     void set_current_level_path(const std::string& path)
