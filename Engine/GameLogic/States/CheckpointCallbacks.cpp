@@ -3,6 +3,22 @@
 
 namespace CheckpointCallbacks
 {
+
+  inline void spawn_checkpoint_prompt_animation()
+  {
+    Engine::ECS::create_entity()
+      .add_component<Components::Transform2D>(640.0f, 120.0f, 0.0f, 300.0f, 100.0f)
+      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+      .add_component<Components::Texture>(
+        Engine::Resources::load_texture("images/UI/CheckpointPrompt.png"))
+      .add_component<Components::TextureAtlas>(
+      /* your atlas data here */)
+      .add_component<Components::Animation>(
+      /* your animation data here */)
+      .add_component<Components::Lifetime>(1.0f)
+      .add_to_layer("ui");
+  }
+
   void checkpoint_on_enter(Engine::ECS::Entity checkpoint, Engine::ECS::Entity player_entity)
   {
     auto* checkpoint_transform = checkpoint.get_component<Components::Transform2D>();
@@ -17,6 +33,8 @@ namespace CheckpointCallbacks
     Log::info("Checkpoint reached at ({}, {})",
       checkpoint_transform->position.x,
       checkpoint_transform->position.y);
+
+    //spawn_checkpoint_prompt_animation();
   }
 
   void checkpoint_on_update([[maybe_unused]] Engine::ECS::Entity checkpoint,
