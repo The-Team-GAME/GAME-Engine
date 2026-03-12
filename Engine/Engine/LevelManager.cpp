@@ -116,6 +116,13 @@ namespace {
     }
   }
 
+  std::string normalize_level_path(const std::string& filepath, bool append_resource_path)
+  {
+    return append_resource_path
+      ? Engine::Path(Engine::Resources::resource_path).join(filepath).normalize().to_string()
+      : Engine::Path(filepath).normalize().to_string();
+  }
+
   // Call on_exit via the Level component in the world (if exists)
   void call_level_exit() {
     auto level_entity = Engine::ECS::get_first_entity_with<Components::Level>();
@@ -199,9 +206,7 @@ namespace Engine {
     std::string open_level(const std::string& filepath, bool append_resource_path)
     {
       // Get the full normalized path - this becomes the level ID
-      std::string full_path = append_resource_path
-        ? Path(Resources::resource_path).join(filepath).normalize().to_string()
-        : Path(filepath).normalize().to_string();
+      std::string full_path = normalize_level_path(filepath, append_resource_path);
 
       // Check if this level is already open
       if (is_level_open(full_path)) {
@@ -222,6 +227,7 @@ namespace Engine {
       // Create a new level state
       LevelState new_state;
       new_state.cached_entities = EntityList();  // Empty - entities go into world
+      new_state.keep_loaded = false;
 
       open_levels[full_path] = std::move(new_state);
       level_order.push_back(full_path);
@@ -253,6 +259,49 @@ namespace Engine {
       return full_path;
     }
 
+    std::string preload_level(const std::string& filepath, bool append_resource_path)
+    {
+      std::string full_path = normalize_level_path(filepath, append_resource_path);
+
+      Log::info("[LevelManager] Preload requested: {}", full_path);
+
+      auto existing = open_levels.find(full_path);
+      if (existing != open_levels.end()) {
+        existing->second.keep_loaded = true;
+        Log::info("[LevelManager] Level already resident, marking keep_loaded: {}", full_path);
+        return full_path;
+      }
+
+      EntityList entities = Resources::load_level(filepath, append_resource_path, false);
+
+      std::unordered_set<ECS::EntityID> existing_ids;
+      ECS::for_each_entity([&](ECS::Entity entity) {
+        existing_ids.insert(entity.get_id());
+        });
+
+      instantiate_entities(entities, false);
+
+      LevelState new_state;
+      ECS::for_each_entity([&](ECS::Entity entity) {
+        if (existing_ids.find(entity.get_id()) == existing_ids.end()) {
+          new_state.live_entity_ids.push_back(entity.get_id());
+        }
+        });
+
+      for (ECS::EntityID id : new_state.live_entity_ids) {
+        ECS::deactivate_entity(id);
+      }
+
+      new_state.has_live_entities = !new_state.live_entity_ids.empty();
+      new_state.keep_loaded = true;
+
+      open_levels[full_path] = std::move(new_state);
+      level_order.push_back(full_path);
+
+      Log::info("[LevelManager] Preloaded level as inactive: {} ({} entities)", full_path, open_levels[full_path].live_entity_ids.size());
+      return full_path;
+    }
+
     std::string create_new_level()
     {
       // Call on_exit for current level before creating new one
@@ -268,6 +317,7 @@ namespace Engine {
       // Create a new empty level state
       LevelState new_state;
       new_state.cached_entities = EntityList();
+      new_state.keep_loaded = false;
 
       open_levels[level_id] = std::move(new_state);
       level_order.push_back(level_id);
@@ -563,22 +613,42 @@ namespace Engine {
       return state.cached_entities;
     }
 
-    void clear_all()
+    void clear_all(bool preserve_preloaded_levels)
     {
+      Log::info("[LevelManager] Clearing levels. preserve_preloaded_levels={}", preserve_preloaded_levels);
+
       // Call on_exit for active level
       if (!active_level_id.empty() && is_level_open(active_level_id)) {
         call_level_exit();
       }
 
-      // Destroy all deactivated entities from non-active levels
+      if (preserve_preloaded_levels && !active_level_id.empty()) {
+        auto active_it = open_levels.find(active_level_id);
+        if (active_it != open_levels.end() && active_it->second.keep_loaded) {
+          Log::info("[LevelManager] Active level is preloaded; caching before scene clear: {}", active_level_id);
+          cache_active_level();
+        }
+      }
+
+      std::unordered_map<std::string, LevelState> preserved_levels;
+      std::vector<std::string> preserved_order;
+
+      // Destroy all deactivated entities unless explicitly preserved.
       for (auto& [id, state] : open_levels) {
-        if (id != active_level_id) {
+        const bool preserve_state = preserve_preloaded_levels && state.keep_loaded;
+
+        if (preserve_state) {
+          Log::info("[LevelManager] Preserving preloaded level across scene clear: {}", id);
+          preserved_order.push_back(id);
+          preserved_levels.emplace(id, std::move(state));
+        }
+        else if (id != active_level_id) {
           destroy_level_entities(state);
         }
       }
 
-      open_levels.clear();
-      level_order.clear();
+      open_levels = std::move(preserved_levels);
+      level_order = std::move(preserved_order);
       active_level_id = "";
       current_level_path = "";
 
@@ -587,7 +657,7 @@ namespace Engine {
         });
       ECS::process_housekeeping();
 
-      Log::info("Cleared all levels");
+      Log::info("Cleared levels. Preserved {} preloaded levels.", open_levels.size());
     }
 
     void set_current_level_path(const std::string& path)

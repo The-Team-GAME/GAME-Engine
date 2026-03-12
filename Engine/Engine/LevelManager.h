@@ -35,6 +35,7 @@ namespace Engine {
     EntityList cached_entities;                      // Serialized entity data (cold-load path)
     std::vector<ECS::EntityID> live_entity_ids;      // Deactivated entity IDs (fast-switch path)
     bool has_live_entities = false;                   // True if entities are alive but deactivated
+    bool keep_loaded = false;                         // Keep this level resident until manually unloaded
   };
 
   namespace LevelManager {
@@ -46,6 +47,10 @@ namespace Engine {
     // Opens a level from disk. Returns the level ID (normalized path).
     // If already open, switches to it. Calls on_exit for previous and on_init for new.
     ENGINE_API std::string open_level(const std::string& filepath, bool append_resource_path = true);
+
+    // Preloads a level from disk into the ECS world as inactive entities.
+    // Returns the level ID (normalized path). Preloaded levels stay resident until closed.
+    ENGINE_API std::string preload_level(const std::string& filepath, bool append_resource_path = true);
 
     // Creates a new empty level. Returns the level ID (__new_X format).
     ENGINE_API std::string create_new_level();
@@ -106,7 +111,7 @@ namespace Engine {
     ENGINE_API EntityList get_entities_for_save(const std::string& level_id);
 
     // Clears all open levels and the world.
-    ENGINE_API void clear_all();
+    ENGINE_API void clear_all(bool preserve_preloaded_levels = true);
 
     // ============================================================================
     // Entity Serialization Utilities
