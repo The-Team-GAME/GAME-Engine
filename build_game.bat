@@ -7,8 +7,8 @@ echo ========================================
 echo.
 
 :: Define file paths
-set ENGINE_SETTINGS=Engine\Assets\settings\engine_settings.json
-set GAME_SETTINGS=Engine\Assets\settings\game_settings.json
+set ENGINE_SETTINGS=MonkeyEngine\Assets\settings\engine_settings.json
+set GAME_SETTINGS=MonkeyEngine\Assets\settings\game_settings.json
 set ENGINE_BACKUP=%ENGINE_SETTINGS%.backup
 set GAME_BACKUP=%GAME_SETTINGS%.backup
 
@@ -32,7 +32,7 @@ echo ========================================
 echo.
 
 :: Build the Game configuration
-msbuild GAME.sln /p:Configuration=Game /p:Platform=x64
+msbuild Games\MonkeyStoleMyGPA\MonkeyStoleMyGPA.sln /p:Configuration=Game /p:Platform=x64
 
 :: Store the build result
 set BUILD_RESULT=%ERRORLEVEL%

@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <WorkspaceRoot>$(MSBuildThisFileDirectory)</WorkspaceRoot>
+    <SafeWorkspaceRoot>$([System.String]::Copy('$(WorkspaceRoot)').TrimEnd('\'))</SafeWorkspaceRoot>
+  </PropertyGroup>
+</Project>
