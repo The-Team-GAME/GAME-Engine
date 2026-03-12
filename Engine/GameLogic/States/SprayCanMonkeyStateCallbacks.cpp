@@ -53,6 +53,7 @@ namespace SprayCanMonkey
 
     Math::Vec2D cloud_pos = transform->position;
     cloud_pos.x += dir * (spray->spray_range * 1.0f);
+    cloud_pos.y += 30.0f;
 
     //   // Use hardcoded values instead of component fields
     //   const float w = 160.0f;  // was: spray->cloud_width
@@ -319,7 +320,7 @@ namespace SprayCanMonkey
       // Slow down
       if (auto* rb = spray_monkey->cloud_entity.get_component<Components::RigidBody>())
       {
-        rb->velocity.x = spray_monkey->cloud_initial_vx * (0.8f - tempst);
+        rb->velocity.x = spray_monkey->cloud_initial_vx * (0.7f - tempst);
       }
 
       if (!(spray_elapsed >= (spray_monkey->cloud_spawn_delay - 2.0f))) {

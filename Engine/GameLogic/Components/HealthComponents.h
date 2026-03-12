@@ -169,44 +169,36 @@ namespace Components {
 
 	struct EnemyHealthBarRect {
 		// Placement
-		Math::Vec2D offset{ 0.f, -48.f };   // above head
+		Math::Vec2D offset{ 0.f, -14.f };   // extra lift above enemy top
 		std::string layer = "enemy";        // draw with enemy layer by default
 
-		// Geometry (outer frame)
-		float width = 46.f;
-		float height = 10.f;
-		float corner = 0.f;                  // use textures if you want rounded
-
-		// Colors
-		struct RGBA { float r = 1, g = 1, b = 1, a = 1; };
-		RGBA base_color{ 0.08f, 0.08f, 0.10f, 1.00f }; // dark remainder (background)
-		RGBA front_color{ 0.96f, 0.34f, 0.52f, 1.00f }; // instant HP (pink)
-		RGBA after_color{ 0.95f, 0.76f, 0.25f, 0.95f }; // delayed drain stripe (gold)
-
-		// Thickness inside (top/bottom inset so base outline peeks)
-		float inset_y_px = 1.f;
+		// Sprite bar layout
+		float width = 60.f;
+		float height = 60.f;
+		std::string texture_path = "images/Enemyhealth_Spritesheet.png";
+		int atlas_tile_width = 64;
+		int atlas_tile_height = 64;
+		int atlas_rows = 1;
+		int atlas_cols = 11;
+		int atlas_total_subtextures = 11;
+		float frame_duration = 0.05f;
+		bool loop_animation = false;
 
 		// Behavior
-		float drain_speed = 1.5f;      // how fast the delayed bar catches up
 		float show_duration = 1.25f;   // if not persistent
 		bool  persist_after_first_hit = true;
 
 		// Runtime state
 		int   last_hp = -1;
 		int   last_max = -1;
-		float front_ratio = 1.f;       // 0..1 (instant)
-		float after_ratio = 1.f;       // 0..1 (delayed)
 		float visible_until = 0.f;
 		bool  has_been_hit = false;
 		bool  initialized = false;
 
-		// Sprites (rects)
-		Engine::ECS::Entity base{};
-		Engine::ECS::Entity after{};
-		Engine::ECS::Entity front{};
-
-		// Texture (white rect)
+		// Runtime sprite data
+		Engine::ECS::Entity sprite{};
 		Engine::Graphics::Texture tex{};
+		Components::TextureAtlas atlas{};
 	};
 
 }

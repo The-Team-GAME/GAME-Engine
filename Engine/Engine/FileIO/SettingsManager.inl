@@ -83,14 +83,6 @@ namespace Engine {
         }
       }
 
-      if (has_missing)
-      {
-        if (!save_impl(file_path))
-        {
-          Log::warning("Failed to save updated settings to file: {}", file_path);
-        }
-      }
-
       auto loaded_settings_opt = ReflectionLibrary::from_generic_value<T>(loaded_settings);
 
       if (!loaded_settings_opt.has_value())
@@ -100,6 +92,15 @@ namespace Engine {
       }
 
       settings_ = loaded_settings_opt.value();
+
+      if (has_missing)
+      {
+        if (!save_impl(file_path))
+        {
+          Log::warning("Failed to save updated settings to file: {}", file_path);
+        }
+      }
+
       return true;
     }
 

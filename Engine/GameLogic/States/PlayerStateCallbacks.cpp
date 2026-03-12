@@ -219,6 +219,9 @@ namespace PlayerStateCallbacks
     assert(player_comp);
     rigid->is_jumping = true;
     rigid->on_ground = false;
+
+    rigid->velocity.zero();
+    rigid->force.zero();
     rigid->force.y += player_comp->jump_force;
 
     default_state = true;
@@ -230,7 +233,7 @@ namespace PlayerStateCallbacks
     assert(rigid);
 
     // we check for rigid->on_ground here because on the first few frames there is still a chance that the player will be counted as on gound
-    if (rigid->on_ground && rigid->velocity.y >= 0.0f)
+    if (rigid->on_ground)// && rigid->velocity.y >= 0.0f)
     {
       Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
       assert(sm);
@@ -345,7 +348,7 @@ namespace PlayerStateCallbacks
   // Stunned State Callbacks
   // ========================================================================
 
-  inline void stunned_on_enter([[maybe_unused]] ECS::Entity entity)
+  inline void stunned_on_enter(ECS::Entity entity)
   {
     Log::info("Player: Stunned!");
     Components::Player* player_comp = entity.get_component<Components::Player>();
@@ -356,18 +359,10 @@ namespace PlayerStateCallbacks
 
   inline void stunned_on_update(ECS::Entity entity)
   {
-    /*Components::Player* player_comp = entity.get_component<Components::Player>();
-    assert(player_comp);
-    if (player_comp->stunned.timer_end())
-    {
-      Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
-      assert(sm);
-      sm->change_state("Idle");
-    }
-    player_comp->stunned.timer -= Time::get_fixed_dt();*/
     Components::Animation* animation = entity.get_component<Components::Animation>();
     assert(animation);
-    if (animation->has_ended()) {
+    if (animation->has_ended()) 
+    {
       Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
       assert(sm);
       sm->change_state("Idle");
@@ -396,6 +391,7 @@ namespace PlayerStateCallbacks
     assert(rigid);
     assert(flip);
 
+    player_comp->knockback_value = player_comp->attack1_data.knockback;
     rigid->velocity.x = flip->value.x * player_comp->dash.speed;
     //=========================================================================//
     ECS::Entity hitbox = create_hitbox(entity, player_comp->attack1_data);
@@ -440,6 +436,7 @@ namespace PlayerStateCallbacks
     assert(rigid);
     assert(flip);
 
+    player_comp->knockback_value = player_comp->attack2_data.knockback;
     rigid->velocity.x = flip->value.x * player_comp->dash.speed;
     //=========================================================================//
     ECS::Entity hitbox = create_hitbox(entity, player_comp->attack2_data);
@@ -484,6 +481,7 @@ namespace PlayerStateCallbacks
     assert(rigid);
     assert(flip);
 
+    player_comp->knockback_value = player_comp->attack3_data.knockback;
     rigid->velocity.x = flip->value.x * player_comp->dash.speed;
     //=========================================================================//
     ECS::Entity hitbox = create_hitbox(entity, player_comp->attack3_data);
@@ -518,6 +516,7 @@ namespace PlayerStateCallbacks
     Log::info("Player: Entered Pre Uppercut state");
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
+    player_comp->knockback_value = player_comp->uppercut_data.knockback;
     player_comp->uppercut.reset_cooldown();
     player_comp->damage_immune = true;
 
@@ -740,6 +739,8 @@ namespace PlayerStateCallbacks
     Log::info("Player: Entered Post Smash state");
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
+
+    player_comp->knockback_value = player_comp->smash_data.knockback;
     //=========================================================================//
     ECS::Entity hitbox = create_hitbox(entity, player_comp->smash_data);
 
