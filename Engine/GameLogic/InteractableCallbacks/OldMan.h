@@ -30,7 +30,7 @@ namespace OldManCallbacks
     Components::TextureAtlas press_e_atlas(128, 64, (size_t)1, (size_t)9, (size_t)9);
     Components::Animation press_e_anim((size_t)9, 0.1f, true);
     auto prompt = ECS::create_entity()
-      .add_component<Components::Transform2D>(prompt_x, prompt_y, 0.0f, 128.0f, 64.0f)
+      .add_component<Components::Transform2D>(prompt_x, prompt_y, 0.0f, 128.0f * 2.0f, 64.0f * 2.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/PressE.png"))
       .add_component<Components::TextureAtlas>(std::move(press_e_atlas))
       .add_component<Components::Animation>(std::move(press_e_anim))
