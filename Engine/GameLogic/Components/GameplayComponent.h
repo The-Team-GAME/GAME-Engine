@@ -92,7 +92,7 @@ namespace Components
 
     Action attack1  { 0.f, 0.f, 1000.f, 0.f };
     Action attack2  { 0.f, 0.f, 1000.f, 0.f };
-    Action attack3  { 0.f, 0.f, 1000.f, 0.f };
+    Action attack3  { 0.f, 0.f, 1250.f, 0.f };
     Action uppercut { .05f, 5.f, 2500.f, 0 };
     Action leap     { 0.3f, 0.f, 300.f, 0.f };
     Action smash    { 0.f, 7.f, 2500.f, 0.f };
