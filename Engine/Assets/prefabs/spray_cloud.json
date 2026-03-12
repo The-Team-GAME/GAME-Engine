@@ -3,20 +3,26 @@
         "components": [
             {
                 "data": {
+                    "destroy_at": 434.3402404785156
+                },
+                "type": "Components::Lifetime"
+            },
+            {
+                "data": {
                     "aabb": {
-                        "half_height": 34.71263122558594,
-                        "half_width": 31.724124908447266,
+                        "half_height": 16.118553161621094,
+                        "half_width": 15.851131439208984,
                         "pos": {
-                            "x": -218.99386596679688,
-                            "y": 717.8770141601563
+                            "x": -760.9763793945313,
+                            "y": 600.9075317382813
                         }
                     },
                     "collided": false,
-                    "height": 69.42526245117188,
+                    "height": 32.23710632324219,
                     "kinetic_friction": 1.0,
                     "offset": {
-                        "x": -0.000003814697265625,
-                        "y": -0.6896591186523438
+                        "x": 0.45353639125823975,
+                        "y": 1.5779445171356201
                     },
                     "polygon": {
                         "position": {
@@ -29,33 +35,9 @@
                     "radius": 1000.0,
                     "resolve_collisions": false,
                     "type": "AABB",
-                    "width": 63.44824981689453
+                    "width": 31.70226287841797
                 },
                 "type": "Components::BoxCollider"
-            },
-            {
-                "data": {
-                    "acceleration": {
-                        "x": 0.0,
-                        "y": 0.0
-                    },
-                    "gravity": {
-                        "x": 0.0,
-                        "y": 1000.0
-                    },
-                    "is_jumping": false,
-                    "is_static": true,
-                    "mass": 1.0,
-                    "on_ground": false,
-                    "use_gravity": false,
-                    "velocity": {
-                        "x": -68.8916015625,
-                        "y": 0.0
-                    },
-                    "x_terminal_velocity": 500.0,
-                    "y_terminal_velocity": 0.0
-                },
-                "type": "Components::RigidBody"
             },
             {
                 "data": {
@@ -74,7 +56,7 @@
             },
             {
                 "data": {
-                    "drawIndex": 2,
+                    "drawIndex": 1,
                     "tex_coords_list": [
                         [
                             {
@@ -284,16 +266,40 @@
                         0.20000000298023224
                     ],
                     "is_looping": true,
-                    "startTime": 889.6826171875,
+                    "startTime": 175.70361328125,
                     "totalDuration": 4.0
                 },
                 "type": "Components::Animation"
             },
             {
                 "data": {
+                    "acceleration": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "gravity": {
+                        "x": 0.0,
+                        "y": 1000.0
+                    },
+                    "is_jumping": false,
+                    "is_static": true,
+                    "mass": 1.0,
+                    "on_ground": false,
+                    "use_gravity": false,
+                    "velocity": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "x_terminal_velocity": 500.0,
+                    "y_terminal_velocity": 0.0
+                },
+                "type": "Components::RigidBody"
+            },
+            {
+                "data": {
                     "position": {
-                        "x": -221.29025268554688,
-                        "y": 718.566650390625
+                        "x": -761.429931640625,
+                        "y": 599.32958984375
                     },
                     "rotation": 0.0,
                     "scale": {
@@ -302,12 +308,6 @@
                     }
                 },
                 "type": "Components::Transform2D"
-            },
-            {
-                "data": {
-                    "destroy_at": 434.3402404785156
-                },
-                "type": "Components::Lifetime"
             },
             {
                 "data": {
@@ -320,7 +320,8 @@
                     "knockback": {
                         "x": 10.0,
                         "y": 10.0
-                    }
+                    },
+                    "play_punch_hit_sfx": true
                 },
                 "type": "Components::Attack"
             }
