@@ -94,6 +94,7 @@ namespace Components
     Action attack2  { 0.f, 0.f, 1000.f, 0.f };
     Action attack3  { 0.f, 0.f, 1000.f, 0.f };
     Action uppercut { .05f, 5.f, 2500.f, 0 };
+    Action leap     { 0.3f, 0.f, 300.f, 0.f };
     Action smash    { 0.f, 7.f, 2500.f, 0.f };
 
     // hitbox_offset_x hitbox_offset_y hitbox_width hitbox_height life_time dmg knockback
@@ -237,14 +238,15 @@ namespace Components
   {
     int damage = 10;
     Math::Vec2D knockback = Math::Vec2D(0.0f, 0.0f);
+    bool play_punch_hit_sfx = true;
     bool is_continuous = false;
     float damage_interval = 0.1f; // Time in seconds between damage ticks for continuous attacks
     std::vector<std::pair<Engine::ECS::Entity, float>> hit_entities; // Track entity and last hit time
     Components::Texture impact_vfx_texture;
 
     Attack() = default;
-    explicit Attack(int dmg, Math::Vec2D kb = Math::Vec2D(0.0f, 0.0f), bool continuous = false, float interval = 0.1f)
-      : damage(dmg), knockback(kb), is_continuous(continuous), damage_interval(interval) {
+    explicit Attack(int dmg, Math::Vec2D kb = Math::Vec2D(0.0f, 0.0f), bool continuous = false, float interval = 0.1f, bool play_hit_sfx = true)
+      : damage(dmg), knockback(kb), play_punch_hit_sfx(play_hit_sfx), is_continuous(continuous), damage_interval(interval) {
     }
 
     bool should_apply_damage(Engine::ECS::Entity entity) {
@@ -296,11 +298,11 @@ REFLECT_FIELDS(Components::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_
 
 REGISTER_COMPONENT(Components::Player, 
   damage_immune, walk_speed, jump_force, respawn_point, has_checkpoint, dash, stunned, knockback_recieved,
-  attack1, attack2, attack3, uppercut, smash,
+  attack1, attack2, attack3, uppercut, smash, leap,
   attack1_data, attack2_data, attack3_data, uppercut_data, smash_data)
 REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, attack_range)
 REGISTER_COMPONENT(Components::TurretMonkey, chase_speed, attack_cooldown, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, long_attack_range)
 REGISTER_COMPONENT(Components::SlingshotMonkey, chase_speed, dash_speed, dash_cooldown, dash_windup_duration, dash_indicator_height, leap_speed, leap_height, attack_cooldown, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, close_attack_range, dash_attack_range)
 REGISTER_COMPONENT(Components::SprayCanMonkey, chase_speed, attack_cooldown, last_attack_time, attack_windup, detection_range, chase_range, attack_range, spray_duration, spray_range, spray_width, knockback, damage, cloud_spawn_time, cloud_initial_vx)
-REGISTER_COMPONENT(Components::Attack, damage, knockback, is_continuous, damage_interval, impact_vfx_texture)
+REGISTER_COMPONENT(Components::Attack, damage, knockback, play_punch_hit_sfx, is_continuous, damage_interval, impact_vfx_texture)
 REGISTER_COMPONENT(Components::PendingKnockback, knockback)

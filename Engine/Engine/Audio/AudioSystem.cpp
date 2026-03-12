@@ -40,14 +40,29 @@ namespace Engine {
     static ::std::chrono::steady_clock::time_point gChangeDetectedAt = {};
     static bool gPendingReload = false;
     static bool gHotReloadDiagnosticLogged = false;
+    static constexpr const char* SCENE_BGM_INSTANCE = "scene_bgm";
 
-    // Forward declaration
+    // Forward declarations
     static void checkBankHotReload();
+    static bool FMOD_Check(FMOD_RESULT result, const char* context = nullptr);
+
+    static bool stopAndReleaseInstanceIfExists(const ::std::string& instanceName, bool immediate, const char* context)
+    {
+      auto it = gEventInstances.find(instanceName);
+      if (it == gEventInstances.end())
+        return true;
+
+      FMOD_STUDIO_STOP_MODE mode = immediate ? FMOD_STUDIO_STOP_IMMEDIATE : FMOD_STUDIO_STOP_ALLOWFADEOUT;
+      bool stopOk = FMOD_Check(it->second->stop(mode), context);
+      bool releaseOk = FMOD_Check(it->second->release(), context);
+      gEventInstances.erase(it);
+      return stopOk && releaseOk;
+    }
 
     // ------------------------------------------------------------
     // FMOD error checking helper
     // ------------------------------------------------------------
-    static bool FMOD_Check(FMOD_RESULT result, const char* context = nullptr)
+    static bool FMOD_Check(FMOD_RESULT result, const char* context)
     {
       if (result != FMOD_OK)
       {
@@ -66,8 +81,8 @@ namespace Engine {
     static FMOD_VECTOR ToFMODVector(const Math::Vec2D& v)
     {
       FMOD_VECTOR fv;
-      fv.x = v.x;
-      fv.y = v.y;
+      fv.x = -v.x / 10.0f;  // Negate X to match FMOD left/right orientation with world space
+      fv.y = v.y / 10.0f;
       fv.z = 0.0f;
       return fv;
     }
@@ -407,7 +422,53 @@ namespace Engine {
       return true;
     }
 
-    bool playEventAtPosition(const ::std::string& eventPath, const Math::Vec2D& position)
+    bool stopEvent(const ::std::string& eventPath, bool immediate)
+    {
+      if (!gStudioSystem)
+        return false;
+
+      FMOD::Studio::EventDescription* desc = nullptr;
+
+      auto cacheIt = gEventDescriptions.find(eventPath);
+      if (cacheIt != gEventDescriptions.end())
+      {
+        desc = cacheIt->second;
+      }
+      else
+      {
+        if (!FMOD_Check(
+          gStudioSystem->getEvent(eventPath.c_str(), &desc), "getEvent"))
+          return false;
+
+        gEventDescriptions[eventPath] = desc;
+      }
+
+      int instanceCount = 0;
+      if (!FMOD_Check(desc->getInstanceCount(&instanceCount), "getInstanceCount"))
+        return false;
+
+      if (instanceCount <= 0)
+        return true;
+
+      ::std::vector<FMOD::Studio::EventInstance*> instances(instanceCount, nullptr);
+      int retrieved = 0;
+      if (!FMOD_Check(desc->getInstanceList(instances.data(), instanceCount, &retrieved), "getInstanceList"))
+        return false;
+
+      FMOD_STUDIO_STOP_MODE mode = immediate ? FMOD_STUDIO_STOP_IMMEDIATE : FMOD_STUDIO_STOP_ALLOWFADEOUT;
+      bool allOk = true;
+      for (int i = 0; i < retrieved; ++i)
+      {
+        if (instances[i])
+        {
+          allOk = FMOD_Check(instances[i]->stop(mode), "stopEvent") && allOk;
+        }
+      }
+
+      return allOk;
+    }
+
+    bool playEventAtPosition(const ::std::string& eventPath, const Math::Vec2D& position, float minDistance, float maxDistance, float soundSpread)
     {
       if (!gStudioSystem)
         return false;
@@ -440,7 +501,27 @@ namespace Engine {
       attributes.up = { 0.0f, 0.0f, 1.0f };
 
       FMOD_Check(instance->set3DAttributes(&attributes), "set3DAttributes");
+      
+      // Set min/max distance for volume falloff:
+      // - Within minDistance: full volume, mostly centered
+      // - Beyond maxDistance: fades to silence
+      // - Between: gradual volume falloff and panning based on position
+      FMOD_Check(instance->setProperty(FMOD_STUDIO_EVENT_PROPERTY_MINIMUM_DISTANCE, minDistance), "setMinDistance");
+      FMOD_Check(instance->setProperty(FMOD_STUDIO_EVENT_PROPERTY_MAXIMUM_DISTANCE, maxDistance), "setMaxDistance");
+      
       FMOD_Check(instance->start(), "start");
+      
+      // Set 3D spread (0-360 degrees): controls how wide the sound appears between speakers
+      // Higher values = sounds near center play more on both left+right speakers
+      // Lower values = more directional/point-source (harder panning)
+      // Must be set AFTER start() to access the core channel
+      FMOD::ChannelGroup* channelGroup = nullptr;
+      if (FMOD_Check(instance->getChannelGroup(&channelGroup), "getChannelGroup") && channelGroup)
+      {
+        // Convert 0-100 spread to 0-360 degrees for FMOD
+        float spreadDegrees = (soundSpread / 100.0f) * 360.0f;
+        FMOD_Check(channelGroup->set3DSpread(spreadDegrees), "set3DSpread");
+      }
       FMOD_Check(instance->release(), "release");
 
       return true;
@@ -761,6 +842,47 @@ namespace Engine {
       }
 
       return FMOD_Check(vca->getVolume(&outVolume), "VCA::getVolume");
+    }
+
+    bool playSceneMusic(const ::std::string& eventPath, float volume, bool immediateStop)
+    {
+      if (!gStudioSystem)
+      {
+        Log::warning("[AudioSystem] Not initialized");
+        return false;
+      }
+
+      if (!stopAndReleaseInstanceIfExists(SCENE_BGM_INSTANCE, immediateStop, "scene_bgm stop/release"))
+      {
+        Log::warning("[AudioSystem] Continuing after scene BGM cleanup failure");
+      }
+
+      if (!createEventInstance(SCENE_BGM_INSTANCE, eventPath))
+        return false;
+
+      if (!setEventInstanceVolume(SCENE_BGM_INSTANCE, volume))
+      {
+        stopAndReleaseInstanceIfExists(SCENE_BGM_INSTANCE, true, "scene_bgm cleanup after set volume failure");
+        return false;
+      }
+
+      if (!startEventInstance(SCENE_BGM_INSTANCE))
+      {
+        stopAndReleaseInstanceIfExists(SCENE_BGM_INSTANCE, true, "scene_bgm cleanup after start failure");
+        return false;
+      }
+
+      return true;
+    }
+
+    bool stopSceneMusic(bool immediate)
+    {
+      return stopAndReleaseInstanceIfExists(SCENE_BGM_INSTANCE, immediate, "scene_bgm stop/release");
+    }
+
+    bool isSceneMusicPlaying()
+    {
+      return isEventInstancePlaying(SCENE_BGM_INSTANCE);
     }
 
     // ------------------------------------------------------------

@@ -18,6 +18,7 @@
 #include "Reflection.h"
 #include "../EventManager/EventManager.h"
 #include "../Events/EngineEvents.h"
+#include <algorithm>
 
 namespace Engine {
   namespace ECS {
@@ -139,14 +140,19 @@ namespace Engine {
         ReflectionLibrary::GenericValue prefab_ref = ReflectionLibrary::Object();
         prefab_ref["id"] = instance_data.prefab_id;
 
-        // Serialize field overrides
+        // Serialize field overrides using component type names (not numeric IDs)
+        // Type names are stable across builds; numeric IDs are runtime-generated and unstable.
         ReflectionLibrary::GenericValue overrides_obj = ReflectionLibrary::Object();
         for (const auto& [type_id, field_set] : instance_data.field_overrides) {
           ReflectionLibrary::GenericValue fields_array = ReflectionLibrary::Array();
           for (const auto& field_path : field_set) {
             fields_array.push_back(field_path);
           }
-          overrides_obj[std::to_string(type_id)] = fields_array;
+          // Use the component type name as key for stability
+          auto& array = containers.component_arrays[type_id];
+          if (array) {
+            overrides_obj[array->get_type_name()] = fields_array;
+          }
         }
         prefab_ref["overrides"] = overrides_obj;
 
@@ -215,12 +221,29 @@ namespace Engine {
         }
 
         // Deserialize field overrides
+        // Supports both type-name keys (new format) and numeric type-ID keys (legacy format).
         if (prefab_ref.has("overrides") && prefab_ref["overrides"].isObject()) {
           const auto& overrides_obj = prefab_ref["overrides"].getObject();
-          for (const auto& [type_id_str, fields_val] : overrides_obj) {
-            ComponentTypeID type_id = std::stoull(type_id_str);
+          for (const auto& [key_str, fields_val] : overrides_obj) {
+            ComponentTypeID type_id = INVALID_COMPONENT_TYPE;
 
-            if (fields_val.isArray()) {
+            // Try to parse as a number (legacy format: "13", "20", etc.)
+            bool is_numeric = !key_str.empty() && std::all_of(key_str.begin(), key_str.end(), ::isdigit);
+            if (is_numeric) {
+              type_id = static_cast<ComponentTypeID>(std::stoull(key_str));
+            }
+            else {
+              // New format: key is a component type name (e.g., "Components::Transform2D")
+              for (ComponentTypeID tid = 0; tid < MAX_COMPONENTS; ++tid) {
+                auto& arr = containers.component_arrays[tid];
+                if (arr && arr->get_type_name() == key_str) {
+                  type_id = tid;
+                  break;
+                }
+              }
+            }
+
+            if (type_id != INVALID_COMPONENT_TYPE && fields_val.isArray()) {
               for (const auto& field_val : fields_val.getArray()) {
                 if (field_val.isString()) {
                   instance_data.field_overrides[type_id].insert(field_val.getString());

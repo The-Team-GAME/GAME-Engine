@@ -117,7 +117,6 @@
 		<relationship name="effects">
 			<destination>{555cc810-7778-41f6-bf98-57a0baf740a2}</destination>
 			<destination>{ced2c989-8e42-4b43-a741-0672af93af9b}</destination>
-			<destination>{b2d50610-5a7c-4b63-9edf-8369ce636e5e}</destination>
 		</relationship>
 	</object>
 	<object class="MixerBusPanner" id="{87d64d3d-64b1-4260-970a-4e67d585bb0a}" />
@@ -144,6 +143,7 @@
 	</object>
 	<object class="MixerBusEffectChain" id="{8e778b95-49af-4150-8aa0-104d8b5b57af}">
 		<relationship name="effects">
+			<destination>{67aca750-ea6f-414c-a5b2-ce572815db27}</destination>
 			<destination>{94ed9e17-8a6e-49e0-91ee-919c425f4d13}</destination>
 		</relationship>
 	</object>
@@ -158,17 +158,20 @@
 		<property name="overrideRange">
 			<value>true</value>
 		</property>
+		<property name="extentMode">
+			<value>1</value>
+		</property>
+		<property name="soundSize">
+			<value>84</value>
+		</property>
 	</object>
 	<object class="MixerBusFader" id="{ced2c989-8e42-4b43-a741-0672af93af9b}" />
-	<object class="MultibandEqEffect" id="{b2d50610-5a7c-4b63-9edf-8369ce636e5e}">
-		<property name="filterTypeA">
-			<value>5</value>
+	<object class="PitchShifterEffect" id="{67aca750-ea6f-414c-a5b2-ce572815db27}">
+		<property name="pitch">
+			<value>1.09000003</value>
 		</property>
-		<property name="frequencyA">
-			<value>833.11792</value>
-		</property>
-		<property name="qualityA">
-			<value>0.254894763</value>
+		<property name="overlap">
+			<value>15</value>
 		</property>
 	</object>
 	<object class="MixerBusFader" id="{94ed9e17-8a6e-49e0-91ee-919c425f4d13}" />

@@ -2,7 +2,7 @@
 <objects serializationModel="Studio.02.03.00">
 	<object class="Event" id="{be51f0bd-2bea-4f77-b1e3-a174ed305e54}">
 		<property name="name">
-			<value>MonkeyHurt</value>
+			<value>LazyMonkeyHurt</value>
 		</property>
 		<property name="outputFormat">
 			<value>2</value>
@@ -73,7 +73,7 @@
 	</object>
 	<object class="EventMixerMaster" id="{c2a1fee0-7e09-4a53-b963-810b1bff1506}">
 		<property name="volume">
-			<value>-16</value>
+			<value>-8</value>
 		</property>
 		<relationship name="effectChain">
 			<destination>{afa96abc-61b0-4209-9ebd-d2dbced7a5d6}</destination>
@@ -122,7 +122,6 @@
 		<relationship name="effects">
 			<destination>{7991c426-90e9-450a-a09d-45799eca3cda}</destination>
 			<destination>{238fb192-659a-4617-a45e-3fd55faec7d3}</destination>
-			<destination>{91a5b4bb-b5ab-41c7-b28e-94a0db943f08}</destination>
 		</relationship>
 	</object>
 	<object class="MixerBusPanner" id="{b1921da6-0f13-4931-848b-78bebfe27f50}" />
@@ -158,18 +157,13 @@
 		<property name="overrideRange">
 			<value>true</value>
 		</property>
+		<property name="extentMode">
+			<value>1</value>
+		</property>
+		<property name="soundSize">
+			<value>160</value>
+		</property>
 	</object>
 	<object class="MixerBusFader" id="{238fb192-659a-4617-a45e-3fd55faec7d3}" />
-	<object class="MultibandEqEffect" id="{91a5b4bb-b5ab-41c7-b28e-94a0db943f08}">
-		<property name="filterTypeA">
-			<value>13</value>
-		</property>
-		<property name="frequencyA">
-			<value>2713.96362</value>
-		</property>
-		<property name="qualityA">
-			<value>0.275942028</value>
-		</property>
-	</object>
 	<object class="MixerBusFader" id="{66ca87f8-fcfd-4c6d-926a-0c1da38defa5}" />
 </objects>

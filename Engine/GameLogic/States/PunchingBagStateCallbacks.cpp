@@ -58,7 +58,7 @@ namespace PunchingBagStateCallbacks
     }
   }
 }
-REGISTER_STATE_MACHINE_BLUEPRINT(EmptyState, "Idle",
+REGISTER_STATE_MACHINE_BLUEPRINT(PunchingBag, "Idle",
   STATE("Idle", NO_CALLBACK, PunchingBagStateCallbacks::idle_on_update, NO_CALLBACK)
   STATE("Hit", PunchingBagStateCallbacks::hit_on_enter, NO_CALLBACK, NO_CALLBACK)
   STATE("Left", NO_CALLBACK, PunchingBagStateCallbacks::left_on_update, NO_CALLBACK)
