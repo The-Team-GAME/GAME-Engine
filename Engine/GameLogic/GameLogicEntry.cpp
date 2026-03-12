@@ -49,6 +49,7 @@
 #include "Components/HeartrateComponent.h"
 #include "Components/HealthComponents.h"
 #include "Components/InteractableComponents.h"
+#include "../Engine/LevelManager.h"
 
 namespace {
   static constexpr const char* PLAYER_HEARTBEAT_EVENT = "event:/SFX/PlayerHeartBeat";
@@ -406,7 +407,11 @@ static void register_function_callbacks()
     }));
   reg.register_function<void()>("pause_menu_restart", std::function<void()>([]() {
     Log::info("Restarting level from pause menu");
-    Engine::SceneManager::load_scene("GameplayState");
+    Engine::SceneManager::pop_scene();
+    const std::string& level_id = Engine::LevelManager::get_active_level_id();
+    if (!level_id.empty()) {
+      Engine::LevelManager::reload_level(level_id);
+    }
     }));
   reg.register_function<void()>("pause_menu_options", std::function<void()>([]() {
     Log::info("Opening options from pause menu");

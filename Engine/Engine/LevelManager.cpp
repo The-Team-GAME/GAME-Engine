@@ -301,22 +301,120 @@ namespace Engine {
       ECS::process_housekeeping();
     }
 
-    void build_preloaded_snapshot(LevelState& state)
+    void build_preloaded_snapshot_from_entities(LevelState& state, const EntityList& entities)
     {
       destroy_preloaded_entities(state);
       state.preloaded_entity_ids.clear();
 
-      ECS::for_each_entity([&](ECS::Entity entity) {
-        ECS::Entity cloned = ECS::clone_entity(entity);
-        if (cloned.is_valid()) {
-          ECS::EntityID id = cloned.get_id();
-          ECS::deactivate_entity(id);
-          state.preloaded_entity_ids.push_back(id);
+      if (entities.empty()) {
+        state.has_preloaded_entities = false;
+        return;
+      }
+
+      std::unordered_map<ECS::EntityID, ECS::EntityID> id_remap;
+      std::vector<ECS::EntityID> created_ids;
+      ECS::Entity level_entity;
+
+      for (const auto& entity_value : entities) {
+        if (is_tile_collision_entity(entity_value)) {
+          continue;
         }
-        });
+
+        ECS::EntityID old_id = ECS::INVALID_ENTITY;
+        if (entity_value.has("id") && entity_value["id"].isInt()) {
+          old_id = static_cast<ECS::EntityID>(entity_value["id"].getInt());
+        }
+
+        ECS::Entity new_entity = ECS::create_entity_from_generic_value(entity_value);
+        if (!new_entity.is_valid()) {
+          continue;
+        }
+
+        if (old_id != ECS::INVALID_ENTITY) {
+          id_remap[old_id] = new_entity.get_id();
+        }
+
+        if (new_entity.has_component<Components::Level>()) {
+          level_entity = new_entity;
+        }
+
+        created_ids.push_back(new_entity.get_id());
+      }
+
+      for (ECS::EntityID id : created_ids) {
+        ECS::Entity entity(id);
+        if (auto* parent_comp = entity.get_component<Components::Parent>()) {
+          auto it = id_remap.find(parent_comp->parent_id);
+          if (it != id_remap.end()) {
+            parent_comp->parent_id = it->second;
+          }
+        }
+
+        if (auto* children_comp = entity.get_component<Components::Children>()) {
+          for (auto& child_id : children_comp->child_ids) {
+            auto it = id_remap.find(child_id);
+            if (it != id_remap.end()) {
+              child_id = it->second;
+            }
+          }
+        }
+      }
+
+      if (!level_entity.is_valid()) {
+        level_entity = ECS::create_entity();
+        level_entity.add_component<Components::Level>();
+        created_ids.push_back(level_entity.get_id());
+      }
+
+      ECS::EntityID level_id = level_entity.get_id();
+      for (ECS::EntityID id : created_ids) {
+        ECS::Entity entity(id);
+        if (entity.has_component<Components::Level>()) {
+          continue;
+        }
+        if (entity.has_component<Components::Parent>()) {
+          continue;
+        }
+        if (entity.has_component<Components::TileCollider>()) {
+          continue;
+        }
+        entity.add_component<Components::Parent>(level_id);
+      }
+
+      for (ECS::EntityID id : created_ids) {
+        ECS::deactivate_entity(id);
+        state.preloaded_entity_ids.push_back(id);
+      }
 
       state.has_preloaded_entities = !state.preloaded_entity_ids.empty();
       Log::info("[LevelManager] Built preloaded snapshot with {} entities.", state.preloaded_entity_ids.size());
+    }
+
+    void apply_post_load_fixes()
+    {
+      // Rebuild collision entities from all TileMap entities
+      for (auto& entity : ECS::get_entities_with<Components::TileMap>()) {
+        auto layers = entity.get_layers();
+        for (ECS::LayerID layer_id = 0; layer_id < ECS::MAX_LAYERS; ++layer_id) {
+          if (layers.test(layer_id)) {
+            std::string layer_name = ECS::get_layer_name(layer_id);
+            if (!layer_name.empty()) {
+              TilemapManager::rebuild_tilemap_for_layer(layer_name);
+            }
+          }
+        }
+      }
+
+      // Update all prefab instances to sync with latest prefab data
+      std::unordered_set<std::string> updated_prefabs;
+      for (const auto& [entity_id, instance_data] : ECS::Internal::get_containers().prefab_instances) {
+        if (updated_prefabs.insert(instance_data.prefab_id).second) {
+          ECS::update_prefab_instances(instance_data.prefab_id);
+        }
+      }
+
+      // Update collision world bounds after level load
+      TilemapManager::broadcast_world_bounds();
     }
 
     std::string open_level(const std::string& filepath, bool append_resource_path)
@@ -373,7 +471,7 @@ namespace Engine {
       // Call on_init callback (via Level component if present)
       call_level_init();
 
-      build_preloaded_snapshot(open_levels[full_path]);
+      build_preloaded_snapshot_from_entities(open_levels[full_path], open_levels[full_path].preloaded_entities);
 
       queue_preload_refresh(full_path);
 
@@ -512,7 +610,7 @@ namespace Engine {
       call_level_init();
 
       if (!state.has_preloaded_entities) {
-        build_preloaded_snapshot(state);
+        build_preloaded_snapshot_from_entities(state, state.preloaded_entities);
       }
     }
 
@@ -556,7 +654,9 @@ namespace Engine {
         current_level_path = level_id;
         call_level_init();
 
-        build_preloaded_snapshot(state);
+        apply_post_load_fixes();
+
+        build_preloaded_snapshot_from_entities(state, state.preloaded_entities);
         queue_preload_refresh(level_id);
         Log::info("[LevelManager] Reloaded level from preloaded snapshot: {}", level_id);
         return;
@@ -580,7 +680,8 @@ namespace Engine {
         instantiate_entities(reload_entities, true);
         current_level_path = level_id;
         call_level_init();
-        build_preloaded_snapshot(state);
+        build_preloaded_snapshot_from_entities(state, state.preloaded_entities);
+        apply_post_load_fixes();
       }
       else {
         state.has_live_entities = false;
@@ -640,7 +741,7 @@ namespace Engine {
           }
 
           call_level_init();
-          build_preloaded_snapshot(state);
+          build_preloaded_snapshot_from_entities(state, state.preloaded_entities);
         }
         else {
           // Closing last level
@@ -682,7 +783,9 @@ namespace Engine {
       if (Resources::save_level(level_id, entities_to_save, false)) {
         Log::info("Saved level: {}", level_id);
         if (level_id == active_level_id) {
-          build_preloaded_snapshot(state);
+          state.preloaded_entities = Resources::load_level(level_id, false, false);
+          state.preload_ready = !state.preloaded_entities.empty();
+          build_preloaded_snapshot_from_entities(state, state.preloaded_entities);
         }
         queue_preload_refresh(level_id);
         EventManager::send_event<Events::ToastEvent>(
