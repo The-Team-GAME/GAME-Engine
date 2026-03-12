@@ -36,6 +36,9 @@ namespace Log {
 	/// Clears the log buffer (thread-safe).
 	ENGINE_API void clear_log();
 
+	/// Closes the log file (for GAME_BUILD cleanup).
+	ENGINE_API void close_log_file();
+
 	namespace detail {
 		ENGINE_API void warning_impl(std::string text);
 		ENGINE_API void info_impl(std::string text);
@@ -45,7 +48,7 @@ namespace Log {
 
 	/*=================================================================================
 			Function Brief:
-			Outputs a warning message to the console. Currently, logging to file is marked as TODO.
+			Outputs a warning message to the console. In GAME_BUILD, logs to file.
 
 			Where to call it:
 			Call this function whenever a non-critical issue or potential problem needs to be logged
@@ -53,17 +56,12 @@ namespace Log {
 			==================================================================================*/
 	template<typename... Args>
 	void warning(std::format_string<Args...> fmt, Args&&... args) {
-#ifndef GAME_BUILD
 		detail::warning_impl(std::format(fmt, std::forward<Args>(args)...));
-#else
-		(void)fmt;
-		((void)args, ...);
-#endif
 	}
 
 	/*=================================================================================
 			Function Brief:
-			Outputs an info message to the console. Currently, logging to file is marked as TODO.
+			Outputs an info message to the console. In GAME_BUILD, logs to file.
 
 			Where to call it:
 			Call this function to log general information messages, such as successful operations
@@ -71,17 +69,12 @@ namespace Log {
 			==================================================================================*/
 	template<typename... Args>
 	void info(std::format_string<Args...> fmt, Args&&... args) {
-#ifndef GAME_BUILD
 		detail::info_impl(std::format(fmt, std::forward<Args>(args)...));
-#else
-		(void)fmt;
-		((void)args, ...);
-#endif
 	}
 
 	/*=================================================================================
 			Function Brief:
-			Outputs an error message to the console. Currently, logging to file is marked as TODO.
+			Outputs an error message to the console. In GAME_BUILD, logs to file.
 
 			Where to call it:
 			Call this function whenever a critical issue or error needs to be logged
@@ -89,12 +82,7 @@ namespace Log {
 			==================================================================================*/
 	template<typename... Args>
 	void error(std::format_string<Args...> fmt, Args&&... args) {
-#ifndef GAME_BUILD
 		detail::error_impl(std::format(fmt, std::forward<Args>(args)...));
-#else
-		(void)fmt;
-		((void)args, ...);
-#endif
 	}
 
 	/*=================================================================================
@@ -108,12 +96,7 @@ namespace Log {
 			==================================================================================*/
 	template<typename... Args>
 	void crash(std::format_string<Args...> fmt, Args&&... args) {
-#ifndef GAME_BUILD
 		detail::crash_impl(std::format(fmt, std::forward<Args>(args)...));
-#else
-		(void)fmt;
-		((void)args, ...);
-#endif
 	}
 }
 

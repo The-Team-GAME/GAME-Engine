@@ -343,7 +343,7 @@ namespace Engine {
         if (existing_ids.find(entity.get_id()) == existing_ids.end()) {
           new_state.live_entity_ids.push_back(entity.get_id());
         }
-        });
+    });
 
       for (ECS::EntityID id : new_state.live_entity_ids) {
         ECS::deactivate_entity(id);
@@ -358,7 +358,7 @@ namespace Engine {
       Log::info("[LevelManager] Preloaded level as inactive: {} ({} entities)", full_path, open_levels[full_path].live_entity_ids.size());
 #endif
       return full_path;
-    }
+  }
 
     std::string create_new_level()
     {
@@ -551,7 +551,7 @@ namespace Engine {
 
       Log::info("Closed level: {}", level_id);
       return true;
-    }
+      }
 
     bool save_level(const std::string& level_id)
     {
@@ -823,7 +823,7 @@ namespace Engine {
         });
 
       return entities;
-    }
+      }
 
     void instantiate_entities(const EntityList& entities, bool clear_world)
     {
@@ -993,5 +993,5 @@ namespace Engine {
         });
     }
 
-  } // namespace LevelManager
-} // namespace Engine
+    } // namespace LevelManager
+    } // namespace Engine
