@@ -15,6 +15,7 @@
 
 #include "pch.h"
 #include "../Components/EnemyHealthComponent.h"
+#include "../Components/HealthComponents.h"
 
 namespace Engine {
   namespace Systems
@@ -29,11 +30,17 @@ namespace Engine {
         auto* enemy_health = entity.get_component<Components::EnemyHealth>();
         if (!enemy_health) return;
 
-        // Check if enemy is dead
+        if (!entity.has_component<Components::EnemyHealthBarRect>()) {
+          entity.add_component<Components::EnemyHealthBarRect>();
+        }
+
+        // Check if enemy is dead and ensure its state machine enters the Death state
         if (enemy_health->is_dead()) {
-          // Destroy the enemy entity
-          // Engine::ECS::destroy_entity(entity);
-          // Log::info("Enemy destroyed!");
+          if (auto* sm = entity.get_component<Components::StateMachine>()) {
+            if (sm->get_current_state() != "Death") {
+              sm->change_state("Death");
+            }
+          }
         }
       }
     };
