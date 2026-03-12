@@ -159,7 +159,6 @@ namespace {
 namespace Engine {
   namespace LevelManager {
 
-#ifdef GAME_BUILD
     void reset_level_world(const std::string& level_id, LevelState& state)
     {
       if (state.cached_entities.empty()) {
@@ -194,7 +193,6 @@ namespace Engine {
 
       Log::info("[LevelManager] Reset level world to initial state: {}", level_id);
     }
-#endif
 
     void queue_preload_refresh(const std::string& level_id)
     {
@@ -268,60 +266,6 @@ namespace Engine {
       return Resources::load_level(level_id, false, false);
     }
 
-    // Reactivates a level's deactivated entities. This is the fast path — no deserialization.
-    void activate_level(LevelState& state)
-    {
-      for (ECS::EntityID id : state.live_entity_ids) {
-        ECS::activate_entity(id);
-      }
-      state.live_entity_ids.clear();
-      state.has_live_entities = false;
-    }
-
-    // Destroys all deactivated entities owned by a level state.
-    void destroy_level_entities(LevelState& state)
-    {
-      if (state.has_live_entities) {
-        for (ECS::EntityID id : state.live_entity_ids) {
-          // Re-activate so process_housekeeping can destroy them properly
-          ECS::activate_entity(id);
-          ECS::Entity(id).destroy();
-        }
-        state.live_entity_ids.clear();
-        state.has_live_entities = false;
-        ECS::process_housekeeping();
-      }
-    }
-
-    // Deactivates all current world entities and stores their IDs in the level state.
-    // This is the fast path — no serialization needed.
-    void deactivate_active_level()
-    {
-      if (active_level_id.empty()) return;
-
-      auto it = open_levels.find(active_level_id);
-      if (it == open_levels.end()) return;
-
-      LevelState& state = it->second;
-      state.live_entity_ids.clear();
-
-      ECS::for_each_entity([&](ECS::Entity entity) {
-        state.live_entity_ids.push_back(entity.get_id());
-        });
-
-      // Deactivate all entities (removes from active set and layer sets, preserves data)
-      for (ECS::EntityID id : state.live_entity_ids) {
-        ECS::deactivate_entity(id);
-      }
-
-      state.has_live_entities = true;
-      state.cached_entities.clear(); // No serialized cache needed
-
-      Log::info("Deactivated level: {} ({} entities)",
-        active_level_id,
-        state.live_entity_ids.size());
-    }
-
     std::string open_level(const std::string& filepath, bool append_resource_path)
     {
       // Get the full normalized path - this becomes the level ID
@@ -343,15 +287,11 @@ namespace Engine {
       // Call on_exit for current level before switching
       if (!active_level_id.empty() && is_level_open(active_level_id)) {
         call_level_exit();
-#ifndef GAME_BUILD
-        cache_active_level();
-#endif
       }
 
       // Load the level from disk
       EntityList entities = Resources::load_level(filepath, append_resource_path, false);
 
-#ifdef GAME_BUILD
       // Multi-world: create a new world, load into it
       ECS::WorldID prev_world = ECS::get_active_world();
       ECS::WorldID new_world = ECS::create_world();
@@ -385,22 +325,6 @@ namespace Engine {
           ECS::destroy_world(prev_world);
         }
       }
-#else
-      // Editor: single-world approach
-      LevelState new_state;
-      new_state.cached_entities = EntityList();
-      new_state.preloaded_entities = entities;
-      new_state.preload_ready = true;
-      new_state.keep_loaded = false;
-
-      open_levels[full_path] = std::move(new_state);
-      level_order.push_back(full_path);
-      active_level_id = full_path;
-      current_level_path = full_path;
-
-      // Instantiate into world
-      instantiate_entities(entities, true);
-#endif
 
       // Set the level path on the Level component
       auto level_entity = ECS::get_first_entity_with<Components::Level>();
@@ -442,7 +366,6 @@ namespace Engine {
 
       EntityList entities = Resources::load_level(filepath, append_resource_path, false);
 
-#ifdef GAME_BUILD
       // Multi-world: load into a separate world, then switch back
       ECS::WorldID prev_world = ECS::get_active_world();
       ECS::WorldID preload_world = ECS::create_world();
@@ -465,36 +388,6 @@ namespace Engine {
       level_order.push_back(full_path);
 
       Log::info("[LevelManager] Preloaded level into world {}: {}", preload_world, full_path);
-#else
-      // Editor: single-world approach with deactivation
-      std::unordered_set<ECS::EntityID> existing_ids;
-      ECS::for_each_entity([&](ECS::Entity entity) {
-        existing_ids.insert(entity.get_id());
-        });
-
-      instantiate_entities(entities, false);
-
-      LevelState new_state;
-      ECS::for_each_entity([&](ECS::Entity entity) {
-        if (existing_ids.find(entity.get_id()) == existing_ids.end()) {
-          new_state.live_entity_ids.push_back(entity.get_id());
-        }
-        });
-
-      for (ECS::EntityID id : new_state.live_entity_ids) {
-        ECS::deactivate_entity(id);
-      }
-
-      new_state.has_live_entities = !new_state.live_entity_ids.empty();
-      new_state.keep_loaded = true;
-      new_state.preloaded_entities = entities;
-      new_state.preload_ready = true;
-
-      open_levels[full_path] = std::move(new_state);
-      level_order.push_back(full_path);
-
-      Log::info("[LevelManager] Preloaded level as inactive: {} ({} entities)", full_path, open_levels[full_path].live_entity_ids.size());
-#endif
       queue_preload_refresh(full_path);
       return full_path;
     }
@@ -504,15 +397,18 @@ namespace Engine {
       // Call on_exit for current level before creating new one
       if (!active_level_id.empty() && is_level_open(active_level_id)) {
         call_level_exit();
-        cache_active_level();
       }
 
       // Find the next available number
       size_t next_num = find_next_new_level_number();
       std::string level_id = "__new_" + std::to_string(next_num);
 
+      ECS::WorldID new_world = ECS::create_world();
+      ECS::set_active_world(new_world);
+
       // Create a new empty level state
       LevelState new_state;
+      new_state.world_id = new_world;
       new_state.cached_entities = EntityList();
       new_state.keep_loaded = false;
 
@@ -520,12 +416,6 @@ namespace Engine {
       level_order.push_back(level_id);
       active_level_id = level_id;
       current_level_path = "";  // No file path for new levels
-
-      // Clear the world
-      ECS::for_each_entity([](ECS::Entity entity) {
-        entity.destroy();
-        });
-      ECS::process_housekeeping();
 
       // Create the Level entity with Level component
       ECS::Entity level_entity = ECS::create_entity();
@@ -550,9 +440,6 @@ namespace Engine {
       // Call on_exit for current level
       if (!active_level_id.empty() && is_level_open(active_level_id)) {
         call_level_exit();
-#ifndef GAME_BUILD
-        cache_active_level();
-#endif
       }
 
       // Switch to new level
@@ -561,27 +448,12 @@ namespace Engine {
 
       LevelState& state = open_levels[level_id];
 
-#ifdef GAME_BUILD
       // Multi-world: rebuild the target world from its pristine snapshot, then activate it
       reset_level_world(level_id, state);
       if (state.world_id != ECS::INVALID_WORLD) {
         ECS::set_active_world(state.world_id);
         Log::info("Switched to level (world {}): {}", state.world_id, level_id);
       }
-#else
-      // Editor: single-world approach
-      if (state.has_live_entities) {
-        // Fast path: reactivate deactivated entities
-        activate_level(state);
-      }
-      else {
-        // Cold path: deserialize from cached EntityList
-        instantiate_entities(state.cached_entities, true);
-        state.cached_entities = EntityList();
-      }
-
-      Log::info("Switched to level: {}", level_id);
-#endif
 
       // Call on_init (via Level component if present)
       call_level_init();
@@ -597,7 +469,7 @@ namespace Engine {
       if (!is_reloadable_level_id(level_id)) {
         Log::warning("Cannot reload level without a file path: {}", level_id);
         return;
-      }
+    }
 
       auto it = open_levels.find(level_id);
       if (it == open_levels.end()) {
@@ -620,28 +492,16 @@ namespace Engine {
         call_level_exit();
       }
 
-#ifdef GAME_BUILD
       reset_level_world(level_id, state);
       if (is_active && state.world_id != ECS::INVALID_WORLD) {
         ECS::set_active_world(state.world_id);
         current_level_path = level_id;
         call_level_init();
       }
-#else
-      if (is_active) {
-        instantiate_entities(reload_entities, true);
-        current_level_path = level_id;
-        call_level_init();
-      }
-      else {
-        state.has_live_entities = false;
-        state.live_entity_ids.clear();
-      }
-#endif
 
       queue_preload_refresh(level_id);
       Log::info("[LevelManager] Reloaded level: {}", level_id);
-    }
+  }
 
     bool close_level(const std::string& level_id)
     {
@@ -659,7 +519,6 @@ namespace Engine {
       auto it = std::find(level_order.begin(), level_order.end(), level_id);
       size_t index = std::distance(level_order.begin(), it);
 
-#ifdef GAME_BUILD
       // Multi-world: destroy the world if it's not the active one
       LevelState& closing_state = open_levels[level_id];
       ECS::WorldID closing_world = closing_state.world_id;
@@ -673,6 +532,7 @@ namespace Engine {
           current_level_path = new_active.starts_with("__new_") ? "" : new_active;
 
           LevelState& state = open_levels[new_active];
+          reset_level_world(new_active, state);
           if (state.world_id != ECS::INVALID_WORLD) {
             ECS::set_active_world(state.world_id);
           }
@@ -695,51 +555,6 @@ namespace Engine {
         // Non-active level: just destroy its world
         ECS::destroy_world(closing_world);
       }
-#else
-      // Editor: single-world approach
-      // If closing a non-active level with live entities, destroy them
-      if (level_id != active_level_id) {
-        LevelState& closing_state = open_levels[level_id];
-        destroy_level_entities(closing_state);
-      }
-
-      // If closing active level, switch to another
-      if (level_id == active_level_id) {
-        if (level_order.size() > 1) {
-          size_t new_index = (index > 0) ? index - 1 : 1;
-          std::string new_active = level_order[new_index];
-
-          // Destroy active entities first
-          ECS::for_each_entity([](ECS::Entity entity) {
-            entity.destroy();
-            });
-          ECS::process_housekeeping();
-
-          active_level_id = new_active;
-          current_level_path = new_active.starts_with("__new_") ? "" : new_active;
-
-          LevelState& state = open_levels[new_active];
-          if (state.has_live_entities) {
-            activate_level(state);
-          }
-          else {
-            instantiate_entities(state.cached_entities, true);
-            state.cached_entities = EntityList();
-          }
-
-          call_level_init();
-        }
-        else {
-          // Closing last level
-          ECS::for_each_entity([](ECS::Entity entity) {
-            entity.destroy();
-            });
-          ECS::process_housekeeping();
-          active_level_id = "";
-          current_level_path = "";
-        }
-      }
-#endif
 
       // Remove from containers
       open_levels.erase(level_id);
@@ -882,8 +697,10 @@ namespace Engine {
       auto it = open_levels.find(active_level_id);
       if (it == open_levels.end()) return;
 
-      // Use fast deactivation path instead of full serialization
-      deactivate_active_level();
+      LevelState& state = it->second;
+      state.cached_entities = capture_world_entities();
+      state.preloaded_entities = state.cached_entities;
+      state.preload_ready = !state.preloaded_entities.empty();
     }
 
     EntityList get_entities_for_save(const std::string& level_id)
@@ -900,26 +717,6 @@ namespace Engine {
         return capture_world_entities();
       }
 
-      // If level has live deactivated entities, temporarily activate to serialize
-      if (state.has_live_entities) {
-        // Activate, serialize, then deactivate again
-        activate_level(state);
-        EntityList result = capture_world_entities();
-
-        // Re-deactivate them
-        state.live_entity_ids.clear();
-        ECS::for_each_entity([&](ECS::Entity entity) {
-          state.live_entity_ids.push_back(entity.get_id());
-          });
-        for (ECS::EntityID id : state.live_entity_ids) {
-          ECS::deactivate_entity(id);
-        }
-        state.has_live_entities = true;
-
-        return result;
-      }
-
-      // Fall back to serialized cache
       if (state.preload_ready && !state.preloaded_entities.empty()) {
         return state.preloaded_entities;
       }
@@ -936,7 +733,6 @@ namespace Engine {
         call_level_exit();
       }
 
-#ifdef GAME_BUILD
       // Multi-world: destroy non-preserved worlds
       ECS::WorldID active_world = ECS::get_active_world();
       std::unordered_map<std::string, LevelState> preserved_levels;
@@ -968,45 +764,6 @@ namespace Engine {
       ECS::process_housekeeping();
 
       Log::info("Cleared levels. Preserved {} preloaded levels.", open_levels.size());
-#else
-      // Editor: single-world approach
-      if (preserve_preloaded_levels && !active_level_id.empty()) {
-        auto active_it = open_levels.find(active_level_id);
-        if (active_it != open_levels.end() && active_it->second.keep_loaded) {
-          Log::info("[LevelManager] Active level is preloaded; caching before scene clear: {}", active_level_id);
-          cache_active_level();
-        }
-      }
-
-      std::unordered_map<std::string, LevelState> preserved_levels;
-      std::vector<std::string> preserved_order;
-
-      // Destroy all deactivated entities unless explicitly preserved.
-      for (auto& [id, state] : open_levels) {
-        const bool preserve_state = preserve_preloaded_levels && state.keep_loaded;
-
-        if (preserve_state) {
-          Log::info("[LevelManager] Preserving preloaded level across scene clear: {}", id);
-          preserved_order.push_back(id);
-          preserved_levels.emplace(id, std::move(state));
-        }
-        else if (id != active_level_id) {
-          destroy_level_entities(state);
-        }
-      }
-
-      open_levels = std::move(preserved_levels);
-      level_order = std::move(preserved_order);
-      active_level_id = "";
-      current_level_path = "";
-
-      ECS::for_each_entity([](ECS::Entity entity) {
-        entity.destroy();
-        });
-      ECS::process_housekeeping();
-
-      Log::info("Cleared levels. Preserved {} preloaded levels.", open_levels.size());
-#endif
     }
 
     void set_current_level_path(const std::string& path)

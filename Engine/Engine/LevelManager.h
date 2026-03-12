@@ -33,9 +33,7 @@ namespace Engine {
   ==================================================================================*/
   struct LevelState {
     ECS::WorldID world_id = ECS::INVALID_WORLD;      // World containing this level's entities
-    EntityList cached_entities;                        // Serialized entity data (editor cold-load path)
-    std::vector<ECS::EntityID> live_entity_ids;        // Deactivated entity IDs (editor fast-switch path)
-    bool has_live_entities = false;                     // True if entities are alive but deactivated (editor)
+    EntityList cached_entities;                        // Serialized entity snapshot used for reload
     EntityList preloaded_entities;                     // Hot reload snapshot for fast level reload
     bool preload_ready = false;                        // Preloaded snapshot is ready
     bool preload_in_progress = false;                  // Background preload refresh running
