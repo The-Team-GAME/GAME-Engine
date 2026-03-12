@@ -52,6 +52,10 @@ namespace Engine {
     // Returns the level ID (normalized path). Preloaded levels stay resident until closed.
     ENGINE_API std::string preload_level(const std::string& filepath, bool append_resource_path = true);
 
+    // Starts preloading a level on a worker thread. Parsing happens in the background,
+    // but ECS/resource finalization still occurs on the main thread.
+    ENGINE_API std::string preload_level_async(const std::string& filepath, bool append_resource_path = true);
+
     // Creates a new empty level. Returns the level ID (__new_X format).
     ENGINE_API std::string create_new_level();
 
@@ -112,6 +116,9 @@ namespace Engine {
 
     // Clears all open levels and the world.
     ENGINE_API void clear_all(bool preserve_preloaded_levels = true);
+
+    // Finalizes any async preload jobs that have completed parsing.
+    ENGINE_API void process_pending_preloads();
 
     // ============================================================================
     // Entity Serialization Utilities
