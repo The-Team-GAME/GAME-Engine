@@ -36,6 +36,8 @@ namespace Engine {
     EntityList cached_entities;                        // Serialized entity data (editor cold-load path)
     std::vector<ECS::EntityID> live_entity_ids;        // Deactivated entity IDs (editor fast-switch path)
     bool has_live_entities = false;                     // True if entities are alive but deactivated (editor)
+    std::vector<ECS::EntityID> preloaded_entity_ids;    // Deactivated entity IDs for instant reload
+    bool has_preloaded_entities = false;                // True if preloaded_entity_ids contains a snapshot
     EntityList preloaded_entities;                     // Hot reload snapshot for fast level reload
     bool preload_ready = false;                        // Preloaded snapshot is ready
     bool preload_in_progress = false;                  // Background preload refresh running
