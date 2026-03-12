@@ -36,6 +36,10 @@ namespace Engine {
     EntityList cached_entities;                        // Serialized entity data (editor cold-load path)
     std::vector<ECS::EntityID> live_entity_ids;        // Deactivated entity IDs (editor fast-switch path)
     bool has_live_entities = false;                     // True if entities are alive but deactivated (editor)
+    EntityList preloaded_entities;                     // Hot reload snapshot for fast level reload
+    bool preload_ready = false;                        // Preloaded snapshot is ready
+    bool preload_in_progress = false;                  // Background preload refresh running
+    bool preload_refresh_queued = false;               // Another refresh requested while running
     bool keep_loaded = false;                          // Keep this level resident until manually unloaded
   };
 
@@ -58,6 +62,9 @@ namespace Engine {
 
     // Switches to an already-open level. Calls on_exit/on_init callbacks.
     ENGINE_API void switch_to_level(const std::string& level_id);
+
+    // Reloads a level from its preloaded snapshot (or disk fallback).
+    ENGINE_API void reload_level(const std::string& level_id);
 
     // Closes a level. Returns false if it doesn't exist.
     // Switches to another open level if closing the active one.

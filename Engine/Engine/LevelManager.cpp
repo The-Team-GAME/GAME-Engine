@@ -26,6 +26,9 @@
 #include "TilemapManager.h"
 #include <algorithm>
 #include <unordered_set>
+#include <thread>
+#include <mutex>
+#include <chrono>
 
 namespace {
   std::unordered_map<std::string, Engine::LevelState> open_levels;
@@ -33,6 +36,8 @@ namespace {
   std::string active_level_id;
   std::string current_level_path;  // Actual file path (empty for new levels)
   const std::string empty_string;
+  std::mutex preload_mutex;
+  std::unordered_map<std::string, Engine::EntityList> preload_results;
 
   // Helper function to check if a serialized entity is a tile collision entity
   // These are temporary entities rebuilt by TilemapManager and should not be loaded from files
@@ -144,6 +149,11 @@ namespace {
       }
     }
   }
+
+  bool is_reloadable_level_id(const std::string& level_id)
+  {
+    return !level_id.empty() && !level_id.starts_with("__new_");
+  }
 }
 
 namespace Engine {
@@ -185,6 +195,78 @@ namespace Engine {
       Log::info("[LevelManager] Reset level world to initial state: {}", level_id);
     }
 #endif
+
+    void queue_preload_refresh(const std::string& level_id)
+    {
+      if (!is_reloadable_level_id(level_id)) {
+        return;
+      }
+
+      auto it = open_levels.find(level_id);
+      if (it == open_levels.end()) {
+        return;
+      }
+
+      LevelState& state = it->second;
+      if (state.preload_in_progress) {
+        state.preload_refresh_queued = true;
+        return;
+      }
+
+      state.preload_in_progress = true;
+      state.preload_refresh_queued = false;
+
+      Log::info("[LevelManager] Preload refresh scheduled: {}", level_id);
+
+      std::string level_path = level_id;
+      std::thread([level_path]() {
+        Engine::EntityList entities = Engine::FileIO::deserialize_level_from_json_file(level_path);
+        std::lock_guard<std::mutex> lock(preload_mutex);
+        preload_results[level_path] = std::move(entities);
+        }).detach();
+    }
+
+    void process_preload_results()
+    {
+      std::unordered_map<std::string, EntityList> ready;
+      {
+        std::lock_guard<std::mutex> lock(preload_mutex);
+        if (preload_results.empty()) {
+          return;
+        }
+        ready.swap(preload_results);
+      }
+
+      for (auto& [level_id, entities] : ready) {
+        auto it = open_levels.find(level_id);
+        if (it == open_levels.end()) {
+          continue;
+        }
+
+        LevelState& state = it->second;
+        state.preloaded_entities = std::move(entities);
+        state.preload_ready = !state.preloaded_entities.empty();
+        state.preload_in_progress = false;
+        state.cached_entities = state.preloaded_entities;
+
+        Resources::cache_level(level_id, state.preloaded_entities, false, false);
+        Log::info("[LevelManager] Preload refresh completed: {}", level_id);
+
+        if (state.preload_refresh_queued) {
+          state.preload_refresh_queued = false;
+          queue_preload_refresh(level_id);
+        }
+      }
+    }
+
+    EntityList get_preloaded_or_disk(LevelState& state, const std::string& level_id)
+    {
+      if (state.preload_ready && !state.preloaded_entities.empty()) {
+        return state.preloaded_entities;
+      }
+
+      return Resources::load_level(level_id, false, false);
+    }
 
     // Reactivates a level's deactivated entities. This is the fast path — no deserialization.
     void activate_level(LevelState& state)
@@ -247,16 +329,12 @@ namespace Engine {
 
       // Check if this level is already open
       if (is_level_open(full_path)) {
-#ifdef GAME_BUILD
-        auto it = open_levels.find(full_path);
-        if (it != open_levels.end() && full_path == active_level_id) {
-          reset_level_world(full_path, it->second);
-          current_level_path = full_path;
-          call_level_init();
-          Log::info("Reset active level to initial state: {}", full_path);
+        if (full_path == active_level_id) {
+          reload_level(full_path);
+          Log::info("Reloaded active level: {}", full_path);
           return full_path;
         }
-#endif
+
         switch_to_level(full_path);
         Log::info("Switched to existing level: {}", full_path);
         return full_path;
@@ -281,7 +359,9 @@ namespace Engine {
 
       LevelState new_state;
       new_state.world_id = new_world;
-  new_state.cached_entities = entities;
+      new_state.cached_entities = entities;
+      new_state.preloaded_entities = entities;
+      new_state.preload_ready = true;
       new_state.keep_loaded = false;
 
       open_levels[full_path] = std::move(new_state);
@@ -308,7 +388,9 @@ namespace Engine {
 #else
       // Editor: single-world approach
       LevelState new_state;
-      new_state.cached_entities = EntityList();  // Empty - entities go into world
+      new_state.cached_entities = EntityList();
+      new_state.preloaded_entities = entities;
+      new_state.preload_ready = true;
       new_state.keep_loaded = false;
 
       open_levels[full_path] = std::move(new_state);
@@ -332,6 +414,8 @@ namespace Engine {
       // Call on_init callback (via Level component if present)
       call_level_init();
 
+      queue_preload_refresh(full_path);
+
       Log::info("Opened level: {}", full_path);
       EventManager::send_event<Events::ToastEvent>(
         "Opened: " + Path(full_path).get_filename(),
@@ -351,6 +435,7 @@ namespace Engine {
       auto existing = open_levels.find(full_path);
       if (existing != open_levels.end()) {
         existing->second.keep_loaded = true;
+        queue_preload_refresh(full_path);
         Log::info("[LevelManager] Level already resident, marking keep_loaded: {}", full_path);
         return full_path;
       }
@@ -369,6 +454,8 @@ namespace Engine {
       LevelState new_state;
       new_state.world_id = preload_world;
       new_state.cached_entities = entities;
+      new_state.preloaded_entities = entities;
+      new_state.preload_ready = true;
       new_state.keep_loaded = true;
 
       // Switch back to the original world
@@ -392,7 +479,7 @@ namespace Engine {
         if (existing_ids.find(entity.get_id()) == existing_ids.end()) {
           new_state.live_entity_ids.push_back(entity.get_id());
         }
-    });
+        });
 
       for (ECS::EntityID id : new_state.live_entity_ids) {
         ECS::deactivate_entity(id);
@@ -400,14 +487,17 @@ namespace Engine {
 
       new_state.has_live_entities = !new_state.live_entity_ids.empty();
       new_state.keep_loaded = true;
+      new_state.preloaded_entities = entities;
+      new_state.preload_ready = true;
 
       open_levels[full_path] = std::move(new_state);
       level_order.push_back(full_path);
 
       Log::info("[LevelManager] Preloaded level as inactive: {} ({} entities)", full_path, open_levels[full_path].live_entity_ids.size());
 #endif
+      queue_preload_refresh(full_path);
       return full_path;
-  }
+    }
 
     std::string create_new_level()
     {
@@ -472,8 +562,8 @@ namespace Engine {
       LevelState& state = open_levels[level_id];
 
 #ifdef GAME_BUILD
-  // Multi-world: rebuild the target world from its pristine snapshot, then activate it
-  reset_level_world(level_id, state);
+      // Multi-world: rebuild the target world from its pristine snapshot, then activate it
+      reset_level_world(level_id, state);
       if (state.world_id != ECS::INVALID_WORLD) {
         ECS::set_active_world(state.world_id);
         Log::info("Switched to level (world {}): {}", state.world_id, level_id);
@@ -495,6 +585,62 @@ namespace Engine {
 
       // Call on_init (via Level component if present)
       call_level_init();
+    }
+
+    void reload_level(const std::string& level_id)
+    {
+      if (!is_level_open(level_id)) {
+        Log::warning("Cannot reload level - not open: {}", level_id);
+        return;
+      }
+
+      if (!is_reloadable_level_id(level_id)) {
+        Log::warning("Cannot reload level without a file path: {}", level_id);
+        return;
+      }
+
+      auto it = open_levels.find(level_id);
+      if (it == open_levels.end()) {
+        return;
+      }
+
+      LevelState& state = it->second;
+      EntityList reload_entities = get_preloaded_or_disk(state, level_id);
+      if (reload_entities.empty()) {
+        Log::warning("Reload failed - no entities loaded: {}", level_id);
+        return;
+      }
+
+      state.cached_entities = reload_entities;
+      state.preloaded_entities = reload_entities;
+      state.preload_ready = true;
+
+      const bool is_active = (level_id == active_level_id);
+      if (is_active) {
+        call_level_exit();
+      }
+
+#ifdef GAME_BUILD
+      reset_level_world(level_id, state);
+      if (is_active && state.world_id != ECS::INVALID_WORLD) {
+        ECS::set_active_world(state.world_id);
+        current_level_path = level_id;
+        call_level_init();
+      }
+#else
+      if (is_active) {
+        instantiate_entities(reload_entities, true);
+        current_level_path = level_id;
+        call_level_init();
+      }
+      else {
+        state.has_live_entities = false;
+        state.live_entity_ids.clear();
+      }
+#endif
+
+      queue_preload_refresh(level_id);
+      Log::info("[LevelManager] Reloaded level: {}", level_id);
     }
 
     bool close_level(const std::string& level_id)
@@ -601,7 +747,7 @@ namespace Engine {
 
       Log::info("Closed level: {}", level_id);
       return true;
-      }
+    }
 
     bool save_level(const std::string& level_id)
     {
@@ -619,6 +765,7 @@ namespace Engine {
 
       if (Resources::save_level(level_id, entities_to_save, false)) {
         Log::info("Saved level: {}", level_id);
+        queue_preload_refresh(level_id);
         EventManager::send_event<Events::ToastEvent>(
           "Saved: " + Path(level_id).get_filename(),
           Events::ToastType::Info,
@@ -652,6 +799,8 @@ namespace Engine {
 
       // Move state to new ID
       LevelState old_state = std::move(open_levels[level_id]);
+      old_state.preload_in_progress = false;
+      old_state.preload_refresh_queued = false;
 
       auto it = std::find(level_order.begin(), level_order.end(), level_id);
       *it = new_level_id;
@@ -665,6 +814,7 @@ namespace Engine {
       }
 
       Log::info("Saved level as: {}", new_level_id);
+      queue_preload_refresh(new_level_id);
       EventManager::send_event<Events::ToastEvent>(
         "Saved as: " + Path(new_level_id).get_filename(),
         Events::ToastType::Info,
@@ -713,6 +863,8 @@ namespace Engine {
 
     void call_active_update()
     {
+      process_preload_results();
+
       // Call on_update via the Level component in the world
       auto level_entity = ECS::get_first_entity_with<Components::Level>();
       if (level_entity.is_valid()) {
@@ -768,6 +920,10 @@ namespace Engine {
       }
 
       // Fall back to serialized cache
+      if (state.preload_ready && !state.preloaded_entities.empty()) {
+        return state.preloaded_entities;
+      }
+
       return state.cached_entities;
     }
 
@@ -873,7 +1029,7 @@ namespace Engine {
         });
 
       return entities;
-      }
+    }
 
     void instantiate_entities(const EntityList& entities, bool clear_world)
     {
@@ -1043,5 +1199,5 @@ namespace Engine {
         });
     }
 
-    } // namespace LevelManager
-    } // namespace Engine
+  } // namespace LevelManager
+} // namespace Engine
