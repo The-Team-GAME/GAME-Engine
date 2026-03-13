@@ -83,6 +83,22 @@ public:
 
     // TODO: REMOVE 
     player_entity.add_component<Components::Health>(5, 5);
+
+    // Fix camera follow: parent the camera entity to the player so CameraSystem tracks it
+    if (player_entity.is_valid()) {
+      auto camera_entity = Engine::ECS::get_first_entity_with<Components::Camera>();
+      if (camera_entity.is_valid()) {
+        if (!camera_entity.has_component<Components::Parent>()) {
+          camera_entity.add_component<Components::Parent>(player_entity.get_id());
+        } else {
+          auto* parent_comp = camera_entity.get_component<Components::Parent>();
+          if (parent_comp) {
+            parent_comp->parent_id = player_entity.get_id();
+            parent_comp->offset_initialized = false; // Let HierarchySystem recalculate
+          }
+        }
+      }
+    }
     // player_entity.add_component<Components::HeartHUDSprite>();
 
     // Victory zone - triggers victory screen when player enters
