@@ -29,7 +29,7 @@ namespace Engine {
     {
       void entity_component_changed(EntityID entity)
       {
-        auto& containers = get_containers();
+        //auto& containers = get_containers();
         for (auto& system : get_systems())
         {
           if (system_matches_entity(*system, entity))

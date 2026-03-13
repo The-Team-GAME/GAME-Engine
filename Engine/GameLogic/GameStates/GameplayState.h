@@ -32,7 +32,7 @@ class GameplayState : public Engine::Scene
   static constexpr const char* GAMEPLAY_BATTLECRY_EVENT = "event:/SFX/PlayerStartCry";
   static constexpr float TIPS_BUTTON_HUD_X = 1373.0f;
   static constexpr float TIPS_BUTTON_HUD_Y = 92.0f;
-  static constexpr float TIPS_BUTTON_SIZE = 110.0f;
+  static constexpr float TIPS_BUTTON_SIZE = 220.0f;
   static constexpr float TIPS_OVERLAY_CENTER_X = 800.0f;
   static constexpr float TIPS_OVERLAY_CENTER_Y = 450.0f;
   static constexpr float TIPS_OVERLAY_WIDTH = 1088.0f;
@@ -57,7 +57,7 @@ class GameplayState : public Engine::Scene
       if (entity.get_name() == "TipsButtonHUD") {
         found = entity;
       }
-    });
+      });
 
     if (found.is_valid()) return found;
 
@@ -69,7 +69,7 @@ class GameplayState : public Engine::Scene
       if (Engine::Resources::get_relative_path(tex->texture_handle->path) == "images/UI/TipsBook.png") {
         found = entity;
       }
-    });
+      });
 
     return found;
   }
@@ -81,13 +81,7 @@ public:
 
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
 
-    // Camera entity
-    // Engine::ECS::Entity camera = Engine::ECS::create_entity();
-    // camera.add_component<Components::Transform2D>(-3239.0f, 471.58f, 0.0f, 1.0f, 1.0f);
-    // camera.add_component<Components::Camera>("player camera", true);
-    // camera.add_component<Components::Parent>(player_entity.get_id());
-
-    // TODO: REMOVE
+    // TODO: REMOVE 
     player_entity.add_component<Components::Health>(5, 5);
     // player_entity.add_component<Components::HeartHUDSprite>();
 
@@ -111,7 +105,7 @@ public:
     // Positions are in screen coordinates (0,0 is top-left, 1600x900 viewport)
     // Pause button - top right (screen coords: 1600 - padding - half_width)
     auto pause_btn = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(1520.0f, 80.0f, 0.0f, 126.0f, 131.0f)
+      .add_component<Components::Transform2D>(1500.0f, 90.0f, 0.0f, 100.0f, 100.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/Pause.png"))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()

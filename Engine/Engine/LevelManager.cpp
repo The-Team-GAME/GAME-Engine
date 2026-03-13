@@ -381,6 +381,7 @@ namespace Engine {
 
     void build_preloaded_snapshot(LevelState& state)
     {
+      (void)state;
       if (active_level_id.empty()) return;
       clear_preloaded_snapshot(active_level_id);
       auto& snapshot = preloaded_snapshots[active_level_id];
@@ -1082,7 +1083,7 @@ namespace Engine {
                 const std::string& path = data["path"].getString();
                 int font_size = 32; // default
                 if (data.has("font_size") && data["font_size"].isInt()) {
-                  font_size = data["font_size"].getInt();
+                  font_size = static_cast<int>(data["font_size"].getInt());
                 }
                 if (!path.empty()) {
                   std::string key = path + "|" + std::to_string(font_size);

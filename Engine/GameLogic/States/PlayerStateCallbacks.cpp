@@ -19,6 +19,7 @@
 #include "../Components/GameplayComponent.h"
 #include "../Components/HeartrateComponent.h"
 #include "../Components/HealthComponents.h"
+#include "../../Engine/UpgradeManager.h"
 
 using namespace Engine;
 namespace {
@@ -156,7 +157,7 @@ namespace PlayerStateCallbacks
     assert(xform);
     assert(flip);
     ECS::Entity hitbox = Engine::ECS::create_entity()
-      .add_component<Components::Attack>(atk_data.dmg)
+      .add_component<Components::Attack>(static_cast<s32>(atk_data.dmg))
       .add_component<Components::Transform2D>( 
         xform->position.x + flip->value.x * atk_data.hitbox_offset_x,
         xform->position.y + atk_data.hitbox_offset_y,
@@ -866,6 +867,7 @@ namespace PlayerStateCallbacks
   inline void death_on_enter([[maybe_unused]] ECS::Entity entity)
   {
     Log::info("Player: Died!");
+    Engine::UpgradeManager::instance().reset();
   }
 
   inline void death_on_update(ECS::Entity entity)
