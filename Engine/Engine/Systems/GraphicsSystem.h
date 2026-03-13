@@ -41,7 +41,7 @@ namespace Engine
   {
     // Engine-exported bridge to ensure shake requests from external modules
     // (e.g., GameLogic DLL) hit the active CameraSystem instance.
-    ENGINE_API void add_camera_shake(f32 amplitude, f32 duration);
+    ENGINE_API void add_camera_shake(f32 trauma);
 
     // Helper: compute parallax draw position (center-anchored).
     // When the camera centers on the entity, it appears at its Transform2D position.
@@ -367,10 +367,9 @@ namespace Engine
     class CameraSystem : public Engine::ECS::System {
     private:
       inline static Engine::Graphics::Camera camera{}; // this is the camera that will be sent to the renderer
-      inline static f32 shake_time_remaining = 0.0f;
-      inline static f32 shake_duration = 0.0f;
-      inline static f32 shake_amplitude = 0.0f;
       inline static f32 shake_trauma = 0.0f;                // 0..1 intensity accumulator
+      inline static f32 shake_max_offset = 150.0f;          // Max pixels to shake
+      inline static f32 shake_trauma_decay = 0.8f;          // Trauma decay per second
       inline static f32 shake_sample_timer = 0.0f;          // timer for high-frequency sample changes
       inline static Math::Vec2D shake_sample = { 0.0f, 0.0f }; // current sampled direction
 
@@ -504,59 +503,50 @@ namespace Engine
 
         Engine::Graphics::Camera render_camera = camera;
 
-        if (shake_time_remaining > 0.0f) {
-          shake_time_remaining = std::max(0.0f, shake_time_remaining - dt);
+        if (shake_trauma > 0.0f) {
+          shake_trauma = std::max(0.0f, shake_trauma - shake_trauma_decay * dt);
 
+          if (shake_trauma > 0.0f) {
+            // High-frequency sample updates for a crunchy quake feel.
+            shake_sample_timer -= dt;
+            if (shake_sample_timer <= 0.0f) {
+              shake_sample_timer = 1.0f / 95.0f; // ~95Hz sample changes
 
-          const f32 trauma_decay_rate = (shake_duration > 0.0f) ? (1.8f / shake_duration) : 8.0f;
-          shake_trauma = std::max(0.0f, shake_trauma - trauma_decay_rate * dt);
-
-          // High-frequency sample updates for a crunchy quake feel.
-          shake_sample_timer -= dt;
-          if (shake_sample_timer <= 0.0f) {
-            shake_sample_timer = 1.0f / 95.0f; // ~95Hz sample changes
-
-            f32 sx = Engine::Random::random_range(-1.0f, 1.0f);
-            f32 sy = Engine::Random::random_range(-1.0f, 1.0f);
-            f32 mag = std::sqrt(sx * sx + sy * sy);
-            if (mag > 0.001f) {
-              sx /= mag;
-              sy /= mag;
+              f32 sx = Engine::Random::random_range(-1.0f, 1.0f);
+              f32 sy = Engine::Random::random_range(-1.0f, 1.0f);
+              f32 mag = std::sqrt(sx * sx + sy * sy);
+              if (mag > 0.001f) {
+                sx /= mag;
+                sy /= mag;
+              }
+              else {
+                sx = 1.0f;
+                sy = 0.0f;
+              }
+              shake_sample = Math::Vec2D(sx, sy);
             }
-            else {
-              sx = 1.0f;
-              sy = 0.0f;
-            }
-            shake_sample = Math::Vec2D(sx, sy);
+
+            const f32 quake = shake_trauma * shake_trauma; // Non-linear falloff (classic trauma shape)
+            const f32 max_offset = shake_max_offset * quake;
+
+            // Slightly stronger horizontal motion reads better in platformers.
+            render_camera.position.x += shake_sample.x * max_offset;
+            render_camera.position.y += shake_sample.y * (max_offset * 0.80f);
           }
-
-          const f32 quake = shake_trauma * shake_trauma; // Non-linear falloff (classic trauma shape)
-          const f32 max_offset = shake_amplitude * quake;
-
-          // Slightly stronger horizontal motion reads better in platformers.
-          render_camera.position.x += shake_sample.x * max_offset;
-          render_camera.position.y += shake_sample.y * (max_offset * 0.80f);
         }
 
         Engine::Graphics::set_camera(render_camera);
       }
 
-      static void add_shake(f32 amplitude, f32 duration) {
-        if (amplitude <= 0.0f || duration <= 0.0f) {
-          Log::warning("camera shake rejected: invalid params amplitude={} duration={}", amplitude, duration);
+      static void add_shake(f32 trauma) {
+        if (trauma <= 0.0f) {
+          Log::warning("camera shake rejected: invalid trauma={}", trauma);
           return;
         }
 
-        Log::info("camera shake accepted: amplitude={} duration={}", amplitude, duration);
+        Log::info("camera shake accepted: trauma={}", trauma);
 
-        // Convert hit into trauma amount, then accumulate for repeated hits.
-        f32 trauma_from_hit = std::max(amplitude / 55.0f, duration * 0.6f);
-        trauma_from_hit = std::min(1.0f, trauma_from_hit);
-        shake_trauma = std::min(1.0f, shake_trauma + trauma_from_hit);
-
-        shake_amplitude = std::max(shake_amplitude, amplitude);
-        shake_duration = std::max(shake_duration, duration);
-        shake_time_remaining = std::max(shake_time_remaining, duration);
+        shake_trauma = std::min(1.0f, shake_trauma + trauma);
       }
 
       static void unactivate_all_cameras() {
@@ -575,9 +565,7 @@ namespace Engine
         camera.position = Math::Vec2D(0.0f, 0.0f);
         camera.rotation = 0.0f;
         camera.zoom = 1.0f;
-        shake_time_remaining = 0.0f;
-        shake_duration = 0.0f;
-        shake_amplitude = 0.0f;
+
         shake_trauma = 0.0f;
         shake_sample_timer = 0.0f;
         shake_sample = { 0.0f, 0.0f };

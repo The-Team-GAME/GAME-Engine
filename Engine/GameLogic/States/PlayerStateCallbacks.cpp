@@ -831,7 +831,7 @@ namespace PlayerStateCallbacks
       attack->play_punch_hit_sfx = false;
     }
 
-    Engine::Systems::add_camera_shake(42.0f * 1.1f, 0.16f * 4.0f);
+    Engine::Systems::add_camera_shake(0.3f); // This adds to the one in register_collision_callback("damage_enemy", "enemy") as well
 
     /*Components::Attack* attack = hitbox.get_component<Components::Attack>();
     assert(attack);
