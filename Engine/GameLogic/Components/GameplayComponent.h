@@ -290,7 +290,7 @@ namespace Components
 
 //REFLECT_FIELDS(Components::Player::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, dash_speed, damage, heartrate_cost, knockback)
 REFLECT_FIELDS(Components::Action, no_cooldown, duration, timer, cooldown, cd_timer, speed, impulse)
-REFLECT_FIELDS(Components::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, dmg, knockback)
+REFLECT_FIELDS(Components::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, dmg, knockback, life_time)
 
 
 REGISTER_COMPONENT(Components::Player, 
