@@ -414,6 +414,7 @@ static void register_function_callbacks()
     }));
   reg.register_function<void()>("pause_menu_exit", std::function<void()>([]() {
     Log::info("Exiting to main menu from pause menu");
+    Engine::AudioSystem::stopEvent(PLAYER_HEARTBEAT_EVENT, true);
     Engine::SceneManager::load_scene("MainMenuState");
     }));
 

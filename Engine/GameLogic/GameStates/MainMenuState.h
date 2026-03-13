@@ -21,6 +21,7 @@ namespace {
   static constexpr const char* MAIN_MENU_BGM_EVENT = "event:/BGM/MainMenu";
   static constexpr const char* SPLASH_SFX_SNORE_EVENT = "event:/SFX/SplashSnoreSFX";
   static constexpr const char* SPLASH_SFX_TRAIN_EVENT = "event:/SFX/SplashTrainSFX";
+  static constexpr const char* MAIN_MENU_HEARTBEAT_EVENT = "event:/SFX/PlayerHeartBeat";
 }
 
 
@@ -328,6 +329,7 @@ public:
     showing_start_screen = true;
     create_start_screen();
 
+    Engine::AudioSystem::stopEvent(MAIN_MENU_HEARTBEAT_EVENT, true);
     Engine::AudioSystem::stopSceneMusic(true);
     Engine::AudioSystem::stopEvent(SPLASH_SFX_SNORE_EVENT, true);
     Engine::AudioSystem::playEvent(SPLASH_SFX_SNORE_EVENT);

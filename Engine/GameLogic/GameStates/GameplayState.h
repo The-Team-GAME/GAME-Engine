@@ -148,7 +148,7 @@ public:
 
   void init() {
     Engine::AudioSystem::playSceneMusic(GAMEPLAY_BGM_EVENT, 0.3f, true); // TODO: get from settings
-    Engine::AudioSystem::playSceneMusic(GAMEPLAY_BATTLECRY_EVENT, 0.3f, true); // TODO: get from settings
+    Engine::AudioSystem::playEvent(GAMEPLAY_BATTLECRY_EVENT); // TODO: get from settings
   };
 
   void update() {
