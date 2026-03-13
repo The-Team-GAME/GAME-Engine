@@ -19,6 +19,7 @@
 #include <string>
 #include <functional>
 #include "TypeDef.h"
+#include "EngineExport.h"
 
 namespace Engine {
   namespace WindowManager
@@ -67,7 +68,7 @@ namespace Engine {
     Where to call it:
     When applying game settings.
     ==================================================================================*/
-    void set_fullscreen(bool fullscreen);
+    ENGINE_API void set_fullscreen(bool fullscreen);
 
     /*=================================================================================
     Function Brief:

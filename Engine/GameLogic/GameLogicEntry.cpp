@@ -458,6 +458,7 @@ static void register_function_callbacks()
     }));
   reg.register_function<void()>("pause_menu_options", std::function<void()>([]() {
     Log::info("Opening options from pause menu");
+    Engine::SceneManager::load_scene("OptionsState");
     }));
   reg.register_function<void()>("pause_menu_exit", std::function<void()>([]() {
     Log::info("Exiting to main menu from pause menu");
@@ -504,11 +505,51 @@ static void register_function_callbacks()
     }
     }));
 
+  // Options menu callback — set fullscreen mode (left half of screen mode button)
+  reg.register_function<void()>("options_set_fullscreen", std::function<void()>([]() {
+    auto& settings = Engine::FileIO::GameSettingsBridge::get_mutable();
+    if (!settings.fullscreen) {
+      settings.fullscreen = true;
+      Engine::WindowManager::set_fullscreen(true);
+      Engine::FileIO::GameSettingsBridge::save();
+      Log::info("Screen mode set to fullscreen");
+
+      // Swap the visual texture to fullscreen
+      if (OptionsState::screen_mode_visual_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(OptionsState::screen_mode_visual_id))) {
+        auto* tex = Engine::ECS::Entity(OptionsState::screen_mode_visual_id).get_component<Components::Texture>();
+        if (tex) {
+          *tex = Components::Texture(OptionsState::fullscreen_tex);
+        }
+      }
+    }
+    }));
+
+  // Options menu callback — set windowed mode (right half of screen mode button)
+  reg.register_function<void()>("options_set_windowed", std::function<void()>([]() {
+    auto& settings = Engine::FileIO::GameSettingsBridge::get_mutable();
+    if (settings.fullscreen) {
+      settings.fullscreen = false;
+      Engine::WindowManager::set_fullscreen(false);
+      Engine::FileIO::GameSettingsBridge::save();
+      Log::info("Screen mode set to windowed");
+
+      // Swap the visual texture to windowed
+      if (OptionsState::screen_mode_visual_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(OptionsState::screen_mode_visual_id))) {
+        auto* tex = Engine::ECS::Entity(OptionsState::screen_mode_visual_id).get_component<Components::Texture>();
+        if (tex) {
+          *tex = Components::Texture(OptionsState::windowed_tex);
+        }
+      }
+    }
+    }));
+
   // Main menu button callbacks
   reg.register_function<void()>("start_game", std::function<void()>([]() {
     Engine::SceneManager::load_scene("OpeningCutsceneState");
     }));
   reg.register_function<void()>("options_menu", std::function<void()>([]() {
+    Log::info("Opening options menu");
+    Engine::SceneManager::load_scene("OptionsState");
     }));
   reg.register_function<void()>("exit_game", std::function<void()>([]() {
     Engine::Core::stop();

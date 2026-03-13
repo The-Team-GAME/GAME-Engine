@@ -125,7 +125,7 @@ namespace Engine {
     // ============================================================
     
     inline void SetMusicVolume(float volume) {
-      AudioSystem::setBusVolume("bus:/Music", volume);
+      AudioSystem::setBusVolume("bus:/BGM", volume);
     }
     
     inline void SetSFXVolume(float volume) {
