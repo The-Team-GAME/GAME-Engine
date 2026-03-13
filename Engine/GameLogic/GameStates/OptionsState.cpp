@@ -95,10 +95,10 @@ void OptionsState::load()
   // -----------------------------------------------------------------------
   // The panel image is the large pink "OPTIONS" box, displayed over the train
   // We centre it roughly in the screen.
-  const float panel_w = 1258.0f;
+  const float panel_w = 1406.0f;
   const float panel_h = 830.0f;
-  const float panel_x = 743.0f;  // centre of 1600
-  const float panel_y = 440.0f;  // slightly above centre
+  const float panel_x = 760.0f;  // centre of 1600
+  const float panel_y = 446 .0f;  // slightly above centre
 
   // Content area inside the panel — offset from the panel's top-left area
   // We'll lay things out row by row from the top of the content area.
