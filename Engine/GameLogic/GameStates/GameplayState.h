@@ -90,7 +90,8 @@ public:
       if (camera_entity.is_valid()) {
         if (!camera_entity.has_component<Components::Parent>()) {
           camera_entity.add_component<Components::Parent>(player_entity.get_id());
-        } else {
+        }
+        else {
           auto* parent_comp = camera_entity.get_component<Components::Parent>();
           if (parent_comp) {
             parent_comp->parent_id = player_entity.get_id();
@@ -104,7 +105,7 @@ public:
     // Victory zone - triggers victory screen when player enters
     // TODO: Position this at the end of the level
     Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(14600.0f, 830.0f, 0.0f, 100.0f, 200.0f)
+      .add_component<Components::Transform2D>(14614.0f, 609.0f, 0.0f, 100.0f, 200.0f)
       .add_component<Components::Interactable>(50.0f, "show_victory", "", "")
       .add_to_layer("effect");
 
