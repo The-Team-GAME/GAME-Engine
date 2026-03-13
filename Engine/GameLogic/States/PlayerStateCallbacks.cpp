@@ -427,6 +427,14 @@ namespace PlayerStateCallbacks
     assert(state_machine);
     assert(animation);
 
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    if (Input::is_held(KeyCode::ShiftLeft) && player_comp->dash.ready())
+    {
+      state_machine->change_state("Dash");
+      return;
+    }
+
     // Check if player pressed attack again during this combo window
     if (Engine::Input::is_pressed(Engine::KeyCode::J) && !animation->has_ended()) {
       // Queue up next attack
@@ -471,6 +479,14 @@ namespace PlayerStateCallbacks
     Components::Animation* animation = entity.get_component<Components::Animation>();
     assert(state_machine);
     assert(animation);
+
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    if (Input::is_held(KeyCode::ShiftLeft) && player_comp->dash.ready())
+    {
+      state_machine->change_state("Dash");
+      return;
+    }
 
     // Check if player pressed attack again during this combo window
     if (Engine::Input::is_pressed(Engine::KeyCode::J) && !animation->has_ended()) {
