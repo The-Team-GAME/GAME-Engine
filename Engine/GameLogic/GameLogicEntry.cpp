@@ -215,11 +215,11 @@ static void register_collision_callbacks()
 
           auto behind_vfx = Engine::ECS::create_entity()
             .add_component<Components::Transform2D>(
-              transform->position.x,
+              transform->position.x + (flip_x * 60.0f),
               transform->position.y,
               0.0f,
-              256.0f,
-              256.0f
+              128.0f,
+              128.0f
             )
             .add_component<Components::Parent>(enemy_entity.get_id())
             .add_component<Components::Texture>(Engine::Resources::load_texture("images/bro_vfx_impact.png"))
