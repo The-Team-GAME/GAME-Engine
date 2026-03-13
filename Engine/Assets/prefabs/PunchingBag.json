@@ -5,8 +5,9 @@
                 "data": {
                     "acceleration": {
                         "x": 0.0,
-                        "y": 2000.0
+                        "y": 0.0
                     },
+                    "apply_force": true,
                     "gravity": {
                         "x": 0.0,
                         "y": 2000.0
@@ -18,7 +19,7 @@
                     "use_gravity": true,
                     "velocity": {
                         "x": 0.0,
-                        "y": 33.333335876464844
+                        "y": 0.0
                     },
                     "x_terminal_velocity": 500.0,
                     "y_terminal_velocity": 500.0
@@ -38,18 +39,18 @@
                 "data": {
                     "aabb": {
                         "half_height": 68.88287353515625,
-                        "half_width": 52.67508316040039,
+                        "half_width": 28.051769256591797,
                         "pos": {
-                            "x": -807.1389770507813,
-                            "y": 1019.701904296875
+                            "x": -1028.5667724609375,
+                            "y": 1019.3448486328125
                         }
                     },
                     "collided": false,
                     "height": 137.7657470703125,
                     "kinetic_friction": 0.800000011920929,
                     "offset": {
-                        "x": -2.181690216064453,
-                        "y": 26.493728637695313
+                        "x": -1.8699378967285156,
+                        "y": 24.62359619140625
                     },
                     "polygon": {
                         "position": {
@@ -62,7 +63,7 @@
                     "radius": 0.0,
                     "resolve_collisions": false,
                     "type": "AABB",
-                    "width": 105.35016632080078
+                    "width": 56.103538513183594
                 },
                 "type": "Components::BoxCollider"
             },
@@ -281,7 +282,7 @@
                         0.10000000149011612
                     ],
                     "is_looping": true,
-                    "startTime": 329.0193176269531,
+                    "startTime": 648.9010620117188,
                     "totalDuration": 0.10000000149011612
                 },
                 "type": "Components::Animation"
@@ -289,8 +290,8 @@
             {
                 "data": {
                     "position": {
-                        "x": -804.957275390625,
-                        "y": 993.2081909179688
+                        "x": -1026.69677734375,
+                        "y": 994.7212524414063
                     },
                     "rotation": 0.0,
                     "scale": {
@@ -303,8 +304,8 @@
             {
                 "data": {
                     "local_offset": {
-                        "x": -804.957275390625,
-                        "y": 993.2081909179688
+                        "x": -1026.69677734375,
+                        "y": 994.7212524414063
                     },
                     "offset_initialized": true,
                     "parent_id": 18,
@@ -336,17 +337,18 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 329.0193176269531,
+                                        "startTime": 648.9010620117188,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": {
                                         "height": 137.7657470703125,
                                         "offset": {
-                                            "x": -2.181690216064453,
-                                            "y": 26.493728637695313
+                                            "x": -1.8699378967285156,
+                                            "y": 24.62359619140625
                                         },
+                                        "type": "AABB",
                                         "vertices": [],
-                                        "width": 105.35016632080078
+                                        "width": 56.103538513183594
                                     },
                                     "scale": null,
                                     "texture": {
@@ -571,17 +573,18 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 329.0193176269531,
+                                        "startTime": 648.9010620117188,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": {
                                         "height": 137.7657470703125,
                                         "offset": {
-                                            "x": -2.181690216064453,
-                                            "y": 26.493728637695313
+                                            "x": -1.8699378967285156,
+                                            "y": 24.62359619140625
                                         },
+                                        "type": "AABB",
                                         "vertices": [],
-                                        "width": 105.35016632080078
+                                        "width": 56.103538513183594
                                     },
                                     "scale": null,
                                     "texture": {
@@ -811,17 +814,18 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": false,
-                                        "startTime": 329.0193176269531,
+                                        "startTime": 648.9010620117188,
                                         "totalDuration": 0.4000000059604645
                                     },
                                     "collider_data": {
                                         "height": 137.7657470703125,
                                         "offset": {
-                                            "x": -2.181690216064453,
-                                            "y": 26.493728637695313
+                                            "x": -1.8699378967285156,
+                                            "y": 24.62359619140625
                                         },
+                                        "type": "AABB",
                                         "vertices": [],
-                                        "width": 105.35016632080078
+                                        "width": 56.103538513183594
                                     },
                                     "scale": null,
                                     "texture": {
@@ -1051,17 +1055,18 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": false,
-                                        "startTime": 329.0193176269531,
+                                        "startTime": 648.9010620117188,
                                         "totalDuration": 0.4000000059604645
                                     },
                                     "collider_data": {
                                         "height": 137.7657470703125,
                                         "offset": {
-                                            "x": -2.181690216064453,
-                                            "y": 26.493728637695313
+                                            "x": -1.8699378967285156,
+                                            "y": 24.62359619140625
                                         },
+                                        "type": "AABB",
                                         "vertices": [],
-                                        "width": 105.35016632080078
+                                        "width": 56.103538513183594
                                     },
                                     "scale": null,
                                     "texture": {
@@ -1266,6 +1271,24 @@
                                 },
                                 "property_animation": null
                             }
+                        },
+                        {
+                            "first": "Death",
+                            "second": {
+                                "animation": null,
+                                "audio": null,
+                                "name": "Death",
+                                "on_enter_callback": {
+                                    "name": "PunchingBagStateCallbacks::death_on_enter"
+                                },
+                                "on_exit_callback": {
+                                    "name": ""
+                                },
+                                "on_update_callback": {
+                                    "name": ""
+                                },
+                                "property_animation": null
+                            }
                         }
                     ]
                 },
@@ -1282,7 +1305,8 @@
                     "knockback": {
                         "x": -500.0,
                         "y": -0.0
-                    }
+                    },
+                    "play_punch_hit_sfx": true
                 },
                 "type": "Components::Attack"
             },

@@ -18,6 +18,12 @@
             },
             {
                 "data": {
+                    "path": "images/OldManJorkin_Jorkin_Spritesheet.png"
+                },
+                "type": "Components::Texture"
+            },
+            {
+                "data": {
                     "local_offset": {
                         "x": -1409.8040771484375,
                         "y": 1022.7408447265625
@@ -39,12 +45,6 @@
                     "r": 1.0
                 },
                 "type": "Components::Color"
-            },
-            {
-                "data": {
-                    "path": "images/OldManJorkin_Jorkin_Spritesheet.png"
-                },
-                "type": "Components::Texture"
             },
             {
                 "data": {
@@ -168,7 +168,7 @@
                         0.10000000149011612
                     ],
                     "is_looping": true,
-                    "startTime": 53.0037727355957,
+                    "startTime": 2768.8984375,
                     "totalDuration": 0.5
                 },
                 "type": "Components::Animation"
@@ -190,7 +190,6 @@
         ],
         "filepath": "prefabs/Oldman.json",
         "layers": [
-            "default",
             "player"
         ],
         "uuid": "1b1219df-4242-4007b-ab1a-c63f7d5cb181"
