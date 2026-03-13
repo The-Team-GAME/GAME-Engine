@@ -145,6 +145,51 @@ class MainMenuState : public Engine::Scene
   }
 
   void create_main_menu() {
+    // Register button hover/exit callbacks
+    Engine::FunctionRegistry::instance().register_function<void(Engine::ECS::Entity)>("play_button_hover", [](Engine::ECS::Entity entity) {
+      if (auto* tex = entity.get_component<Components::Texture>()) {
+        *tex = Components::Texture(Engine::Resources::load_texture("images/UI/MainMenu/UI/Hovered/PlayButtonHovered.PNG"));
+      }
+    });
+    Engine::FunctionRegistry::instance().register_function<void(Engine::ECS::Entity)>("play_button_exit", [](Engine::ECS::Entity entity) {
+      if (auto* tex = entity.get_component<Components::Texture>()) {
+        *tex = Components::Texture(Engine::Resources::load_texture("images/UI/MainMenu/UI/PlayButton.png"));
+      }
+    });
+    
+    Engine::FunctionRegistry::instance().register_function<void(Engine::ECS::Entity)>("options_button_hover", [](Engine::ECS::Entity entity) {
+      if (auto* tex = entity.get_component<Components::Texture>()) {
+        *tex = Components::Texture(Engine::Resources::load_texture("images/UI/MainMenu/UI/Hovered/OptionsButtonHovered.PNG"));
+      }
+    });
+    Engine::FunctionRegistry::instance().register_function<void(Engine::ECS::Entity)>("options_button_exit", [](Engine::ECS::Entity entity) {
+      if (auto* tex = entity.get_component<Components::Texture>()) {
+        *tex = Components::Texture(Engine::Resources::load_texture("images/UI/MainMenu/UI/OptionsButton.png"));
+      }
+    });
+
+    Engine::FunctionRegistry::instance().register_function<void(Engine::ECS::Entity)>("credits_button_hover", [](Engine::ECS::Entity entity) {
+      if (auto* tex = entity.get_component<Components::Texture>()) {
+        *tex = Components::Texture(Engine::Resources::load_texture("images/UI/MainMenu/UI/Hovered/CreditsButtonHovered.PNG"));
+      }
+    });
+    Engine::FunctionRegistry::instance().register_function<void(Engine::ECS::Entity)>("credits_button_exit", [](Engine::ECS::Entity entity) {
+      if (auto* tex = entity.get_component<Components::Texture>()) {
+        *tex = Components::Texture(Engine::Resources::load_texture("images/UI/MainMenu/UI/CreditsButton.png"));
+      }
+    });
+
+    Engine::FunctionRegistry::instance().register_function<void(Engine::ECS::Entity)>("exit_button_hover", [](Engine::ECS::Entity entity) {
+      if (auto* tex = entity.get_component<Components::Texture>()) {
+        *tex = Components::Texture(Engine::Resources::load_texture("images/UI/MainMenu/UI/Hovered/ExitButtonHovered.PNG"));
+      }
+    });
+    Engine::FunctionRegistry::instance().register_function<void(Engine::ECS::Entity)>("exit_button_exit", [](Engine::ECS::Entity entity) {
+      if (auto* tex = entity.get_component<Components::Texture>()) {
+        *tex = Components::Texture(Engine::Resources::load_texture("images/UI/MainMenu/UI/ExitButton.png"));
+      }
+    });
+
     // // Register button callbacks
     // Engine::FunctionRegistry<void()>::register_function("start_game", []() {
     //   Engine::SceneManager::load_scene("GameplayState");
@@ -207,7 +252,7 @@ class MainMenuState : public Engine::Scene
         Math::Vec2D(173.73f, -178.52f),
         Math::Vec2D(165.90f, -447.70f)
     }))
-      .add_component<Components::Clickable>("start_game", "", "")
+      .add_component<Components::Clickable>("start_game", "play_button_hover", "play_button_exit")
       .add_to_layer("main_menu_5");
 
     // Entity 9: Options Button (with polygon collider) - layer 5
@@ -222,7 +267,7 @@ class MainMenuState : public Engine::Scene
         Math::Vec2D(3.91f, 90.02f),
         Math::Vec2D(-11.74f, -66.54f)
     }))
-      .add_component<Components::Clickable>("options_menu", "", "")
+      .add_component<Components::Clickable>("options_menu", "options_button_hover", "options_button_exit")
       .add_to_layer("main_menu_5");
 
     // Entity 10: Credits Button (with polygon collider) - layer 5
@@ -237,7 +282,7 @@ class MainMenuState : public Engine::Scene
         Math::Vec2D(162.93f, 180.54f),
         Math::Vec2D(386.02f, -94.43f)
     }, Math::Vec2D(315.07f, 62.62f)))
-      .add_component<Components::Clickable>("", "", "")
+      .add_component<Components::Clickable>("", "credits_button_hover", "credits_button_exit")
       .add_to_layer("main_menu_5");
 
     // Entity 11: Exit Button (with polygon collider) - layer 5
@@ -252,7 +297,7 @@ class MainMenuState : public Engine::Scene
         Math::Vec2D(-81.69f, 342.97f),
         Math::Vec2D(67.04f, 185.41f)
     }, Math::Vec2D(293.54f, 80.23f)))
-      .add_component<Components::Clickable>("exit_game", "", "")
+      .add_component<Components::Clickable>("exit_game", "exit_button_hover", "exit_button_exit")
       .add_to_layer("main_menu_5");
 
     // Entity 12: Monkey character - layer 3 (behind Front)

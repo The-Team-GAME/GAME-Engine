@@ -831,6 +831,8 @@ namespace PlayerStateCallbacks
       attack->play_punch_hit_sfx = false;
     }
 
+    Engine::Systems::add_camera_shake(42.0f * 1.1f, 0.16f * 4.0f);
+
     /*Components::Attack* attack = hitbox.get_component<Components::Attack>();
     assert(attack);
     attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactBlue_Spritesheet.png");*/

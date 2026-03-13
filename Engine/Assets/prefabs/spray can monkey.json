@@ -5,8 +5,9 @@
                 "data": {
                     "acceleration": {
                         "x": 0.0,
-                        "y": 1000.0
+                        "y": 0.0
                     },
+                    "apply_force": true,
                     "gravity": {
                         "x": 0.0,
                         "y": 1000.0
@@ -18,7 +19,7 @@
                     "use_gravity": true,
                     "velocity": {
                         "x": 0.0,
-                        "y": 16.666667938232422
+                        "y": 0.0
                     },
                     "x_terminal_velocity": 500.0,
                     "y_terminal_velocity": 500.0
@@ -40,8 +41,8 @@
                         "half_height": 59.71012496948242,
                         "half_width": 60.53240966796875,
                         "pos": {
-                            "x": 3143.095458984375,
-                            "y": 452.8746643066406
+                            "x": 1662.650146484375,
+                            "y": 2500.596923828125
                         }
                     },
                     "collided": false,
@@ -83,7 +84,7 @@
             },
             {
                 "data": {
-                    "drawIndex": 2,
+                    "drawIndex": 7,
                     "tex_coords_list": [
                         [
                             {
@@ -266,7 +267,7 @@
                         0.15000000596046448
                     ],
                     "is_looping": true,
-                    "startTime": 382.8306884765625,
+                    "startTime": 66.8575210571289,
                     "totalDuration": 1.1999999284744263
                 },
                 "type": "Components::Animation"
@@ -274,8 +275,8 @@
             {
                 "data": {
                     "position": {
-                        "x": 3155.60107421875,
-                        "y": 432.2889404296875
+                        "x": 1675.1556396484375,
+                        "y": 2480.2890625
                     },
                     "rotation": 0.0,
                     "scale": {
@@ -284,21 +285,6 @@
                     }
                 },
                 "type": "Components::Transform2D"
-            },
-            {
-                "data": {
-                    "local_offset": {
-                        "x": 3155.60107421875,
-                        "y": 432.56671142578125
-                    },
-                    "offset_initialized": true,
-                    "parent_id": 2326,
-                    "prev_parent_pos": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "type": "Components::Parent"
             },
             {
                 "data": {
@@ -363,7 +349,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 382.8306884765625,
+                                        "startTime": 66.8575210571289,
                                         "totalDuration": 1.700000286102295
                                     },
                                     "collider_data": {
@@ -372,6 +358,7 @@
                                             "x": 12.505538940429688,
                                             "y": 20.30795669555664
                                         },
+                                        "type": "AABB",
                                         "vertices": [],
                                         "width": 121.0648193359375
                                     },
@@ -706,7 +693,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 382.8306884765625,
+                                        "startTime": 66.8575210571289,
                                         "totalDuration": 0.6000000238418579
                                     },
                                     "collider_data": {
@@ -715,6 +702,7 @@
                                             "x": 12.505538940429688,
                                             "y": 20.30795669555664
                                         },
+                                        "type": "AABB",
                                         "vertices": [],
                                         "width": 121.0648193359375
                                     },
@@ -872,7 +860,7 @@
                                             0.5
                                         ],
                                         "is_looping": true,
-                                        "startTime": 382.8306884765625,
+                                        "startTime": 66.8575210571289,
                                         "totalDuration": 0.5
                                     },
                                     "collider_data": {
@@ -881,6 +869,7 @@
                                             "x": 12.505538940429688,
                                             "y": 20.30795669555664
                                         },
+                                        "type": "AABB",
                                         "vertices": [],
                                         "width": 121.0648193359375
                                     },
@@ -1001,7 +990,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 382.8306884765625,
+                                        "startTime": 66.8575210571289,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": {
@@ -1010,6 +999,7 @@
                                             "x": 12.505538940429688,
                                             "y": 20.30795669555664
                                         },
+                                        "type": "AABB",
                                         "vertices": [],
                                         "width": 121.0648193359375
                                     },
@@ -1205,7 +1195,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 382.8306884765625,
+                                        "startTime": 66.8575210571289,
                                         "totalDuration": 0.5
                                     },
                                     "collider_data": {
@@ -1214,6 +1204,7 @@
                                             "x": 12.505538940429688,
                                             "y": 20.30795669555664
                                         },
+                                        "type": "AABB",
                                         "vertices": [],
                                         "width": 121.0648193359375
                                     },
@@ -1338,7 +1329,7 @@
                                             0.15000000596046448
                                         ],
                                         "is_looping": true,
-                                        "startTime": 382.8306884765625,
+                                        "startTime": 66.8575210571289,
                                         "totalDuration": 1.1999999284744263
                                     },
                                     "collider_data": {
@@ -1347,6 +1338,7 @@
                                             "x": 12.505538940429688,
                                             "y": 20.30795669555664
                                         },
+                                        "type": "AABB",
                                         "vertices": [],
                                         "width": 121.0648193359375
                                     },
@@ -1527,22 +1519,22 @@
             },
             {
                 "data": {
-                    "attack_cooldown": 6.0,
+                    "attack_cooldown": 3.0,
                     "attack_range": 800.0,
                     "attack_windup": 0.5,
                     "chase_range": 1000.0,
                     "chase_speed": 80.0,
                     "cloud_initial_vx": -150.0,
-                    "cloud_spawn_time": 375.49871826171875,
+                    "cloud_spawn_time": 7.504971981048584,
                     "damage": 20,
                     "detection_range": 1200.0,
                     "knockback": {
                         "x": 300.0,
                         "y": 400.0
                     },
-                    "last_attack_time": 378.8239440917969,
+                    "last_attack_time": 41.47240447998047,
                     "spray_duration": 7.0,
-                    "spray_range": 120.0,
+                    "spray_range": 150.0,
                     "spray_width": 80.0
                 },
                 "type": "Components::SprayCanMonkey"
@@ -1552,19 +1544,20 @@
                     "damage": 20,
                     "damage_interval": 0.10000000149011612,
                     "impact_vfx_texture": {
-                        "path": "images/SprayPaintMonkeySpriteSheets/VFX_Gas_Spritesheet.png"
+                        "path": ""
                     },
                     "is_continuous": false,
                     "knockback": {
                         "x": -300.0,
                         "y": -400.0
-                    }
+                    },
+                    "play_punch_hit_sfx": true
                 },
                 "type": "Components::Attack"
             },
             {
                 "data": {
-                    "current_hp": 10,
+                    "current_hp": 15,
                     "max_hp": 15
                 },
                 "type": "Components::EnemyHealth"
