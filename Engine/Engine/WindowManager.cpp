@@ -141,9 +141,8 @@ namespace Engine {
 
         // Update window title
         std::ostringstream title_stream;
-        title_stream << (is_unsaved ? "[*] " : "") << base_title << " - " << Engine::LevelManager::get_current_level_path() << " - 
-          " << std::fixed << std::setprecision(1) << display_fps;
-          glfwSetWindowTitle(window, title_stream.str().c_str());
+        title_stream << (is_unsaved ? "[*] " : "") << base_title << " - " << Engine::LevelManager::get_current_level_path() << " - " << std::fixed << std::setprecision(1) << display_fps;
+        glfwSetWindowTitle(window, title_stream.str().c_str());
 
         update_timer = 0.0f;
         frame_count = 0;
