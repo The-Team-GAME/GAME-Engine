@@ -2,8 +2,18 @@
     "data": {
         "components": [
             {
-                "data": {},
-                "type": "Components::UI"
+                "data": {
+                    "position": {
+                        "x": 234.54930114746094,
+                        "y": 158.04949951171875
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 384.0,
+                        "y": 288.0
+                    }
+                },
+                "type": "Components::Transform2D"
             },
             {
                 "data": {
@@ -11,6 +21,78 @@
                     "current_state_name": "5HP",
                     "property_anim_playing": false,
                     "states": [
+                        {
+                            "first": "3HP_to_2HP",
+                            "second": {
+                                "animation": null,
+                                "audio": null,
+                                "name": "3HP_to_2HP",
+                                "on_enter_callback": {
+                                    "name": ""
+                                },
+                                "on_exit_callback": {
+                                    "name": ""
+                                },
+                                "on_update_callback": {
+                                    "name": "hp_3_to_2_update"
+                                },
+                                "property_animation": null
+                            }
+                        },
+                        {
+                            "first": "5HP_to_4HP",
+                            "second": {
+                                "animation": null,
+                                "audio": null,
+                                "name": "5HP_to_4HP",
+                                "on_enter_callback": {
+                                    "name": ""
+                                },
+                                "on_exit_callback": {
+                                    "name": ""
+                                },
+                                "on_update_callback": {
+                                    "name": "hp_5_to_4_update"
+                                },
+                                "property_animation": null
+                            }
+                        },
+                        {
+                            "first": "2HP_to_1HP",
+                            "second": {
+                                "animation": null,
+                                "audio": null,
+                                "name": "2HP_to_1HP",
+                                "on_enter_callback": {
+                                    "name": ""
+                                },
+                                "on_exit_callback": {
+                                    "name": ""
+                                },
+                                "on_update_callback": {
+                                    "name": "hp_2_to_1_update"
+                                },
+                                "property_animation": null
+                            }
+                        },
+                        {
+                            "first": "1HP_to_0HP",
+                            "second": {
+                                "animation": null,
+                                "audio": null,
+                                "name": "1HP_to_0HP",
+                                "on_enter_callback": {
+                                    "name": ""
+                                },
+                                "on_exit_callback": {
+                                    "name": ""
+                                },
+                                "on_update_callback": {
+                                    "name": "hp_1_to_0_update"
+                                },
+                                "property_animation": null
+                            }
+                        },
                         {
                             "first": "0HP",
                             "second": {
@@ -26,7 +108,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 24.072433471679688,
+                                        "startTime": 59.99434280395508,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": null,
@@ -1369,78 +1451,6 @@
                             }
                         },
                         {
-                            "first": "1HP_to_0HP",
-                            "second": {
-                                "animation": null,
-                                "audio": null,
-                                "name": "1HP_to_0HP",
-                                "on_enter_callback": {
-                                    "name": ""
-                                },
-                                "on_exit_callback": {
-                                    "name": ""
-                                },
-                                "on_update_callback": {
-                                    "name": "hp_1_to_0_update"
-                                },
-                                "property_animation": null
-                            }
-                        },
-                        {
-                            "first": "2HP_to_1HP",
-                            "second": {
-                                "animation": null,
-                                "audio": null,
-                                "name": "2HP_to_1HP",
-                                "on_enter_callback": {
-                                    "name": ""
-                                },
-                                "on_exit_callback": {
-                                    "name": ""
-                                },
-                                "on_update_callback": {
-                                    "name": "hp_2_to_1_update"
-                                },
-                                "property_animation": null
-                            }
-                        },
-                        {
-                            "first": "5HP_to_4HP",
-                            "second": {
-                                "animation": null,
-                                "audio": null,
-                                "name": "5HP_to_4HP",
-                                "on_enter_callback": {
-                                    "name": ""
-                                },
-                                "on_exit_callback": {
-                                    "name": ""
-                                },
-                                "on_update_callback": {
-                                    "name": "hp_5_to_4_update"
-                                },
-                                "property_animation": null
-                            }
-                        },
-                        {
-                            "first": "3HP_to_2HP",
-                            "second": {
-                                "animation": null,
-                                "audio": null,
-                                "name": "3HP_to_2HP",
-                                "on_enter_callback": {
-                                    "name": ""
-                                },
-                                "on_exit_callback": {
-                                    "name": ""
-                                },
-                                "on_update_callback": {
-                                    "name": "hp_3_to_2_update"
-                                },
-                                "property_animation": null
-                            }
-                        },
-                        {
                             "first": "1HP",
                             "second": {
                                 "animation": {
@@ -1524,7 +1534,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 24.072433471679688,
+                                        "startTime": 59.99434280395508,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": null,
@@ -2950,7 +2960,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 24.072433471679688,
+                                        "startTime": 59.99434280395508,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": null,
@@ -4376,7 +4386,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 24.072433471679688,
+                                        "startTime": 59.99434280395508,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": null,
@@ -5802,7 +5812,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 24.072433471679688,
+                                        "startTime": 59.99434280395508,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": null,
@@ -7246,7 +7256,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 24.072433471679688,
+                                        "startTime": 59.99434280395508,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": null,
@@ -8017,18 +8027,8 @@
                 "type": "Components::StateMachine"
             },
             {
-                "data": {
-                    "position": {
-                        "x": 234.54930114746094,
-                        "y": 158.04949951171875
-                    },
-                    "rotation": 0.0,
-                    "scale": {
-                        "x": 384.0,
-                        "y": 288.0
-                    }
-                },
-                "type": "Components::Transform2D"
+                "data": {},
+                "type": "Components::UI"
             },
             {
                 "data": {
@@ -8038,12 +8038,6 @@
                     "r": 1.0
                 },
                 "type": "Components::Color"
-            },
-            {
-                "data": {
-                    "path": "images/health_face.png"
-                },
-                "type": "Components::Texture"
             },
             {
                 "data": {
@@ -8059,6 +8053,12 @@
                     }
                 },
                 "type": "Components::Parent"
+            },
+            {
+                "data": {
+                    "path": "images/health_face.png"
+                },
+                "type": "Components::Texture"
             },
             {
                 "data": {
@@ -8887,7 +8887,7 @@
                         0.10000000149011612
                     ],
                     "is_looping": true,
-                    "startTime": 7.617394924163818,
+                    "startTime": 49.4079475402832,
                     "totalDuration": 2.3999998569488525
                 },
                 "type": "Components::Animation"

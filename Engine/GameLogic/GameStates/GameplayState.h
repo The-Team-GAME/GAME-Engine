@@ -105,6 +105,7 @@ public:
 
   void init() {
     Engine::AudioSystem::playSceneMusic("event:/BGM/LevelBGM", 0.3f, true);
+    Engine::AudioSystem::playEvent("event:/SFX/PlayerStartCry");
   };
 
   void update() {
