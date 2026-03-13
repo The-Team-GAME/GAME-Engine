@@ -43,6 +43,9 @@ namespace Engine {
     bool preload_in_progress = false;                  // Background preload refresh running
     bool preload_refresh_queued = false;               // Another refresh requested while running
     bool keep_loaded = false;                          // Keep this level resident until manually unloaded
+    bool needs_snapshot_rebuild = false;                // Incremental snapshot rebuild in progress
+    std::vector<ECS::EntityID> snapshot_rebuild_sources; // Entity IDs to clone for incremental rebuild
+    size_t snapshot_rebuild_index = 0;                   // Current progress in incremental rebuild
   };
 
   namespace LevelManager {

@@ -159,6 +159,10 @@ namespace {
 namespace Engine {
   namespace LevelManager {
 
+    // Forward declarations
+    void build_preloaded_snapshot(LevelState& state);
+    void destroy_preloaded_entities(LevelState& state);
+
     void queue_preload_refresh(const std::string& level_id)
     {
       if (!is_reloadable_level_id(level_id)) {
@@ -191,34 +195,95 @@ namespace Engine {
 
     void process_preload_results()
     {
-      std::unordered_map<std::string, EntityList> ready;
+      // --- Handle background JSON deserialization results ---
       {
-        std::lock_guard<std::mutex> lock(preload_mutex);
-        if (preload_results.empty()) {
-          return;
+        std::unordered_map<std::string, EntityList> ready;
+        {
+          std::lock_guard<std::mutex> lock(preload_mutex);
+          if (!preload_results.empty()) {
+            ready.swap(preload_results);
+          }
         }
-        ready.swap(preload_results);
+
+        for (auto& [level_id, entities] : ready) {
+          auto it = open_levels.find(level_id);
+          if (it == open_levels.end()) {
+            continue;
+          }
+
+          LevelState& state = it->second;
+          state.preloaded_entities = std::move(entities);
+          state.preload_ready = !state.preloaded_entities.empty();
+          state.preload_in_progress = false;
+          state.cached_entities = state.preloaded_entities;
+
+          Resources::cache_level(level_id, state.preloaded_entities, false, false);
+          Log::info("[LevelManager] Preload refresh completed: {}", level_id);
+
+          if (state.preload_refresh_queued) {
+            state.preload_refresh_queued = false;
+            queue_preload_refresh(level_id);
+          }
+        }
       }
 
-      for (auto& [level_id, entities] : ready) {
-        auto it = open_levels.find(level_id);
-        if (it == open_levels.end()) {
-          continue;
+      // --- Incremental snapshot rebuild (time-budgeted) ---
+      // After a reload consumes the snapshot, rebuild it across multiple frames
+      // by cloning a batch of entities per frame within a 2ms time budget.
+      for (auto& [level_id, state] : open_levels) {
+        if (!state.needs_snapshot_rebuild) continue;
+        if (level_id != active_level_id) continue;
+
+        // First frame: capture source entity IDs and clean up old snapshot
+        if (state.snapshot_rebuild_sources.empty() && state.snapshot_rebuild_index == 0) {
+          destroy_preloaded_entities(state);
+          state.preloaded_entity_ids.clear();
+
+          ECS::for_each_entity([&](ECS::Entity entity) {
+            state.snapshot_rebuild_sources.push_back(entity.get_id());
+          });
+
+          if (state.snapshot_rebuild_sources.empty()) {
+            state.needs_snapshot_rebuild = false;
+            state.has_preloaded_entities = false;
+          }
+          break; // Start cloning on the next frame
         }
 
-        LevelState& state = it->second;
-        state.preloaded_entities = std::move(entities);
-        state.preload_ready = !state.preloaded_entities.empty();
-        state.preload_in_progress = false;
-        state.cached_entities = state.preloaded_entities;
+        // Clone a batch of entities within the time budget
+        auto deadline = std::chrono::steady_clock::now() + std::chrono::microseconds(2000);
 
-        Resources::cache_level(level_id, state.preloaded_entities, false, false);
-        Log::info("[LevelManager] Preload refresh completed: {}", level_id);
+        while (state.snapshot_rebuild_index < state.snapshot_rebuild_sources.size()) {
+          ECS::EntityID source_id = state.snapshot_rebuild_sources[state.snapshot_rebuild_index];
+          ECS::Entity source(source_id);
 
-        if (state.preload_refresh_queued) {
-          state.preload_refresh_queued = false;
-          queue_preload_refresh(level_id);
+          if (source.is_valid()) {
+            ECS::Entity cloned = ECS::clone_entity(source);
+            if (cloned.is_valid()) {
+              ECS::EntityID clone_id = cloned.get_id();
+              ECS::deactivate_entity(clone_id);
+              state.preloaded_entity_ids.push_back(clone_id);
+            }
+          }
+
+          ++state.snapshot_rebuild_index;
+
+          if (std::chrono::steady_clock::now() >= deadline) {
+            break; // Budget exhausted, continue next frame
+          }
         }
+
+        // Check if rebuild is complete
+        if (state.snapshot_rebuild_index >= state.snapshot_rebuild_sources.size()) {
+          state.has_preloaded_entities = !state.preloaded_entity_ids.empty();
+          state.needs_snapshot_rebuild = false;
+          state.snapshot_rebuild_sources.clear();
+          state.snapshot_rebuild_index = 0;
+          Log::info("[LevelManager] Incremental snapshot rebuild completed: {} ({} entities)",
+            level_id, state.preloaded_entity_ids.size());
+        }
+
+        break; // Only process one level per frame
       }
     }
 
@@ -544,6 +609,15 @@ namespace Engine {
       LevelState& state = it->second;
       const bool is_active = (level_id == active_level_id);
 
+      // Cancel any in-progress incremental rebuild
+      if (state.needs_snapshot_rebuild) {
+        // Destroy any partially-cloned snapshot entities
+        destroy_preloaded_entities(state);
+        state.needs_snapshot_rebuild = false;
+        state.snapshot_rebuild_sources.clear();
+        state.snapshot_rebuild_index = 0;
+      }
+
       if (state.has_preloaded_entities && is_active) {
         if (is_active) {
           call_level_exit();
@@ -564,7 +638,8 @@ namespace Engine {
         current_level_path = level_id;
         call_level_init();
 
-        build_preloaded_snapshot(state);
+        // Defer snapshot rebuild to next frame so reload returns instantly
+        state.needs_snapshot_rebuild = true;
         queue_preload_refresh(level_id);
         Log::info("[LevelManager] Reloaded level from preloaded snapshot: {}", level_id);
         return;
@@ -588,7 +663,8 @@ namespace Engine {
         instantiate_entities(reload_entities, true);
         current_level_path = level_id;
         call_level_init();
-        build_preloaded_snapshot(state);
+        // Defer snapshot rebuild incrementally so reload returns instantly
+        state.needs_snapshot_rebuild = true;
       }
       else {
         // If this level has stale deactivated live entities, destroy them so
