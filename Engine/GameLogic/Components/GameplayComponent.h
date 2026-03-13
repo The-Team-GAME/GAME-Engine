@@ -9,6 +9,7 @@
 // 
 //
 // email:   chew.s@digipen.edu
+//          c.mingxian@digipen.edu
 //
 // brief:   This file defines gameplay-related component structs, including Player (with AttackData), Enemy, LazyMonkey, Attack, and PendingKnockback, which store data for game mechanics.
 //
