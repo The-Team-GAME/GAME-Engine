@@ -200,6 +200,36 @@ static void register_collision_callbacks()
               .add_to_layer("effect");
           }
         }
+
+        // Spawn behind-enemy impact VFX (bro_vfx_impact)
+        {
+          // Determine flip direction based on player position relative to enemy
+          ECS::Entity player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+          float flip_x = 1.0f;
+          if (player_entity.is_valid()) {
+            auto* player_xform = player_entity.get_component<Components::Transform2D>();
+            if (player_xform) {
+              flip_x = (player_xform->position.x < transform->position.x) ? 1.0f : -1.0f;
+            }
+          }
+
+          auto behind_vfx = Engine::ECS::create_entity()
+            .add_component<Components::Transform2D>(
+              transform->position.x,
+              transform->position.y,
+              0.0f,
+              256.0f,
+              256.0f
+            )
+            .add_component<Components::Parent>(enemy_entity.get_id())
+            .add_component<Components::Texture>(Engine::Resources::load_texture("images/bro_vfx_impact.png"))
+            .add_component<Components::TextureAtlas>(96, 64, 1, 9, 9)
+            .add_component<Components::Animation>(0, 8, 0.04f, false)
+            .add_component<Components::Lifetime>(0.36f)
+            .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+            .add_component<Components::Flip>(flip_x, 1.0f)
+            .add_to_layer("effect_behind");
+        }
       }
       else {
         Log::error("Error: EnemyHealth or StateMachine component missing!");

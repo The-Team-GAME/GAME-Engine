@@ -48,6 +48,7 @@ void RunGame()
   Engine::ECS::register_layer("damage_player");
   Engine::ECS::register_layer("projectiles");
   Engine::ECS::register_layer("spray");
+  Engine::ECS::register_layer("effect_behind");
   Engine::ECS::register_layer("enemy");
   Engine::ECS::register_layer("player_trail");
   Engine::ECS::register_layer("player");
