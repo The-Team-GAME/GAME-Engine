@@ -73,10 +73,16 @@ namespace PlayerStateCallbacks
     }
 
     if (Engine::Input::is_pressed(Engine::KeyCode::L)
-      && !player_rigid->on_ground
       && player_comp->smash.ready())
     {
-      state_machine->change_state("PreSmash");
+      if (player_rigid->on_ground)
+      {
+        state_machine->change_state("Leap");
+      }
+      else
+      {
+        state_machine->change_state("PreSmash");
+      }
       return;
     }
 
@@ -114,7 +120,25 @@ namespace PlayerStateCallbacks
       {
         flip->value.x = 1.f;
       }
-      player_rigid->force.x += player_comp->walk_speed * flip->value.x;
+
+      player_rigid->force.x = player_comp->walk_speed * flip->value.x;
+      // This part to deal with walking on slopes (WIP)
+      //if (player_rigid->on_ground)
+      //{
+      //  // we need to check if the direction vector of the slope is the same as the flip value
+      //  Vec2D direction = player_rigid->last_surface_dir_vector;
+      //  if (dot_product(direction, Vec2D(flip->value.x, 0.f)) < 0)
+      //  {
+      //    direction *= -1;
+      //  }
+      //  std::cout << direction << std::endl;
+      //  player_rigid->force = direction * player_comp->walk_speed;
+      //}
+      //else
+      //{
+      //  player_rigid->force.x = player_comp->walk_speed * flip->value.x;
+      //}
+
       if (!default_state)
       {
         state_machine->change_state("Walking");
@@ -456,7 +480,7 @@ namespace PlayerStateCallbacks
     if (Engine::Input::is_pressed(Engine::KeyCode::J) && !animation->has_ended()) {
       // Allow combo after frame 1 of this attack
       if (animation->get_current_frame_index() >= 1) {
-        state_machine->change_state("Attack3");
+        state_machine->change_state("PreAttack3");
       }
     }
     // Transition to idle when attack animation completes
@@ -468,6 +492,35 @@ namespace PlayerStateCallbacks
 #pragma endregion
 
 #pragma region attack 3
+  // ========================================================================
+  // Pre Attack 3 State Callbacks (Third Punch - Finisher)
+  // ========================================================================
+
+  inline void pre_attack3_on_enter(Engine::ECS::Entity entity) {
+    Log::info("Player: Attack 3 (Third Punch - Finisher!)");
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    Components::Flip* flip = entity.get_component<Components::Flip>();
+    assert(player_comp);
+    assert(rigid);
+    assert(flip);
+
+    player_comp->knockback_value = player_comp->attack3_data.knockback;
+    rigid->velocity.x = flip->value.x * player_comp->attack3.speed;
+  }
+
+  inline void pre_attack3_on_update(Engine::ECS::Entity entity) 
+  {
+    Components::Animation* animation = entity.get_component<Components::Animation>();
+    assert(animation);
+    if (animation->has_ended())
+    {
+      Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
+      assert(sm);
+      sm->change_state("Attack3");
+    }
+  }
+
   // ========================================================================
   // Attack 3 State Callbacks (Third Punch - Finisher)
   // ========================================================================
@@ -482,7 +535,7 @@ namespace PlayerStateCallbacks
     assert(flip);
 
     player_comp->knockback_value = player_comp->attack3_data.knockback;
-    rigid->velocity.x = flip->value.x * player_comp->dash.speed;
+    rigid->velocity.x = flip->value.x * player_comp->attack3.speed;
     //=========================================================================//
     ECS::Entity hitbox = create_hitbox(entity, player_comp->attack3_data);
 
@@ -492,16 +545,13 @@ namespace PlayerStateCallbacks
   }
 
   inline void attack3_on_update(Engine::ECS::Entity entity) {
-    Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
     Components::Animation* animation = entity.get_component<Components::Animation>();
-    assert(state_machine);
     assert(animation);
-
-    // No combo after this - it's the finisher
-    // Just wait for animation to complete
-    if (animation->has_ended()) 
+    if (animation->has_ended())
     {
-      state_machine->change_state("Idle");
+      Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
+      assert(sm);
+      sm->change_state("Idle");
     }
   }
 #pragma endregion
@@ -574,14 +624,12 @@ namespace PlayerStateCallbacks
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
 
-    // Exit Condition 1
     if (player_comp->uppercut.timer_end())
     {
       Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
       assert(sm);
       sm->change_state("PostUppercut");
     }
-    // Exit Condition 2
 
     player_comp->uppercut.timer -= Time::get_fixed_dt();
   }
@@ -656,13 +704,47 @@ namespace PlayerStateCallbacks
   inline void uppercut_falling_on_exit([[maybe_unused]] ECS::Entity entity)
   {
     default_state = false;
-    Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
-    assert(xform);
-    xform->position.y += 32.f;
   }
 #pragma endregion
 
 #pragma region smash
+  // ========================================================================
+  // Leap into Smash State Callbacks
+  // ========================================================================
+
+  inline void leap_on_enter(ECS::Entity entity)
+  {
+    Log::info("Player: Entered Pre Smash state");
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    player_comp->damage_immune = true;
+    player_comp->leap.set_timer();
+
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    Components::Flip* flip = entity.get_component<Components::Flip>();
+    assert(rigid);
+    rigid->velocity = Vec2D{ flip->value.x * player_comp->leap.speed,
+                             -player_comp->leap.speed };
+  }
+
+  inline void leap_on_update(ECS::Entity entity)
+  {
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    if (player_comp->leap.timer_end())
+    {
+      Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
+      assert(sm);
+      sm->change_state("PreSmash");
+    }
+    player_comp->leap.timer -= Time::get_fixed_dt();
+  }
+
+  inline void leap_on_exit([[maybe_unused]] ECS::Entity entity)
+  {
+    // Empty as designed
+  }
+
   // ========================================================================
   // Pre Smash State Callbacks
   // ========================================================================
@@ -749,6 +831,8 @@ namespace PlayerStateCallbacks
       attack->play_punch_hit_sfx = false;
     }
 
+    Engine::Systems::add_camera_shake(0.3f); // This adds to the one in register_collision_callback("damage_enemy", "enemy") as well
+
     /*Components::Attack* attack = hitbox.get_component<Components::Attack>();
     assert(attack);
     attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactBlue_Spritesheet.png");*/
@@ -824,13 +908,15 @@ REGISTER_STATE_MACHINE_BLUEPRINT(Player, "Idle",
 
   STATE("Attack1", PlayerStateCallbacks::attack1_on_enter, PlayerStateCallbacks::attack1_on_update, NO_CALLBACK)
   STATE("Attack2", PlayerStateCallbacks::attack2_on_enter, PlayerStateCallbacks::attack2_on_update, NO_CALLBACK)
+  STATE("PreAttack3", PlayerStateCallbacks::pre_attack3_on_enter, PlayerStateCallbacks::pre_attack3_on_update, NO_CALLBACK)
   STATE("Attack3", PlayerStateCallbacks::attack3_on_enter, PlayerStateCallbacks::attack3_on_update, NO_CALLBACK)
 
   STATE("PreUppercut", PlayerStateCallbacks::pre_uppercut_on_enter, PlayerStateCallbacks::pre_uppercut_on_update, PlayerStateCallbacks::pre_uppercut_on_exit)
   STATE("Uppercut", PlayerStateCallbacks::uppercut_on_enter, PlayerStateCallbacks::uppercut_on_update, PlayerStateCallbacks::uppercut_on_exit)
   STATE("PostUppercut", PlayerStateCallbacks::post_uppercut_on_enter, PlayerStateCallbacks::post_uppercut_on_update, PlayerStateCallbacks::post_uppercut_on_exit)
   STATE("UppercutFalling", PlayerStateCallbacks::uppercut_falling_on_enter, PlayerStateCallbacks::uppercut_falling_on_update, PlayerStateCallbacks::uppercut_falling_on_exit)
-
+  
+  STATE("Leap", PlayerStateCallbacks::leap_on_enter, PlayerStateCallbacks::leap_on_update, PlayerStateCallbacks::leap_on_exit)
   STATE("PreSmash", PlayerStateCallbacks::pre_smash_on_enter, PlayerStateCallbacks::pre_smash_on_update, PlayerStateCallbacks::pre_smash_on_exit)
   STATE("Smash", PlayerStateCallbacks::smash_on_enter, PlayerStateCallbacks::smash_on_update, PlayerStateCallbacks::smash_on_exit)
   STATE("PostSmash", PlayerStateCallbacks::post_smash_on_enter, PlayerStateCallbacks::post_smash_on_update, PlayerStateCallbacks::post_smash_on_exit)

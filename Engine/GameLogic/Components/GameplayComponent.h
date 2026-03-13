@@ -89,8 +89,9 @@ namespace Components
 
     Action attack1  { 0.f, 0.f, 1000.f, 0.f };
     Action attack2  { 0.f, 0.f, 1000.f, 0.f };
-    Action attack3  { 0.f, 0.f, 1000.f, 0.f };
+    Action attack3  { 0.f, 0.f, 1250.f, 0.f };
     Action uppercut { .05f, 5.f, 2500.f, 0 };
+    Action leap     { 0.3f, 0.f, 300.f, 0.f };
     Action smash    { 0.f, 7.f, 2500.f, 0.f };
 
     // hitbox_offset_x hitbox_offset_y hitbox_width hitbox_height life_time dmg knockback
@@ -294,7 +295,7 @@ REFLECT_FIELDS(Components::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_
 
 REGISTER_COMPONENT(Components::Player, 
   damage_immune, walk_speed, jump_force, dash, stunned, knockback_recieved,
-  attack1, attack2, attack3, uppercut, smash,
+  attack1, attack2, attack3, uppercut, smash, leap,
   attack1_data, attack2_data, attack3_data, uppercut_data, smash_data)
 REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, attack_range)
 REGISTER_COMPONENT(Components::TurretMonkey, chase_speed, attack_cooldown, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, long_attack_range)

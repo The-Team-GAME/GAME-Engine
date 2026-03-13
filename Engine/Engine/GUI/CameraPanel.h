@@ -27,8 +27,7 @@
 inline void CameraPanel()
 {
   static s32 selected_camera_id = -1;
-  static float test_shake_amplitude = 42.0f;
-  static float test_shake_duration = 0.16f;
+  static float test_shake_trauma = 0.5f;
   static char parent_search_buf[256] = "";  // Search filter for parent picker
 
   ImGui::Begin("Camera Control");
@@ -334,11 +333,10 @@ inline void CameraPanel()
 
       // Screen shake test controls
       ImGui::Text("Shake Test:");
-      ImGui::DragFloat("Shake Amplitude", &test_shake_amplitude, 1.0f, 0.0f, 300.0f, "%.1f");
-      ImGui::DragFloat("Shake Duration", &test_shake_duration, 0.01f, 0.01f, 2.0f, "%.2f s");
+      ImGui::DragFloat("Shake Trauma", &test_shake_trauma, 0.01f, 0.0f, 1.0f, "%.2f");
 
       if (ImGui::Button("Test Screen Shake")) {
-        Engine::Systems::add_camera_shake(test_shake_amplitude, test_shake_duration);
+        Engine::Systems::add_camera_shake(test_shake_trauma);
       }
     }
   }

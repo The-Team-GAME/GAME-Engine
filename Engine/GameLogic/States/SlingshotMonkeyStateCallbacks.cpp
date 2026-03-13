@@ -681,8 +681,6 @@ namespace SlingshotMonkeyStateCallbacks
       if (entity.has_component<Components::Parent>()) {
         entity.remove_component<Components::Parent>();
       }
-      // Apply knockback using physics system
-      Engine::Systems::Physics2DSystem::add_force(*rigid, pending_knockback->knockback);
 
       // Remove the pending knockback component (one-time use)
       entity.remove_component<Components::PendingKnockback>();

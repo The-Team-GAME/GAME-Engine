@@ -18,11 +18,6 @@
 
 using namespace Math;
 
-enum dir {
-  LEFT,
-  RIGHT
-};
-
 namespace Components
 {
   // https://docs.unity3d.com/ScriptReference/Rigidbody-isKinematic.html
@@ -48,10 +43,6 @@ namespace Components
     bool on_ground = false;
     bool is_jumping = false;
 
-    // Is the rigidbody facing left or right
-    // This should be updated in the script
-    dir direction; // not sure if its needed
-
     f32 static_friction_coefficient = 1.f; // not used, maybe ever
     f32 kinetic_coefficient = 0.9995f;
 
@@ -70,7 +61,7 @@ namespace Components
 
     // Default constructor for reflection
     RigidBody() : mass(1.0f), terminal_velocity(750.f), is_static(false), on_ground(false),
-      is_jumping(false), direction(RIGHT), rotation(0.0f), rotation_terminal_velocity(360.0f), angular_velocity(0.0f)
+      is_jumping(false), rotation(0.0f), rotation_terminal_velocity(360.0f), angular_velocity(0.0f)
     {
     }
 
@@ -78,4 +69,7 @@ namespace Components
   };
 }
 
-REGISTER_COMPONENT(Components::RigidBody, mass, acceleration, velocity, x_terminal_velocity, y_terminal_velocity, use_gravity, gravity, is_static, on_ground, is_jumping)
+
+
+
+REGISTER_COMPONENT(Components::RigidBody, mass, acceleration, velocity, x_terminal_velocity, y_terminal_velocity, use_gravity, apply_force, gravity, is_static, on_ground, is_jumping)

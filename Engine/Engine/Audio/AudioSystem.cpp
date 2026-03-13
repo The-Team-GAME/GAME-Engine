@@ -1,3 +1,21 @@
+//-----------------------------------------------------------------------------------
+// file:    AudioSystem.cpp
+// project: Monkey Stole My GPA
+//
+// author:  How Hong Chin Ryan (100%)
+//          Primary author
+//
+// email:   hongchinryan.how@digipen.edu
+//
+// brief:   Implements the engine's audio system backed by FMOD Studio.
+//          Manages FMOD Studio system lifecycle (init, per-frame update, shutdown),
+//          bank loading/unloading with automatic hot-reload on file change,
+//          event instance creation/playback/stopping/pausing, 3D listener and
+//          per-instance spatial attributes, and bus/VCA volume control.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
+
 #include "AudioSystem.h"
 
 #include <fmod_studio.hpp>

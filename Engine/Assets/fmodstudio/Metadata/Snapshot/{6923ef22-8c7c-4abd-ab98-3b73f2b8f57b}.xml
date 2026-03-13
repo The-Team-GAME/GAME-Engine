@@ -20,7 +20,7 @@
 			<destination>{591c863a-7429-46ec-bda5-f8d8863c3caf}</destination>
 		</relationship>
 		<relationship name="snapshotProperties">
-			<destination>{8ab24d4e-55b3-4582-9c3f-d3f43363bffe}</destination>
+			<destination>{6005af4a-1093-4e9c-b250-f99dafafb018}</destination>
 		</relationship>
 		<relationship name="snapshotTracks">
 			<destination>{7a8ae2e7-4d97-4d11-b1c4-84ab4d8ca711}</destination>
@@ -34,7 +34,7 @@
 	<object class="MarkerTrack" id="{a806c1fe-4da1-4e9e-a890-d8b398532089}" />
 	<object class="Timeline" id="{affc3587-113e-4a31-8e82-ba5923ec017c}" />
 	<object class="SnapshotMasterTrack" id="{591c863a-7429-46ec-bda5-f8d8863c3caf}" />
-	<object class="SnapshotProperty" id="{8ab24d4e-55b3-4582-9c3f-d3f43363bffe}">
+	<object class="SnapshotProperty" id="{6005af4a-1093-4e9c-b250-f99dafafb018}">
 		<property name="propertyName">
 			<value>cutoff</value>
 		</property>
@@ -42,7 +42,7 @@
 			<value>900</value>
 		</property>
 		<relationship name="automatableObject">
-			<destination>{a0316a7e-397b-4397-87d9-37c5ec1c25f4}</destination>
+			<destination>{a91fcff9-056a-4739-b09f-5d7e6c495ff2}</destination>
 		</relationship>
 	</object>
 	<object class="SnapshotTrack" id="{7a8ae2e7-4d97-4d11-b1c4-84ab4d8ca711}">
