@@ -425,6 +425,12 @@ namespace Engine {
       // Load the level from disk
       EntityList entities = Resources::load_level(filepath, append_resource_path, false);
 
+      // Guard: abort if deserialization returned nothing (file missing, corrupt, etc.)
+      if (entities.empty()) {
+        Log::error("[LevelManager] Failed to load level (0 entities): {}", full_path);
+        return "";
+      }
+
       // Single-world approach
       LevelState new_state;
       new_state.cached_entities = EntityList();
@@ -679,6 +685,9 @@ namespace Engine {
         Log::info("[LevelManager] Reloaded level from preloaded snapshot: {}", level_id);
         return;
       }
+
+      // Invalidate resource cache so reload fetches fresh from disk
+      Resources::level_cache.erase(level_id);
 
       EntityList reload_entities = get_preloaded_or_disk(state, level_id);
       if (reload_entities.empty()) {
