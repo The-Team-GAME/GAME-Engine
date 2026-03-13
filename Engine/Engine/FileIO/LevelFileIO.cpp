@@ -36,6 +36,29 @@ namespace Engine {
       return ReflectionLibrary::generic_value_to_json(level_value, true);
     }
 
+    Engine::EntityList deserialize_level_from_generic_value(const ReflectionLibrary::GenericValue& level_value)
+    {
+      Engine::EntityList entities;
+
+      if (!level_value.isObject() || !level_value.has("data")) {
+        Log::warning("Invalid level GenericValue: missing 'data' field");
+        return entities;
+      }
+
+      const auto& data = level_value["data"];
+      if (!data.has("entities") || !data["entities"].isArray()) {
+        Log::warning("Invalid level GenericValue: missing 'entities' array");
+        return entities;
+      }
+
+      const auto& entities_array = data["entities"].getArray();
+      for (const auto& entity_value : entities_array) {
+        entities.push_back(entity_value);
+      }
+
+      return entities;
+    }
+
     Engine::EntityList deserialize_level_from_json(const std::string& json_str)
     {
       std::optional<ReflectionLibrary::GenericValue> level_value_opt = ReflectionLibrary::generic_value_from_json(json_str);
@@ -43,16 +66,8 @@ namespace Engine {
         Log::warning("Failed to parse level JSON");
         return Engine::EntityList();
       }
-      ReflectionLibrary::GenericValue level_value = level_value_opt.value();
 
-      Engine::EntityList entities;
-
-      const auto& entities_array = level_value["data"]["entities"].getArray();
-      for (const auto& entity_value : entities_array) {
-        entities.push_back(entity_value);
-      }
-
-      return entities;
+      return deserialize_level_from_generic_value(level_value_opt.value());
     }
 
     bool serialize_level_to_json_file(const std::string& filepath, const Engine::EntityList& entities)

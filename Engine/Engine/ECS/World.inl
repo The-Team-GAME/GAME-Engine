@@ -153,28 +153,28 @@ namespace Engine {
         }
       }
 
-      containers.systems.push_back(std::move(system));
+      Internal::get_systems().push_back(std::move(system));
       return ptr;
     }
 
     template <typename T>
     void remove_system()
     {
-      auto& containers = Internal::get_containers();
-      containers.systems.erase(
-        std::remove_if(containers.systems.begin(), containers.systems.end(),
+      auto& systems = Internal::get_systems();
+      systems.erase(
+        std::remove_if(systems.begin(), systems.end(),
           [](const std::unique_ptr<System>& system)
           {
             return dynamic_cast<T*>(system.get()) != nullptr;
           }),
-        containers.systems.end());
+        systems.end());
     }
 
     template <typename T>
     void request_system_update()
     {
       auto& containers = Internal::get_containers();
-      for (auto& system : containers.systems)
+      for (auto& system : Internal::get_systems())
       {
         if (dynamic_cast<T*>(system.get()) != nullptr)
         {

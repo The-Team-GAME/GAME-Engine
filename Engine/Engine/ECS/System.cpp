@@ -89,6 +89,10 @@ namespace Engine {
       }
     }
 
+    void System::reset_entity_tracking() {
+      entities.clear();
+    }
+
     const SparseSet<EntityID>& System::get_entities() const {
       return entities;
     }

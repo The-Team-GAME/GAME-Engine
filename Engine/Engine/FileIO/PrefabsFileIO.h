@@ -53,6 +53,8 @@ namespace Engine {
     ==================================================================================*/
     Engine::ECS::Prefab deserialize_prefab_from_json(const std::string& json_str);
 
+    // Deserializes a prefab from an already-parsed GenericValue (the root object with dataType/data).
+    Engine::ECS::Prefab deserialize_prefab_from_generic_value(const ReflectionLibrary::GenericValue& generic_value);
 
     bool serialize_prefab_to_json_file(const std::string& filepath, const Engine::ECS::Prefab& prefab);
 
