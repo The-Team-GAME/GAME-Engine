@@ -80,12 +80,6 @@ public:
 
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
 
-    // Camera entity
-    Engine::ECS::Entity camera = Engine::ECS::create_entity();
-    camera.add_component<Components::Transform2D>(-3239.0f, 471.58f, 0.0f, 1.0f, 1.0f);
-    camera.add_component<Components::Camera>("player camera", true);
-    camera.add_component<Components::Parent>(player_entity.get_id());
-
     // TODO: REMOVE 
     player_entity.add_component<Components::Health>(5, 5);
     // player_entity.add_component<Components::HeartHUDSprite>();
