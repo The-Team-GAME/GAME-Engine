@@ -155,8 +155,6 @@ public:
     glm::vec2 mouse_pos = Engine::Input::get_mouse_position();
 
     if (tips_shown) {
-      set_tips_button_flat_square(0.85f, 0.85f, 0.85f, 1.0f);
-
       if (Engine::Input::is_pressed(Engine::KeyCode::Escape)) {
         destroy_tips_overlay();
         return;
@@ -256,7 +254,11 @@ public:
 
   void set_tips_button_texture(const char* texture_path) {
     if (tips_button_id == 0 || !Engine::ECS::is_entity_active(Engine::ECS::Entity(tips_button_id))) return;
-    auto* tips_texture = Engine::ECS::Entity(tips_button_id).get_component<Components::Texture>();
+    Engine::ECS::Entity tips_entity(tips_button_id);
+    if (tips_entity.has_component<Components::TextureAtlas>()) {
+      tips_entity.remove_component<Components::TextureAtlas>();
+    }
+    auto* tips_texture = tips_entity.get_component<Components::Texture>();
     if (!tips_texture) return;
     *tips_texture = Components::Texture(Engine::Resources::load_texture(texture_path));
   }
@@ -266,18 +268,6 @@ public:
     auto* tips_color = Engine::ECS::Entity(tips_button_id).get_component<Components::Color>();
     if (!tips_color) return;
     *tips_color = Components::Color(r, g, b, a);
-  }
-
-  void set_tips_button_flat_square(float r, float g, float b, float a = 1.0f) {
-    if (tips_button_id == 0 || !Engine::ECS::is_entity_active(Engine::ECS::Entity(tips_button_id))) return;
-    Engine::ECS::Entity tips_entity(tips_button_id);
-    if (tips_entity.has_component<Components::TextureAtlas>()) {
-      tips_entity.remove_component<Components::TextureAtlas>();
-    }
-    auto* tips_texture = tips_entity.get_component<Components::Texture>();
-    if (!tips_texture) return;
-    *tips_texture = Components::Texture(Engine::Resources::get_rect_texture());
-    set_tips_button_color(r, g, b, a);
   }
 
   void set_tips_button_hud_position() {
@@ -317,7 +307,7 @@ public:
 
     // Create tips overlay page 1 (screen-space coords)
     auto overlay = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(800.0f, 0.0f, 0.0f, 1088.0f, 768.0f)
+      .add_component<Components::Transform2D>(800.0f, 450.0f, 0.0f, 1088.0f, 768.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/InstructionsTips.png"))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()
@@ -326,7 +316,8 @@ public:
 
     set_tips_button_layer("main_menu_6");
     set_tips_button_overlay_position(true);
-    set_tips_button_flat_square(0.85f, 0.85f, 0.85f, 1.0f);
+    set_tips_button_texture("images/UI/arrowright.png");
+    set_tips_button_color(1.0f, 1.0f, 1.0f, 1.0f);
 
     // Use the tips button near the pause button to advance pages.
     tips_next_btn_id = 0;
@@ -350,7 +341,7 @@ public:
 
     // Create tips overlay page 2 (screen-space coords)
     auto overlay2 = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(800.0f, 0.0f, 0.0f, 1088.0f, 768.0f)
+      .add_component<Components::Transform2D>(800.0f, 450.0f, 0.0f, 1088.0f, 768.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/InstructionsTips2.png"))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()
@@ -359,7 +350,8 @@ public:
 
     set_tips_button_layer("main_menu_6");
     set_tips_button_overlay_position(false);
-    set_tips_button_flat_square(0.85f, 0.85f, 0.85f, 1.0f);
+    set_tips_button_texture("images/UI/arrowleft.png");
+    set_tips_button_color(1.0f, 1.0f, 1.0f, 1.0f);
   }
 
   void show_tips_page1() {
@@ -384,7 +376,8 @@ public:
 
     set_tips_button_layer("main_menu_6");
     set_tips_button_overlay_position(true);
-    set_tips_button_flat_square(0.85f, 0.85f, 0.85f, 1.0f);
+    set_tips_button_texture("images/UI/arrowright.png");
+    set_tips_button_color(1.0f, 1.0f, 1.0f, 1.0f);
   }
 
   void destroy_tips_overlay() {
