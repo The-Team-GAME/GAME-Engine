@@ -4,19 +4,22 @@
 namespace CheckpointCallbacks
 {
 
-  inline void spawn_checkpoint_prompt_animation()
+  inline void spawn_checkpoint_prompt(Engine::ECS::Entity checkpoint)
   {
-    Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(640.0f, 120.0f, 0.0f, 300.0f, 100.0f)
-      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-      .add_component<Components::Texture>(
-        Engine::Resources::load_texture("images/UI/CheckpointPrompt.png"))
-      .add_component<Components::TextureAtlas>(
-      /* your atlas data here */)
-      .add_component<Components::Animation>(
-      /* your animation data here */)
-      .add_component<Components::Lifetime>(1.0f)
-      .add_to_layer("ui");
+    auto* checkpoint_transform = checkpoint.get_component<Components::Transform2D>();
+    if (!checkpoint_transform) return;
+
+    auto prefab = Engine::Resources::load_prefab("prefabs/checkpoint_prompt.json");
+    Engine::ECS::Entity prompt = Engine::ECS::instantiate_prefab(prefab);
+
+    if (auto* prompt_transform = prompt.get_component<Components::Transform2D>())
+    {
+      prompt_transform->position = checkpoint_transform->position;
+      prompt_transform->position.y -= 50.0f; // above checkpoint
+    }
+
+    prompt.add_component<Components::Lifetime>(1.0f);
+
   }
 
   void checkpoint_on_enter(Engine::ECS::Entity checkpoint, Engine::ECS::Entity player_entity)
@@ -34,7 +37,7 @@ namespace CheckpointCallbacks
       checkpoint_transform->position.x,
       checkpoint_transform->position.y);
 
-    //spawn_checkpoint_prompt_animation();
+    spawn_checkpoint_prompt(checkpoint);
   }
 
   void checkpoint_on_update([[maybe_unused]] Engine::ECS::Entity checkpoint,
