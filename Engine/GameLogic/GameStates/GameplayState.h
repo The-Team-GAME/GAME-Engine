@@ -28,6 +28,7 @@
 class GameplayState : public Engine::Scene
 {
   static constexpr const char* GAMEPLAY_BGM_EVENT = "event:/BGM/LevelBGM";
+  static constexpr const char* GAMEPLAY_BATTLECRY_EVENT = "event:/SFX/PlayerStartCry";
   static constexpr float TIPS_BUTTON_HUD_X = 1373.0f;
   static constexpr float TIPS_BUTTON_HUD_Y = 92.0f;
   static constexpr float TIPS_BUTTON_SIZE = 110.0f;
@@ -147,6 +148,7 @@ public:
 
   void init() {
     Engine::AudioSystem::playSceneMusic(GAMEPLAY_BGM_EVENT, 0.3f, true); // TODO: get from settings
+    Engine::AudioSystem::playSceneMusic(GAMEPLAY_BATTLECRY_EVENT, 0.3f, true); // TODO: get from settings
   };
 
   void update() {
