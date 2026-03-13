@@ -2,9 +2,9 @@
 // file:    PlayerStateCallbacks.h
 // project: Monkey Stole My GPA
 //
-// author:  Cheng Ming Xian (80%)
+// author:  Cheng Ming Xian (90%)
 //          Primary author
-//          Chew Shee Yang (20%)
+//          Chew Shee Yang (10%)
 //          Co-Author
 // 
 // email:   c.mingxian@digipen.edu
@@ -63,11 +63,6 @@ namespace PlayerStateCallbacks
     if (Engine::Input::is_pressed(Engine::KeyCode::K)
       && player_comp->uppercut.ready())
     {
-      // putting this here because it spazes otherwise, i think its smth to do with drawing sequence or smth
-      Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
-      assert(xform);
-      xform->position.y -= 32.f;
-
       state_machine->change_state("PreUppercut");
       return;
     }
@@ -573,6 +568,7 @@ namespace PlayerStateCallbacks
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
     rigid->apply_force = false;
+    rigid->force.zero();
     rigid->velocity.zero();
 
     //=========================================================================//
