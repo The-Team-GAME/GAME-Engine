@@ -10,8 +10,9 @@
 #include "OptionsState.h"
 
 // Static members
-Engine::ECS::EntityID OptionsState::fullscreen_btn_id = 0;
-Engine::ECS::EntityID OptionsState::windowed_btn_id = 0;
+Engine::ECS::EntityID OptionsState::screen_mode_btn_id = 0;
+Engine::Graphics::Texture OptionsState::fullscreen_tex;
+Engine::Graphics::Texture OptionsState::windowed_tex;
 
 // All entities created by this state, for easy cleanup
 namespace {
@@ -75,8 +76,8 @@ void OptionsState::load()
   }
 
   // Load other textures
-  fullscreen_texture = Engine::Resources::load_texture("images/Options/Fullscreen.png");
-  windowed_texture   = Engine::Resources::load_texture("images/Options/Windowed.png");
+  fullscreen_tex = Engine::Resources::load_texture("images/Options/Fullscreen.png");
+  windowed_tex   = Engine::Resources::load_texture("images/Options/Windowed.png");
 
   // Read current settings to initialise slider positions
   auto& settings = Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get();
@@ -105,26 +106,61 @@ void OptionsState::load()
   const float slider_h      = 24.0f;    // slider image height (actual png size)
   const float slider_scale  = 1.0f;     // display at native size
 
-  const float label_w = 120.0f;         // label display width
-  const float label_h = 50.0f;          // label display height
+  const float bgm_label_w = 117.0f;     // actual BGM.png size
+  const float bgm_label_h = 47.0f;
+  const float sfx_label_w = 103.0f;     // actual SFX.png size
+  const float sfx_label_h = 48.0f;
 
   const float row1_y = 320.0f;          // BGM row
   const float row2_y = 400.0f;          // SFX row
   const float row3_y = 500.0f;          // SCREEN row
 
-  const float screen_label_w = 200.0f;
+  const float screen_label_w = 211.0f;
   const float screen_label_h = 50.0f;
 
-  const float mode_btn_w = 200.0f;
-  const float mode_btn_h = 50.0f;
-  const float fullscreen_x = 820.0f;    // left button
-  const float windowed_x   = 1020.0f;   // right button
+  const float mode_btn_w = 427.0f;
+  const float mode_btn_h = 32.0f;
+  const float mode_btn_x = 920.0f;    // single toggle button position
+
+  // Check current screen mode for initial texture
+  const bool is_fullscreen = settings.fullscreen;
 
   // -----------------------------------------------------------------------
   // Create entities
   // -----------------------------------------------------------------------
 
-  // Panel (the big pink "OPTIONS" box) — drawn on a high UI layer
+  // --- Background (replicated from MainMenuState) ---
+  // BackSky (scrolling) - layer 0
+  backsky_entity = Engine::ECS::create_entity()
+    .add_component<Components::Transform2D>(
+      Math::Vec2D(2400.0f, 450.0f), 0.0f, Math::Vec2D(4800.0f, 900.0f))
+    .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+    .add_component<Components::Texture>(
+      Engine::Resources::load_texture("images/UI/MainMenu/BackGround/BackSky.png", true, true))
+    .add_to_layer("main_menu_0");
+  track(backsky_entity);
+
+  // BackCarriage - layer 2
+  carriage_entity = Engine::ECS::create_entity()
+    .add_component<Components::Transform2D>(
+      Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
+    .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+    .add_component<Components::Texture>(
+      Engine::Resources::load_texture("images/UI/MainMenu (Start)/BackCarriage.png", true, true))
+    .add_to_layer("main_menu_2");
+  track(carriage_entity);
+
+  // Front overlay - layer 4
+  front_entity = Engine::ECS::create_entity()
+    .add_component<Components::Transform2D>(
+      Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
+    .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+    .add_component<Components::Texture>(
+      Engine::Resources::load_texture("images/UI/MainMenu (Start)/Front - no graffiti.png", true, true))
+    .add_to_layer("main_menu_4");
+  track(front_entity);
+
+  // Panel (the big pink "OPTIONS" box) — drawn on the options layer (above background)
   panel_entity = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
       Math::Vec2D(panel_x, panel_y), 0.0f, Math::Vec2D(panel_w, panel_h))
@@ -138,7 +174,7 @@ void OptionsState::load()
   // --- BGM row ---
   bgm_label_entity = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
-      Math::Vec2D(content_left, row1_y), 0.0f, Math::Vec2D(label_w, label_h))
+      Math::Vec2D(content_left, row1_y), 0.0f, Math::Vec2D(bgm_label_w, bgm_label_h))
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
     .add_component<Components::Texture>(
       Engine::Resources::load_texture("images/Options/BGM.png"))
@@ -159,7 +195,7 @@ void OptionsState::load()
   // --- SFX row ---
   sfx_label_entity = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
-      Math::Vec2D(content_left, row2_y), 0.0f, Math::Vec2D(label_w, label_h))
+      Math::Vec2D(content_left, row2_y), 0.0f, Math::Vec2D(sfx_label_w, sfx_label_h))
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
     .add_component<Components::Texture>(
       Engine::Resources::load_texture("images/Options/SFX.png"))
@@ -189,33 +225,19 @@ void OptionsState::load()
     .add_to_layer("options");
   track(screen_label_entity);
 
-  // Fullscreen button (left)
-  fullscreen_entity = Engine::ECS::create_entity()
+  // Screen mode toggle button — shows Fullscreen.png or Windowed.png based on current setting
+  screen_mode_entity = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
-      Math::Vec2D(fullscreen_x, row3_y), 0.0f,
+      Math::Vec2D(mode_btn_x, row3_y), 0.0f,
       Math::Vec2D(mode_btn_w, mode_btn_h))
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-    .add_component<Components::Texture>(fullscreen_texture)
+    .add_component<Components::Texture>(is_fullscreen ? fullscreen_tex : windowed_tex)
     .add_component<Components::UI>()
     .add_component<Components::BoxCollider>(mode_btn_w, mode_btn_h, false)
-    .add_component<Components::Clickable>("options_set_fullscreen", "", "")
+    .add_component<Components::Clickable>("options_toggle_screen_mode", "", "")
     .add_to_layer("options");
-  track(fullscreen_entity);
-  fullscreen_btn_id = fullscreen_entity.get_id();
-
-  // Windowed button (right)
-  windowed_entity = Engine::ECS::create_entity()
-    .add_component<Components::Transform2D>(
-      Math::Vec2D(windowed_x, row3_y), 0.0f,
-      Math::Vec2D(mode_btn_w, mode_btn_h))
-    .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-    .add_component<Components::Texture>(windowed_texture)
-    .add_component<Components::UI>()
-    .add_component<Components::BoxCollider>(mode_btn_w, mode_btn_h, false)
-    .add_component<Components::Clickable>("options_set_windowed", "", "")
-    .add_to_layer("options");
-  track(windowed_entity);
-  windowed_btn_id = windowed_entity.get_id();
+  track(screen_mode_entity);
+  screen_mode_btn_id = screen_mode_entity.get_id();
 }
 
 void OptionsState::init()
@@ -224,11 +246,27 @@ void OptionsState::init()
 
 void OptionsState::update()
 {
-  // Close on Escape
+  // Close on Escape — go back to main menu (this is a full scene, not an overlay)
   if (Engine::Input::is_pressed(Engine::KeyCode::Escape))
   {
-    Engine::SceneManager::pop_scene();
+    Engine::SceneManager::load_scene("MainMenuState");
     return;
+  }
+
+  // --- Sky scrolling animation (same as MainMenuState) ---
+  float dt = Engine::Time::get_fixed_dt();
+  sky_timer += dt;
+  if (sky_timer >= sky_duration) {
+    sky_timer -= sky_duration;
+  }
+  float sky_t = sky_timer / sky_duration;
+  float sky_x = 2400.0f + ((-800.0f) - 2400.0f) * sky_t;
+
+  if (backsky_entity.is_valid() && Engine::ECS::is_entity_active(backsky_entity)) {
+    auto* transform = backsky_entity.get_component<Components::Transform2D>();
+    if (transform) {
+      transform->position.x = sky_x;
+    }
   }
 
   // --- Slider interaction (manual mouse hit-testing) ---
@@ -297,6 +335,5 @@ void OptionsState::unload()
     }
   }
   options_entities.clear();
-  fullscreen_btn_id = 0;
-  windowed_btn_id = 0;
+  screen_mode_btn_id = 0;
 }

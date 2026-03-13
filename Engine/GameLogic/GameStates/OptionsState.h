@@ -20,14 +20,22 @@ public:
   void free();
   void unload();
 
-  // Static entity IDs so callbacks in GameLogicEntry can access them
-  static Engine::ECS::EntityID fullscreen_btn_id;
-  static Engine::ECS::EntityID windowed_btn_id;
+  // Static entity ID so callbacks in GameLogicEntry can access the screen mode button
+  static Engine::ECS::EntityID screen_mode_btn_id;
+
+  // Textures accessible from callbacks to swap between fullscreen/windowed display
+  static Engine::Graphics::Texture fullscreen_tex;
+  static Engine::Graphics::Texture windowed_tex;
 
 private:
   // Background entities (from main menu, drawn underneath)
   Engine::ECS::Entity backsky_entity;
   Engine::ECS::Entity carriage_entity;
+  Engine::ECS::Entity front_entity;
+
+  // Sky scrolling animation
+  float sky_timer = 0.0f;
+  float sky_duration = 7.0f;
 
   // Options panel
   Engine::ECS::Entity panel_entity;       // "New group.png" - the big pink panel
@@ -41,16 +49,11 @@ private:
   Engine::ECS::Entity bgm_slider_entity;
   Engine::ECS::Entity sfx_slider_entity;
 
-  // Screen mode buttons (Fullscreen + Windowed in one sprite each)
-  Engine::ECS::Entity fullscreen_entity;
-  Engine::ECS::Entity windowed_entity;
+  // Screen mode toggle button (swaps texture between Fullscreen.png and Windowed.png)
+  Engine::ECS::Entity screen_mode_entity;
 
   // Textures for slider levels 1-10
   Engine::Graphics::Texture slider_textures[10];
-
-  // Textures for fullscreen/windowed
-  Engine::Graphics::Texture fullscreen_texture;
-  Engine::Graphics::Texture windowed_texture;
 
   // Current slider values (1-10)
   int bgm_level = 10;
