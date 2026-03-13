@@ -46,7 +46,7 @@ bool OptionsState::is_mouse_in_rect(float cx, float cy, float w, float h)
   float half_w = w * 0.5f;
   float half_h = h * 0.5f;
   return (mouse.x >= cx - half_w && mouse.x <= cx + half_w &&
-          mouse.y >= cy - half_h && mouse.y <= cy + half_h);
+    mouse.y >= cy - half_h && mouse.y <= cy + half_h);
 }
 
 int OptionsState::get_slider_level_from_mouse(float slider_cx, float slider_width)
@@ -79,7 +79,7 @@ void OptionsState::load()
 
   // Load other textures
   fullscreen_tex = Engine::Resources::load_texture("images/Options/Fullscreen.png");
-  windowed_tex   = Engine::Resources::load_texture("images/Options/Windowed.png");
+  windowed_tex = Engine::Resources::load_texture("images/Options/Windowed.png");
 
   // Read current settings to initialise slider positions
   auto& settings = Engine::FileIO::GameSettingsBridge::get();
@@ -95,18 +95,18 @@ void OptionsState::load()
   // -----------------------------------------------------------------------
   // The panel image is the large pink "OPTIONS" box, displayed over the train
   // We centre it roughly in the screen.
-  const float panel_w = 900.0f;
-  const float panel_h = 500.0f;
-  const float panel_x = 800.0f;  // centre of 1600
-  const float panel_y = 420.0f;  // slightly above centre
+  const float panel_w = 1258.0f;
+  const float panel_h = 830.0f;
+  const float panel_x = 743.0f;  // centre of 1600
+  const float panel_y = 440.0f;  // slightly above centre
 
   // Content area inside the panel — offset from the panel's top-left area
   // We'll lay things out row by row from the top of the content area.
-  const float content_left  = 480.0f;   // x where labels start
-  const float slider_x      = 900.0f;   // centre-x of sliders
-  const float slider_w      = 529.0f;   // slider image width (actual png size)
-  const float slider_h      = 24.0f;    // slider image height (actual png size)
-  const float slider_scale  = 1.0f;     // display at native size
+  const float content_left = 480.0f;   // x where labels start
+  const float slider_x = 900.0f;   // centre-x of sliders
+  const float slider_w = 529.0f;   // slider image width (actual png size)
+  const float slider_h = 24.0f;    // slider image height (actual png size)
+  const float slider_scale = 1.0f;     // display at native size
 
   const float bgm_label_w = 117.0f;     // actual BGM.png size
   const float bgm_label_h = 47.0f;
@@ -301,8 +301,8 @@ void OptionsState::update()
   // --- Slider interaction (manual mouse hit-testing) ---
   const float slider_x = 900.0f;
   const float slider_w = 529.0f;
-  const float row1_y   = 320.0f;
-  const float row2_y   = 400.0f;
+  const float row1_y = 320.0f;
+  const float row2_y = 400.0f;
 
   // Generous vertical hit area for easier clicking
   const float hit_h = 40.0f;
