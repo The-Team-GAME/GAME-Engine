@@ -887,6 +887,9 @@ namespace PlayerStateCallbacks
   {
     Log::info("Player: Died!");
     Engine::UpgradeManager::instance().reset();
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    player_comp->damage_immune = true;
   }
 
   inline void death_on_update(ECS::Entity entity)
@@ -905,12 +908,9 @@ namespace PlayerStateCallbacks
   inline void death_on_exit([[maybe_unused]] ECS::Entity entity)
   {
     Log::info("Player: Exited Death state");
-    //Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
-    //assert(state_machine);
-    //state_machine->change_state("Idle");
-
-    //std::string scene = SceneManager::get_current_scene_name();
-    //SceneManager::load_scene(scene);
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    player_comp->damage_immune = false;
 
     auto* player = entity.get_component<Components::Player>();
 
