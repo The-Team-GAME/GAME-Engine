@@ -49,9 +49,11 @@ namespace Engine {
         Components::RigidBody& rigid,
         CollisionResult const& collision);
 
-      static f32 get_slope_angle_threshold();
+      // The angle tresholds mentioned below is simply what our engine will consider a slope 
+      // as long as the surface's angle sits betweek 0 and the threshold angle
+      static f32 get_slope_angle_threshold(); // returns the treshold angle in degrees
 
-      static f32 get_slope_radian_threshold();
+      static f32 get_slope_radian_threshold();// returns the treshold angle in radians
 
       // Used to add forces to the rigid body
       static ENGINE_API void add_force(Components::RigidBody& rigid, Vec2D force);
