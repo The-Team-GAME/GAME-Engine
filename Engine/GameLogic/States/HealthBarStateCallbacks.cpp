@@ -13,19 +13,37 @@ static int get_player_health() {
 }
 
 // ========================================================================
-// Static HP state update — check if player health dropped, start transition
+// Static HP state update — check if player health changed, start transition
 // ========================================================================
+
+// Maps a health value to the name of the correct static HP state.
+// Used to jump directly to the right state when health is edited externally
+// (e.g. from the ImGui inspector panel).
+static const char* expected_hp_state(int health) {
+  if (health >= 5) return "5HP";
+  if (health == 4) return "4HP";
+  if (health == 3) return "3HP";
+  if (health == 2) return "2HP";
+  if (health == 1) return "1HP";
+  return "0HP";
+}
 
 // Macro to generate the update callback for a static HP state.
 // `hp_val`       = the health value this state represents
 // `trans_state`  = the transition state to go to when health drops
+//
+// Also handles health going UP (e.g. ImGui edits) by jumping directly
+// to the correct state without playing a transition animation.
 #define DEFINE_HP_STATE_UPDATE(hp_val, trans_state)                          \
   inline void hp_##hp_val##_update(Engine::ECS::Entity entity) {            \
     int health = get_player_health();                                       \
     if (health < 0) return;                                                 \
+    auto* sm = entity.get_component<Components::StateMachine>();            \
+    if (!sm) return;                                                        \
     if (health < hp_val) {                                                  \
-      auto* sm = entity.get_component<Components::StateMachine>();          \
-      if (sm) sm->change_state(trans_state);                                \
+      sm->change_state(trans_state);                                        \
+    } else if (health > hp_val) {                                           \
+      sm->change_state(expected_hp_state(health));                          \
     }                                                                       \
   }
 
@@ -35,17 +53,32 @@ DEFINE_HP_STATE_UPDATE(3, "3HP_to_2HP")
 DEFINE_HP_STATE_UPDATE(2, "2HP_to_1HP")
 DEFINE_HP_STATE_UPDATE(1, "1HP_to_0HP")
 
-// 0HP is the terminal state — no further transitions
-inline void hp_0_update([[maybe_unused]] Engine::ECS::Entity entity) {}
+// 0HP: normally terminal, but handle health being restored externally (e.g. ImGui)
+inline void hp_0_update(Engine::ECS::Entity entity) {
+  int health = get_player_health();
+  if (health <= 0) return;
+  auto* sm = entity.get_component<Components::StateMachine>();
+  if (sm) sm->change_state(expected_hp_state(health));
+}
 
 // ========================================================================
 // Transition state update — wait for animation to end, then go to next state
 // ========================================================================
 
 // Macro to generate the update callback for a transition state.
+// `to`           = the HP value being transitioned toward (downward)
 // `target_state` = the static state to transition to when animation ends
+//
+// Also checks if health has changed while the transition is playing (e.g.
+// healed via ImGui) and jumps immediately to the correct static state.
 #define DEFINE_TRANSITION_UPDATE(from, to, target_state)                    \
   inline void hp_##from##_to_##to##_update(Engine::ECS::Entity entity) {   \
+    int health = get_player_health();                                       \
+    if (health >= 0 && health != (to)) {                                   \
+      auto* sm = entity.get_component<Components::StateMachine>();          \
+      if (sm) sm->change_state(expected_hp_state(health));                  \
+      return;                                                               \
+    }                                                                       \
     auto* animation = entity.get_component<Components::Animation>();        \
     if (animation && animation->has_ended()) {                              \
       auto* sm = entity.get_component<Components::StateMachine>();          \

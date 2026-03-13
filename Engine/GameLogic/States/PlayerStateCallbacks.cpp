@@ -480,7 +480,7 @@ namespace PlayerStateCallbacks
     if (Engine::Input::is_pressed(Engine::KeyCode::J) && !animation->has_ended()) {
       // Allow combo after frame 1 of this attack
       if (animation->get_current_frame_index() >= 1) {
-        state_machine->change_state("Attack3");
+        state_machine->change_state("PreAttack3");
       }
     }
     // Transition to idle when attack animation completes
@@ -492,6 +492,35 @@ namespace PlayerStateCallbacks
 #pragma endregion
 
 #pragma region attack 3
+  // ========================================================================
+  // Pre Attack 3 State Callbacks (Third Punch - Finisher)
+  // ========================================================================
+
+  inline void pre_attack3_on_enter(Engine::ECS::Entity entity) {
+    Log::info("Player: Attack 3 (Third Punch - Finisher!)");
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    Components::Flip* flip = entity.get_component<Components::Flip>();
+    assert(player_comp);
+    assert(rigid);
+    assert(flip);
+
+    player_comp->knockback_value = player_comp->attack3_data.knockback;
+    rigid->velocity.x = flip->value.x * player_comp->attack3.speed;
+  }
+
+  inline void pre_attack3_on_update(Engine::ECS::Entity entity) 
+  {
+    Components::Animation* animation = entity.get_component<Components::Animation>();
+    assert(animation);
+    if (animation->has_ended())
+    {
+      Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
+      assert(sm);
+      sm->change_state("Attack3");
+    }
+  }
+
   // ========================================================================
   // Attack 3 State Callbacks (Third Punch - Finisher)
   // ========================================================================
@@ -506,7 +535,7 @@ namespace PlayerStateCallbacks
     assert(flip);
 
     player_comp->knockback_value = player_comp->attack3_data.knockback;
-    rigid->velocity.x = flip->value.x * player_comp->dash.speed;
+    rigid->velocity.x = flip->value.x * player_comp->attack3.speed;
     //=========================================================================//
     ECS::Entity hitbox = create_hitbox(entity, player_comp->attack3_data);
 
@@ -516,16 +545,13 @@ namespace PlayerStateCallbacks
   }
 
   inline void attack3_on_update(Engine::ECS::Entity entity) {
-    Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
     Components::Animation* animation = entity.get_component<Components::Animation>();
-    assert(state_machine);
     assert(animation);
-
-    // No combo after this - it's the finisher
-    // Just wait for animation to complete
-    if (animation->has_ended()) 
+    if (animation->has_ended())
     {
-      state_machine->change_state("Idle");
+      Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
+      assert(sm);
+      sm->change_state("Idle");
     }
   }
 #pragma endregion
@@ -678,9 +704,6 @@ namespace PlayerStateCallbacks
   inline void uppercut_falling_on_exit([[maybe_unused]] ECS::Entity entity)
   {
     default_state = false;
-    Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
-    assert(xform);
-    xform->position.y += 32.f;
   }
 #pragma endregion
 
@@ -808,6 +831,8 @@ namespace PlayerStateCallbacks
       attack->play_punch_hit_sfx = false;
     }
 
+    Engine::Systems::add_camera_shake(42.0f * 1.1f, 0.16f * 4.0f);
+
     /*Components::Attack* attack = hitbox.get_component<Components::Attack>();
     assert(attack);
     attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactBlue_Spritesheet.png");*/
@@ -883,6 +908,7 @@ REGISTER_STATE_MACHINE_BLUEPRINT(Player, "Idle",
 
   STATE("Attack1", PlayerStateCallbacks::attack1_on_enter, PlayerStateCallbacks::attack1_on_update, NO_CALLBACK)
   STATE("Attack2", PlayerStateCallbacks::attack2_on_enter, PlayerStateCallbacks::attack2_on_update, NO_CALLBACK)
+  STATE("PreAttack3", PlayerStateCallbacks::pre_attack3_on_enter, PlayerStateCallbacks::pre_attack3_on_update, NO_CALLBACK)
   STATE("Attack3", PlayerStateCallbacks::attack3_on_enter, PlayerStateCallbacks::attack3_on_update, NO_CALLBACK)
 
   STATE("PreUppercut", PlayerStateCallbacks::pre_uppercut_on_enter, PlayerStateCallbacks::pre_uppercut_on_update, PlayerStateCallbacks::pre_uppercut_on_exit)
