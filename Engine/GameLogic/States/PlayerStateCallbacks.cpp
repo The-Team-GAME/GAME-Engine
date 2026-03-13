@@ -419,6 +419,7 @@ namespace PlayerStateCallbacks
     Components::Attack* attack = hitbox.get_component<Components::Attack>();
     assert(attack);
     attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactBlue_Spritesheet.png");
+    attack->impact_vfx_frame_start = 0;
   }
 
   inline void attack1_on_update(Engine::ECS::Entity entity) {
@@ -472,6 +473,7 @@ namespace PlayerStateCallbacks
     Components::Attack* attack = hitbox.get_component<Components::Attack>();
     assert(attack);
     attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactBlue_Spritesheet.png");
+    attack->impact_vfx_frame_start = 3;
   }
 
   inline void attack2_on_update(Engine::ECS::Entity entity) {
@@ -554,6 +556,7 @@ namespace PlayerStateCallbacks
     Components::Attack* attack = hitbox.get_component<Components::Attack>();
     assert(attack);
     attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactBlue_Spritesheet.png");
+    attack->impact_vfx_frame_start = 6;
   }
 
   inline void attack3_on_update(Engine::ECS::Entity entity) {

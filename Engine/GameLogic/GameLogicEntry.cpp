@@ -213,6 +213,9 @@ static void register_collision_callbacks()
             }
           }
 
+          int frame_start = attack->impact_vfx_frame_start;
+          int frame_end = frame_start + 2;
+
           auto behind_vfx = Engine::ECS::create_entity()
             .add_component<Components::Transform2D>(
               transform->position.x + (flip_x * 60.0f),
@@ -224,8 +227,8 @@ static void register_collision_callbacks()
             .add_component<Components::Parent>(enemy_entity.get_id())
             .add_component<Components::Texture>(Engine::Resources::load_texture("images/bro_vfx_impact.png"))
             .add_component<Components::TextureAtlas>(96, 64, 1, 9, 9)
-            .add_component<Components::Animation>(0, 8, 0.04f, false)
-            .add_component<Components::Lifetime>(0.36f)
+            .add_component<Components::Animation>(frame_start, frame_end, 0.04f, false)
+            .add_component<Components::Lifetime>(0.12f)
             .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
             .add_component<Components::Flip>(flip_x, 1.0f)
             .add_to_layer("effect_behind");
