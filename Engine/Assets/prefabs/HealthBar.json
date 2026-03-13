@@ -14,21 +14,7 @@
                 },
                 "type": "Components::Color"
             },
-            {
-                "data": {
-                    "local_offset": {
-                        "x": 234.7437744140625,
-                        "y": 153.90463256835938
-                    },
-                    "offset_initialized": true,
-                    "parent_id": 1141,
-                    "prev_parent_pos": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "type": "Components::Parent"
-            },
+
             {
                 "data": {
                     "path": "images/health_states.png"
