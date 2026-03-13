@@ -283,6 +283,11 @@ std::string Engine::Resources::get_relative_path(const std::string& full_path)
 
 Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& filepath, bool append_resource_path, bool persist)
 {
+  if (filepath.empty())
+  {
+    return nullptr;
+  }
+
   // Special handling for unit_rect texture
   if (filepath == Engine::Graphics::get_rect_texture()->path)
   {
@@ -348,6 +353,11 @@ Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& fil
 
 Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath, u32 size, bool append_resource_path, bool persist)
 {
+  if (filepath.empty())
+  {
+    return nullptr;
+  }
+
   // Construct full path using Path class
   std::string full_path = append_resource_path ? Engine::Path(resource_path).join(filepath) : Engine::Path(filepath).normalize();
 
