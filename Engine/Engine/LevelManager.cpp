@@ -39,6 +39,19 @@ namespace {
   std::mutex preload_mutex;
   std::unordered_map<std::string, Engine::EntityList> preload_results;
 
+  // Global preloaded snapshot map: level_path → deactivated entity IDs (pristine state)
+  std::unordered_map<std::string, std::vector<Engine::ECS::EntityID>> preloaded_snapshots;
+
+  // Incremental snapshot rebuild tracking
+  struct SnapshotRebuild {
+    std::string level_id;
+    std::vector<Engine::ECS::EntityID> source_ids;  // Entity IDs to clone from
+    std::vector<Engine::ECS::EntityID> built_ids;   // Cloned entity IDs so far
+    size_t index = 0;                                // Current progress
+    bool active = false;
+  };
+  SnapshotRebuild snapshot_rebuild;
+
   // Helper function to check if a serialized entity is a tile collision entity
   // These are temporary entities rebuilt by TilemapManager and should not be loaded from files
   bool is_tile_collision_entity(const ReflectionLibrary::GenericValue& entity_value) {
@@ -161,7 +174,6 @@ namespace Engine {
 
     // Forward declarations
     void build_preloaded_snapshot(LevelState& state);
-    void destroy_preloaded_entities(LevelState& state);
 
     void queue_preload_refresh(const std::string& level_id)
     {
@@ -228,62 +240,58 @@ namespace Engine {
       }
 
       // --- Incremental snapshot rebuild (time-budgeted) ---
+      // --- Incremental snapshot rebuild (time-budgeted) ---
       // After a reload consumes the snapshot, rebuild it across multiple frames
       // by cloning a batch of entities per frame within a 2ms time budget.
-      for (auto& [level_id, state] : open_levels) {
-        if (!state.needs_snapshot_rebuild) continue;
-        if (level_id != active_level_id) continue;
-
+      if (snapshot_rebuild.active) {
         // First frame: capture source entity IDs and clean up old snapshot
-        if (state.snapshot_rebuild_sources.empty() && state.snapshot_rebuild_index == 0) {
-          destroy_preloaded_entities(state);
-          state.preloaded_entity_ids.clear();
+        if (snapshot_rebuild.source_ids.empty() && snapshot_rebuild.index == 0) {
+          clear_preloaded_snapshot(snapshot_rebuild.level_id);
 
           ECS::for_each_entity([&](ECS::Entity entity) {
-            state.snapshot_rebuild_sources.push_back(entity.get_id());
+            snapshot_rebuild.source_ids.push_back(entity.get_id());
           });
 
-          if (state.snapshot_rebuild_sources.empty()) {
-            state.needs_snapshot_rebuild = false;
-            state.has_preloaded_entities = false;
+          if (snapshot_rebuild.source_ids.empty()) {
+            snapshot_rebuild.active = false;
           }
-          break; // Start cloning on the next frame
         }
+        else {
+          // Clone a batch of entities within the time budget
+          auto deadline = std::chrono::steady_clock::now() + std::chrono::microseconds(2000);
 
-        // Clone a batch of entities within the time budget
-        auto deadline = std::chrono::steady_clock::now() + std::chrono::microseconds(2000);
+          while (snapshot_rebuild.index < snapshot_rebuild.source_ids.size()) {
+            ECS::EntityID source_id = snapshot_rebuild.source_ids[snapshot_rebuild.index];
+            ECS::Entity source(source_id);
 
-        while (state.snapshot_rebuild_index < state.snapshot_rebuild_sources.size()) {
-          ECS::EntityID source_id = state.snapshot_rebuild_sources[state.snapshot_rebuild_index];
-          ECS::Entity source(source_id);
+            if (source.is_valid()) {
+              ECS::Entity cloned = ECS::clone_entity(source);
+              if (cloned.is_valid()) {
+                ECS::EntityID clone_id = cloned.get_id();
+                ECS::deactivate_entity(clone_id);
+                snapshot_rebuild.built_ids.push_back(clone_id);
+              }
+            }
 
-          if (source.is_valid()) {
-            ECS::Entity cloned = ECS::clone_entity(source);
-            if (cloned.is_valid()) {
-              ECS::EntityID clone_id = cloned.get_id();
-              ECS::deactivate_entity(clone_id);
-              state.preloaded_entity_ids.push_back(clone_id);
+            ++snapshot_rebuild.index;
+
+            if (std::chrono::steady_clock::now() >= deadline) {
+              break; // Budget exhausted, continue next frame
             }
           }
 
-          ++state.snapshot_rebuild_index;
-
-          if (std::chrono::steady_clock::now() >= deadline) {
-            break; // Budget exhausted, continue next frame
+          // Check if rebuild is complete
+          if (snapshot_rebuild.index >= snapshot_rebuild.source_ids.size()) {
+            if (!snapshot_rebuild.built_ids.empty()) {
+              preloaded_snapshots[snapshot_rebuild.level_id] = std::move(snapshot_rebuild.built_ids);
+            }
+            snapshot_rebuild.active = false;
+            snapshot_rebuild.source_ids.clear();
+            snapshot_rebuild.built_ids.clear();
+            snapshot_rebuild.index = 0;
+            Log::info("[LevelManager] Incremental snapshot rebuild completed: {}", snapshot_rebuild.level_id);
           }
         }
-
-        // Check if rebuild is complete
-        if (state.snapshot_rebuild_index >= state.snapshot_rebuild_sources.size()) {
-          state.has_preloaded_entities = !state.preloaded_entity_ids.empty();
-          state.needs_snapshot_rebuild = false;
-          state.snapshot_rebuild_sources.clear();
-          state.snapshot_rebuild_index = 0;
-          Log::info("[LevelManager] Incremental snapshot rebuild completed: {} ({} entities)",
-            level_id, state.preloaded_entity_ids.size());
-        }
-
-        break; // Only process one level per frame
       }
     }
 
@@ -350,38 +358,43 @@ namespace Engine {
         state.live_entity_ids.size());
     }
 
-    void destroy_preloaded_entities(LevelState& state)
+    bool has_preloaded_snapshot(const std::string& level_id)
     {
-      if (!state.has_preloaded_entities) {
-        return;
-      }
+      return preloaded_snapshots.find(level_id) != preloaded_snapshots.end() && !preloaded_snapshots[level_id].empty();
+    }
 
-      for (ECS::EntityID id : state.preloaded_entity_ids) {
-        ECS::activate_entity(id);
-        ECS::Entity(id).destroy();
+    void clear_preloaded_snapshot(const std::string& level_id)
+    {
+      auto it = preloaded_snapshots.find(level_id);
+      if (it != preloaded_snapshots.end()) {
+        for (ECS::EntityID id : it->second) {
+          if (ECS::get_entity(id).is_valid()) {
+            ECS::activate_entity(id);
+            ECS::Entity(id).destroy();
+          }
+        }
+        it->second.clear();
+        preloaded_snapshots.erase(it);
+        ECS::process_housekeeping();
       }
-
-      state.preloaded_entity_ids.clear();
-      state.has_preloaded_entities = false;
-      ECS::process_housekeeping();
     }
 
     void build_preloaded_snapshot(LevelState& state)
     {
-      destroy_preloaded_entities(state);
-      state.preloaded_entity_ids.clear();
+      if (active_level_id.empty()) return;
+      clear_preloaded_snapshot(active_level_id);
+      auto& snapshot = preloaded_snapshots[active_level_id];
 
       ECS::for_each_entity([&](ECS::Entity entity) {
         ECS::Entity cloned = ECS::clone_entity(entity);
         if (cloned.is_valid()) {
           ECS::EntityID id = cloned.get_id();
           ECS::deactivate_entity(id);
-          state.preloaded_entity_ids.push_back(id);
+          snapshot.push_back(id);
         }
         });
 
-      state.has_preloaded_entities = !state.preloaded_entity_ids.empty();
-      Log::info("[LevelManager] Built preloaded snapshot with {} entities.", state.preloaded_entity_ids.size());
+      Log::info("[LevelManager] Built preloaded snapshot with {} entities.", snapshot.size());
     }
 
     std::string open_level(const std::string& filepath, bool append_resource_path)
@@ -487,6 +500,18 @@ namespace Engine {
         ECS::deactivate_entity(id);
       }
 
+      // Build snapshot for instant reload
+      clear_preloaded_snapshot(full_path);
+      auto& snapshot = preloaded_snapshots[full_path];
+      for (ECS::EntityID id : new_state.live_entity_ids) {
+        ECS::Entity cloned = ECS::clone_entity(ECS::Entity(id));
+        if (cloned.is_valid()) {
+          ECS::EntityID clone_id = cloned.get_id();
+          ECS::deactivate_entity(clone_id);
+          snapshot.push_back(clone_id);
+        }
+      }
+
       new_state.has_live_entities = !new_state.live_entity_ids.empty();
       new_state.keep_loaded = true;
       new_state.preloaded_entities = entities;
@@ -561,16 +586,15 @@ namespace Engine {
       LevelState& state = open_levels[level_id];
 
       // Single-world approach
-      if (state.has_preloaded_entities) {
-        for (ECS::EntityID id : state.preloaded_entity_ids) {
-          ECS::activate_entity(id);
-        }
-        state.preloaded_entity_ids.clear();
-        state.has_preloaded_entities = false;
-      }
-      else if (state.has_live_entities) {
+      if (state.has_live_entities) {
         // Fast path: reactivate deactivated entities
         activate_level(state);
+      }
+      else if (has_preloaded_snapshot(level_id)) {
+        for (ECS::EntityID id : preloaded_snapshots[level_id]) {
+          ECS::activate_entity(id);
+        }
+        preloaded_snapshots.erase(level_id);
       }
       else {
         // Cold path: instantiate from resident preloaded data when available
@@ -584,7 +608,7 @@ namespace Engine {
       // Call on_init (via Level component if present)
       call_level_init();
 
-      if (!state.has_preloaded_entities) {
+      if (!has_preloaded_snapshot(level_id)) {
         build_preloaded_snapshot(state);
       }
     }
@@ -609,16 +633,23 @@ namespace Engine {
       LevelState& state = it->second;
       const bool is_active = (level_id == active_level_id);
 
-      // Cancel any in-progress incremental rebuild
-      if (state.needs_snapshot_rebuild) {
+      // Cancel any in-progress incremental rebuild for this level
+      if (snapshot_rebuild.active && snapshot_rebuild.level_id == level_id) {
         // Destroy any partially-cloned snapshot entities
-        destroy_preloaded_entities(state);
-        state.needs_snapshot_rebuild = false;
-        state.snapshot_rebuild_sources.clear();
-        state.snapshot_rebuild_index = 0;
+        for (auto id : snapshot_rebuild.built_ids) {
+            if (ECS::get_entity(id).is_valid()) {
+                ECS::activate_entity(id);
+                ECS::Entity(id).destroy();
+            }
+        }
+        snapshot_rebuild.active = false;
+        snapshot_rebuild.source_ids.clear();
+        snapshot_rebuild.built_ids.clear();
+        snapshot_rebuild.index = 0;
+        ECS::process_housekeeping();
       }
 
-      if (state.has_preloaded_entities && is_active) {
+      if (has_preloaded_snapshot(level_id) && is_active) {
         if (is_active) {
           call_level_exit();
         }
@@ -628,18 +659,21 @@ namespace Engine {
           });
         ECS::process_housekeeping();
 
-        for (ECS::EntityID id : state.preloaded_entity_ids) {
+        for (ECS::EntityID id : preloaded_snapshots[level_id]) {
           ECS::activate_entity(id);
         }
-
-        state.preloaded_entity_ids.clear();
-        state.has_preloaded_entities = false;
+        preloaded_snapshots.erase(level_id);
 
         current_level_path = level_id;
         call_level_init();
 
         // Defer snapshot rebuild to next frame so reload returns instantly
-        state.needs_snapshot_rebuild = true;
+        snapshot_rebuild.active = true;
+        snapshot_rebuild.level_id = level_id;
+        snapshot_rebuild.source_ids.clear();
+        snapshot_rebuild.built_ids.clear();
+        snapshot_rebuild.index = 0;
+
         queue_preload_refresh(level_id);
         Log::info("[LevelManager] Reloaded level from preloaded snapshot: {}", level_id);
         return;
@@ -664,7 +698,11 @@ namespace Engine {
         current_level_path = level_id;
         call_level_init();
         // Defer snapshot rebuild incrementally so reload returns instantly
-        state.needs_snapshot_rebuild = true;
+        snapshot_rebuild.active = true;
+        snapshot_rebuild.level_id = level_id;
+        snapshot_rebuild.source_ids.clear();
+        snapshot_rebuild.built_ids.clear();
+        snapshot_rebuild.index = 0;
       }
       else {
         // If this level has stale deactivated live entities, destroy them so
@@ -740,7 +778,7 @@ namespace Engine {
         }
       }
 
-      destroy_preloaded_entities(closing_state);
+      clear_preloaded_snapshot(level_id);
 
       // Remove from containers
       open_levels.erase(level_id);
@@ -965,11 +1003,11 @@ namespace Engine {
           preserved_levels.emplace(id, std::move(state));
         }
         else if (id == active_level_id) {
-          destroy_preloaded_entities(state);
+          clear_preloaded_snapshot(id);
         }
         else if (id != active_level_id) {
           destroy_level_entities(state);
-          destroy_preloaded_entities(state);
+          clear_preloaded_snapshot(id);
         }
       }
 

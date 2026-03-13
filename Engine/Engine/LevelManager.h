@@ -36,16 +36,11 @@ namespace Engine {
     EntityList cached_entities;                        // Serialized entity data (editor cold-load path)
     std::vector<ECS::EntityID> live_entity_ids;        // Deactivated entity IDs (editor fast-switch path)
     bool has_live_entities = false;                     // True if entities are alive but deactivated (editor)
-    std::vector<ECS::EntityID> preloaded_entity_ids;    // Deactivated entity IDs for instant reload
-    bool has_preloaded_entities = false;                // True if preloaded_entity_ids contains a snapshot
-    EntityList preloaded_entities;                     // Hot reload snapshot for fast level reload
-    bool preload_ready = false;                        // Preloaded snapshot is ready
+    EntityList preloaded_entities;                     // Deserialized entity data for cold-path reload
+    bool preload_ready = false;                        // Preloaded entity data is ready
     bool preload_in_progress = false;                  // Background preload refresh running
     bool preload_refresh_queued = false;               // Another refresh requested while running
     bool keep_loaded = false;                          // Keep this level resident until manually unloaded
-    bool needs_snapshot_rebuild = false;                // Incremental snapshot rebuild in progress
-    std::vector<ECS::EntityID> snapshot_rebuild_sources; // Entity IDs to clone for incremental rebuild
-    size_t snapshot_rebuild_index = 0;                   // Current progress in incremental rebuild
   };
 
   namespace LevelManager {
@@ -105,6 +100,16 @@ namespace Engine {
 
     // Gets total number of open levels.
     ENGINE_API size_t get_open_level_count();
+
+    // ============================================================================
+    // Preloaded Snapshot Management
+    // ============================================================================
+
+    // Returns true if a preloaded snapshot exists for the given level path.
+    ENGINE_API bool has_preloaded_snapshot(const std::string& level_id);
+
+    // Clears the preloaded snapshot for a level, destroying its deactivated entities.
+    ENGINE_API void clear_preloaded_snapshot(const std::string& level_id);
 
     // ============================================================================
     // Lifecycle Callbacks

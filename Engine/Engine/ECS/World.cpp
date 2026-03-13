@@ -175,7 +175,8 @@ namespace Engine {
     {
       auto& containers = Internal::get_containers();
       EntityID source_id = source.get_id();
-      if (!containers.active_entities.contains(source_id))
+      if (!containers.active_entities.contains(source_id) &&
+          !containers.deactivated_entities.contains(source_id))
       {
         return Entity(INVALID_ENTITY);
       }
