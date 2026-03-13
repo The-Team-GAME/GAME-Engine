@@ -80,7 +80,7 @@ void OptionsState::load()
   windowed_tex   = Engine::Resources::load_texture("images/Options/Windowed.png");
 
   // Read current settings to initialise slider positions
-  auto& settings = Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get();
+  auto& settings = Engine::FileIO::GameSettingsBridge::get();
   bgm_level = static_cast<int>(settings.bgm_volume * 10.0f + 0.5f);
   sfx_level = static_cast<int>(settings.sfx_volume * 10.0f + 0.5f);
   if (bgm_level < 1)  bgm_level = 1;
@@ -292,9 +292,9 @@ void OptionsState::update()
         float volume = static_cast<float>(bgm_level) / 10.0f;
         Engine::AudioSystem::setBGMVolume(volume);
 
-        auto& settings = Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get_mutable();
+        auto& settings = Engine::FileIO::GameSettingsBridge::get_mutable();
         settings.bgm_volume = volume;
-        Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::save();
+        Engine::FileIO::GameSettingsBridge::save();
       }
     }
 
@@ -310,9 +310,9 @@ void OptionsState::update()
         float volume = static_cast<float>(sfx_level) / 10.0f;
         Engine::AudioSystem::setSFXVolume(volume);
 
-        auto& settings = Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get_mutable();
+        auto& settings = Engine::FileIO::GameSettingsBridge::get_mutable();
         settings.sfx_volume = volume;
-        Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::save();
+        Engine::FileIO::GameSettingsBridge::save();
       }
     }
   }

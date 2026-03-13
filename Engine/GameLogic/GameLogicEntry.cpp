@@ -465,10 +465,10 @@ static void register_function_callbacks()
 
   // Options menu callback — single toggle for screen mode
   reg.register_function<void()>("options_toggle_screen_mode", std::function<void()>([]() {
-    auto& settings = Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get_mutable();
+    auto& settings = Engine::FileIO::GameSettingsBridge::get_mutable();
     settings.fullscreen = !settings.fullscreen;
     Engine::WindowManager::set_fullscreen(settings.fullscreen);
-    Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::save();
+    Engine::FileIO::GameSettingsBridge::save();
 
     Log::info("Screen mode toggled to {}", settings.fullscreen ? "fullscreen" : "windowed");
 
