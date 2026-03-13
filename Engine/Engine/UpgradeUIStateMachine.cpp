@@ -203,7 +203,7 @@ namespace Engine
       }
 
       // Check for 'I' key or mouse click on upgrade button
-      bool open_picker = Input::is_pressed(KeyCode::I);
+      bool open_picker = Input::is_pressed(KeyCode::Tab);
 
       if (!open_picker && upgrade_btn_id_ != 0
         && ECS::is_entity_active(ECS::Entity(upgrade_btn_id_)))
