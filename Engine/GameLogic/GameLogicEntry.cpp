@@ -463,20 +463,40 @@ static void register_function_callbacks()
     }
     }));
 
-  // Options menu callback — single toggle for screen mode
-  reg.register_function<void()>("options_toggle_screen_mode", std::function<void()>([]() {
+  // Options menu callback — set fullscreen mode (left half of screen mode button)
+  reg.register_function<void()>("options_set_fullscreen", std::function<void()>([]() {
     auto& settings = Engine::FileIO::GameSettingsBridge::get_mutable();
-    settings.fullscreen = !settings.fullscreen;
-    Engine::WindowManager::set_fullscreen(settings.fullscreen);
-    Engine::FileIO::GameSettingsBridge::save();
+    if (!settings.fullscreen) {
+      settings.fullscreen = true;
+      Engine::WindowManager::set_fullscreen(true);
+      Engine::FileIO::GameSettingsBridge::save();
+      Log::info("Screen mode set to fullscreen");
 
-    Log::info("Screen mode toggled to {}", settings.fullscreen ? "fullscreen" : "windowed");
+      // Swap the visual texture to fullscreen
+      if (OptionsState::screen_mode_visual_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(OptionsState::screen_mode_visual_id))) {
+        auto* tex = Engine::ECS::Entity(OptionsState::screen_mode_visual_id).get_component<Components::Texture>();
+        if (tex) {
+          *tex = Components::Texture(OptionsState::fullscreen_tex);
+        }
+      }
+    }
+    }));
 
-    // Swap the button texture to reflect the new mode
-    if (OptionsState::screen_mode_btn_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(OptionsState::screen_mode_btn_id))) {
-      auto* tex = Engine::ECS::Entity(OptionsState::screen_mode_btn_id).get_component<Components::Texture>();
-      if (tex) {
-        *tex = Components::Texture(settings.fullscreen ? OptionsState::fullscreen_tex : OptionsState::windowed_tex);
+  // Options menu callback — set windowed mode (right half of screen mode button)
+  reg.register_function<void()>("options_set_windowed", std::function<void()>([]() {
+    auto& settings = Engine::FileIO::GameSettingsBridge::get_mutable();
+    if (settings.fullscreen) {
+      settings.fullscreen = false;
+      Engine::WindowManager::set_fullscreen(false);
+      Engine::FileIO::GameSettingsBridge::save();
+      Log::info("Screen mode set to windowed");
+
+      // Swap the visual texture to windowed
+      if (OptionsState::screen_mode_visual_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(OptionsState::screen_mode_visual_id))) {
+        auto* tex = Engine::ECS::Entity(OptionsState::screen_mode_visual_id).get_component<Components::Texture>();
+        if (tex) {
+          *tex = Components::Texture(OptionsState::windowed_tex);
+        }
       }
     }
     }));

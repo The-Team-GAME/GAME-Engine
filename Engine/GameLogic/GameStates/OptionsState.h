@@ -20,8 +20,10 @@ public:
   void free();
   void unload();
 
-  // Static entity ID so callbacks in GameLogicEntry can access the screen mode button
-  static Engine::ECS::EntityID screen_mode_btn_id;
+  // Static entity IDs so callbacks in GameLogicEntry can access the screen mode buttons
+  static Engine::ECS::EntityID fullscreen_btn_id;
+  static Engine::ECS::EntityID windowed_btn_id;
+  static Engine::ECS::EntityID screen_mode_visual_id;
 
   // Textures accessible from callbacks to swap between fullscreen/windowed display
   static Engine::Graphics::Texture fullscreen_tex;
@@ -49,8 +51,10 @@ private:
   Engine::ECS::Entity bgm_slider_entity;
   Engine::ECS::Entity sfx_slider_entity;
 
-  // Screen mode toggle button (swaps texture between Fullscreen.png and Windowed.png)
-  Engine::ECS::Entity screen_mode_entity;
+  // Screen mode buttons (left = fullscreen, right = windowed)
+  Engine::ECS::Entity fullscreen_entity;
+  Engine::ECS::Entity windowed_entity;
+  Engine::ECS::Entity screen_mode_visual_entity;  // displays current mode texture
 
   // Textures for slider levels 1-10
   Engine::Graphics::Texture slider_textures[10];

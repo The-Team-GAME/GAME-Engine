@@ -10,7 +10,9 @@
 #include "OptionsState.h"
 
 // Static members
-Engine::ECS::EntityID OptionsState::screen_mode_btn_id = 0;
+Engine::ECS::EntityID OptionsState::fullscreen_btn_id = 0;
+Engine::ECS::EntityID OptionsState::windowed_btn_id = 0;
+Engine::ECS::EntityID OptionsState::screen_mode_visual_id = 0;
 Engine::Graphics::Texture OptionsState::fullscreen_tex;
 Engine::Graphics::Texture OptionsState::windowed_tex;
 
@@ -120,7 +122,7 @@ void OptionsState::load()
 
   const float mode_btn_w = 427.0f;
   const float mode_btn_h = 32.0f;
-  const float mode_btn_x = 920.0f;    // single toggle button position
+  const float mode_btn_x = 920.0f;    // centre of the fullscreen/windowed button area
 
   // Check current screen mode for initial texture
   const bool is_fullscreen = settings.fullscreen;
@@ -225,19 +227,46 @@ void OptionsState::load()
     .add_to_layer("options");
   track(screen_label_entity);
 
-  // Screen mode toggle button — shows Fullscreen.png or Windowed.png based on current setting
-  screen_mode_entity = Engine::ECS::create_entity()
+  // Screen mode visual — displays Fullscreen.png or Windowed.png based on current setting
+  screen_mode_visual_entity = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
       Math::Vec2D(mode_btn_x, row3_y), 0.0f,
       Math::Vec2D(mode_btn_w, mode_btn_h))
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
     .add_component<Components::Texture>(is_fullscreen ? fullscreen_tex : windowed_tex)
     .add_component<Components::UI>()
-    .add_component<Components::BoxCollider>(mode_btn_w, mode_btn_h, false)
-    .add_component<Components::Clickable>("options_toggle_screen_mode", "", "")
     .add_to_layer("options");
-  track(screen_mode_entity);
-  screen_mode_btn_id = screen_mode_entity.get_id();
+  track(screen_mode_visual_entity);
+  screen_mode_visual_id = screen_mode_visual_entity.get_id();
+
+  // Screen mode colliders — split into left (fullscreen) and right (windowed) halves
+  const float half_btn_w = mode_btn_w * 0.5f;  // 213.5
+
+  // Fullscreen button — left half collider, full-size texture
+  fullscreen_entity = Engine::ECS::create_entity()
+    .add_component<Components::Transform2D>(
+      Math::Vec2D(mode_btn_x - half_btn_w * 0.5f, row3_y), 0.0f,
+      Math::Vec2D(half_btn_w, mode_btn_h))
+    .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+    .add_component<Components::UI>()
+    .add_component<Components::BoxCollider>(half_btn_w, mode_btn_h, false)
+    .add_component<Components::Clickable>("options_set_fullscreen", "", "")
+    .add_to_layer("options");
+  track(fullscreen_entity);
+  fullscreen_btn_id = fullscreen_entity.get_id();
+
+  // Windowed button — right half collider, full-size texture
+  windowed_entity = Engine::ECS::create_entity()
+    .add_component<Components::Transform2D>(
+      Math::Vec2D(mode_btn_x + half_btn_w * 0.5f, row3_y), 0.0f,
+      Math::Vec2D(half_btn_w, mode_btn_h))
+    .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+    .add_component<Components::UI>()
+    .add_component<Components::BoxCollider>(half_btn_w, mode_btn_h, false)
+    .add_component<Components::Clickable>("options_set_windowed", "", "")
+    .add_to_layer("options");
+  track(windowed_entity);
+  windowed_btn_id = windowed_entity.get_id();
 }
 
 void OptionsState::init()
@@ -335,5 +364,7 @@ void OptionsState::unload()
     }
   }
   options_entities.clear();
-  screen_mode_btn_id = 0;
+  fullscreen_btn_id = 0;
+  windowed_btn_id = 0;
+  screen_mode_visual_id = 0;
 }
