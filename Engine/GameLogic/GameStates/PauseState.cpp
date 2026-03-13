@@ -209,22 +209,22 @@ void PauseState::unload()
   stop_pause_lowpass_snapshot();
 
   // Destroy pause menu entities
-  if (background_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(background_id))) {
+  if (background_id != 0) {
     Engine::ECS::destroy_entity(Engine::ECS::Entity(background_id));
   }
-  if (menu_sprite_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(menu_sprite_id))) {
+  if (menu_sprite_id != 0) {
     Engine::ECS::destroy_entity(Engine::ECS::Entity(menu_sprite_id));
   }
-  if (resume_collider_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(resume_collider_id))) {
+  if (resume_collider_id != 0) {
     Engine::ECS::destroy_entity(Engine::ECS::Entity(resume_collider_id));
   }
-  if (restart_collider_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(restart_collider_id))) {
+  if (restart_collider_id != 0) {
     Engine::ECS::destroy_entity(Engine::ECS::Entity(restart_collider_id));
   }
-  if (options_collider_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(options_collider_id))) {
+  if (options_collider_id != 0) {
     Engine::ECS::destroy_entity(Engine::ECS::Entity(options_collider_id));
   }
-  if (exit_collider_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(exit_collider_id))) {
+  if (exit_collider_id != 0) {
     Engine::ECS::destroy_entity(Engine::ECS::Entity(exit_collider_id));
   }
 
