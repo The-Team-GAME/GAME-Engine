@@ -129,7 +129,7 @@ namespace Engine
   void UpgradeUIStateMachine::on_enter(UpgradeFlowState new_state)
   {
     auto& mgr = UpgradeManager::instance();
-    auto& cfg = FileIO::SettingsManager<FileIO::CardAnimSettings>::get_mutable();
+    //auto& cfg = FileIO::SettingsManager<FileIO::CardAnimSettings>::get_mutable();
 
     switch (new_state)
     {
@@ -755,7 +755,7 @@ namespace Engine
 
         // Convert the flying card into a mini-card so it joins the wave
         {
-          constexpr float ss_scale = 2.0f;
+          //constexpr float ss_scale = 2.0f;
           constexpr int   ss_card_w = 128;
           constexpr int   ss_card_h = 224;
           constexpr int   ss_rows = 1;
@@ -989,7 +989,7 @@ namespace Engine
       {
         int idx_in_row = row_pos[cat];
         int total_in_row = row_card_count[cat];
-        bool is_last = (idx_in_row == total_in_row - 1);
+        //bool is_last = (idx_in_row == total_in_row - 1);
 
         float x;
         if (!cfg.enable_card_stack || total_in_row <= 4)
@@ -1166,9 +1166,9 @@ namespace Engine
     // Same layout constants as spawn_picker_entities
     constexpr float ss_scale = 2.0f;
     constexpr float card_display_w = 128.0f * ss_scale;  // 256
-    constexpr float card_display_h = 224.0f * ss_scale;  // 448
+    //constexpr float card_display_h = 224.0f * ss_scale;  // 448
     constexpr float mini_w = card_display_w / 6.0f;
-    constexpr float mini_h = card_display_h / 6.0f;
+    //constexpr float mini_h = card_display_h / 6.0f;
     constexpr float mini_gap = 2.0f;
     constexpr float panel_img_w = 192.0f;
     constexpr float panel_scale = 2.0f;

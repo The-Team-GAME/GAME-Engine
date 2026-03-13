@@ -2,8 +2,11 @@
 // file:    HealthSystem.h
 // project: Monkey Stole My GPA
 //
-// author:  Ong Zi Ming (100%)
+// author:  Ong Zi Ming (900%)
 //          Primary author
+//
+//          Ryan Ang An Kiat (20%)
+//          Secondary author
 //
 // email:   o.ziming@digipen.edu
 //

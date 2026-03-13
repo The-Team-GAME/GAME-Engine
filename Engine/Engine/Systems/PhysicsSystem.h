@@ -30,15 +30,15 @@ namespace Engine {
     public:
       Physics2DSystem(); // Default Ctor that includes all the components needed for the entities called in the physics engine
 
-      void update() override;
+      void update();
 
-      void update_entity(Engine::ECS::Entity entity) override;
+      void update_entity(Engine::ECS::Entity entity);
 
-      // void knockback(Components::RigidBody& rigid, Vec2D force);
       // Update the linear velocities if said entities here
       static void update_kinematics(
         Components::RigidBody& rigid);
 
+      // Update the position of the entity. Called after the velocities are updated
       static void update_position(
         Components::RigidBody& rigid,
         Components::Transform2D& xform);
@@ -49,14 +49,14 @@ namespace Engine {
         Components::RigidBody& rigid,
         CollisionResult const& collision);
 
-      static f32 get_slope_angle_threshold();
+      // The angle tresholds mentioned below is simply what our engine will consider a slope 
+      // as long as the surface's angle sits betweek 0 and the threshold angle
+      static f32 get_slope_angle_threshold(); // returns the treshold angle in degrees
 
-      static f32 get_slope_radian_threshold();
+      static f32 get_slope_radian_threshold();// returns the treshold angle in radians
 
       // Used to add forces to the rigid body
       static ENGINE_API void add_force(Components::RigidBody& rigid, Vec2D force);
-
-
     };
   }
 }

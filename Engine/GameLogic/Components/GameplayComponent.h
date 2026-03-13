@@ -9,6 +9,7 @@
 // 
 //
 // email:   chew.s@digipen.edu
+//          c.mingxian@digipen.edu
 //
 // brief:   This file defines gameplay-related component structs, including Player (with AttackData), Enemy, LazyMonkey, Attack, and PendingKnockback, which store data for game mechanics.
 //
@@ -72,7 +73,7 @@ namespace Components
 
   struct Player
   {
-    float mass = 50.0f;
+    f32 mass = 50.0f;
 
     // Movement speeds (going to add to force instead of velocity as of 22/01/26)
     // These values are loaded from file
@@ -113,144 +114,144 @@ namespace Components
   struct SprayCanMonkey
   {
     // Combat stats
-    float chase_speed = 80.0f;
+    f32 chase_speed = 80.0f;
 
     // Attack parameters
-    float attack_cooldown = 5.0f;
-    float last_attack_time = 0.0f;
-    float attack_windup = 0.5f;  // Time to wait in windup state before attacking
+    f32 attack_cooldown = 5.0f;
+    f32 last_attack_time = 0.0f;
+    f32 attack_windup = 0.5f;  // Time to wait in windup state before attacking
 
     // Detection ranges
-    float detection_range = 1200.0f;
-    float chase_range = 1000.0f;
-    float attack_range = 500.0f;
+    f32 detection_range = 1200.0f;
+    f32 chase_range = 1000.0f;
+    f32 attack_range = 500.0f;
 
     // Spray-specific properties
-    float spray_duration = 7.0f;
-    float spray_range = 150.0f;
-    float spray_width = 80.0f;
+    f32 spray_duration = 7.0f;
+    f32 spray_range = 150.0f;
+    f32 spray_width = 80.0f;
 
-    float cloud_spawn_delay = 1.1f;     // spawn delay
+    f32 cloud_spawn_delay = 1.1f;     // spawn delay
     bool cloud_spawned = false;
 
     Engine::ECS::Entity cloud_entity{};
-    float cloud_spawn_time = 0.f;
-    float cloud_initial_vx = 0.f;
+    f32 cloud_spawn_time = 0.f;
+    f32 cloud_initial_vx = 0.f;
 
     // Knockback
     Math::Vec2D knockback = { 300.0f, 400.0f };
 
     // Damage
-    int damage = 20;
+    s32 damage = 20;
 
   };
 
   struct LazyMonkey
   {
     // Movement speeds
-    float chase_speed = 100.0f;
+    f32 chase_speed = 100.0f;
 
     // Attack parameters
-    float leap_speed = 200.0f;
-    float leap_height = 300.0f; //unused monkey no longer leaps
-    float attack_cooldown = 3.0f;
-    float last_attack_time = 0.0f;
-    float attack_windup = 0.5f;  // Time to wait in windup state before attacking
+    f32 leap_speed = 200.0f;
+    f32 leap_height = 300.0f; //unused monkey no longer leaps
+    f32 attack_cooldown = 3.0f;
+    f32 last_attack_time = 0.0f;
+    f32 attack_windup = 0.5f;  // Time to wait in windup state before attacking
 
     // Attack hitbox parameters
-    float hitbox_offset_x = 80.0f;
-    float hitbox_offset_y = 0.0f;
-    float hitbox_width = 120.0f;
-    float hitbox_height = 128.0f;
-    int damage = 10;
+    f32 hitbox_offset_x = 80.0f;
+    f32 hitbox_offset_y = 0.0f;
+    f32 hitbox_width = 120.0f;
+    f32 hitbox_height = 128.0f;
+    s32 damage = 10;
     Math::Vec2D knockback = Math::Vec2D(500.0f, 0.f);
 
     // Detection ranges
-    float detection_range = 300.0f;
-    float chase_range = 400.0f;
-    float attack_range = 180.0f;
+    f32 detection_range = 300.0f;
+    f32 chase_range = 400.0f;
+    f32 attack_range = 180.0f;
 
   };
 
   struct SlingshotMonkey
   {
     // Movement speeds
-    float chase_speed = 100.0f;
+    f32 chase_speed = 100.0f;
 
     // Dash parameters (serialized/configurable)
-    float dash_speed = 1000.0f;
-    float dash_cooldown = 1.0f;      // Cooldown time before dash can be used again
-    float dash_windup_duration = 1.0f;  // Time for the warning rectangle to extend
-    float dash_indicator_height = 100.0f; // Height of the warning rectangle
+    f32 dash_speed = 1000.0f;
+    f32 dash_cooldown = 1.0f;      // Cooldown time before dash can be used again
+    f32 dash_windup_duration = 1.0f;  // Time for the warning rectangle to extend
+    f32 dash_indicator_height = 100.0f; // Height of the warning rectangle
 
     // Attack parameters (serialized/configurable)
-    float leap_speed = 200.0f;
-    float leap_height = 50.0f;
-    float attack_cooldown = 3.0f;
-    float attack_windup = 0.5f;  // Time to wait in windup state before attacking
+    f32 leap_speed = 200.0f;
+    f32 leap_height = 50.0f;
+    f32 attack_cooldown = 3.0f;
+    f32 attack_windup = 0.5f;  // Time to wait in windup state before attacking
 
     // Attack hitbox parameters
-    float hitbox_offset_x = 80.0f;
-    float hitbox_offset_y = 120.0f;
-    float hitbox_width = 120.0f;
-    float hitbox_height = 128.0f;
-    int damage = 1;
+    f32 hitbox_offset_x = 80.0f;
+    f32 hitbox_offset_y = 120.0f;
+    f32 hitbox_width = 120.0f;
+    f32 hitbox_height = 128.0f;
+    s32 damage = 1;
     Math::Vec2D knockback = Math::Vec2D(500.0f, -100.0f);
 
     // Detection ranges
-    float detection_range = 600.0f;
-    float chase_range = 700.0f;
-    float close_attack_range = 180.0f;
-    float dash_attack_range = 400.0f;
+    f32 detection_range = 600.0f;
+    f32 chase_range = 700.0f;
+    f32 close_attack_range = 180.0f;
+    f32 dash_attack_range = 400.0f;
 
     // Runtime state
-    float last_dash_time = -3.0f;        // Initialize to allow immediate first dash
-    float last_attack_time = -3.0f;      // Last attack timestamp (negative allows first attack immediately)
-    float dash_windup_start_time = 0.0f; // When dash windup started
-    float dash_target_x = 0.0f;          // The player's X position when dash windup completes
+    f32 last_dash_time = -3.0f;        // Initialize to allow immediate first dash
+    f32 last_attack_time = -3.0f;      // Last attack timestamp (negative allows first attack immediately)
+    f32 dash_windup_start_time = 0.0f; // When dash windup started
+    f32 dash_target_x = 0.0f;          // The player's X position when dash windup completes
     Engine::ECS::Entity dash_indicator_entity; // Runtime reference to the warning indicator entity
   };
 
   struct TurretMonkey
   {
     // Movement speeds
-    float chase_speed = 100.0f;
+    f32 chase_speed = 100.0f;
 
     // Attack parameters (serialized/configurable)
-    float attack_cooldown = 3.0f;
-    float attack_windup = 0.5f;  // Time to wait in windup state before attacking
-    float last_attack_time = -3.0f; // negative allows first attack immediately
+    f32 attack_cooldown = 3.0f;
+    f32 attack_windup = 0.5f;  // Time to wait in windup state before attacking
+    f32 last_attack_time = -3.0f; // negative allows first attack immediately
 
     // Attack hitbox parameters
-    float hitbox_offset_x = 80.0f;
-    float hitbox_offset_y = 0.0f;
-    float hitbox_width = 120.0f;
-    float hitbox_height = 128.0f;
-    int damage = 15;
+    f32 hitbox_offset_x = 80.0f;
+    f32 hitbox_offset_y = 0.0f;
+    f32 hitbox_width = 120.0f;
+    f32 hitbox_height = 128.0f;
+    s32 damage = 15;
     Math::Vec2D knockback = Math::Vec2D(500.0f, -100.0f);
 
     // Detection ranges
-    float detection_range = 1200.0f;
-    float long_attack_range = 600.0f;
+    f32 detection_range = 1200.0f;
+    f32 long_attack_range = 600.0f;
   };
 
   struct Attack
   {
-    int damage = 10;
+    s32 damage = 10;
     Math::Vec2D knockback = Math::Vec2D(0.0f, 0.0f);
     bool play_punch_hit_sfx = true;
     bool is_continuous = false;
-    float damage_interval = 0.1f; // Time in seconds between damage ticks for continuous attacks
+    f32 damage_interval = 0.1f; // Time in seconds between damage ticks for continuous attacks
     std::vector<std::pair<Engine::ECS::Entity, float>> hit_entities; // Track entity and last hit time
     Components::Texture impact_vfx_texture;
 
     Attack() = default;
-    explicit Attack(int dmg, Math::Vec2D kb = Math::Vec2D(0.0f, 0.0f), bool continuous = false, float interval = 0.1f, bool play_hit_sfx = true)
+    explicit Attack(s32 dmg, Math::Vec2D kb = Math::Vec2D(0.0f, 0.0f), bool continuous = false, f32 interval = 0.1f, bool play_hit_sfx = true)
       : damage(dmg), knockback(kb), play_punch_hit_sfx(play_hit_sfx), is_continuous(continuous), damage_interval(interval) {
     }
 
     bool should_apply_damage(Engine::ECS::Entity entity) {
-      float current_time = Engine::Time::get_time();
+      f32 current_time = Engine::Time::get_time();
 
       // Check if this entity has already been hit
       auto it = std::find_if(hit_entities.begin(), hit_entities.end(),

@@ -157,7 +157,7 @@ namespace PlayerStateCallbacks
     assert(xform);
     assert(flip);
     ECS::Entity hitbox = Engine::ECS::create_entity()
-      .add_component<Components::Attack>(atk_data.dmg)
+      .add_component<Components::Attack>(static_cast<s32>(atk_data.dmg))
       .add_component<Components::Transform2D>( 
         xform->position.x + flip->value.x * atk_data.hitbox_offset_x,
         xform->position.y + atk_data.hitbox_offset_y,
