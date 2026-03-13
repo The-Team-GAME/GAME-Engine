@@ -135,7 +135,7 @@ static void register_collision_callbacks()
 
         int damage = attack->damage;
         enemy_health->take_damage(damage);
-        Engine::Systems::add_camera_shake(42.0f, 0.16f);
+        Engine::Systems::add_camera_shake(0.2f);
         Log::info("camera shake requested on enemy hit");
         Log::info("Enemy took {} damage! HP: {}/{}", damage, enemy_health->current_hp, enemy_health->max_hp);
 

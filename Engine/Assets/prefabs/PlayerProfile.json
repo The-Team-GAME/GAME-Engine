@@ -3,96 +3,10 @@
         "components": [
             {
                 "data": {
-                    "position": {
-                        "x": 234.54930114746094,
-                        "y": 158.04949951171875
-                    },
-                    "rotation": 0.0,
-                    "scale": {
-                        "x": 384.0,
-                        "y": 288.0
-                    }
-                },
-                "type": "Components::Transform2D"
-            },
-            {
-                "data": {
                     "blueprint_id": "HealthBar",
                     "current_state_name": "5HP",
                     "property_anim_playing": false,
                     "states": [
-                        {
-                            "first": "3HP_to_2HP",
-                            "second": {
-                                "animation": null,
-                                "audio": null,
-                                "name": "3HP_to_2HP",
-                                "on_enter_callback": {
-                                    "name": ""
-                                },
-                                "on_exit_callback": {
-                                    "name": ""
-                                },
-                                "on_update_callback": {
-                                    "name": "hp_3_to_2_update"
-                                },
-                                "property_animation": null
-                            }
-                        },
-                        {
-                            "first": "5HP_to_4HP",
-                            "second": {
-                                "animation": null,
-                                "audio": null,
-                                "name": "5HP_to_4HP",
-                                "on_enter_callback": {
-                                    "name": ""
-                                },
-                                "on_exit_callback": {
-                                    "name": ""
-                                },
-                                "on_update_callback": {
-                                    "name": "hp_5_to_4_update"
-                                },
-                                "property_animation": null
-                            }
-                        },
-                        {
-                            "first": "2HP_to_1HP",
-                            "second": {
-                                "animation": null,
-                                "audio": null,
-                                "name": "2HP_to_1HP",
-                                "on_enter_callback": {
-                                    "name": ""
-                                },
-                                "on_exit_callback": {
-                                    "name": ""
-                                },
-                                "on_update_callback": {
-                                    "name": "hp_2_to_1_update"
-                                },
-                                "property_animation": null
-                            }
-                        },
-                        {
-                            "first": "1HP_to_0HP",
-                            "second": {
-                                "animation": null,
-                                "audio": null,
-                                "name": "1HP_to_0HP",
-                                "on_enter_callback": {
-                                    "name": ""
-                                },
-                                "on_exit_callback": {
-                                    "name": ""
-                                },
-                                "on_update_callback": {
-                                    "name": "hp_1_to_0_update"
-                                },
-                                "property_animation": null
-                            }
-                        },
                         {
                             "first": "0HP",
                             "second": {
@@ -108,7 +22,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 59.99434280395508,
+                                        "startTime": 138.8157196044922,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": null,
@@ -1451,6 +1365,78 @@
                             }
                         },
                         {
+                            "first": "1HP_to_0HP",
+                            "second": {
+                                "animation": null,
+                                "audio": null,
+                                "name": "1HP_to_0HP",
+                                "on_enter_callback": {
+                                    "name": ""
+                                },
+                                "on_exit_callback": {
+                                    "name": ""
+                                },
+                                "on_update_callback": {
+                                    "name": "hp_1_to_0_update"
+                                },
+                                "property_animation": null
+                            }
+                        },
+                        {
+                            "first": "2HP_to_1HP",
+                            "second": {
+                                "animation": null,
+                                "audio": null,
+                                "name": "2HP_to_1HP",
+                                "on_enter_callback": {
+                                    "name": ""
+                                },
+                                "on_exit_callback": {
+                                    "name": ""
+                                },
+                                "on_update_callback": {
+                                    "name": "hp_2_to_1_update"
+                                },
+                                "property_animation": null
+                            }
+                        },
+                        {
+                            "first": "5HP_to_4HP",
+                            "second": {
+                                "animation": null,
+                                "audio": null,
+                                "name": "5HP_to_4HP",
+                                "on_enter_callback": {
+                                    "name": ""
+                                },
+                                "on_exit_callback": {
+                                    "name": ""
+                                },
+                                "on_update_callback": {
+                                    "name": "hp_5_to_4_update"
+                                },
+                                "property_animation": null
+                            }
+                        },
+                        {
+                            "first": "3HP_to_2HP",
+                            "second": {
+                                "animation": null,
+                                "audio": null,
+                                "name": "3HP_to_2HP",
+                                "on_enter_callback": {
+                                    "name": ""
+                                },
+                                "on_exit_callback": {
+                                    "name": ""
+                                },
+                                "on_update_callback": {
+                                    "name": "hp_3_to_2_update"
+                                },
+                                "property_animation": null
+                            }
+                        },
+                        {
                             "first": "1HP",
                             "second": {
                                 "animation": {
@@ -1534,7 +1520,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 59.99434280395508,
+                                        "startTime": 138.8157196044922,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": null,
@@ -2960,7 +2946,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 59.99434280395508,
+                                        "startTime": 138.8157196044922,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": null,
@@ -4386,7 +4372,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 59.99434280395508,
+                                        "startTime": 138.8157196044922,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": null,
@@ -5812,7 +5798,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 59.99434280395508,
+                                        "startTime": 138.8157196044922,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": null,
@@ -7256,7 +7242,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 59.99434280395508,
+                                        "startTime": 138.8157196044922,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": null,
@@ -8027,6 +8013,20 @@
                 "type": "Components::StateMachine"
             },
             {
+                "data": {
+                    "position": {
+                        "x": 235.2974090576172,
+                        "y": 160.88519287109375
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 384.0,
+                        "y": 288.0
+                    }
+                },
+                "type": "Components::Transform2D"
+            },
+            {
                 "data": {},
                 "type": "Components::UI"
             },
@@ -8041,28 +8041,13 @@
             },
             {
                 "data": {
-                    "local_offset": {
-                        "x": 234.54930114746094,
-                        "y": 158.04949951171875
-                    },
-                    "offset_initialized": true,
-                    "parent_id": 2283,
-                    "prev_parent_pos": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "type": "Components::Parent"
-            },
-            {
-                "data": {
                     "path": "images/health_face.png"
                 },
                 "type": "Components::Texture"
             },
             {
                 "data": {
-                    "drawIndex": 17,
+                    "drawIndex": 9,
                     "tex_coords_list": [
                         [
                             {
@@ -8887,7 +8872,7 @@
                         0.10000000149011612
                     ],
                     "is_looping": true,
-                    "startTime": 49.4079475402832,
+                    "startTime": 138.8157196044922,
                     "totalDuration": 2.3999998569488525
                 },
                 "type": "Components::Animation"
