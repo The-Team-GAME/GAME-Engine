@@ -234,6 +234,12 @@ public:
       }
     }
 
+    // Open tip book with I key
+    if (!tips_shown && Engine::Input::is_pressed(Engine::KeyCode::I)) {
+      show_tips_overlay();
+      return;
+    }
+
     // Check if pause button is pressed (keyboard)
     if (Engine::Input::is_pressed(Engine::KeyCode::Escape)) {
       Engine::SceneManager::push_scene("PauseState");
