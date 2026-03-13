@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <objects serializationModel="Studio.02.03.00">
-	<object class="AudioFile" id="{ffce4ff9-2b44-4ae4-b7c4-fcada109aa0e}">
+	<object class="AudioFile" id="{e7559c12-afb5-4c35-873a-2395527daae2}">
 		<property name="assetPath">
-			<value>Medium Monkey_4.wav</value>
+			<value>mydeathsound.mp3</value>
 		</property>
 		<property name="frequencyInKHz">
-			<value>44.0999985</value>
+			<value>48</value>
 		</property>
 		<property name="channelCount">
-			<value>2</value>
+			<value>1</value>
 		</property>
 		<property name="length">
-			<value>0.48800453514739228</value>
+			<value>1.6799999999999999</value>
 		</property>
 		<relationship name="masterAssetFolder">
 			<destination>{6705423e-ca5e-45ab-9fba-198807b0541c}</destination>

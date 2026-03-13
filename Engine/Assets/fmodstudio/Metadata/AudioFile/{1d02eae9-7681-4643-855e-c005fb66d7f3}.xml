@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <objects serializationModel="Studio.02.03.00">
-	<object class="AudioFile" id="{318b51d0-18b5-412e-952d-9b87a6dcea40}">
+	<object class="AudioFile" id="{1d02eae9-7681-4643-855e-c005fb66d7f3}">
 		<property name="assetPath">
-			<value>Footsteps_Metal_Jump-Land_Far-Small_4.wav</value>
+			<value>CoolButton_3.wav</value>
 		</property>
 		<property name="frequencyInKHz">
-			<value>44.0999985</value>
+			<value>48</value>
 		</property>
 		<property name="channelCount">
-			<value>1</value>
+			<value>2</value>
 		</property>
 		<property name="length">
-			<value>0.58934240362811796</value>
+			<value>0.80339583333333331</value>
 		</property>
 		<relationship name="masterAssetFolder">
 			<destination>{6705423e-ca5e-45ab-9fba-198807b0541c}</destination>
