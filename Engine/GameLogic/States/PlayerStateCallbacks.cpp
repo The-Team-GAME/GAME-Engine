@@ -19,6 +19,7 @@
 #include "../Components/GameplayComponent.h"
 #include "../Components/HeartrateComponent.h"
 #include "../Components/HealthComponents.h"
+#include "../../Engine/UpgradeManager.h"
 
 using namespace Engine;
 namespace {
@@ -866,6 +867,7 @@ namespace PlayerStateCallbacks
   inline void death_on_enter([[maybe_unused]] ECS::Entity entity)
   {
     Log::info("Player: Died!");
+    Engine::UpgradeManager::instance().reset();
   }
 
   inline void death_on_update(ECS::Entity entity)
