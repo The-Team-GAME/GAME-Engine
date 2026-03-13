@@ -508,9 +508,10 @@ namespace Engine {
         activate_level(state);
       }
       else {
-        // Cold path: deserialize from cached EntityList
-        instantiate_entities(state.cached_entities, true);
-        state.cached_entities = EntityList();
+        // Cold path: instantiate from resident preloaded data when available
+        EntityList entities = get_preloaded_or_disk(state, level_id);
+        instantiate_entities(entities, true);
+        state.cached_entities = entities;
       }
 
       Log::info("Switched to level: {}", level_id);
@@ -590,9 +591,9 @@ namespace Engine {
         build_preloaded_snapshot(state);
       }
       else {
-          // If this level has stale deactivated live entities, destroy them so
-          // reopening starts from pristine state and does not accumulate entities.
-          destroy_level_entities(state);
+        // If this level has stale deactivated live entities, destroy them so
+        // reopening starts from pristine state and does not accumulate entities.
+        destroy_level_entities(state);
         state.has_live_entities = false;
         state.live_entity_ids.clear();
       }
