@@ -574,22 +574,22 @@ namespace ImGuiWidgets {
     ReflectionLibrary::Object& field_obj = field_value.getObject();
     bool local_modified = false;
 
+    auto& bp_registry = Engine::StateMachineBlueprintRegistry::instance();
+
+    auto bp_it = field_obj.find("blueprint_id");
+    std::string current_bp_id;
+    if (bp_it != field_obj.end() && bp_it->second.isString()) {
+      current_bp_id = bp_it->second.getString();
+    }
+
+    bool current_is_lua = bp_registry.is_lua_blueprint(current_bp_id);
+
     // ========================================================================
     // Blueprint ID selector dropdown (supports both C++ and Lua blueprints)
     // ========================================================================
     {
-      auto bp_it = field_obj.find("blueprint_id");
-      std::string current_bp_id;
-      if (bp_it != field_obj.end() && bp_it->second.isString()) {
-        current_bp_id = bp_it->second.getString();
-      }
-
-      auto& bp_registry = Engine::StateMachineBlueprintRegistry::instance();
       auto all_ids = bp_registry.get_all_ids();
       std::sort(all_ids.begin(), all_ids.end());
-
-      // Determine if current blueprint is Lua-sourced
-      bool current_is_lua = bp_registry.is_lua_blueprint(current_bp_id);
 
       ImGui::Text("Blueprint:");
       ImGui::SameLine();
