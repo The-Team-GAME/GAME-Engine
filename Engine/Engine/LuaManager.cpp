@@ -17,6 +17,8 @@
 
 #include "LuaBindingRegistry.h"
 #include "LuaBindings.h"
+#include "EventManager/EventManager.h"
+#include "Events/EngineEvents.h"
 #include "ECS/ECS.h"
 #include "ECS/Entity.h"
 #include "ECS/Reflection.h"
@@ -996,6 +998,14 @@ namespace Engine {
 
     Log::info("[LuaManager] Hot-reload complete. {} Lua functions registered.",
               lua_registered_functions_.size());
+
+#ifndef GAME_BUILD
+    Engine::EventManager::send_event<Engine::Events::ToastEvent>(
+      "Lua hot-reload complete",
+      Engine::Events::ToastType::Info,
+      3.0f
+    );
+#endif
   }
 
   // ============================================================================
