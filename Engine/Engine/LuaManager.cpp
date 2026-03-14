@@ -12,6 +12,8 @@
 
 #include <sol/sol.hpp>
 #include <filesystem>
+#include <fstream>
+#include <algorithm>
 
 #include "LuaBindingRegistry.h"
 #include "LuaBindings.h"
@@ -29,6 +31,12 @@
 #include "Math/Vector3D.h"
 #include "Math/Vector4D.h"
 #include "Path.h"
+#include "Components/StateMachineBlueprintRegistry.h"
+
+#ifdef _WIN32
+#include <Windows.h>
+#include <shellapi.h>
+#endif
 
 namespace Engine {
 
@@ -95,6 +103,12 @@ namespace Engine {
 
     // 5. Load user scripts
     load_scripts();
+
+    // 6. Load Lua-based state machine blueprints
+    load_lua_blueprints();
+
+    // 7. Snapshot file times for hot-reload watcher
+    snapshot_file_times();
 
     Log::info("[LuaManager] Initialisation complete. {} component types bound.",
               impl_->component_getters.size());
@@ -467,7 +481,8 @@ namespace Engine {
   }
 
   // ============================================================================
-  // load_scripts — execute every .lua file in Assets/scripts/
+  // load_scripts — execute every .lua file in Assets/scripts/ (non-recursive,
+  //                skips the blueprints/ subdirectory which is handled separately)
   // ============================================================================
 
   void LuaManager::load_scripts() {
@@ -480,10 +495,20 @@ namespace Engine {
       return;
     }
 
-    for (auto& entry : std::filesystem::directory_iterator(scripts_dir)) {
-      if (entry.path().extension() != ".lua") continue;
+    // Collect all .lua files recursively (including blueprints subdirectory)
+    // Blueprint files define functions too, so we load them here as regular scripts.
+    std::vector<std::filesystem::path> lua_files;
+    for (auto& entry : std::filesystem::recursive_directory_iterator(scripts_dir)) {
+      if (entry.is_regular_file() && entry.path().extension() == ".lua") {
+        lua_files.push_back(entry.path());
+      }
+    }
 
-      std::string path_str = entry.path().string();
+    // Sort for deterministic load order
+    std::sort(lua_files.begin(), lua_files.end());
+
+    for (auto& file_path : lua_files) {
+      std::string path_str = file_path.string();
       auto result = L.safe_script_file(path_str, sol::script_pass_on_error);
       if (!result.valid()) {
         sol::error err = result;
@@ -491,54 +516,377 @@ namespace Engine {
         continue;
       }
 
-      Log::info("[LuaManager] Loaded script '{}'", entry.path().filename().string());
-
-      // ── Auto-register top-level Lua functions into FunctionRegistry ──
-      // After executing the script, scan the global table for functions
-      // whose names start with a convention prefix (e.g. any name works).
-      // We register them as std::function<void(ECS::Entity)> so they can
-      // be used by StateMachine callbacks via SerializableFunction.
-      //
-      // Convention: any Lua global function that is callable gets registered.
-      // We only register functions that are not already in the registry.
-      sol::table globals = L.globals();
-      globals.for_each([&](sol::object key_obj, sol::object val_obj) {
-        if (key_obj.get_type() != sol::type::string) return;
-        if (val_obj.get_type() != sol::type::function) return;
-
-        std::string func_name = key_obj.as<std::string>();
-
-        // Skip Lua built-in globals
-        static const std::unordered_set<std::string> builtins = {
-          "print", "type", "tostring", "tonumber", "pairs", "ipairs",
-          "next", "select", "error", "pcall", "xpcall", "assert",
-          "require", "rawget", "rawset", "rawequal", "rawlen",
-          "setmetatable", "getmetatable", "load", "dofile", "loadfile",
-          "collectgarbage", "coroutine", "string", "table", "math", "os",
-          "io", "debug", "package", "utf8", "warn"
-        };
-        if (builtins.count(func_name)) return;
-
-        // Skip if already registered (e.g. C++ function or from a prior script)
-        auto& fr = FunctionRegistry::instance();
-        using Sig = void(ECS::Entity);
-        if (fr.has_function<Sig>(func_name)) return;
-
-        // Capture the Lua function and wrap it
-        sol::protected_function lua_func = val_obj.as<sol::protected_function>();
-        fr.register_function<Sig>(func_name, std::function<Sig>(
-          [lua_func](ECS::Entity entity) {
-            auto result = lua_func(entity);
-            if (!result.valid()) {
-              sol::error err = result;
-              Log::error("[Lua] Error calling '{}': {}", /* cannot get name easily */ "lua_func", err.what());
-            }
-          }
-        ));
-
-        Log::info("[LuaManager] Registered Lua function '{}' into FunctionRegistry", func_name);
-      });
+      Log::info("[LuaManager] Loaded script '{}'", file_path.filename().string());
     }
+
+    // ── Auto-register top-level Lua functions into FunctionRegistry ──
+    // After executing ALL scripts, scan the global table for functions.
+    // We register them as std::function<void(ECS::Entity)> so they can
+    // be used by StateMachine callbacks via SerializableFunction.
+    sol::table globals = L.globals();
+    globals.for_each([&](sol::object key_obj, sol::object val_obj) {
+      if (key_obj.get_type() != sol::type::string) return;
+      if (val_obj.get_type() != sol::type::function) return;
+
+      std::string func_name = key_obj.as<std::string>();
+
+      // Skip Lua built-in globals
+      static const std::unordered_set<std::string> builtins = {
+        "print", "type", "tostring", "tonumber", "pairs", "ipairs",
+        "next", "select", "error", "pcall", "xpcall", "assert",
+        "require", "rawget", "rawset", "rawequal", "rawlen",
+        "setmetatable", "getmetatable", "load", "dofile", "loadfile",
+        "collectgarbage", "coroutine", "string", "table", "math", "os",
+        "io", "debug", "package", "utf8", "warn"
+      };
+      if (builtins.count(func_name)) return;
+
+      // Skip if already registered as a C++ function (not one we registered from Lua before)
+      auto& fr = FunctionRegistry::instance();
+      using Sig = void(ECS::Entity);
+      if (fr.has_function<Sig>(func_name) && lua_registered_functions_.count(func_name) == 0) return;
+
+      // Capture the Lua function and wrap it
+      sol::protected_function lua_func = val_obj.as<sol::protected_function>();
+      std::string captured_name = func_name; // capture for lambda
+      fr.register_function<Sig>(func_name, std::function<Sig>(
+        [lua_func, captured_name](ECS::Entity entity) {
+          auto result = lua_func(entity);
+          if (!result.valid()) {
+            sol::error err = result;
+            Log::error("[Lua] Error calling '{}': {}", captured_name, err.what());
+          }
+        }
+      ));
+
+      lua_registered_functions_.insert(func_name);
+      Log::info("[LuaManager] Registered Lua function '{}' into FunctionRegistry", func_name);
+    });
+  }
+
+  // ============================================================================
+  // load_lua_blueprints — parse Blueprint tables from Assets/scripts/blueprints/
+  // ============================================================================
+
+  void LuaManager::load_lua_blueprints() {
+    auto& L = *lua_;
+
+    std::filesystem::path bp_dir = "Assets/scripts/blueprints";
+    if (!std::filesystem::exists(bp_dir)) {
+      Log::info("[LuaManager] No blueprints directory found at '{}'. Skipping.", bp_dir.string());
+      return;
+    }
+
+    auto& bp_registry = StateMachineBlueprintRegistry::instance();
+
+    for (auto& entry : std::filesystem::directory_iterator(bp_dir)) {
+      if (!entry.is_regular_file() || entry.path().extension() != ".lua") continue;
+
+      // The blueprint name is the filename without extension
+      std::string bp_name = entry.path().stem().string();
+
+      // The Blueprint global might have been overwritten by the last loaded script.
+      // We need a per-file approach: set Blueprint to nil, re-run the file,
+      // then read it.
+      L["Blueprint"] = sol::lua_nil;
+      auto result = L.safe_script_file(entry.path().string(), sol::script_pass_on_error);
+      if (!result.valid()) {
+        sol::error err = result;
+        Log::error("[LuaManager] Error loading blueprint '{}': {}", bp_name, err.what());
+        continue;
+      }
+
+      sol::optional<sol::table> bp_table = L["Blueprint"].get<sol::optional<sol::table>>();
+      if (!bp_table) {
+        // Not a blueprint file (no Blueprint table defined) — that's fine, skip it
+        continue;
+      }
+
+      // Parse the Blueprint table
+      StateMachineBlueprint blueprint;
+
+      sol::optional<std::string> initial = (*bp_table)["initial_state"];
+      if (initial) {
+        blueprint.initial_state = *initial;
+      }
+
+      sol::optional<sol::table> states_table = (*bp_table)["states"];
+      if (states_table) {
+        states_table->for_each([&](sol::object /*idx*/, sol::object val) {
+          if (val.get_type() != sol::type::table) return;
+          sol::table state_entry = val.as<sol::table>();
+
+          StateBlueprint sb;
+          sb.state_name = state_entry.get_or<std::string>("name", "");
+          sb.on_enter   = state_entry.get_or<std::string>("on_enter", "");
+          sb.on_update  = state_entry.get_or<std::string>("on_update", "");
+          sb.on_exit    = state_entry.get_or<std::string>("on_exit", "");
+
+          if (!sb.state_name.empty()) {
+            blueprint.states.push_back(std::move(sb));
+          }
+        });
+      }
+
+      // Clear the Blueprint global so it doesn't leak to the next file
+      L["Blueprint"] = sol::lua_nil;
+
+      if (blueprint.states.empty()) {
+        Log::warning("[LuaManager] Blueprint '{}' has no states, skipping.", bp_name);
+        continue;
+      }
+
+      bp_registry.register_lua_blueprint(bp_name, blueprint);
+      Log::info("[LuaManager] Registered Lua blueprint '{}' with {} states.",
+                bp_name, blueprint.states.size());
+    }
+  }
+
+  // ============================================================================
+  // reload_scripts — hot-reload all Lua scripts and blueprints
+  // ============================================================================
+
+  void LuaManager::reload_scripts() {
+    if (!lua_) return;
+
+    Log::info("[LuaManager] Hot-reloading Lua scripts...");
+
+    // 1. Remove all Lua-registered functions from FunctionRegistry
+    auto& fr = FunctionRegistry::instance();
+    using Sig = void(ECS::Entity);
+    for (const auto& name : lua_registered_functions_) {
+      fr.unregister_function<Sig>(name);
+    }
+    lua_registered_functions_.clear();
+
+    // 2. Remove all Lua-sourced blueprints
+    StateMachineBlueprintRegistry::instance().clear_lua_blueprints();
+
+    // 3. Clear all Lua globals that are functions (non-builtin)
+    // This prevents stale function references in the Lua state.
+    // We need to be careful not to clear engine-bound tables.
+    static const std::unordered_set<std::string> engine_globals = {
+      "print", "type", "tostring", "tonumber", "pairs", "ipairs",
+      "next", "select", "error", "pcall", "xpcall", "assert",
+      "require", "rawget", "rawset", "rawequal", "rawlen",
+      "setmetatable", "getmetatable", "load", "dofile", "loadfile",
+      "collectgarbage", "coroutine", "string", "table", "math", "os",
+      "io", "debug", "package", "utf8", "warn",
+      // Engine tables
+      "ECS", "Log", "Input", "Key", "Time", "Audio", "Scene", "Level", "Entity"
+    };
+
+    // Collect function names to remove (can't modify table during iteration)
+    std::vector<std::string> to_remove;
+    sol::table globals = lua_->globals();
+    globals.for_each([&](sol::object key_obj, sol::object val_obj) {
+      if (key_obj.get_type() != sol::type::string) return;
+      std::string key = key_obj.as<std::string>();
+      if (engine_globals.count(key)) return;
+      if (val_obj.get_type() == sol::type::function) {
+        to_remove.push_back(key);
+      }
+    });
+    for (auto& name : to_remove) {
+      (*lua_)[name] = sol::lua_nil;
+    }
+
+    // Also clear the Blueprint global
+    (*lua_)["Blueprint"] = sol::lua_nil;
+
+    // 4. Re-load all scripts (this re-registers functions)
+    load_scripts();
+
+    // 5. Re-load Lua blueprints
+    load_lua_blueprints();
+
+    // 6. Update file timestamps
+    snapshot_file_times();
+
+    Log::info("[LuaManager] Hot-reload complete. {} Lua functions registered.",
+              lua_registered_functions_.size());
+  }
+
+  // ============================================================================
+  // snapshot_file_times — record last-write times for all .lua files
+  // ============================================================================
+
+  void LuaManager::snapshot_file_times() {
+    file_times_.clear();
+
+    std::filesystem::path scripts_dir = "Assets/scripts";
+    if (!std::filesystem::exists(scripts_dir)) return;
+
+    for (auto& entry : std::filesystem::recursive_directory_iterator(scripts_dir)) {
+      if (entry.is_regular_file() && entry.path().extension() == ".lua") {
+        file_times_[entry.path().string()] = entry.last_write_time();
+      }
+    }
+  }
+
+  // ============================================================================
+  // poll_file_changes — called once per frame, checks for .lua file changes
+  // ============================================================================
+
+  void LuaManager::poll_file_changes() {
+    if (!lua_) return;
+
+    poll_timer_ += Time::get_real_dt();
+    if (poll_timer_ < POLL_INTERVAL) return;
+    poll_timer_ = 0.0f;
+
+    std::filesystem::path scripts_dir = "Assets/scripts";
+    if (!std::filesystem::exists(scripts_dir)) return;
+
+    bool changed = false;
+
+    // Check for modified or new files
+    for (auto& entry : std::filesystem::recursive_directory_iterator(scripts_dir)) {
+      if (!entry.is_regular_file() || entry.path().extension() != ".lua") continue;
+
+      std::string path_str = entry.path().string();
+      auto lwt = entry.last_write_time();
+
+      auto it = file_times_.find(path_str);
+      if (it == file_times_.end()) {
+        // New file
+        changed = true;
+        break;
+      }
+      if (it->second != lwt) {
+        // Modified file
+        changed = true;
+        break;
+      }
+    }
+
+    // Also check for deleted files
+    if (!changed) {
+      for (auto& [path, _] : file_times_) {
+        if (!std::filesystem::exists(path)) {
+          changed = true;
+          break;
+        }
+      }
+    }
+
+    if (changed) {
+      Log::info("[LuaManager] Detected Lua file changes, reloading...");
+      reload_scripts();
+    }
+  }
+
+  // ============================================================================
+  // create_lua_blueprint — create a new blueprint .lua file from template
+  // ============================================================================
+
+  std::string LuaManager::create_lua_blueprint(const std::string& blueprint_name) {
+    std::filesystem::path bp_dir = "Assets/scripts/blueprints";
+    std::filesystem::create_directories(bp_dir);
+
+    std::filesystem::path file_path = bp_dir / (blueprint_name + ".lua");
+    if (std::filesystem::exists(file_path)) {
+      Log::warning("[LuaManager] Blueprint file '{}' already exists.", file_path.string());
+      return file_path.string();
+    }
+
+    // Write a template blueprint file
+    std::ofstream ofs(file_path);
+    if (!ofs.is_open()) {
+      Log::error("[LuaManager] Failed to create blueprint file '{}'.", file_path.string());
+      return "";
+    }
+
+    ofs << "-- " << blueprint_name << " Blueprint\n";
+    ofs << "-- Define callback functions for each state below.\n";
+    ofs << "-- These functions receive an Entity parameter.\n";
+    ofs << "\n";
+    ofs << "function " << blueprint_name << "_idle_enter(entity)\n";
+    ofs << "  Log.info(\"" << blueprint_name << ": Idle enter\")\n";
+    ofs << "end\n";
+    ofs << "\n";
+    ofs << "function " << blueprint_name << "_idle_update(entity)\n";
+    ofs << "  -- Update logic here\n";
+    ofs << "end\n";
+    ofs << "\n";
+    ofs << "-- Blueprint definition table\n";
+    ofs << "Blueprint = {\n";
+    ofs << "  initial_state = \"Idle\",\n";
+    ofs << "  states = {\n";
+    ofs << "    { name = \"Idle\", on_enter = \"" << blueprint_name << "_idle_enter\", on_update = \"" << blueprint_name << "_idle_update\", on_exit = \"\" },\n";
+    ofs << "  }\n";
+    ofs << "}\n";
+
+    ofs.close();
+
+    Log::info("[LuaManager] Created Lua blueprint file '{}'.", file_path.string());
+
+    // Reload scripts to pick up the new file
+    reload_scripts();
+
+    return file_path.string();
+  }
+
+  // ============================================================================
+  // delete_lua_blueprint — delete a blueprint file and unregister it
+  // ============================================================================
+
+  bool LuaManager::delete_lua_blueprint(const std::string& blueprint_name) {
+    std::filesystem::path file_path = "Assets/scripts/blueprints" / std::filesystem::path(blueprint_name + ".lua");
+
+    if (!std::filesystem::exists(file_path)) {
+      Log::warning("[LuaManager] Blueprint file '{}' does not exist.", file_path.string());
+      return false;
+    }
+
+    // Remove the file
+    std::error_code ec;
+    std::filesystem::remove(file_path, ec);
+    if (ec) {
+      Log::error("[LuaManager] Failed to delete blueprint file '{}': {}", file_path.string(), ec.message());
+      return false;
+    }
+
+    Log::info("[LuaManager] Deleted Lua blueprint file '{}'.", file_path.string());
+
+    // Reload scripts to clean up
+    reload_scripts();
+
+    return true;
+  }
+
+  // ============================================================================
+  // open_lua_blueprint_in_editor — open the file in the system editor
+  // ============================================================================
+
+  void LuaManager::open_lua_blueprint_in_editor(const std::string& blueprint_name) {
+    std::filesystem::path file_path = std::filesystem::absolute("Assets/scripts/blueprints" / std::filesystem::path(blueprint_name + ".lua"));
+
+    if (!std::filesystem::exists(file_path)) {
+      Log::warning("[LuaManager] Blueprint file '{}' does not exist.", file_path.string());
+      return;
+    }
+
+    // Use ShellExecute on Windows to open with default editor
+#ifdef _WIN32
+    ShellExecuteA(NULL, "open", file_path.string().c_str(), NULL, NULL, SW_SHOWNORMAL);
+#else
+    // Fallback for non-Windows platforms
+    std::string cmd = "xdg-open \"" + file_path.string() + "\"";
+    std::system(cmd.c_str());
+#endif
+  }
+
+  // ============================================================================
+  // get_lua_blueprint_path — get the file path for a Lua blueprint
+  // ============================================================================
+
+  std::string LuaManager::get_lua_blueprint_path(const std::string& blueprint_name) const {
+    std::filesystem::path file_path = "Assets/scripts/blueprints" / std::filesystem::path(blueprint_name + ".lua");
+    if (std::filesystem::exists(file_path)) {
+      return std::filesystem::absolute(file_path).string();
+    }
+    return "";
   }
 
 } // namespace Engine

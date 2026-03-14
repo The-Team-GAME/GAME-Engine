@@ -43,6 +43,7 @@
 #include "UpgradeUIStateMachine.h"
 #include "Firebase/FirebaseManager.h"
 #include "Firebase/FirebaseAuth.h"
+#include "LuaManager.h"
 
 
 namespace Engine
@@ -245,6 +246,11 @@ namespace Engine
       // Hot-reload check: detect GameLogic.dll changes and reload
 #ifndef GAME_BUILD
       Engine::HotReload::check_and_reload();
+#endif
+
+      // Lua hot-reload: poll for .lua file changes on disk
+#ifndef GAME_BUILD
+      Engine::LuaManager::instance().poll_file_changes();
 #endif
 
       // Update window title with FPS
