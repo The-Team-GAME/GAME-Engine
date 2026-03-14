@@ -244,6 +244,7 @@ namespace Components
     f32 damage_interval = 0.1f; // Time in seconds between damage ticks for continuous attacks
     std::vector<std::pair<Engine::ECS::Entity, float>> hit_entities; // Track entity and last hit time
     Components::Texture impact_vfx_texture;
+    s32 impact_vfx_frame_start = 0; // Starting frame index for bro_vfx_impact animation (0, 3, or 6)
 
     Attack() = default;
     explicit Attack(s32 dmg, Math::Vec2D kb = Math::Vec2D(0.0f, 0.0f), bool continuous = false, f32 interval = 0.1f, bool play_hit_sfx = true)

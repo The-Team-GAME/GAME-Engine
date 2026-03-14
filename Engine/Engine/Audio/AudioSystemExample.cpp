@@ -236,7 +236,7 @@ public:
     
     void SetMusicVolume(float volume)
     {
-        Engine::AudioSystem::setBusVolume("bus:/Music", volume);
+        Engine::AudioSystem::setBusVolume("bus:/BGM", volume);
     }
     
     void SetSFXVolume(float volume)
@@ -252,7 +252,7 @@ public:
     float GetMusicVolume()
     {
         float volume;
-        Engine::AudioSystem::getBusVolume("bus:/Music", volume);
+        Engine::AudioSystem::getBusVolume("bus:/BGM", volume);
         return volume;
     }
 };
