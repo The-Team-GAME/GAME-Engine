@@ -107,8 +107,8 @@ namespace Engine {
     // 6. Load Lua-based state machine blueprints
     load_lua_blueprints();
 
-    // 7. Snapshot file times for hot-reload watcher
-    snapshot_file_times();
+    // 7. Start background file watcher for hot-reload
+    start_file_watcher();
 
     Log::info("[LuaManager] Initialisation complete. {} component types bound.",
               impl_->component_getters.size());
@@ -119,6 +119,8 @@ namespace Engine {
   // ============================================================================
 
   void LuaManager::shutdown() {
+    stop_file_watcher();
+
     if (lua_) {
       delete lua_;
       lua_ = nullptr;
@@ -700,77 +702,115 @@ namespace Engine {
     // 5. Re-load Lua blueprints
     load_lua_blueprints();
 
-    // 6. Update file timestamps
-    snapshot_file_times();
-
     Log::info("[LuaManager] Hot-reload complete. {} Lua functions registered.",
               lua_registered_functions_.size());
   }
 
   // ============================================================================
-  // snapshot_file_times — record last-write times for all .lua files
+  // File watcher — ReadDirectoryChangesW background thread
   // ============================================================================
 
-  void LuaManager::snapshot_file_times() {
-    file_times_.clear();
+  void LuaManager::start_file_watcher() {
+#ifdef _WIN32
+    if (watcher_running_) return;
 
-    std::filesystem::path scripts_dir = "Assets/scripts";
-    if (!std::filesystem::exists(scripts_dir)) return;
-
-    for (auto& entry : std::filesystem::recursive_directory_iterator(scripts_dir)) {
-      if (entry.is_regular_file() && entry.path().extension() == ".lua") {
-        file_times_[entry.path().string()] = entry.last_write_time();
-      }
+    // Only start the watcher if the scripts directory exists
+    if (!std::filesystem::exists("Assets/scripts")) {
+      Log::info("[LuaManager] No Assets/scripts directory — file watcher not started.");
+      return;
     }
+
+    watcher_running_ = true;
+    watcher_thread_ = std::thread(file_watcher_thread_fn, this);
+    Log::info("[LuaManager] Lua file watcher started.");
+#endif
   }
 
-  // ============================================================================
-  // poll_file_changes — called once per frame, checks for .lua file changes
-  // ============================================================================
+  void LuaManager::stop_file_watcher() {
+#ifdef _WIN32
+    if (!watcher_running_) return;
+    watcher_running_ = false;
+    if (watcher_thread_.joinable())
+      watcher_thread_.join();
+    Log::info("[LuaManager] Lua file watcher stopped.");
+#endif
+  }
 
-  void LuaManager::poll_file_changes() {
-    if (!lua_) return;
+  void LuaManager::file_watcher_thread_fn(LuaManager* self) {
+#ifdef _WIN32
+    std::filesystem::path watch_dir = std::filesystem::absolute("Assets/scripts");
 
-    poll_timer_ += Time::get_real_dt();
-    if (poll_timer_ < POLL_INTERVAL) return;
-    poll_timer_ = 0.0f;
+    HANDLE dir_handle = CreateFileW(
+      watch_dir.wstring().c_str(),
+      FILE_LIST_DIRECTORY,
+      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+      nullptr,
+      OPEN_EXISTING,
+      FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
+      nullptr);
 
-    std::filesystem::path scripts_dir = "Assets/scripts";
-    if (!std::filesystem::exists(scripts_dir)) return;
-
-    bool changed = false;
-
-    // Check for modified or new files
-    for (auto& entry : std::filesystem::recursive_directory_iterator(scripts_dir)) {
-      if (!entry.is_regular_file() || entry.path().extension() != ".lua") continue;
-
-      std::string path_str = entry.path().string();
-      auto lwt = entry.last_write_time();
-
-      auto it = file_times_.find(path_str);
-      if (it == file_times_.end()) {
-        // New file
-        changed = true;
-        break;
-      }
-      if (it->second != lwt) {
-        // Modified file
-        changed = true;
-        break;
-      }
+    if (dir_handle == INVALID_HANDLE_VALUE) {
+      Log::error("[LuaManager] Cannot watch scripts directory: {}", watch_dir.string());
+      return;
     }
 
-    // Also check for deleted files
-    if (!changed) {
-      for (auto& [path, _] : file_times_) {
-        if (!std::filesystem::exists(path)) {
-          changed = true;
-          break;
+    HANDLE event = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+    OVERLAPPED overlapped{};
+    overlapped.hEvent = event;
+
+    alignas(DWORD) char buffer[4096];
+
+    while (self->watcher_running_) {
+      BOOL result = ReadDirectoryChangesW(
+        dir_handle,
+        buffer, sizeof(buffer),
+        TRUE, // watch subtree (includes blueprints/)
+        FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_FILE_NAME,
+        nullptr,
+        &overlapped,
+        nullptr);
+
+      if (!result) break;
+
+      // Wait with timeout so we can check watcher_running_ for clean shutdown
+      DWORD wait = WaitForSingleObject(event, 500);
+      if (wait == WAIT_OBJECT_0) {
+        DWORD bytes_returned = 0;
+        GetOverlappedResult(dir_handle, &overlapped, &bytes_returned, FALSE);
+        ResetEvent(event);
+
+        if (bytes_returned == 0) continue;
+
+        // Parse the notification chain — check if any .lua file changed
+        bool lua_changed = false;
+        auto* info = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(buffer);
+        while (true) {
+          std::wstring filename(info->FileName, info->FileNameLength / sizeof(WCHAR));
+          if (filename.ends_with(L".lua")) {
+            lua_changed = true;
+            break;
+          }
+          if (info->NextEntryOffset == 0) break;
+          info = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(
+            reinterpret_cast<char*>(info) + info->NextEntryOffset);
+        }
+
+        if (lua_changed) {
+          // Small debounce — wait for the editor to finish writing the file
+          Sleep(300);
+          self->lua_files_changed_ = true;
         }
       }
     }
 
-    if (changed) {
+    CloseHandle(event);
+    CloseHandle(dir_handle);
+#endif
+  }
+
+  void LuaManager::check_and_reload_if_changed() {
+    if (!lua_) return;
+    if (lua_files_changed_.exchange(false)) {
       Log::info("[LuaManager] Detected Lua file changes, reloading...");
       reload_scripts();
     }

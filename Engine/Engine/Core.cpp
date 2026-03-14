@@ -248,9 +248,9 @@ namespace Engine
       Engine::HotReload::check_and_reload();
 #endif
 
-      // Lua hot-reload: poll for .lua file changes on disk
+      // Lua hot-reload: check if background watcher detected .lua file changes
 #ifndef GAME_BUILD
-      Engine::LuaManager::instance().poll_file_changes();
+      Engine::LuaManager::instance().check_and_reload_if_changed();
 #endif
 
       // Update window title with FPS

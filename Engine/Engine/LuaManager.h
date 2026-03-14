@@ -10,7 +10,8 @@
 //            - Load and execute scripts from Assets/scripts/
 //            - Auto-register Lua functions into FunctionRegistry
 //            - Load Lua-based state machine blueprints from Assets/scripts/blueprints/
-//            - Poll-based hot-reload when script files change on disk
+//            - Event-driven hot-reload via ReadDirectoryChangesW when .lua files
+//              are modified on disk
 //
 // Copyright (c) 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
@@ -20,7 +21,8 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include <filesystem>
+#include <atomic>
+#include <thread>
 #include <sol/sol.hpp>
 #include "EngineExport.h"
 #include "ECS/Entity.h"
@@ -49,10 +51,11 @@ namespace Engine {
     /// Safe to call at any time (e.g. from file watcher or editor button).
     ENGINE_API void reload_scripts();
 
-    /// Poll-based file watcher. Call once per frame from the game loop.
-    /// If any .lua file in Assets/scripts/ (recursive) has been modified,
-    /// triggers reload_scripts() automatically.
-    ENGINE_API void poll_file_changes();
+    /// Check if the background file watcher detected changes and reload if so.
+    /// Call once per frame from the main game loop. Lightweight — just checks
+    /// an atomic flag set by the watcher thread. The actual reload happens on
+    /// the main thread (safe for Lua/FunctionRegistry).
+    ENGINE_API void check_and_reload_if_changed();
 
     /// Create a new Lua blueprint file from a template.
     /// Returns the full path to the created file, or empty string on failure.
@@ -95,8 +98,10 @@ namespace Engine {
     void load_scripts();
     void load_lua_blueprints();
 
-    /// Scan all .lua files and record their last-write times for the file watcher.
-    void snapshot_file_times();
+    // ── File watcher (ReadDirectoryChangesW background thread) ────────
+    void start_file_watcher();
+    void stop_file_watcher();
+    static void file_watcher_thread_fn(LuaManager* self);
 
     // ── Data ──────────────────────────────────────────────────────────
     sol::state* lua_ = nullptr;
@@ -105,10 +110,10 @@ namespace Engine {
     // Tracks which function names were registered by Lua scripts (for cleanup on reload)
     std::unordered_set<std::string> lua_registered_functions_;
 
-    // File watcher state: path -> last_write_time
-    std::unordered_map<std::string, std::filesystem::file_time_type> file_times_;
-    float poll_timer_ = 0.0f;
-    static constexpr float POLL_INTERVAL = 1.0f; // seconds between file checks
+    // File watcher state
+    std::atomic<bool> watcher_running_{ false };
+    std::atomic<bool> lua_files_changed_{ false };
+    std::thread watcher_thread_;
   };
 
 } // namespace Engine
