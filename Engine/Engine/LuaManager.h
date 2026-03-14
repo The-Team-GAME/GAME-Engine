@@ -86,9 +86,15 @@ namespace Engine {
     LuaManager& operator=(const LuaManager&) = delete;
 
     // ── Internal helpers called by init() ─────────────────────────────
+    void bind_vec2d_extras();      // Phase 1: full Vec2D before drain
     void drain_binding_registry();
-    void bind_entity_type();
-    void bind_ecs_table();
+    void bind_entity_type();       // enhanced in Phase 2 (has/remove/add)
+    void bind_statemachine_methods(); // Phase 3
+    void bind_animation_methods();    // Phase 3
+    void bind_aabb_methods();         // Phase 3
+    void bind_ecs_table();         // enhanced in Phase 6, 7
+    void bind_physics();           // Phase 5
+    void bind_resources();         // Phase 6
     void bind_log();
     void bind_input();
     void bind_time();

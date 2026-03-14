@@ -205,3 +205,9 @@ namespace Components {
 
 
 REGISTER_COMPONENT(Components::Health, value, max);
+
+LUA_BIND_METHODS(Components::Health, {
+    lua["Health"]["damage"]  = &Components::Health::damage;
+    lua["Health"]["heal"]    = &Components::Health::heal;
+    lua["Health"]["is_dead"] = &Components::Health::is_dead;
+})

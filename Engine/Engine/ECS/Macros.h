@@ -76,6 +76,30 @@ HOW THESE MACROS WORK:
         static CONCAT(AutoRegister_, __LINE__) CONCAT(auto_register_instance, __LINE__); \
     }
 
+// Method binder for components — augments an already-registered Sol2 usertype
+// with extra C++ methods. Use from GameLogic (or Engine) to expose methods
+// that the auto-reflection binding doesn't capture (e.g. Health::damage).
+//
+// Usage:  LUA_BIND_METHODS(Components::Health, {
+//           lua["Health"]["damage"] = &Components::Health::damage;
+//           lua["Health"]["heal"]   = &Components::Health::heal;
+//           lua["Health"]["is_dead"] = &Components::Health::is_dead;
+//         })
+#define LUA_BIND_METHODS(CLASS_NAME, BODY) \
+    namespace { \
+        struct CONCAT(AutoBindMethods_, __LINE__) { \
+            CONCAT(AutoBindMethods_, __LINE__)() { \
+                Engine::LuaBindingRegistry::instance().push_method_binder({ \
+                    Engine::LuaBindings::short_name(#CLASS_NAME), \
+                    [](sol::state& lua) { \
+                        BODY \
+                    } \
+                }); \
+            } \
+        }; \
+        static CONCAT(AutoBindMethods_, __LINE__) CONCAT(auto_bind_methods_instance, __LINE__); \
+    }
+
 // Custom reflector version (ECS + Custom Reflection + Lua binding)
 #define REGISTER_COMPONENT_CUSTOM(CLASS_NAME, ...) \
     REFLECT_CUSTOM(CLASS_NAME, __VA_ARGS__) \

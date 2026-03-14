@@ -35,6 +35,13 @@ namespace Engine {
       std::function<sol::object(sol::state_view, ECS::Entity)> getter;     // gets component ptr
     };
 
+    /// Method binder: augments an already-registered usertype with extra methods.
+    /// Pushed by LUA_BIND_METHODS macros (typically from GameLogic).
+    struct MethodBinderEntry {
+      std::string short_name;                                              // e.g. "Health"
+      std::function<void(sol::state&)> binder;                             // adds methods to existing usertype
+    };
+
     ENGINE_API static LuaBindingRegistry& instance();
 
     ENGINE_API static void destroy_instance();
@@ -44,11 +51,20 @@ namespace Engine {
       entries_.push_back(std::move(entry));
     }
 
+    /// Push a method binder (called from LUA_BIND_METHODS macros at static init).
+    void push_method_binder(MethodBinderEntry entry) {
+      method_binder_entries_.push_back(std::move(entry));
+    }
+
     /// Access all pending entries. LuaManager drains this during init.
     const std::vector<Entry>& entries() const { return entries_; }
 
+    /// Access all pending method binder entries. LuaManager drains this after entries.
+    const std::vector<MethodBinderEntry>& method_binder_entries() const { return method_binder_entries_; }
+
   private:
     std::vector<Entry> entries_;
+    std::vector<MethodBinderEntry> method_binder_entries_;
 
     LuaBindingRegistry() = default;
     LuaBindingRegistry(const LuaBindingRegistry&) = delete;

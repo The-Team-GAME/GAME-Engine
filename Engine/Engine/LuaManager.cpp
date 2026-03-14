@@ -19,6 +19,8 @@
 #include "LuaBindings.h"
 #include "ECS/ECS.h"
 #include "ECS/Entity.h"
+#include "ECS/Reflection.h"
+#include "ECS/Prefab.h"
 #include "FunctionRegistry.h"
 #include "Logger.h"
 #include "InputManager.h"
@@ -32,6 +34,14 @@
 #include "Math/Vector4D.h"
 #include "Path.h"
 #include "Components/StateMachineBlueprintRegistry.h"
+#include "Components/StateMachineComponents.h"
+#include "Components/GraphicsComponents.h"
+#include "Components/CollisionComponents.h"
+#include "Components/PhysicsComponents.h"
+#include "Systems/PhysicsSystem.h"
+#include "Systems/GraphicsSystem.h"
+#include "Resources.h"
+#include "UpgradeManager.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -84,16 +94,33 @@ namespace Engine {
 
     Log::info("[LuaManager] sol::state created, draining binding registry...");
 
-    // 1. Drain the side registry — binds every reflected component type
+    // 1. Pre-register Vec2D with full constructor/operators/methods
+    //    (must happen BEFORE drain so the generic binder skips Vec2D)
+    bind_vec2d_extras();
+
+    // 2. Drain the side registry — binds every reflected component type
+    //    (also drains method binder entries in a second pass)
     drain_binding_registry();
 
-    // 2. Bind Entity with __index metamethod for component access
+    // 3. Bind Entity with __index metamethod for component access
+    //    (includes has/remove/add by short name)
     bind_entity_type();
 
-    // 3. Bind global ECS table
+    // 4. Bind engine-side component methods (StateMachine, Animation, AABB)
+    bind_statemachine_methods();
+    bind_animation_methods();
+    bind_aabb_methods();
+
+    // 5. Bind global ECS table (includes get_first_entity_with, instantiate_prefab)
     bind_ecs_table();
 
-    // 4. Bind engine subsystem APIs
+    // 6. Bind Physics & Systems
+    bind_physics();
+
+    // 7. Bind Resources (Prefab, load_prefab, load_texture)
+    bind_resources();
+
+    // 8. Bind engine subsystem APIs
     bind_log();
     bind_input();
     bind_time();
@@ -137,6 +164,8 @@ namespace Engine {
 
   void LuaManager::drain_binding_registry() {
     auto& reg = LuaBindingRegistry::instance();
+
+    // Pass 1: bind component usertypes and store getters
     for (auto& entry : reg.entries()) {
       // Bind the component's usertype (recursively binds field types too)
       entry.binder(*lua_);
@@ -146,6 +175,144 @@ namespace Engine {
 
       Log::info("[LuaManager] Bound component '{}'", entry.short_name);
     }
+
+    // Pass 2: augment usertypes with extra methods (from LUA_BIND_METHODS)
+    for (auto& entry : reg.method_binder_entries()) {
+      entry.binder(*lua_);
+      Log::info("[LuaManager] Bound methods for '{}'", entry.short_name);
+    }
+  }
+
+  // ============================================================================
+  // Phase 1: bind_vec2d_extras — full Vec2D (constructor, operators, methods)
+  // Must run BEFORE drain_binding_registry() so the generic binder skips Vec2D.
+  // ============================================================================
+
+  void LuaManager::bind_vec2d_extras() {
+    auto& L = *lua_;
+
+    // Mark as bound so drain_binding_registry() won't re-register Vec2D
+    LuaBindings::mark_bound<Math::Vec2D>();
+
+    L.new_usertype<Math::Vec2D>("Vec2D",
+      // Constructors
+      sol::constructors<Math::Vec2D(), Math::Vec2D(f32, f32)>(),
+
+      // Fields
+      "x", &Math::Vec2D::x,
+      "y", &Math::Vec2D::y,
+
+      // Methods
+      "zero",             &Math::Vec2D::zero,
+      "get_magnitude",    &Math::Vec2D::get_magnitude,
+      "get_magnitude_sq", &Math::Vec2D::get_magnitude_sq,
+
+      // Operators
+      sol::meta_function::addition, sol::resolve<Math::Vec2D(Math::Vec2D const&, Math::Vec2D const&)>(Math::operator+),
+      sol::meta_function::subtraction, sol::resolve<Math::Vec2D(Math::Vec2D const&, Math::Vec2D const&)>(Math::operator-),
+      sol::meta_function::multiplication, [](const Math::Vec2D& v, f32 s) -> Math::Vec2D { return v * s; },
+      sol::meta_function::division, sol::resolve<Math::Vec2D(Math::Vec2D const&, f32)>(Math::operator/),
+      sol::meta_function::unary_minus, [](const Math::Vec2D& v) -> Math::Vec2D { return Math::Vec2D(-v.x, -v.y); },
+      sol::meta_function::equal_to, [](const Math::Vec2D& a, const Math::Vec2D& b) -> bool {
+        return a.x == b.x && a.y == b.y;
+      },
+      sol::meta_function::to_string, [](const Math::Vec2D& v) -> std::string {
+        return "Vec2D(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ")";
+      }
+    );
+
+    // Free math functions (disambiguated — Vec3D/Vec4D overloads exist)
+    L["normalise_vector"] = sol::resolve<Math::Vec2D(Math::Vec2D const&)>(Math::normalise_vector);
+    L["dot_product"]      = sol::resolve<f32(Math::Vec2D const&, Math::Vec2D const&)>(Math::dot_product);
+    L["cross_product"]    = sol::resolve<f32(Math::Vec2D const&, Math::Vec2D const&)>(Math::cross_product);
+    L["rotate"]           = sol::resolve<Math::Vec2D(Math::Vec2D const&, f32)>(Math::rotate);
+    L["scale_vector"]     = sol::resolve<Math::Vec2D(Math::Vec2D const&, f32)>(Math::scale_vector);
+  }
+
+  // ============================================================================
+  // Phase 3: bind_statemachine_methods
+  // ============================================================================
+
+  void LuaManager::bind_statemachine_methods() {
+    auto& L = *lua_;
+    L["StateMachine"]["change_state"]              = &Components::StateMachine::change_state;
+    L["StateMachine"]["is_in_state"]               = &Components::StateMachine::is_in_state;
+    L["StateMachine"]["get_current_state"]          = &Components::StateMachine::get_current_state;
+    L["StateMachine"]["has_state"]                  = &Components::StateMachine::has_state;
+    L["StateMachine"]["is_first_frame"]             = &Components::StateMachine::is_first_frame;
+    L["StateMachine"]["revert_to_previous_state"]   = &Components::StateMachine::revert_to_previous_state;
+  }
+
+  // ============================================================================
+  // Phase 3: bind_animation_methods
+  // ============================================================================
+
+  void LuaManager::bind_animation_methods() {
+    auto& L = *lua_;
+    L["Animation"]["has_ended"]               = &Components::Animation::has_ended;
+    L["Animation"]["get_current_frame_index"]  = &Components::Animation::get_current_frame_index;
+    L["Animation"]["get_elapsed_time"]         = &Components::Animation::get_elapsed_time;
+  }
+
+  // ============================================================================
+  // Phase 3: bind_aabb_methods
+  // ============================================================================
+
+  void LuaManager::bind_aabb_methods() {
+    auto& L = *lua_;
+    L["AABB"]["intersects"] = &::AABB::intersects;
+  }
+
+  // ============================================================================
+  // Phase 5: bind_physics — Physics.add_force, Systems.add_camera_shake
+  // ============================================================================
+
+  void LuaManager::bind_physics() {
+    auto& L = *lua_;
+
+    sol::table physics = L.create_named_table("Physics");
+    physics["add_force"] = [](ECS::Entity entity, f32 fx, f32 fy) {
+      auto* rb = entity.get_component<Components::RigidBody>();
+      if (rb) {
+        Systems::Physics2DSystem::add_force(*rb, Math::Vec2D(fx, fy));
+      }
+    };
+
+    sol::table systems = L.create_named_table("Systems");
+    systems["add_camera_shake"] = [](f32 trauma) {
+      Systems::add_camera_shake(trauma);
+    };
+  }
+
+  // ============================================================================
+  // Phase 6: bind_resources — Prefab handle, load_prefab, load_texture
+  // ============================================================================
+
+  void LuaManager::bind_resources() {
+    auto& L = *lua_;
+
+    // Register Prefab as an opaque handle
+    L.new_usertype<ECS::Prefab>("Prefab", sol::no_constructor);
+
+    sol::table res = L.create_named_table("Resources");
+    res["load_prefab"] = [](const std::string& path) -> ECS::Prefab {
+      return Resources::load_prefab(path);
+    };
+    res["load_texture"] = [](const std::string& path) {
+      return Resources::load_texture(path);
+    };
+
+    // Upgrade table (Engine-side singleton)
+    sol::table upgrade = L.create_named_table("Upgrade");
+    upgrade["reset"] = []() {
+      UpgradeManager::instance().reset();
+    };
+    upgrade["get_points"] = []() -> int {
+      return UpgradeManager::instance().get_points();
+    };
+    upgrade["add_points"] = [](int amt) {
+      UpgradeManager::instance().add_points(amt);
+    };
   }
 
   // ============================================================================
@@ -180,6 +347,54 @@ namespace Engine {
     entity_type["is_on_layer"] = static_cast<bool(ECS::Entity::*)(const std::string&) const>(
       &ECS::Entity::is_on_layer
     );
+
+    // ── Phase 2: has / remove / add by short-name string ──────────────
+    // Build a resolution map: short name -> { full name, ComponentTypeID }
+    // This lets Lua call entity:has("Attack"), entity:remove("Parent"), entity:add("Lifetime")
+
+    entity_type["has"] = [](ECS::Entity entity, const std::string& short_name) -> bool {
+      auto& type_map = ECS::Serialization::get_component_type_map();
+      auto& containers = ECS::Internal::get_containers();
+      ECS::EntityID eid = entity.get_id();
+      // Search for matching component type (short name == last part after ::)
+      for (auto& [full_name, type_id] : type_map) {
+        auto pos = full_name.rfind(':');
+        std::string_view sn = (pos != std::string::npos) ? std::string_view(full_name).substr(pos + 1) : full_name;
+        if (sn == short_name) {
+          return eid < containers.entity_signatures.size() && containers.entity_signatures[eid].test(type_id);
+        }
+      }
+      return false;
+    };
+
+    entity_type["add"] = [](ECS::Entity entity, const std::string& short_name) -> bool {
+      auto& type_map = ECS::Serialization::get_component_type_map();
+      for (auto& [full_name, type_id] : type_map) {
+        auto pos = full_name.rfind(':');
+        std::string_view sn = (pos != std::string::npos) ? std::string_view(full_name).substr(pos + 1) : full_name;
+        if (sn == short_name) {
+          return entity.add_component_by_name(full_name);
+        }
+      }
+      Log::warning("[Lua] entity:add('{}') — unknown component", short_name);
+      return false;
+    };
+
+    entity_type["remove"] = [](ECS::Entity entity, const std::string& short_name) {
+      auto& type_map = ECS::Serialization::get_component_type_map();
+      auto& containers = ECS::Internal::get_containers();
+      ECS::EntityID eid = entity.get_id();
+      for (auto& [full_name, type_id] : type_map) {
+        auto pos = full_name.rfind(':');
+        std::string_view sn = (pos != std::string::npos) ? std::string_view(full_name).substr(pos + 1) : full_name;
+        if (sn == short_name) {
+          // Queue for removal (same as template remove_component)
+          containers.components_to_remove.emplace_back(eid, type_id);
+          return;
+        }
+      }
+      Log::warning("[Lua] entity:remove('{}') — unknown component", short_name);
+    };
 
     // ── __index metamethod for dot-syntax component access ────────────
     // When Lua does `entity.Transform2D`, Sol2 first checks the usertype
@@ -231,6 +446,41 @@ namespace Engine {
 
     ecs["clone_entity"] = [](ECS::Entity src) -> ECS::Entity {
       return ECS::clone_entity(src);
+    };
+
+    // Phase 6: instantiate_prefab
+    ecs["instantiate_prefab"] = [](const ECS::Prefab& prefab) -> ECS::Entity {
+      return ECS::instantiate_prefab(prefab);
+    };
+
+    // Phase 7: get_first_entity_with — find first active entity that has a component by short name
+    ecs["get_first_entity_with"] = [](sol::this_state ts, const std::string& short_name) -> sol::object {
+      auto& type_map = ECS::Serialization::get_component_type_map();
+      auto& containers = ECS::Internal::get_containers();
+
+      // Resolve short name to ComponentTypeID
+      ECS::ComponentTypeID target_id = ECS::MAX_COMPONENTS;
+      for (auto& [full_name, type_id] : type_map) {
+        auto pos = full_name.rfind(':');
+        std::string_view sn = (pos != std::string::npos) ? std::string_view(full_name).substr(pos + 1) : full_name;
+        if (sn == short_name) {
+          target_id = type_id;
+          break;
+        }
+      }
+
+      if (target_id == ECS::MAX_COMPONENTS) {
+        Log::warning("[Lua] ECS.get_first_entity_with('{}') — unknown component", short_name);
+        return sol::lua_nil;
+      }
+
+      // Iterate active entities and return the first one with this component
+      for (auto eid : containers.active_entities) {
+        if (eid < containers.entity_signatures.size() && containers.entity_signatures[eid].test(target_id)) {
+          return sol::make_object(sol::state_view(ts), ECS::Entity(eid));
+        }
+      }
+      return sol::lua_nil;
     };
   }
 
@@ -523,8 +773,10 @@ namespace Engine {
 
     // ── Auto-register top-level Lua functions into FunctionRegistry ──
     // After executing ALL scripts, scan the global table for functions.
-    // We register them as std::function<void(ECS::Entity)> so they can
-    // be used by StateMachine callbacks via SerializableFunction.
+    // We register them as std::function<void(ECS::Entity)> AND
+    // std::function<void(ECS::Entity, ECS::Entity)> so they can be used
+    // by both single-entity callbacks (StateMachine) and two-entity
+    // callbacks (CheckpointCallbacks) via SerializableFunction.
     sol::table globals = L.globals();
     globals.for_each([&](sol::object key_obj, sol::object val_obj) {
       if (key_obj.get_type() != sol::type::string) return;
@@ -545,15 +797,29 @@ namespace Engine {
 
       // Skip if already registered as a C++ function (not one we registered from Lua before)
       auto& fr = FunctionRegistry::instance();
-      using Sig = void(ECS::Entity);
-      if (fr.has_function<Sig>(func_name) && lua_registered_functions_.count(func_name) == 0) return;
+      using Sig1 = void(ECS::Entity);
+      using Sig2 = void(ECS::Entity, ECS::Entity);
+      if (fr.has_function<Sig1>(func_name) && lua_registered_functions_.count(func_name) == 0) return;
 
       // Capture the Lua function and wrap it
       sol::protected_function lua_func = val_obj.as<sol::protected_function>();
       std::string captured_name = func_name; // capture for lambda
-      fr.register_function<Sig>(func_name, std::function<Sig>(
+
+      // Register single-entity signature
+      fr.register_function<Sig1>(func_name, std::function<Sig1>(
         [lua_func, captured_name](ECS::Entity entity) {
           auto result = lua_func(entity);
+          if (!result.valid()) {
+            sol::error err = result;
+            Log::error("[Lua] Error calling '{}': {}", captured_name, err.what());
+          }
+        }
+      ));
+
+      // Register two-entity signature (for collision/checkpoint callbacks)
+      fr.register_function<Sig2>(func_name, std::function<Sig2>(
+        [lua_func, captured_name](ECS::Entity entity_a, ECS::Entity entity_b) {
+          auto result = lua_func(entity_a, entity_b);
           if (!result.valid()) {
             sol::error err = result;
             Log::error("[Lua] Error calling '{}': {}", captured_name, err.what());
@@ -655,9 +921,11 @@ namespace Engine {
 
     // 1. Remove all Lua-registered functions from FunctionRegistry
     auto& fr = FunctionRegistry::instance();
-    using Sig = void(ECS::Entity);
+    using Sig1 = void(ECS::Entity);
+    using Sig2 = void(ECS::Entity, ECS::Entity);
     for (const auto& name : lua_registered_functions_) {
-      fr.unregister_function<Sig>(name);
+      fr.unregister_function<Sig1>(name);
+      fr.unregister_function<Sig2>(name);
     }
     lua_registered_functions_.clear();
 
@@ -674,8 +942,10 @@ namespace Engine {
       "setmetatable", "getmetatable", "load", "dofile", "loadfile",
       "collectgarbage", "coroutine", "string", "table", "math", "os",
       "io", "debug", "package", "utf8", "warn",
-      // Engine tables
-      "ECS", "Log", "Input", "Key", "Time", "Audio", "Scene", "Level", "Entity"
+      // Engine tables and usertypes
+      "ECS", "Log", "Input", "Key", "Time", "Audio", "Scene", "Level", "Entity",
+      "Physics", "Systems", "Resources", "Upgrade", "Prefab", "Vec2D",
+      "normalise_vector", "dot_product", "cross_product", "rotate", "scale_vector"
     };
 
     // Collect function names to remove (can't modify table during iteration)
