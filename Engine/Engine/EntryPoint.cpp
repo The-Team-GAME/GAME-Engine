@@ -137,18 +137,33 @@ void RunGame()
   Engine::HotReload::stop_source_watcher();
 #endif
   Engine::Core::exit();
+
+  // ── Cleanup ─────────────────────────────────────────────────────────
+  // SHUTDOWN ORDER IS CRITICAL — read before changing:
+  //
+  // 1. LuaManager::shutdown() FIRST (before unloading the DLL).
+  //    Closing the sol::state runs the Lua GC. The GC touches:
+  //      a) Sol2 userdatas holding raw C++ component pointers → ECS must be alive.
+  //      b) Lua metatables whose C++ closures were compiled into GameLogic.dll
+  //         (e.g. LUA_BIND_METHODS lambdas) → DLL must still be mapped.
+  //    Both conditions require Lua to close BEFORE ECS destruction and BEFORE
+  //    FreeLibrary. Also, FunctionRegistry::clear_all() (called by
+  //    UnregisterGameLogic inside unload_game_logic) destroys std::function
+  //    closures that hold sol::protected_function — those decrefs must happen
+  //    while the sol::state is still alive.
+  Engine::LuaManager::instance().shutdown();
+  Engine::LuaBindingRegistry::destroy_instance();
+
+  // 2. Unload the DLL. UnregisterGameLogic clears scenes, FunctionRegistry, etc.
+  //    Now safe because the Lua GC has already finished.
   Engine::HotReload::unload_game_logic();
 
-  // Delete all intentionally-leaked singletons now that the DLL is unloaded
-  // and no code will access them. This frees the struct shells AND their
-  // remaining STL structural overhead (sentinel nodes, iterator-debug proxies).
+  // 3. Destroy ECS world. Safe now that Lua is gone (no more GC touching component ptrs).
   Engine::ECS::destroy_world();
   Engine::ECS::ComponentTypeManager::destroy_type_map();
   Engine::EventManager::destroy_all();
   Engine::FunctionRegistry::destroy_instance();
   Engine::StateMachineBlueprintRegistry::destroy_instance();
-  Engine::LuaManager::instance().shutdown();
-  Engine::LuaBindingRegistry::destroy_instance();
 }
 
 #ifdef GAME_BUILD
