@@ -284,6 +284,8 @@ xcopy "$(SafeSolutionDir)\Dependencies\Lua\src\lua.dll" "$(SafeOutDir)" /s /r /y
     <ClCompile Include="WindowManager.cpp" />
     <ClCompile Include="Systems\LogicSystem.cpp" />
     <ClCompile Include="Systems\PostPhysicsSystem.cpp" />
+    <ClCompile Include="LuaBindingRegistry.cpp" />
+    <ClCompile Include="LuaManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Audio\AudioSystem.h" />
@@ -411,6 +413,9 @@ xcopy "$(SafeSolutionDir)\Dependencies\Lua\src\lua.dll" "$(SafeOutDir)" /s /r /y
     <ClInclude Include="Systems\LogicSystem.h" />
     <ClInclude Include="UndoManager\UndoManager.h" />
     <ClInclude Include="Systems\PostPhysicsSystem.h" />
+    <ClInclude Include="LuaBindingRegistry.h" />
+    <ClInclude Include="LuaBindings.h" />
+    <ClInclude Include="LuaManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

@@ -51,3 +51,4 @@
 #include "Systems/StateMachineSystem.h"
 #include "Systems/LogicSystem.h"
 #include "Video/VideoPlayer.h"
+#include "LuaManager.h"

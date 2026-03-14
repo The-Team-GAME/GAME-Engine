@@ -15,6 +15,7 @@
 #include "EventManager/EventManager.h"
 #include "FunctionRegistry.h"
 #include "Components/StateMachineBlueprintRegistry.h"
+#include "LuaManager.h"
 
 namespace {
   constexpr const char* PRELOADED_GAMEPLAY_LEVEL = "levels/LevelOneTestingExtra.json";
@@ -93,6 +94,11 @@ void RunGame()
     return;
   }
 
+  // ── Initialize Lua scripting ──────────────────────────────────────────
+  // Must happen AFTER loading the DLL so that GameLogic components
+  // are registered into LuaBindingRegistry before we drain it.
+  Engine::LuaManager::instance().init();
+
   // ── Load prefabs / assets ────────────────────────────────────────────
   // Must happen AFTER loading the DLL so that GameLogic components
   // (Player, LazyMonkey, EnemyHealth, etc.) are registered before
@@ -141,6 +147,8 @@ void RunGame()
   Engine::EventManager::destroy_all();
   Engine::FunctionRegistry::destroy_instance();
   Engine::StateMachineBlueprintRegistry::destroy_instance();
+  Engine::LuaManager::instance().shutdown();
+  Engine::LuaBindingRegistry::destroy_instance();
 }
 
 #ifdef GAME_BUILD
