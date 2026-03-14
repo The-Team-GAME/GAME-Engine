@@ -31,7 +31,6 @@
 #include "GameStates/BasicState.h"
 #include "GameStates/PhysicsTestState.h"
 #include "GameStates/DistortionEffectState.h"
-#include "GameStates/LuaState.h"
 #include "GameStates/BehaviourState.h"
 #include "GameStates/GameplayState.h"
 #include "GameStates/PauseState.h"
@@ -579,7 +578,6 @@ static void register_scenes()
   Engine::SceneManager::register_scene<BasicState>("BasicState");
   Engine::SceneManager::register_scene<PhysicsTestState>("PhysicsTestState");
   Engine::SceneManager::register_scene<DistortionEffectState>("DistortionEffectState");
-  Engine::SceneManager::register_scene<LuaState>("LuaState");
   Engine::SceneManager::register_scene<BehaviourState>("BehaviourState");
   Engine::SceneManager::register_scene<PauseState>("PauseState");
   Engine::SceneManager::register_scene<VictoryState>("VictoryState");

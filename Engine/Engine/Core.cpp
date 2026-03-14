@@ -27,7 +27,6 @@
 #include "Perf.h"
 #include "InputManager.h"
 #include "Audio/AudioSystem.h"
-#include "Lua/LuaManager.h"
 #include "Resources.h"
 #include "ECS/ECS.h"
 #include "Events/WindowEvents.h"
@@ -38,14 +37,13 @@
 #include "Events/RegisterAllEvents.h"
 #include "UndoManager/UndoManager.h"
 #include "Easing.h"
-#include "Lua/LuaComponentBindings.h"
 #include "HotReloadManager.h"
 #include "GUI/TilemapPanel.h"
 #include "UpgradeManager.h"
 #include "UpgradeUIStateMachine.h"
 #include "Firebase/FirebaseManager.h"
 #include "Firebase/FirebaseAuth.h"
-#include "Firebase/FirebaseLuaBindings.h"
+
 
 namespace Engine
 {
@@ -144,15 +142,6 @@ namespace Engine
     }
     Engine::Firebase::Auth::init();
 
-    // Initialize Lua manager
-    if (!Engine::LuaManager::init()) {
-      throw std::runtime_error("Failed to initialize Lua manager");
-    }
-
-    Engine::Firebase::LuaBindings::register_bindings(); // Firebase "Cloud" table for Lua
-    Engine::LuaBindings::register_all_bindings(); // For lua bindings
-    Engine::LuaManager::load_script("Assets/scripts/LazyMonkeyStateCallbacks.lua");
-
     Engine::Graphics::set_viewport({ 0, 0, engine_settings.window_width, engine_settings.window_height });
 
     Engine::Events::register_all_events();
@@ -197,22 +186,6 @@ namespace Engine
 #endif
     register_engine_systems();
     Engine::Easing::register_all_easing_functions();
-
-    // Just register one simple function
-    Engine::LuaManager::register_function("log_message", [](const std::string& message) {
-      Log::info("[Lua] {}", message);
-      });
-
-
-    // Set basic globals
-    Engine::LuaManager::set_global("GAME_VERSION", "1.0.0");
-    Engine::LuaManager::set_global("ENGINE_NAME", "Monkey Engine");
-    Engine::LuaManager::set_global("MAX_ENTITIES", 1000);
-
-    // Load the script
-    Engine::LuaManager::load_script("Assets/scripts/player_logic.lua");
-    Engine::LuaManager::load_script("Assets/scripts/buttons_test.lua");
-    Engine::LuaManager::load_script("Assets/scripts/behaviour_test.lua");
   }
 
   /*=================================================================================
@@ -552,7 +525,6 @@ namespace Engine
     Engine::Graphics::exit_post_processing();
     Engine::Graphics::exit();
 
-    Engine::LuaManager::cleanup();
     ImGuiManager::exit();
     WindowManager::exit();
   }

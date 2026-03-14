@@ -43,8 +43,6 @@
     <ClCompile Include="GUI\ResourcePicker.cpp" />
     <ClCompile Include="GUI\widgets\ReflectionFieldWidgets.cpp" />
     <ClCompile Include="GUI\widgets\TextureAtlasWidget.cpp" />
-    <ClCompile Include="Lua\GameAPI.cpp" />
-    <ClCompile Include="Lua\LuaManager.cpp" />
     <ClCompile Include="Math\Vector2D.cpp" />
     <ClCompile Include="Math\Vector3D.cpp" />
     <ClCompile Include="Math\Vector4D.cpp" />
@@ -146,9 +144,6 @@
     <ClInclude Include="GUI\PrefabEditorPanel.h" />
     <ClInclude Include="GUI\ResourcePicker.h" />
     <ClInclude Include="GUI\PerformanceViewer.h" />
-    <ClInclude Include="Lua\LuaComponentBindings.h" />
-    <ClInclude Include="Lua\GameAPI.h" />
-    <ClInclude Include="Lua\LuaManager.h" />
     <ClInclude Include="Math\Vector2D.h" />
     <ClInclude Include="Math\Vector3D.h" />
     <ClInclude Include="Math\Vector4D.h" />

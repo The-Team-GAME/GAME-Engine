@@ -174,22 +174,6 @@ This state demonstrates:
 
 -----------------------------------------------------------------------------------------------------------
 
-LuaState:
-
-Instructions:
-Use WASD to control the banana
-Enemy monkey will chase you
-
-This state demonstrates:
-- Lua scripting integration with the engine
-- Entity behavior controlled by Lua scripts
-- Lua API for game logic (movement and AI)
-- Calling Lua functions from C++ engine code
-
-Assets used: Assets/scripts/buttons_test.lua
-
------------------------------------------------------------------------------------------------------------
-
 LevelTestState:
 
 This state demonstrates:
@@ -198,22 +182,8 @@ This state demonstrates:
 - Level serialization and deserialization
 
 -----------------------------------------------------------------------------------------------------------
-
-BehaviourState:
-
-This state demonstrates:
-- Lua scripting integration with the physics system
-- Entity creation and behavior logic controlled by Lua scripts
-- Physics simulation working in Lua scripts
-- Resource management and cleanup of physics-related entities
-
------------------------------------------------------------------------------------------------------------
-===========================================================================================================
-
-
-
-===========================================================================================================
-Things that works in any state:
+ ===========================================================================================================
+ Things that works in any state:
 -----------------------------------------------------------------------------------------------------------
 
 Entity Editor (ImGui window):
@@ -580,7 +550,6 @@ Transform editing                       | Any state - Entity Editor panel
 Sprite sheet animation                  | ShowcaseState (player & monkey animations)
 Resource loading                        | Resources.cpp, Resource Manager panel
 Static collision                        | PhysicsTestState
-Lua scripting                           | LuaState
 Performance metrics                     | Performance Viewer panel (any state)
 Custom shaders                          | DistortionEffectState
 Batched rendering                       | Renderer.cpp, demonstrated in all states
