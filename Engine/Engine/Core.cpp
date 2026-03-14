@@ -321,11 +321,13 @@ namespace Engine
         }
 #endif
 
+#ifndef GAME_BUILD
         if (Engine::Input::is_pressed(KeyCode::P))
         {
           Engine::Time::toggle_paused();
           Log::info("Physics Step Mode: {}", (Engine::Time::get_paused() ? "ON" : "OFF"));
         }
+#endif
 
         // FMOD Test: Press H to play hurt sound
         if (Engine::Input::is_pressed(KeyCode::H))

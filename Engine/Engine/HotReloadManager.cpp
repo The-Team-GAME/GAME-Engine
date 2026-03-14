@@ -15,6 +15,7 @@
 #include "ECS/World.h"
 #include "Resources.h"
 #include "FileIO/Settings.h"
+#include "LevelManager.h"
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
@@ -742,6 +743,13 @@ namespace Engine
       // run their DLL-side destructors while the DLL is still loaded.
       ECS::destroy_all_entities();
       ECS::process_housekeeping();
+
+      // Fully reset LevelManager state. All entity IDs (including
+      // deactivated preloaded snapshots) are now invalid after the
+      // destroy above. clear_all(false) drops all open_levels,
+      // preloaded_snapshots, and level tracking so the scene
+      // restore below does a clean fresh load from disk.
+      LevelManager::clear_all(false);
 
       // ── Clear prefab cache ─────────────────────────────────────
       // Prefab component_storage holds IComponentArray instances whose

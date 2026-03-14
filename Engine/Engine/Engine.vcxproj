@@ -238,6 +238,7 @@ xcopy "$(SafeSolutionDir)\Dependencies\Lua\lua54.dll" "$(SafeOutDir)" /s /r /y /
     <ClCompile Include="ECS\Types.cpp" />
     <ClCompile Include="FileIO\FileDialog.cpp" />
     <ClCompile Include="FileIO\Helpers.cpp" />
+    <ClCompile Include="FileIO\GameSettingsBridge.cpp" />
     <ClCompile Include="Systems\CollisionSystem.cpp" />
     <ClCompile Include="Systems\ParticleSystem.cpp" />
     <ClCompile Include="Systems\PhysicsSystem.cpp" />
@@ -335,6 +336,7 @@ xcopy "$(SafeSolutionDir)\Dependencies\Lua\lua54.dll" "$(SafeOutDir)" /s /r /y /
     <ClInclude Include="FileIO\FileDialog.h" />
     <ClInclude Include="FileIO\Helpers.h" />
     <ClInclude Include="FileIO\Settings.h" />
+    <ClInclude Include="FileIO\GameSettingsBridge.h" />
     <ClInclude Include="GUI\PerformanceViewerPanel.h" />
     <ClInclude Include="GUI\SceneChooserPanel.h" />
     <ClInclude Include="Lua\GameAPI.h" />
