@@ -195,9 +195,6 @@
     <ClInclude Include="WindowManager.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Assets\scripts\behaviour_test.lua" />
-    <None Include="..\Assets\scripts\buttons_test.lua" />
-    <None Include="..\Assets\scripts\player_logic.lua" />
     <None Include="cpp.hint" />
     <None Include="ECS\ComponentArray.inl" />
     <None Include="ECS\ComponentManager.inl" />
