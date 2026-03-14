@@ -64,7 +64,7 @@ HOW THESE MACROS WORK:
                     [](sol::state& lua) { \
                         Engine::LuaBindings::bind_reflected_type<CLASS_NAME>(lua); \
                     }, \
-                    /* getter: return a pointer to the live component */ \
+                    /* getter: return a pointer to the live component (non-owning) */ \
                     [](sol::state_view lua, Engine::ECS::Entity entity) -> sol::object { \
                         auto* comp = entity.get_component<CLASS_NAME>(); \
                         if (comp) return sol::make_object(lua, comp); \
@@ -113,7 +113,7 @@ HOW THESE MACROS WORK:
                     [](sol::state& lua) { \
                         Engine::LuaBindings::bind_reflected_custom<CLASS_NAME>(lua); \
                     }, \
-                    /* getter: return a pointer to the live component */ \
+                    /* getter: return a pointer to the live component (non-owning) */ \
                     [](sol::state_view lua, Engine::ECS::Entity entity) -> sol::object { \
                         auto* comp = entity.get_component<CLASS_NAME>(); \
                         if (comp) return sol::make_object(lua, comp); \

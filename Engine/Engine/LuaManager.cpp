@@ -165,8 +165,20 @@ namespace Engine {
   void LuaManager::drain_binding_registry() {
     auto& reg = LuaBindingRegistry::instance();
 
-    // Pass 1: bind component usertypes and store getters
+    // Pass 1: bind component usertypes and store getters.
+    // IMPORTANT: The REGISTER_COMPONENT macro lives in a header included by
+    // every TU in both Engine and GameLogic DLLs.  Each TU pushes its own
+    // entry, so the registry contains many duplicates per component type.
+    // Sol2 keys its internal metatables on the *address* of a static template
+    // variable (unique_usertype_id<T>::value), which differs across DLLs.
+    // If the binder comes from DLL A but the getter from DLL B, the getter's
+    // sol::make_object can't find the metatable registered by the binder.
+    // Fix: only process the FIRST entry for each component name.  Engine DLL
+    // entries are pushed before GameLogic entries (dependency load order), so
+    // both binder and getter come from the same DLL.
     for (auto& entry : reg.entries()) {
+      if (impl_->component_getters.count(entry.short_name)) continue; // skip duplicates
+
       // Bind the component's usertype (recursively binds field types too)
       entry.binder(*lua_);
 
@@ -177,7 +189,14 @@ namespace Engine {
     }
 
     // Pass 2: augment usertypes with extra methods (from LUA_BIND_METHODS)
+    // Method binders access lua["TypeName"]["method"], which goes through
+    // the Lua global table (not Sol2's internal type ID), so cross-DLL
+    // duplicates are harmless — but we deduplicate for efficiency.
+    std::unordered_set<std::string> bound_methods;
     for (auto& entry : reg.method_binder_entries()) {
+      if (bound_methods.count(entry.short_name)) continue;
+      bound_methods.insert(entry.short_name);
+
       entry.binder(*lua_);
       Log::info("[LuaManager] Bound methods for '{}'", entry.short_name);
     }

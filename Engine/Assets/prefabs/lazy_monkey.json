@@ -204,7 +204,7 @@
                         0.15000000596046448
                     ],
                     "is_looping": true,
-                    "startTime": 56.36421203613281,
+                    "startTime": 144.0763702392578,
                     "totalDuration": 0.75
                 },
                 "type": "Components::Animation"
@@ -256,7 +256,7 @@
                                             0.15000000596046448
                                         ],
                                         "is_looping": true,
-                                        "startTime": 64.86196899414063,
+                                        "startTime": 145.4930419921875,
                                         "totalDuration": 0.75
                                     },
                                     "collider_data": {
@@ -413,7 +413,7 @@
                                             0.5
                                         ],
                                         "is_looping": true,
-                                        "startTime": 64.86196899414063,
+                                        "startTime": 145.4930419921875,
                                         "totalDuration": 1.0
                                     },
                                     "collider_data": {
@@ -577,7 +577,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 64.86196899414063,
+                                        "startTime": 145.4930419921875,
                                         "totalDuration": 0.6000000238418579
                                     },
                                     "collider_data": {
@@ -765,7 +765,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": false,
-                                        "startTime": 64.86196899414063,
+                                        "startTime": 145.4930419921875,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": {
@@ -976,7 +976,7 @@
                                             0.15000000596046448
                                         ],
                                         "is_looping": true,
-                                        "startTime": 64.86196899414063,
+                                        "startTime": 145.4930419921875,
                                         "totalDuration": 0.75
                                     },
                                     "collider_data": {
@@ -1121,7 +1121,7 @@
                                             0.4000000059604645
                                         ],
                                         "is_looping": true,
-                                        "startTime": 64.86196899414063,
+                                        "startTime": 145.4930419921875,
                                         "totalDuration": 0.4000000059604645
                                     },
                                     "collider_data": {

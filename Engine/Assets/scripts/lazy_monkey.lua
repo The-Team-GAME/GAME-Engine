@@ -58,9 +58,7 @@ function lazy_monkey_idle_on_update(entity)
 
   -- Get player entity
   local player_entity = ECS.get_first_entity_with("Player")
-  if not player_entity or not player_entity:is_valid() then
-    return
-  end
+  if not player_entity or not player_entity:is_valid() then return end
 
   local lazy_monkey_transform = entity.Transform2D
   local player_transform = player_entity.Transform2D
@@ -72,7 +70,9 @@ function lazy_monkey_idle_on_update(entity)
 
     -- Start chasing if player is within detection range
     if distance < lazy_monkey.detection_range then
-      state_machine:change_state("Chasing")
+      if state_machine then
+        state_machine:change_state("Chasing")
+      end
     end
   end
 end
