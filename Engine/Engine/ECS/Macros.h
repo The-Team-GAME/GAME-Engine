@@ -60,9 +60,6 @@ HOW THESE MACROS WORK:
         static CONCAT(AutoRegister_, __LINE__) CONCAT(auto_register_instance, __LINE__); \
     }
 
-// Component registration with Lua binding (kept for compatibility, same as REGISTER_COMPONENT)
-#define REGISTER_COMPONENT_LUA(CLASS_NAME, ...) REGISTER_COMPONENT(CLASS_NAME, __VA_ARGS__)
-
 // Custom reflector version (ECS + Custom Reflection only)
 #define REGISTER_COMPONENT_CUSTOM(CLASS_NAME, ...) \
     REFLECT_CUSTOM(CLASS_NAME, __VA_ARGS__) \
@@ -74,6 +71,3 @@ HOW THESE MACROS WORK:
         }; \
         static CONCAT(AutoRegister_, __LINE__) CONCAT(auto_register_instance, __LINE__); \
     }
-
-// Custom reflector with Lua binding (kept for compatibility, same as REGISTER_COMPONENT_CUSTOM)
-#define REGISTER_COMPONENT_CUSTOM_LUA(CLASS_NAME, ...) REGISTER_COMPONENT_CUSTOM(CLASS_NAME, __VA_ARGS__)
