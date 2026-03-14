@@ -128,13 +128,13 @@ namespace Engine {
     bind_scene_manager();
     bind_level_manager();
 
-    // 5. Load user scripts
+    // 9. Bind register_blueprint() so scripts can call it during load
+    bind_register_blueprint();
+
+    // 10. Load user scripts (register_blueprint() calls happen during execution)
     load_scripts();
 
-    // 6. Load Lua-based state machine blueprints
-    load_lua_blueprints();
-
-    // 7. Start background file watcher for hot-reload
+    // 11. Start background file watcher for hot-reload
     start_file_watcher();
 
     Log::info("[LuaManager] Initialisation complete. {} component types bound.",
@@ -733,8 +733,85 @@ namespace Engine {
   }
 
   // ============================================================================
-  // load_scripts — execute every .lua file in Assets/scripts/ (non-recursive,
-  //                skips the blueprints/ subdirectory which is handled separately)
+  // bind_register_blueprint — expose register_blueprint(name, table) to Lua
+  // Scripts call this inline to register state machine blueprints.
+  // ============================================================================
+
+  void LuaManager::bind_register_blueprint() {
+    auto& L = *lua_;
+
+    L["register_blueprint"] = [this](const std::string& name, sol::table table) {
+      auto& bp_registry = StateMachineBlueprintRegistry::instance();
+
+      StateMachineBlueprint blueprint;
+
+      sol::optional<std::string> initial = table["initial_state"];
+      if (initial) {
+        blueprint.initial_state = *initial;
+      }
+
+      sol::optional<sol::table> states_table = table["states"];
+      if (states_table) {
+        states_table->for_each([&](sol::object /*idx*/, sol::object val) {
+          if (val.get_type() != sol::type::table) return;
+          sol::table state_entry = val.as<sol::table>();
+
+          StateBlueprint sb;
+          sb.state_name = state_entry.get_or<std::string>("name", "");
+          sb.on_enter   = state_entry.get_or<std::string>("on_enter", "");
+          sb.on_update  = state_entry.get_or<std::string>("on_update", "");
+          sb.on_exit    = state_entry.get_or<std::string>("on_exit", "");
+
+          if (!sb.state_name.empty()) {
+            blueprint.states.push_back(std::move(sb));
+          }
+        });
+      }
+
+      if (blueprint.states.empty()) {
+        Log::warning("[LuaManager] register_blueprint('{}') — no states, skipping.", name);
+        return;
+      }
+
+      bp_registry.register_lua_blueprint(name, blueprint);
+
+      // Record source file for editor lookup
+      if (!current_script_path_.empty()) {
+        blueprint_source_files_[name] = current_script_path_;
+      }
+
+      Log::info("[LuaManager] Registered Lua blueprint '{}' with {} states.",
+                name, blueprint.states.size());
+    };
+  }
+
+  // ============================================================================
+  // to_snake_case / to_lower — string helpers for Lua file generation
+  // ============================================================================
+
+  std::string LuaManager::to_snake_case(const std::string& name) {
+    std::string result;
+    for (size_t i = 0; i < name.size(); ++i) {
+      char c = name[i];
+      if (std::isupper(c)) {
+        if (i > 0) result += '_';
+        result += static_cast<char>(std::tolower(c));
+      } else {
+        result += c;
+      }
+    }
+    return result;
+  }
+
+  std::string LuaManager::to_lower(const std::string& s) {
+    std::string result = s;
+    std::transform(result.begin(), result.end(), result.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    return result;
+  }
+
+  // ============================================================================
+  // load_scripts — execute every .lua file in Assets/scripts/
   // ============================================================================
 
   void LuaManager::load_scripts() {
@@ -761,6 +838,10 @@ namespace Engine {
 
     for (auto& file_path : lua_files) {
       std::string path_str = file_path.string();
+
+      // Set current_script_path_ so register_blueprint() can record its source
+      current_script_path_ = std::filesystem::absolute(file_path).string();
+
       auto result = L.safe_script_file(path_str, sol::script_pass_on_error);
       if (!result.valid()) {
         sol::error err = result;
@@ -770,6 +851,9 @@ namespace Engine {
 
       Log::info("[LuaManager] Loaded script '{}'", file_path.filename().string());
     }
+
+    // Clear current_script_path_ after loading all scripts
+    current_script_path_.clear();
 
     // ── Auto-register top-level Lua functions into FunctionRegistry ──
     // After executing ALL scripts, scan the global table for functions.
@@ -833,84 +917,6 @@ namespace Engine {
   }
 
   // ============================================================================
-  // load_lua_blueprints — parse Blueprint tables from Assets/scripts/blueprints/
-  // ============================================================================
-
-  void LuaManager::load_lua_blueprints() {
-    auto& L = *lua_;
-
-    std::filesystem::path bp_dir = "Assets/scripts/blueprints";
-    if (!std::filesystem::exists(bp_dir)) {
-      Log::info("[LuaManager] No blueprints directory found at '{}'. Skipping.", bp_dir.string());
-      return;
-    }
-
-    auto& bp_registry = StateMachineBlueprintRegistry::instance();
-
-    for (auto& entry : std::filesystem::directory_iterator(bp_dir)) {
-      if (!entry.is_regular_file() || entry.path().extension() != ".lua") continue;
-
-      // The blueprint name is the filename without extension
-      std::string bp_name = entry.path().stem().string();
-
-      // The Blueprint global might have been overwritten by the last loaded script.
-      // We need a per-file approach: set Blueprint to nil, re-run the file,
-      // then read it.
-      L["Blueprint"] = sol::lua_nil;
-      auto result = L.safe_script_file(entry.path().string(), sol::script_pass_on_error);
-      if (!result.valid()) {
-        sol::error err = result;
-        Log::error("[LuaManager] Error loading blueprint '{}': {}", bp_name, err.what());
-        continue;
-      }
-
-      sol::optional<sol::table> bp_table = L["Blueprint"].get<sol::optional<sol::table>>();
-      if (!bp_table) {
-        // Not a blueprint file (no Blueprint table defined) — that's fine, skip it
-        continue;
-      }
-
-      // Parse the Blueprint table
-      StateMachineBlueprint blueprint;
-
-      sol::optional<std::string> initial = (*bp_table)["initial_state"];
-      if (initial) {
-        blueprint.initial_state = *initial;
-      }
-
-      sol::optional<sol::table> states_table = (*bp_table)["states"];
-      if (states_table) {
-        states_table->for_each([&](sol::object /*idx*/, sol::object val) {
-          if (val.get_type() != sol::type::table) return;
-          sol::table state_entry = val.as<sol::table>();
-
-          StateBlueprint sb;
-          sb.state_name = state_entry.get_or<std::string>("name", "");
-          sb.on_enter   = state_entry.get_or<std::string>("on_enter", "");
-          sb.on_update  = state_entry.get_or<std::string>("on_update", "");
-          sb.on_exit    = state_entry.get_or<std::string>("on_exit", "");
-
-          if (!sb.state_name.empty()) {
-            blueprint.states.push_back(std::move(sb));
-          }
-        });
-      }
-
-      // Clear the Blueprint global so it doesn't leak to the next file
-      L["Blueprint"] = sol::lua_nil;
-
-      if (blueprint.states.empty()) {
-        Log::warning("[LuaManager] Blueprint '{}' has no states, skipping.", bp_name);
-        continue;
-      }
-
-      bp_registry.register_lua_blueprint(bp_name, blueprint);
-      Log::info("[LuaManager] Registered Lua blueprint '{}' with {} states.",
-                bp_name, blueprint.states.size());
-    }
-  }
-
-  // ============================================================================
   // reload_scripts — hot-reload all Lua scripts and blueprints
   // ============================================================================
 
@@ -929,8 +935,9 @@ namespace Engine {
     }
     lua_registered_functions_.clear();
 
-    // 2. Remove all Lua-sourced blueprints
+    // 2. Remove all Lua-sourced blueprints and clear source file tracking
     StateMachineBlueprintRegistry::instance().clear_lua_blueprints();
+    blueprint_source_files_.clear();
 
     // 3. Clear all Lua globals that are functions (non-builtin)
     // This prevents stale function references in the Lua state.
@@ -945,7 +952,9 @@ namespace Engine {
       // Engine tables and usertypes
       "ECS", "Log", "Input", "Key", "Time", "Audio", "Scene", "Level", "Entity",
       "Physics", "Systems", "Resources", "Upgrade", "Prefab", "Vec2D",
-      "normalise_vector", "dot_product", "cross_product", "rotate", "scale_vector"
+      "normalise_vector", "dot_product", "cross_product", "rotate", "scale_vector",
+      // Engine-bound Lua functions (must survive reload)
+      "register_blueprint"
     };
 
     // Collect function names to remove (can't modify table during iteration)
@@ -963,14 +972,8 @@ namespace Engine {
       (*lua_)[name] = sol::lua_nil;
     }
 
-    // Also clear the Blueprint global
-    (*lua_)["Blueprint"] = sol::lua_nil;
-
-    // 4. Re-load all scripts (this re-registers functions)
+    // 4. Re-load all scripts (re-registers functions and blueprints via register_blueprint())
     load_scripts();
-
-    // 5. Re-load Lua blueprints
-    load_lua_blueprints();
 
     Log::info("[LuaManager] Hot-reload complete. {} Lua functions registered.",
               lua_registered_functions_.size());
@@ -1087,45 +1090,49 @@ namespace Engine {
   }
 
   // ============================================================================
-  // create_lua_blueprint — create a new blueprint .lua file from template
+  // create_lua_blueprint — create a new single-file Lua blueprint from template
   // ============================================================================
 
   std::string LuaManager::create_lua_blueprint(const std::string& blueprint_name) {
-    std::filesystem::path bp_dir = "Assets/scripts/blueprints";
-    std::filesystem::create_directories(bp_dir);
+    std::filesystem::path scripts_dir = "Assets/scripts";
+    std::filesystem::create_directories(scripts_dir);
 
-    std::filesystem::path file_path = bp_dir / (blueprint_name + ".lua");
+    std::string snake = to_snake_case(blueprint_name);
+    std::filesystem::path file_path = scripts_dir / (snake + ".lua");
+
     if (std::filesystem::exists(file_path)) {
-      Log::warning("[LuaManager] Blueprint file '{}' already exists.", file_path.string());
-      return file_path.string();
+      Log::warning("[LuaManager] Script file '{}' already exists.", file_path.string());
+      return std::filesystem::absolute(file_path).string();
     }
 
-    // Write a template blueprint file
+    // Write a template single-file blueprint
     std::ofstream ofs(file_path);
     if (!ofs.is_open()) {
       Log::error("[LuaManager] Failed to create blueprint file '{}'.", file_path.string());
       return "";
     }
 
-    ofs << "-- " << blueprint_name << " Blueprint\n";
-    ofs << "-- Define callback functions for each state below.\n";
-    ofs << "-- These functions receive an Entity parameter.\n";
+    ofs << "-- " << snake << ".lua\n";
+    ofs << "-- State machine callbacks and blueprint for " << blueprint_name << "\n";
     ofs << "\n";
-    ofs << "function " << blueprint_name << "_idle_enter(entity)\n";
+    ofs << "function " << snake << "_idle_on_enter(entity)\n";
     ofs << "  Log.info(\"" << blueprint_name << ": Idle enter\")\n";
     ofs << "end\n";
     ofs << "\n";
-    ofs << "function " << blueprint_name << "_idle_update(entity)\n";
-    ofs << "  -- Update logic here\n";
+    ofs << "function " << snake << "_idle_on_update(entity)\n";
+    ofs << "  -- TODO\n";
     ofs << "end\n";
     ofs << "\n";
-    ofs << "-- Blueprint definition table\n";
-    ofs << "Blueprint = {\n";
+    ofs << "function " << snake << "_idle_on_exit(entity)\n";
+    ofs << "  -- TODO\n";
+    ofs << "end\n";
+    ofs << "\n";
+    ofs << "register_blueprint(\"" << blueprint_name << "\", {\n";
     ofs << "  initial_state = \"Idle\",\n";
     ofs << "  states = {\n";
-    ofs << "    { name = \"Idle\", on_enter = \"" << blueprint_name << "_idle_enter\", on_update = \"" << blueprint_name << "_idle_update\", on_exit = \"\" },\n";
+    ofs << "    { name = \"Idle\", on_enter = \"" << snake << "_idle_on_enter\", on_update = \"" << snake << "_idle_on_update\", on_exit = \"" << snake << "_idle_on_exit\" },\n";
     ofs << "  }\n";
-    ofs << "}\n";
+    ofs << "})\n";
 
     ofs.close();
 
@@ -1134,7 +1141,7 @@ namespace Engine {
     // Reload scripts to pick up the new file
     reload_scripts();
 
-    return file_path.string();
+    return std::filesystem::absolute(file_path).string();
   }
 
   // ============================================================================
@@ -1142,8 +1149,13 @@ namespace Engine {
   // ============================================================================
 
   bool LuaManager::delete_lua_blueprint(const std::string& blueprint_name) {
-    std::filesystem::path file_path = "Assets/scripts/blueprints" / std::filesystem::path(blueprint_name + ".lua");
+    auto it = blueprint_source_files_.find(blueprint_name);
+    if (it == blueprint_source_files_.end()) {
+      Log::warning("[LuaManager] No source file tracked for blueprint '{}'.", blueprint_name);
+      return false;
+    }
 
+    std::filesystem::path file_path(it->second);
     if (!std::filesystem::exists(file_path)) {
       Log::warning("[LuaManager] Blueprint file '{}' does not exist.", file_path.string());
       return false;
@@ -1170,8 +1182,13 @@ namespace Engine {
   // ============================================================================
 
   void LuaManager::open_lua_blueprint_in_editor(const std::string& blueprint_name) {
-    std::filesystem::path file_path = std::filesystem::absolute("Assets/scripts/blueprints" / std::filesystem::path(blueprint_name + ".lua"));
+    auto it = blueprint_source_files_.find(blueprint_name);
+    if (it == blueprint_source_files_.end()) {
+      Log::warning("[LuaManager] No source file tracked for blueprint '{}'.", blueprint_name);
+      return;
+    }
 
+    std::filesystem::path file_path(it->second);
     if (!std::filesystem::exists(file_path)) {
       Log::warning("[LuaManager] Blueprint file '{}' does not exist.", file_path.string());
       return;
@@ -1192,11 +1209,169 @@ namespace Engine {
   // ============================================================================
 
   std::string LuaManager::get_lua_blueprint_path(const std::string& blueprint_name) const {
-    std::filesystem::path file_path = "Assets/scripts/blueprints" / std::filesystem::path(blueprint_name + ".lua");
-    if (std::filesystem::exists(file_path)) {
-      return std::filesystem::absolute(file_path).string();
+    auto it = blueprint_source_files_.find(blueprint_name);
+    if (it != blueprint_source_files_.end()) {
+      return it->second;
     }
     return "";
+  }
+
+  // ============================================================================
+  // add_state_to_lua_blueprint — insert stub callbacks + state entry into .lua
+  // ============================================================================
+
+  bool LuaManager::add_state_to_lua_blueprint(const std::string& bp_name,
+                                               const std::string& state_name) {
+    auto it = blueprint_source_files_.find(bp_name);
+    if (it == blueprint_source_files_.end()) {
+      Log::error("[LuaManager] add_state: no source file for blueprint '{}'.", bp_name);
+      return false;
+    }
+
+    std::string file_path = it->second;
+
+    // Read the file
+    std::ifstream ifs(file_path);
+    if (!ifs.is_open()) {
+      Log::error("[LuaManager] add_state: cannot open '{}'.", file_path);
+      return false;
+    }
+    std::string content((std::istreambuf_iterator<char>(ifs)),
+                         std::istreambuf_iterator<char>());
+    ifs.close();
+
+    std::string snake_prefix = to_snake_case(bp_name);
+    std::string snake_state = to_lower(state_name);
+
+    // Build stub function names
+    std::string enter_fn  = snake_prefix + "_" + snake_state + "_on_enter";
+    std::string update_fn = snake_prefix + "_" + snake_state + "_on_update";
+    std::string exit_fn   = snake_prefix + "_" + snake_state + "_on_exit";
+
+    // Build the three stub functions
+    std::string stubs;
+    stubs += "function " + enter_fn + "(entity)\n  -- TODO\nend\n\n";
+    stubs += "function " + update_fn + "(entity)\n  -- TODO\nend\n\n";
+    stubs += "function " + exit_fn + "(entity)\n  -- TODO\nend\n\n";
+
+    // Build the state entry line
+    std::string state_line = "    { name = \"" + state_name + "\", on_enter = \""
+                           + enter_fn + "\", on_update = \"" + update_fn
+                           + "\", on_exit = \"" + exit_fn + "\" },\n";
+
+    // Find "register_blueprint" call to insert stubs before it
+    size_t reg_pos = content.find("register_blueprint(");
+    if (reg_pos == std::string::npos) {
+      Log::error("[LuaManager] add_state: cannot find register_blueprint() in '{}'.", file_path);
+      return false;
+    }
+
+    // Insert stubs before the register_blueprint call
+    content.insert(reg_pos, stubs);
+
+    // Now find the states table closing to insert the new state entry.
+    // We look for the last state entry line (ends with "},") before the "})" closing.
+    // Strategy: find "states = {" after register_blueprint, then find the last "},"
+    // before the closing of the states table.
+    size_t states_pos = content.find("states = {", reg_pos + stubs.size());
+    if (states_pos == std::string::npos) {
+      Log::error("[LuaManager] add_state: cannot find 'states = {{' in '{}'.", file_path);
+      return false;
+    }
+
+    // Find the closing of the states array: first "  }" after "states = {"
+    // We need to find the line with just "  }" or "  }," that closes the states array.
+    // The safest approach: find "})" which closes register_blueprint, then search backwards
+    // for the "}" that closes the states table.
+    size_t reg_close = content.find("})", states_pos);
+    if (reg_close == std::string::npos) {
+      Log::error("[LuaManager] add_state: cannot find '}})' closing in '{}'.", file_path);
+      return false;
+    }
+
+    // Search backwards from reg_close for "}" that closes the states array
+    size_t states_close = content.rfind("}", reg_close - 1);
+    if (states_close == std::string::npos || states_close <= states_pos) {
+      Log::error("[LuaManager] add_state: cannot find states array closing in '{}'.", file_path);
+      return false;
+    }
+
+    // Insert the new state entry just before the closing "}" of the states array
+    content.insert(states_close, state_line);
+
+    // Write back
+    std::ofstream ofs(file_path);
+    if (!ofs.is_open()) {
+      Log::error("[LuaManager] add_state: cannot write '{}'.", file_path);
+      return false;
+    }
+    ofs << content;
+    ofs.close();
+
+    Log::info("[LuaManager] Added state '{}' to blueprint '{}'.", state_name, bp_name);
+
+    reload_scripts();
+    return true;
+  }
+
+  // ============================================================================
+  // remove_state_from_lua_blueprint — remove a state entry from the .lua file
+  // (leaves callback functions intact for safety)
+  // ============================================================================
+
+  bool LuaManager::remove_state_from_lua_blueprint(const std::string& bp_name,
+                                                    const std::string& state_name) {
+    auto it = blueprint_source_files_.find(bp_name);
+    if (it == blueprint_source_files_.end()) {
+      Log::error("[LuaManager] remove_state: no source file for blueprint '{}'.", bp_name);
+      return false;
+    }
+
+    std::string file_path = it->second;
+
+    // Read the file
+    std::ifstream ifs(file_path);
+    if (!ifs.is_open()) {
+      Log::error("[LuaManager] remove_state: cannot open '{}'.", file_path);
+      return false;
+    }
+    std::string content((std::istreambuf_iterator<char>(ifs)),
+                         std::istreambuf_iterator<char>());
+    ifs.close();
+
+    // Find and remove the state entry line: { name = "StateName", ... },
+    // We search for a pattern like: { name = "StateName"
+    std::string search_pattern = "{ name = \"" + state_name + "\"";
+    size_t line_start = content.find(search_pattern);
+    if (line_start == std::string::npos) {
+      Log::warning("[LuaManager] remove_state: state '{}' not found in '{}'.", state_name, file_path);
+      return false;
+    }
+
+    // Find the beginning of this line (scan back to newline or start)
+    size_t line_begin = content.rfind('\n', line_start);
+    line_begin = (line_begin == std::string::npos) ? 0 : line_begin + 1;
+
+    // Find the end of this line (scan forward to newline)
+    size_t line_end = content.find('\n', line_start);
+    if (line_end != std::string::npos) line_end += 1; // include the newline
+    else line_end = content.size();
+
+    content.erase(line_begin, line_end - line_begin);
+
+    // Write back
+    std::ofstream ofs(file_path);
+    if (!ofs.is_open()) {
+      Log::error("[LuaManager] remove_state: cannot write '{}'.", file_path);
+      return false;
+    }
+    ofs << content;
+    ofs.close();
+
+    Log::info("[LuaManager] Removed state '{}' from blueprint '{}'.", state_name, bp_name);
+
+    reload_scripts();
+    return true;
   }
 
 } // namespace Engine

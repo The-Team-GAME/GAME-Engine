@@ -1226,6 +1226,73 @@ namespace ImGuiWidgets {
                 local_modified = true;
               }
             }
+
+            // ================================================================
+            // Remove State button (Lua blueprints only)
+            // ================================================================
+            if (current_is_lua && !current_bp_id.empty()) {
+              ImGui::Separator();
+              ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.15f, 0.15f, 1.0f));
+              ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
+              std::string remove_state_label = "Remove State##remove_" + state_name;
+              if (ImGui::SmallButton(remove_state_label.c_str())) {
+                ImGui::OpenPopup(("ConfirmRemoveState_" + state_name).c_str());
+              }
+              ImGui::PopStyleColor(2);
+
+              if (ImGui::BeginPopup(("ConfirmRemoveState_" + state_name).c_str())) {
+                ImGui::Text("Remove state '%s' from blueprint '%s'?", state_name.c_str(), current_bp_id.c_str());
+                ImGui::Text("Callback functions will be kept in the .lua file.");
+                if (ImGui::Button("Yes, Remove")) {
+                  Engine::LuaManager::instance().remove_state_from_lua_blueprint(current_bp_id, state_name);
+                  // Re-sync states from the updated registry
+                  const auto* bp = bp_registry.get_blueprint(current_bp_id);
+                  if (bp) {
+                    std::map<std::string, ReflectionLibrary::GenericValue> existing_states;
+                    auto st_it2 = field_obj.find("states");
+                    if (st_it2 != field_obj.end()) {
+                      auto existing_map = ReflectionLibrary::convert_array_of_pairs_to_map(st_it2->second);
+                      if (existing_map.isObject()) {
+                        existing_states = existing_map.getObject();
+                      }
+                    }
+                    ReflectionLibrary::Array new_states_array;
+                    for (const auto& sb : bp->states) {
+                      ReflectionLibrary::Object pair_obj;
+                      pair_obj["first"] = ReflectionLibrary::GenericValue(sb.state_name);
+                      auto ex_it2 = existing_states.find(sb.state_name);
+                      if (ex_it2 != existing_states.end()) {
+                        pair_obj["second"] = ex_it2->second;
+                      } else {
+                        ReflectionLibrary::Object state_obj2;
+                        state_obj2["name"] = ReflectionLibrary::GenericValue(sb.state_name);
+                        state_obj2["animation"] = ReflectionLibrary::GenericValue();
+                        state_obj2["audio"] = ReflectionLibrary::GenericValue();
+                        ReflectionLibrary::Object enter_cb;
+                        enter_cb["name"] = ReflectionLibrary::GenericValue(sb.on_enter);
+                        state_obj2["on_enter_callback"] = ReflectionLibrary::GenericValue(std::move(enter_cb));
+                        ReflectionLibrary::Object update_cb;
+                        update_cb["name"] = ReflectionLibrary::GenericValue(sb.on_update);
+                        state_obj2["on_update_callback"] = ReflectionLibrary::GenericValue(std::move(update_cb));
+                        ReflectionLibrary::Object exit_cb;
+                        exit_cb["name"] = ReflectionLibrary::GenericValue(sb.on_exit);
+                        state_obj2["on_exit_callback"] = ReflectionLibrary::GenericValue(std::move(exit_cb));
+                        pair_obj["second"] = ReflectionLibrary::GenericValue(std::move(state_obj2));
+                      }
+                      new_states_array.push_back(ReflectionLibrary::GenericValue(std::move(pair_obj)));
+                    }
+                    field_obj["states"] = ReflectionLibrary::GenericValue(std::move(new_states_array));
+                    local_modified = true;
+                  }
+                  ImGui::CloseCurrentPopup();
+                }
+                ImGui::SameLine();
+                if (ImGui::Button(("Cancel##remove_state_" + state_name).c_str())) {
+                  ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+              }
+            }
           }
 
           ImGui::EndTabItem();
@@ -1233,6 +1300,82 @@ namespace ImGuiWidgets {
       }
 
       ImGui::EndTabBar();
+    }
+
+    // ── Add State button (Lua blueprints only) ──────────────────────────
+    if (current_is_lua && !current_bp_id.empty()) {
+      static char new_state_name[64] = "";
+      if (ImGui::SmallButton("+ Add State##lua_add_state")) {
+        memset(new_state_name, 0, sizeof(new_state_name));
+        ImGui::OpenPopup("AddLuaState");
+      }
+      if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Add a new state with stub callbacks to the Lua blueprint");
+      }
+
+      if (ImGui::BeginPopup("AddLuaState")) {
+        ImGui::Text("New State Name:");
+        ImGui::InputText("##new_lua_state_name", new_state_name, sizeof(new_state_name));
+
+        bool name_valid = strlen(new_state_name) > 0;
+        // Check if state already exists
+        if (name_valid && states_map.count(new_state_name)) {
+          ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "State '%s' already exists!", new_state_name);
+          name_valid = false;
+        }
+
+        if (!name_valid) ImGui::BeginDisabled();
+        if (ImGui::Button("Add")) {
+          Engine::LuaManager::instance().add_state_to_lua_blueprint(current_bp_id, new_state_name);
+          // Re-sync states from the updated registry
+          const auto* bp = bp_registry.get_blueprint(current_bp_id);
+          if (bp) {
+            std::map<std::string, ReflectionLibrary::GenericValue> existing_states;
+            auto st_it2 = field_obj.find("states");
+            if (st_it2 != field_obj.end()) {
+              auto existing_map = ReflectionLibrary::convert_array_of_pairs_to_map(st_it2->second);
+              if (existing_map.isObject()) {
+                existing_states = existing_map.getObject();
+              }
+            }
+            ReflectionLibrary::Array new_states_array;
+            for (const auto& sb : bp->states) {
+              ReflectionLibrary::Object pair_obj;
+              pair_obj["first"] = ReflectionLibrary::GenericValue(sb.state_name);
+              auto ex_it2 = existing_states.find(sb.state_name);
+              if (ex_it2 != existing_states.end()) {
+                pair_obj["second"] = ex_it2->second;
+              } else {
+                ReflectionLibrary::Object state_obj2;
+                state_obj2["name"] = ReflectionLibrary::GenericValue(sb.state_name);
+                state_obj2["animation"] = ReflectionLibrary::GenericValue();
+                state_obj2["audio"] = ReflectionLibrary::GenericValue();
+                ReflectionLibrary::Object enter_cb;
+                enter_cb["name"] = ReflectionLibrary::GenericValue(sb.on_enter);
+                state_obj2["on_enter_callback"] = ReflectionLibrary::GenericValue(std::move(enter_cb));
+                ReflectionLibrary::Object update_cb;
+                update_cb["name"] = ReflectionLibrary::GenericValue(sb.on_update);
+                state_obj2["on_update_callback"] = ReflectionLibrary::GenericValue(std::move(update_cb));
+                ReflectionLibrary::Object exit_cb;
+                exit_cb["name"] = ReflectionLibrary::GenericValue(sb.on_exit);
+                state_obj2["on_exit_callback"] = ReflectionLibrary::GenericValue(std::move(exit_cb));
+                pair_obj["second"] = ReflectionLibrary::GenericValue(std::move(state_obj2));
+              }
+              new_states_array.push_back(ReflectionLibrary::GenericValue(std::move(pair_obj)));
+            }
+            field_obj["states"] = ReflectionLibrary::GenericValue(std::move(new_states_array));
+            local_modified = true;
+          }
+          ImGui::CloseCurrentPopup();
+        }
+        if (!name_valid) ImGui::EndDisabled();
+
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel##add_lua_state")) {
+          ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+      }
     }
 
     // Write back changes if modified

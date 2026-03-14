@@ -9,7 +9,7 @@
 //            - Expose ECS, Input, Time, Audio, Log, SceneManager, LevelManager
 //            - Load and execute scripts from Assets/scripts/
 //            - Auto-register Lua functions into FunctionRegistry
-//            - Load Lua-based state machine blueprints from Assets/scripts/blueprints/
+//            - Bind register_blueprint() for inline state machine registration
 //            - Event-driven hot-reload via ReadDirectoryChangesW when .lua files
 //              are modified on disk
 //
@@ -57,19 +57,31 @@ namespace Engine {
     /// the main thread (safe for Lua/FunctionRegistry).
     ENGINE_API void check_and_reload_if_changed();
 
-    /// Create a new Lua blueprint file from a template.
+    /// Create a new Lua blueprint script from a template.
     /// Returns the full path to the created file, or empty string on failure.
     ENGINE_API std::string create_lua_blueprint(const std::string& blueprint_name);
 
-    /// Delete a Lua blueprint file and unregister it.
+    /// Delete a Lua blueprint script and unregister it.
     /// Returns true on success.
     ENGINE_API bool delete_lua_blueprint(const std::string& blueprint_name);
 
-    /// Open a Lua blueprint file in the system's default editor.
+    /// Open a Lua blueprint script in the system's default editor.
     ENGINE_API void open_lua_blueprint_in_editor(const std::string& blueprint_name);
 
-    /// Get the file path for a Lua blueprint by name.
+    /// Get the source file path for a Lua blueprint by name.
     ENGINE_API std::string get_lua_blueprint_path(const std::string& blueprint_name) const;
+
+    /// Add a new state to an existing Lua blueprint.
+    /// Generates stub callback functions and appends the state entry to the
+    /// register_blueprint() call in the source file. Triggers hot-reload.
+    ENGINE_API bool add_state_to_lua_blueprint(const std::string& bp_name,
+                                               const std::string& state_name);
+
+    /// Remove a state from an existing Lua blueprint.
+    /// Removes the state entry from the register_blueprint() call but leaves
+    /// callback functions intact (safer than deleting user code). Triggers hot-reload.
+    ENGINE_API bool remove_state_from_lua_blueprint(const std::string& bp_name,
+                                                    const std::string& state_name);
 
     // ── Impl struct ─────────────────────────────────────────────────────
     // Public so that macros and LuaBindingRegistry getters can reference
@@ -95,6 +107,7 @@ namespace Engine {
     void bind_ecs_table();         // enhanced in Phase 6, 7
     void bind_physics();           // Phase 5
     void bind_resources();         // Phase 6
+    void bind_register_blueprint();   // binds global register_blueprint() Lua function
     void bind_log();
     void bind_input();
     void bind_time();
@@ -102,7 +115,10 @@ namespace Engine {
     void bind_scene_manager();
     void bind_level_manager();
     void load_scripts();
-    void load_lua_blueprints();
+
+    // ── Lua file editing helpers ──────────────────────────────────────
+    static std::string to_snake_case(const std::string& name);
+    static std::string to_lower(const std::string& s);
 
     // ── File watcher (ReadDirectoryChangesW background thread) ────────
     void start_file_watcher();
@@ -115,6 +131,13 @@ namespace Engine {
 
     // Tracks which function names were registered by Lua scripts (for cleanup on reload)
     std::unordered_set<std::string> lua_registered_functions_;
+
+    // Tracks which file registered which blueprint (bp_name -> absolute file path)
+    std::unordered_map<std::string, std::string> blueprint_source_files_;
+
+    // Set by load_scripts() before each safe_script_file call so that
+    // register_blueprint() can record the source file for each blueprint.
+    std::string current_script_path_;
 
     // File watcher state
     std::atomic<bool> watcher_running_{ false };
