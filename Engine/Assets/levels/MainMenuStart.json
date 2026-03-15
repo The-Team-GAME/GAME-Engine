@@ -96,7 +96,27 @@
                                         "on_update_callback": {
                                             "name": ""
                                         },
-                                        "property_animation": null
+                                        "property_animation": {
+                                            "duration": 14.0,
+                                            "is_looping": true,
+                                            "tracks": [
+                                                {
+                                                    "easing": "Linear",
+                                                    "keyframes": [
+                                                        {
+                                                            "time": 0.0,
+                                                            "value": 2720.0
+                                                        },
+                                                        {
+                                                            "time": 14.0,
+                                                            "value": -1100.0
+                                                        }
+                                                    ],
+                                                    "target_component": "Components::Transform2D",
+                                                    "target_field_path": "position.x"
+                                                }
+                                            ]
+                                        }
                                     }
                                 },
                                 {
