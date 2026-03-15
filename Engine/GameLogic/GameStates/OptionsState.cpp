@@ -278,7 +278,7 @@ void OptionsState::update()
   // Close on Escape — go back to main menu (this is a full scene, not an overlay)
   if (Engine::Input::is_pressed(Engine::KeyCode::Escape))
   {
-    Engine::SceneManager::load_scene("MainMenuState");
+    Engine::SceneManager::load_scene("NewMainMenuState");
     return;
   }
 

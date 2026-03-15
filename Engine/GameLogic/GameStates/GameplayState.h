@@ -76,7 +76,7 @@ class GameplayState : public Engine::Scene
 
 public:
   void load() {
-    Engine::Resources::open_level("levels/LevelOneTestingExtra.json");
+    Engine::LevelManager::open_level("levels/LevelOneTestingExtra.json");
 
 
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
