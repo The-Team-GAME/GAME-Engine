@@ -83,29 +83,12 @@ public:
 
     // TODO: REMOVE 
     player_entity.add_component<Components::Health>(5, 5);
-
-    // Fix camera follow: parent the camera entity to the player so CameraSystem tracks it
-    if (player_entity.is_valid()) {
-      auto camera_entity = Engine::ECS::get_first_entity_with<Components::Camera>();
-      if (camera_entity.is_valid()) {
-        if (!camera_entity.has_component<Components::Parent>()) {
-          camera_entity.add_component<Components::Parent>(player_entity.get_id());
-        }
-        else {
-          auto* parent_comp = camera_entity.get_component<Components::Parent>();
-          if (parent_comp) {
-            parent_comp->parent_id = player_entity.get_id();
-            parent_comp->offset_initialized = false; // Let HierarchySystem recalculate
-          }
-        }
-      }
-    }
     // player_entity.add_component<Components::HeartHUDSprite>();
 
     // Victory zone - triggers victory screen when player enters
     // TODO: Position this at the end of the level
     Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(14614.0f, 609.0f, 0.0f, 100.0f, 200.0f)
+      .add_component<Components::Transform2D>(14600.0f, 830.0f, 0.0f, 100.0f, 200.0f)
       .add_component<Components::Interactable>(50.0f, "show_victory", "", "")
       .add_to_layer("effect");
 
@@ -232,12 +215,6 @@ public:
           return;
         }
       }
-    }
-
-    // Open tip book with I key
-    if (!tips_shown && Engine::Input::is_pressed(Engine::KeyCode::I)) {
-      show_tips_overlay();
-      return;
     }
 
     // Check if pause button is pressed (keyboard)

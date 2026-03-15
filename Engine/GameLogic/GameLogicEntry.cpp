@@ -200,39 +200,6 @@ static void register_collision_callbacks()
               .add_to_layer("effect");
           }
         }
-
-        // Spawn behind-enemy impact VFX (bro_vfx_impact)
-        {
-          // Determine flip direction based on player position relative to enemy
-          ECS::Entity player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
-          float flip_x = 1.0f;
-          if (player_entity.is_valid()) {
-            auto* player_xform = player_entity.get_component<Components::Transform2D>();
-            if (player_xform) {
-              flip_x = (player_xform->position.x < transform->position.x) ? 1.0f : -1.0f;
-            }
-          }
-
-          int frame_start = attack->impact_vfx_frame_start;
-          int frame_end = frame_start + 2;
-
-          auto behind_vfx = Engine::ECS::create_entity()
-            .add_component<Components::Transform2D>(
-              transform->position.x + (flip_x * 60.0f),
-              transform->position.y,
-              0.0f,
-              128.0f,
-              128.0f
-            )
-            .add_component<Components::Parent>(enemy_entity.get_id())
-            .add_component<Components::Texture>(Engine::Resources::load_texture("images/bro_vfx_impact.png"))
-            .add_component<Components::TextureAtlas>(96, 64, 1, 9, 9)
-            .add_component<Components::Animation>(frame_start, frame_end, 0.04f, false)
-            .add_component<Components::Lifetime>(0.12f)
-            .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-            .add_component<Components::Flip>(flip_x, 1.0f)
-            .add_to_layer("effect_behind");
-        }
       }
       else {
         Log::error("Error: EnemyHealth or StateMachine component missing!");
@@ -450,11 +417,14 @@ static void register_function_callbacks()
     }));
   reg.register_function<void()>("pause_menu_restart", std::function<void()>([]() {
     Log::info("Restarting level from pause menu");
-    Engine::SceneManager::load_scene("GameplayState");
+    Engine::SceneManager::pop_scene();
+    const std::string& level_id = Engine::LevelManager::get_active_level_id();
+    if (!level_id.empty()) {
+      Engine::LevelManager::reload_level(level_id);
+    }
     }));
   reg.register_function<void()>("pause_menu_options", std::function<void()>([]() {
     Log::info("Opening options from pause menu");
-    Engine::SceneManager::load_scene("OptionsState");
     }));
   reg.register_function<void()>("pause_menu_exit", std::function<void()>([]() {
     Log::info("Exiting to main menu from pause menu");
@@ -501,51 +471,11 @@ static void register_function_callbacks()
     }
     }));
 
-  // Options menu callback — set fullscreen mode (left half of screen mode button)
-  reg.register_function<void()>("options_set_fullscreen", std::function<void()>([]() {
-    auto& settings = Engine::FileIO::GameSettingsBridge::get_mutable();
-    if (!settings.fullscreen) {
-      settings.fullscreen = true;
-      Engine::WindowManager::set_fullscreen(true);
-      Engine::FileIO::GameSettingsBridge::save();
-      Log::info("Screen mode set to fullscreen");
-
-      // Swap the visual texture to fullscreen
-      if (OptionsState::screen_mode_visual_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(OptionsState::screen_mode_visual_id))) {
-        auto* tex = Engine::ECS::Entity(OptionsState::screen_mode_visual_id).get_component<Components::Texture>();
-        if (tex) {
-          *tex = Components::Texture(OptionsState::fullscreen_tex);
-        }
-      }
-    }
-    }));
-
-  // Options menu callback — set windowed mode (right half of screen mode button)
-  reg.register_function<void()>("options_set_windowed", std::function<void()>([]() {
-    auto& settings = Engine::FileIO::GameSettingsBridge::get_mutable();
-    if (settings.fullscreen) {
-      settings.fullscreen = false;
-      Engine::WindowManager::set_fullscreen(false);
-      Engine::FileIO::GameSettingsBridge::save();
-      Log::info("Screen mode set to windowed");
-
-      // Swap the visual texture to windowed
-      if (OptionsState::screen_mode_visual_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(OptionsState::screen_mode_visual_id))) {
-        auto* tex = Engine::ECS::Entity(OptionsState::screen_mode_visual_id).get_component<Components::Texture>();
-        if (tex) {
-          *tex = Components::Texture(OptionsState::windowed_tex);
-        }
-      }
-    }
-    }));
-
   // Main menu button callbacks
   reg.register_function<void()>("start_game", std::function<void()>([]() {
     Engine::SceneManager::load_scene("OpeningCutsceneState");
     }));
   reg.register_function<void()>("options_menu", std::function<void()>([]() {
-    Log::info("Opening options menu");
-    Engine::SceneManager::load_scene("OptionsState");
     }));
   reg.register_function<void()>("exit_game", std::function<void()>([]() {
     Engine::Core::stop();

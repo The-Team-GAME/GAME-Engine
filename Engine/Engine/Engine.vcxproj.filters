@@ -18,7 +18,6 @@
     <ClCompile Include="FileIO\ColliderMeshFileIO.cpp" />
     <ClCompile Include="FileIO\FileDialog.cpp" />
     <ClCompile Include="FileIO\Helpers.cpp" />
-    <ClCompile Include="FileIO\GameSettingsBridge.cpp" />
     <ClCompile Include="FileIO\PrefabsFileIO.cpp" />
     <ClCompile Include="FileIO\LevelFileIO.cpp" />
     <ClCompile Include="Graphics\Renderer.cpp" />
@@ -109,7 +108,6 @@
     <ClInclude Include="FileIO\FileDialog.h" />
     <ClInclude Include="FileIO\Helpers.h" />
     <ClInclude Include="FileIO\Settings.h" />
-    <ClInclude Include="FileIO\GameSettingsBridge.h" />
     <ClInclude Include="FileIO\PrefabsFileIO.h" />
     <ClInclude Include="FileIO\SettingsManager.h" />
     <ClInclude Include="FileIO\LevelFileIO.h" />

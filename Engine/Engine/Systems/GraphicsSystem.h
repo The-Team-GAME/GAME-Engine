@@ -288,7 +288,6 @@ namespace Engine
         auto* color = entity.get_component<Components::Color>();
         auto* font = entity.get_component<Components::Font>();
         auto* text = entity.get_component<Components::Text>();
-        auto* ui = entity.get_component<Components::UI>();
 
         // Transform2D scale defines the text box bounds in world units
         // Text starts at top-left corner of the bounding box
@@ -296,32 +295,19 @@ namespace Engine
         f32 text_x = transform->position.x - box_width * 0.5f;
         f32 text_y = transform->position.y - transform->scale.y * 0.5f;
 
-        if (ui) {
-          // Render in screen space (not affected by camera)
-          Engine::Graphics::draw_text_wrapped_ui(
-            font->font_handle,
-            text->content,
-            Math::Vec2D(text_x, text_y),
-            text->font_scale,
-            *color,
-            box_width,
-            text->line_spacing,
-            static_cast<int>(text->alignment)
-          );
-        }
-        else {
-          // Render in world space
-          Engine::Graphics::draw_text_wrapped(
-            font->font_handle,
-            text->content,
-            Math::Vec2D(text_x, text_y),
-            text->font_scale,
-            *color,
-            box_width,
-            text->line_spacing,
-            static_cast<int>(text->alignment)
-          );
-        }
+        // Always use wrapped text rendering with bounding box width as max_width
+        // box_width is in world units, font_scale scales text relative to world units
+        // So max_width should be box_width (both in world units)
+        Engine::Graphics::draw_text_wrapped(
+          font->font_handle,
+          text->content,
+          Math::Vec2D(text_x, text_y),
+          text->font_scale,
+          *color,
+          box_width,
+          text->line_spacing,
+          static_cast<int>(text->alignment)
+        );
       }
     };
 
