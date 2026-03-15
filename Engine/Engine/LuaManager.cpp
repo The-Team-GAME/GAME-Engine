@@ -159,6 +159,23 @@ namespace Engine {
   void LuaManager::shutdown() {
     stop_file_watcher();
 
+    // Remove Lua-registered functions from FunctionRegistry BEFORE deleting
+    // the lua_State.  These FunctionRegistry entries hold std::function lambdas
+    // that captured sol::protected_function by value.  Their destructors call
+    // luaL_unref, which requires the lua_State to still be alive.
+    // UnregisterGameLogic() also calls FunctionRegistry::clear_all(), but that
+    // runs AFTER this shutdown — by which point the lua_State is gone.
+    {
+      auto& fr = FunctionRegistry::instance();
+      using Sig1 = void(ECS::Entity);
+      using Sig2 = void(ECS::Entity, ECS::Entity);
+      for (const auto& name : lua_registered_functions_) {
+        fr.unregister_function<Sig1>(name);
+        fr.unregister_function<Sig2>(name);
+      }
+      lua_registered_functions_.clear();
+    }
+
     if (lua_) {
       delete lua_;
       lua_ = nullptr;
