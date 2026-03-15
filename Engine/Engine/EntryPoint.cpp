@@ -61,6 +61,7 @@ void RunGame()
   Engine::ECS::register_layer("main_menu_4");
   Engine::ECS::register_layer("main_menu_5");
   Engine::ECS::register_layer("main_menu_6");
+  Engine::ECS::register_layer("main_menu_ui");  // Main menu UI elements (buttons, overlays)
   Engine::ECS::register_layer("upgrade_ui_bg"); // Upgrade picker: dimmer overlay
   Engine::ECS::register_layer("upgrade_ui_fg"); // Upgrade picker: cards, panels, particles
   Engine::ECS::register_layer("options");        // Options menu overlay

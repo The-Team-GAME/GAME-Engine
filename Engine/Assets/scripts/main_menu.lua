@@ -44,6 +44,26 @@ function main_menu_start_on_exit(entity)
 end
 
 -- ============================================================================
+-- Sprite-swap callbacks: called on_enter of "Menu" state for specific entities
+-- ============================================================================
+
+-- Entity 49 (player_sleeping): swap sleeping spritesheet → awake Bro.png
+function main_menu_bro_menu_enter(entity)
+  local tex = entity.Texture
+  if tex then
+    tex.path = "images/UI/MainMenu/UI/Bro.png"
+  end
+end
+
+-- Entity 51 (Train Overlay / Front): swap graffiti → no graffiti version
+function main_menu_front_menu_enter(entity)
+  local tex = entity.Texture
+  if tex then
+    tex.path = "images/UI/MainMenu (Start)/Front - no graffiti.png"
+  end
+end
+
+-- ============================================================================
 -- "Menu" state — main menu buttons visible
 -- ============================================================================
 

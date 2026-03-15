@@ -10,10 +10,6 @@
                                 54,
                                 55,
                                 56,
-                                100,
-                                101,
-                                102,
-                                103,
                                 104,
                                 105,
                                 106,
@@ -100,27 +96,7 @@
                                         "on_update_callback": {
                                             "name": ""
                                         },
-                                        "property_animation": {
-                                            "duration": 0.001,
-                                            "is_looping": false,
-                                            "tracks": [
-                                                {
-                                                    "easing": "Linear",
-                                                    "keyframes": [
-                                                        {
-                                                            "time": 0.0,
-                                                            "value": 0.0
-                                                        },
-                                                        {
-                                                            "time": 0.001,
-                                                            "value": 0.0
-                                                        }
-                                                    ],
-                                                    "target_component": "Components::Color",
-                                                    "target_field_path": "a"
-                                                }
-                                            ]
-                                        }
+                                        "property_animation": null
                                     }
                                 },
                                 {
@@ -235,27 +211,7 @@
                                         "on_update_callback": {
                                             "name": ""
                                         },
-                                        "property_animation": {
-                                            "duration": 0.001,
-                                            "is_looping": false,
-                                            "tracks": [
-                                                {
-                                                    "easing": "Linear",
-                                                    "keyframes": [
-                                                        {
-                                                            "time": 0.0,
-                                                            "value": 0.0
-                                                        },
-                                                        {
-                                                            "time": 0.001,
-                                                            "value": 0.0
-                                                        }
-                                                    ],
-                                                    "target_component": "Components::Color",
-                                                    "target_field_path": "a"
-                                                }
-                                            ]
-                                        }
+                                        "property_animation": null
                                     }
                                 },
                                 {
@@ -470,6 +426,54 @@
                             "child_ids": []
                         },
                         "type": "Components::Children"
+                    },
+                    {
+                        "data": {
+                            "blueprint_id": "MainMenu",
+                            "current_state_name": "Start",
+                            "property_anim_playing": false,
+                            "states": [
+                                {
+                                    "first": "Menu",
+                                    "second": {
+                                        "animation": null,
+                                        "audio": null,
+                                        "fmod_audio": null,
+                                        "name": "Menu",
+                                        "on_enter_callback": {
+                                            "name": "main_menu_front_menu_enter"
+                                        },
+                                        "on_exit_callback": {
+                                            "name": ""
+                                        },
+                                        "on_update_callback": {
+                                            "name": ""
+                                        },
+                                        "property_animation": null
+                                    }
+                                },
+                                {
+                                    "first": "Start",
+                                    "second": {
+                                        "animation": null,
+                                        "audio": null,
+                                        "fmod_audio": null,
+                                        "name": "Start",
+                                        "on_enter_callback": {
+                                            "name": ""
+                                        },
+                                        "on_exit_callback": {
+                                            "name": ""
+                                        },
+                                        "on_update_callback": {
+                                            "name": "main_menu_start_on_update"
+                                        },
+                                        "property_animation": null
+                                    }
+                                }
+                            ]
+                        },
+                        "type": "Components::StateMachine"
                     }
                 ],
                 "id": 51,
@@ -619,15 +623,15 @@
                                                 "y": 450.0
                                             },
                                             "texture": {
-                                                "path": "images/UI/MainMenu (Start)/Brosleepy3-Sheet.png"
+                                                "path": "images/UI/MainMenu/UI/Bro.png"
                                             },
                                             "texture_atlas": {
                                                 "drawIndex": -1,
                                                 "tex_coords_list": [
                                                     [
                                                         { "x": 0.0, "y": 1.0 },
-                                                        { "x": 0.125, "y": 1.0 },
-                                                        { "x": 0.125, "y": 0.0 },
+                                                        { "x": 1.0, "y": 1.0 },
+                                                        { "x": 1.0, "y": 0.0 },
                                                         { "x": 0.0, "y": 0.0 }
                                                     ]
                                                 ]
@@ -637,7 +641,7 @@
                                         "fmod_audio": null,
                                         "name": "Menu",
                                         "on_enter_callback": {
-                                            "name": ""
+                                            "name": "main_menu_bro_menu_enter"
                                         },
                                         "on_exit_callback": {
                                             "name": ""
@@ -645,21 +649,7 @@
                                         "on_update_callback": {
                                             "name": ""
                                         },
-                                        "property_animation": {
-                                            "duration": 0.001,
-                                            "is_looping": false,
-                                            "tracks": [
-                                                {
-                                                    "easing": "Linear",
-                                                    "keyframes": [
-                                                        { "time": 0.0, "value": 0.0 },
-                                                        { "time": 0.001, "value": 0.0 }
-                                                    ],
-                                                    "target_component": "Components::Color",
-                                                    "target_field_path": "a"
-                                                }
-                                            ]
-                                        }
+                                        "property_animation": null
                                     }
                                 },
                                 {
@@ -1063,466 +1053,6 @@
                     },
                     {
                         "data": {
-                            "path": "images/UI/MainMenu/BackGround/BackSky.png"
-                        },
-                        "type": "Components::Texture"
-                    },
-                    {
-                        "data": {
-                            "position": {
-                                "x": 800.0,
-                                "y": 450.0
-                            },
-                            "rotation": 0.0,
-                            "scale": {
-                                "x": 1600.0,
-                                "y": 900.0
-                            }
-                        },
-                        "type": "Components::Transform2D"
-                    },
-                    {
-                        "data": {
-                            "blueprint_id": "MainMenu",
-                            "current_state_name": "Start",
-                            "property_anim_playing": false,
-                            "states": [
-                                {
-                                    "first": "Menu",
-                                    "second": {
-                                        "animation": null,
-                                        "audio": null,
-                                        "fmod_audio": null,
-                                        "name": "Menu",
-                                        "on_enter_callback": {
-                                            "name": ""
-                                        },
-                                        "on_exit_callback": {
-                                            "name": ""
-                                        },
-                                        "on_update_callback": {
-                                            "name": ""
-                                        },
-                                        "property_animation": {
-                                            "duration": 0.001,
-                                            "is_looping": false,
-                                            "tracks": [
-                                                {
-                                                    "easing": "Linear",
-                                                    "keyframes": [
-                                                        { "time": 0.0, "value": 1.0 },
-                                                        { "time": 0.001, "value": 1.0 }
-                                                    ],
-                                                    "target_component": "Components::Color",
-                                                    "target_field_path": "a"
-                                                }
-                                            ]
-                                        }
-                                    }
-                                },
-                                {
-                                    "first": "Start",
-                                    "second": {
-                                        "animation": null,
-                                        "audio": null,
-                                        "fmod_audio": null,
-                                        "name": "Start",
-                                        "on_enter_callback": {
-                                            "name": ""
-                                        },
-                                        "on_exit_callback": {
-                                            "name": ""
-                                        },
-                                        "on_update_callback": {
-                                            "name": ""
-                                        },
-                                        "property_animation": null
-                                    }
-                                }
-                            ]
-                        },
-                        "type": "Components::StateMachine"
-                    },
-                    {
-                        "data": {
-                            "local_offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "offset_initialized": false,
-                            "parent_id": 52,
-                            "prev_parent_pos": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        },
-                        "type": "Components::Parent"
-                    }
-                ],
-                "id": 100,
-                "layers": [
-                    "default"
-                ],
-                "name": "Menu BackSky"
-            },
-            {
-                "components": [
-                    {
-                        "data": {
-                            "a": 0.0,
-                            "b": 1.0,
-                            "g": 1.0,
-                            "r": 1.0
-                        },
-                        "type": "Components::Color"
-                    },
-                    {
-                        "data": {
-                            "path": "images/UI/MainMenu/BackGround/MidBuildings.png"
-                        },
-                        "type": "Components::Texture"
-                    },
-                    {
-                        "data": {
-                            "position": {
-                                "x": 800.0,
-                                "y": 450.0
-                            },
-                            "rotation": 0.0,
-                            "scale": {
-                                "x": 1600.0,
-                                "y": 900.0
-                            }
-                        },
-                        "type": "Components::Transform2D"
-                    },
-                    {
-                        "data": {
-                            "blueprint_id": "MainMenu",
-                            "current_state_name": "Start",
-                            "property_anim_playing": false,
-                            "states": [
-                                {
-                                    "first": "Menu",
-                                    "second": {
-                                        "animation": null,
-                                        "audio": null,
-                                        "fmod_audio": null,
-                                        "name": "Menu",
-                                        "on_enter_callback": {
-                                            "name": ""
-                                        },
-                                        "on_exit_callback": {
-                                            "name": ""
-                                        },
-                                        "on_update_callback": {
-                                            "name": ""
-                                        },
-                                        "property_animation": {
-                                            "duration": 0.001,
-                                            "is_looping": false,
-                                            "tracks": [
-                                                {
-                                                    "easing": "Linear",
-                                                    "keyframes": [
-                                                        { "time": 0.0, "value": 1.0 },
-                                                        { "time": 0.001, "value": 1.0 }
-                                                    ],
-                                                    "target_component": "Components::Color",
-                                                    "target_field_path": "a"
-                                                }
-                                            ]
-                                        }
-                                    }
-                                },
-                                {
-                                    "first": "Start",
-                                    "second": {
-                                        "animation": null,
-                                        "audio": null,
-                                        "fmod_audio": null,
-                                        "name": "Start",
-                                        "on_enter_callback": {
-                                            "name": ""
-                                        },
-                                        "on_exit_callback": {
-                                            "name": ""
-                                        },
-                                        "on_update_callback": {
-                                            "name": ""
-                                        },
-                                        "property_animation": null
-                                    }
-                                }
-                            ]
-                        },
-                        "type": "Components::StateMachine"
-                    },
-                    {
-                        "data": {
-                            "local_offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "offset_initialized": false,
-                            "parent_id": 52,
-                            "prev_parent_pos": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        },
-                        "type": "Components::Parent"
-                    }
-                ],
-                "id": 101,
-                "layers": [
-                    "default"
-                ],
-                "name": "MidBuildings"
-            },
-            {
-                "components": [
-                    {
-                        "data": {
-                            "a": 0.0,
-                            "b": 1.0,
-                            "g": 1.0,
-                            "r": 1.0
-                        },
-                        "type": "Components::Color"
-                    },
-                    {
-                        "data": {
-                            "path": "images/UI/MainMenu/BackGround/FrontBuildings.png"
-                        },
-                        "type": "Components::Texture"
-                    },
-                    {
-                        "data": {
-                            "position": {
-                                "x": 800.0,
-                                "y": 450.0
-                            },
-                            "rotation": 0.0,
-                            "scale": {
-                                "x": 1600.0,
-                                "y": 900.0
-                            }
-                        },
-                        "type": "Components::Transform2D"
-                    },
-                    {
-                        "data": {
-                            "blueprint_id": "MainMenu",
-                            "current_state_name": "Start",
-                            "property_anim_playing": false,
-                            "states": [
-                                {
-                                    "first": "Menu",
-                                    "second": {
-                                        "animation": null,
-                                        "audio": null,
-                                        "fmod_audio": null,
-                                        "name": "Menu",
-                                        "on_enter_callback": {
-                                            "name": ""
-                                        },
-                                        "on_exit_callback": {
-                                            "name": ""
-                                        },
-                                        "on_update_callback": {
-                                            "name": ""
-                                        },
-                                        "property_animation": {
-                                            "duration": 0.001,
-                                            "is_looping": false,
-                                            "tracks": [
-                                                {
-                                                    "easing": "Linear",
-                                                    "keyframes": [
-                                                        { "time": 0.0, "value": 1.0 },
-                                                        { "time": 0.001, "value": 1.0 }
-                                                    ],
-                                                    "target_component": "Components::Color",
-                                                    "target_field_path": "a"
-                                                }
-                                            ]
-                                        }
-                                    }
-                                },
-                                {
-                                    "first": "Start",
-                                    "second": {
-                                        "animation": null,
-                                        "audio": null,
-                                        "fmod_audio": null,
-                                        "name": "Start",
-                                        "on_enter_callback": {
-                                            "name": ""
-                                        },
-                                        "on_exit_callback": {
-                                            "name": ""
-                                        },
-                                        "on_update_callback": {
-                                            "name": ""
-                                        },
-                                        "property_animation": null
-                                    }
-                                }
-                            ]
-                        },
-                        "type": "Components::StateMachine"
-                    },
-                    {
-                        "data": {
-                            "local_offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "offset_initialized": false,
-                            "parent_id": 52,
-                            "prev_parent_pos": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        },
-                        "type": "Components::Parent"
-                    }
-                ],
-                "id": 102,
-                "layers": [
-                    "default"
-                ],
-                "name": "FrontBuildings"
-            },
-            {
-                "components": [
-                    {
-                        "data": {
-                            "a": 0.0,
-                            "b": 1.0,
-                            "g": 1.0,
-                            "r": 1.0
-                        },
-                        "type": "Components::Color"
-                    },
-                    {
-                        "data": {
-                            "path": "images/UI/MainMenu/BackGround/Carriage.png"
-                        },
-                        "type": "Components::Texture"
-                    },
-                    {
-                        "data": {
-                            "position": {
-                                "x": 800.0,
-                                "y": 450.0
-                            },
-                            "rotation": 0.0,
-                            "scale": {
-                                "x": 1600.0,
-                                "y": 900.0
-                            }
-                        },
-                        "type": "Components::Transform2D"
-                    },
-                    {
-                        "data": {
-                            "blueprint_id": "MainMenu",
-                            "current_state_name": "Start",
-                            "property_anim_playing": false,
-                            "states": [
-                                {
-                                    "first": "Menu",
-                                    "second": {
-                                        "animation": null,
-                                        "audio": null,
-                                        "fmod_audio": null,
-                                        "name": "Menu",
-                                        "on_enter_callback": {
-                                            "name": ""
-                                        },
-                                        "on_exit_callback": {
-                                            "name": ""
-                                        },
-                                        "on_update_callback": {
-                                            "name": ""
-                                        },
-                                        "property_animation": {
-                                            "duration": 0.001,
-                                            "is_looping": false,
-                                            "tracks": [
-                                                {
-                                                    "easing": "Linear",
-                                                    "keyframes": [
-                                                        { "time": 0.0, "value": 1.0 },
-                                                        { "time": 0.001, "value": 1.0 }
-                                                    ],
-                                                    "target_component": "Components::Color",
-                                                    "target_field_path": "a"
-                                                }
-                                            ]
-                                        }
-                                    }
-                                },
-                                {
-                                    "first": "Start",
-                                    "second": {
-                                        "animation": null,
-                                        "audio": null,
-                                        "fmod_audio": null,
-                                        "name": "Start",
-                                        "on_enter_callback": {
-                                            "name": ""
-                                        },
-                                        "on_exit_callback": {
-                                            "name": ""
-                                        },
-                                        "on_update_callback": {
-                                            "name": ""
-                                        },
-                                        "property_animation": null
-                                    }
-                                }
-                            ]
-                        },
-                        "type": "Components::StateMachine"
-                    },
-                    {
-                        "data": {
-                            "local_offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "offset_initialized": false,
-                            "parent_id": 52,
-                            "prev_parent_pos": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        },
-                        "type": "Components::Parent"
-                    }
-                ],
-                "id": 103,
-                "layers": [
-                    "default"
-                ],
-                "name": "Carriage"
-            },
-            {
-                "components": [
-                    {
-                        "data": {
-                            "a": 0.0,
-                            "b": 1.0,
-                            "g": 1.0,
-                            "r": 1.0
-                        },
-                        "type": "Components::Color"
-                    },
-                    {
-                        "data": {
                             "path": "images/UI/MainMenu/UI/MainMenuImpact.png"
                         },
                         "type": "Components::Texture"
@@ -1621,7 +1151,8 @@
                 ],
                 "id": 104,
                 "layers": [
-                    "default"
+                    "default",
+                    "main_menu_ui"
                 ],
                 "name": "MainMenuImpact"
             },
@@ -1736,7 +1267,8 @@
                 ],
                 "id": 105,
                 "layers": [
-                    "default"
+                    "default",
+                    "main_menu_ui"
                 ],
                 "name": "Monkey"
             },
@@ -1851,7 +1383,8 @@
                 ],
                 "id": 106,
                 "layers": [
-                    "default"
+                    "default",
+                    "main_menu_ui"
                 ],
                 "name": "Bro"
             },
@@ -1976,7 +1509,7 @@
                     }
                 ],
                 "id": 107,
-                "layers": [ "default" ],
+                "layers": [ "default", "main_menu_ui" ],
                 "name": "PlayButton"
             },
             {
@@ -2100,7 +1633,7 @@
                     }
                 ],
                 "id": 108,
-                "layers": [ "default", "ui" ],
+                "layers": [ "default", "main_menu_ui" ],
                 "name": "OptionsButton"
             },
             {
@@ -2230,7 +1763,7 @@
                     }
                 ],
                 "id": 109,
-                "layers": [ "default", "ui" ],
+                "layers": [ "default", "main_menu_ui" ],
                 "name": "CreditsButton"
             },
             {
@@ -2360,7 +1893,7 @@
                     }
                 ],
                 "id": 110,
-                "layers": [ "default", "ui" ],
+                "layers": [ "default", "main_menu_ui" ],
                 "name": "ExitButton"
             }
         ]
