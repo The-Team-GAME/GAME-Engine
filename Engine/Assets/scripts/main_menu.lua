@@ -40,7 +40,10 @@ function main_menu_start_on_update(entity)
 end
 
 function main_menu_start_on_exit(entity)
-  -- nothing needed
+  -- Stop splash SFX and start the main menu BGM
+  Audio.stop_event(SPLASH_SFX_SNORE_EVENT, true)
+  Audio.stop_event(SPLASH_SFX_TRAIN_EVENT, true)
+  Audio.play_scene_music(MAIN_MENU_BGM_EVENT, 0.3)
 end
 
 -- ============================================================================

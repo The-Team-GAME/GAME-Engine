@@ -53,6 +53,15 @@
 namespace Engine {
 
   // ============================================================================
+  // Impl — defined here so that sol:: types don't leak into LuaManager.h
+  // ============================================================================
+
+  struct LuaManager::Impl {
+    using Getter = std::function<sol::object(sol::state_view, ECS::Entity)>;
+    std::unordered_map<std::string, Getter> component_getters;
+  };
+
+  // ============================================================================
   // Singleton
   // ============================================================================
 

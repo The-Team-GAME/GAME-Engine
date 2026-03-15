@@ -23,9 +23,12 @@
 #include <unordered_set>
 #include <atomic>
 #include <thread>
-#include <sol/sol.hpp>
 #include "EngineExport.h"
 #include "ECS/Entity.h"
+
+// Forward-declare sol::state so callers of lua() can see the return type
+// without pulling in the full 29K-line sol.hpp header.
+namespace sol { class state; }
 
 namespace Engine {
 
@@ -84,12 +87,9 @@ namespace Engine {
                                                     const std::string& state_name);
 
     // ── Impl struct ─────────────────────────────────────────────────────
-    // Public so that macros and LuaBindingRegistry getters can reference
-    // the Getter type. The actual instance is private.
-    struct Impl {
-      using Getter = std::function<sol::object(sol::state_view, ECS::Entity)>;
-      std::unordered_map<std::string, Getter> component_getters;
-    };
+    // Opaque implementation detail — defined in LuaManager.cpp.
+    // Contains the component getter map that uses Sol2 types.
+    struct Impl;
 
   private:
     LuaManager();

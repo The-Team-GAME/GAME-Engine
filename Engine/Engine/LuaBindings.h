@@ -20,11 +20,16 @@
 #include <unordered_set>
 #include <typeindex>
 #include "Reflection/ReflectionLibrary.h"
+#include "Logger.h"
 
 namespace Engine::LuaBindings {
 
   // ============================================================================
   // Tracking set — prevents binding the same C++ type to Lua twice
+  //
+  // IMPORTANT: The C++ static set is per-DLL (inline static in a header shared
+  // across Engine.exe and GameLogic.dll). To prevent cross-DLL double-binding,
+  // is_bound() also checks the Lua registry for an existing metatable.
   // ============================================================================
 
   inline std::unordered_set<std::type_index>& bound_types() {
@@ -32,9 +37,28 @@ namespace Engine::LuaBindings {
     return s;
   }
 
+  // Check BOTH the C++ set and the Lua registry.  The Lua state is shared
+  // across all DLLs, so if Engine already registered a metatable for T,
+  // GameLogic will see it even though its local C++ set is empty.
   template <typename T>
-  bool is_bound() {
-    return bound_types().count(std::type_index(typeid(T))) > 0;
+  bool is_bound(sol::state& lua) {
+    // Fast path: C++ set (same-DLL rebind guard)
+    if (bound_types().count(std::type_index(typeid(T))) > 0)
+      return true;
+
+    // Cross-DLL guard: check if the Lua registry already has the metatable
+    lua_State* L = lua.lua_state();
+    const std::string& mt_key = sol::usertype_traits<T>::metatable();
+    luaL_getmetatable(L, mt_key.c_str());
+    bool exists = lua_type(L, -1) != LUA_TNIL;
+    lua_pop(L, 1);
+
+    if (exists) {
+      // Another DLL already bound this type — mark it locally so we
+      // don't hit the Lua registry lookup again.
+      bound_types().insert(std::type_index(typeid(T)));
+    }
+    return exists;
   }
 
   template <typename T>
@@ -131,6 +155,48 @@ namespace Engine::LuaBindings {
   void bind_reflected_enum(sol::state& lua);
 
   // ============================================================================
+  // make_component_ref — push a T* as a sol::object with the correct metatable
+  //
+  // sol::make_object(lua, ptr) goes through sol2's undefined_metatable path
+  // which can create a NEW metatable if the key doesn't match exactly.
+  // This helper bypasses that by:
+  //   1. Using sol2's usertype_allocate_pointer<T> for proper memory layout
+  //   2. Fetching the REGISTERED metatable via luaL_getmetatable
+  //   3. Setting it on the userdata manually
+  // ============================================================================
+
+  template <typename T>
+  sol::object make_component_ref(sol::state_view lua, T* comp) {
+    if (!comp) return sol::lua_nil;
+    lua_State* L = lua.lua_state();
+
+    // Allocate pointer userdata using sol2's internal allocator for correct layout.
+    // sol2 may apply memory alignment, so we must use its allocator.
+    T** pref = sol::detail::usertype_allocate_pointer<T>(L);
+    *pref = comp;
+
+    // Fetch the pointer metatable registered by new_usertype<T>
+    const std::string& mt_key = sol::usertype_traits<T*>::metatable();
+    luaL_getmetatable(L, mt_key.c_str());
+
+    if (lua_type(L, -1) == LUA_TNIL) {
+      // Pointer metatable missing — try the value metatable as fallback
+      lua_pop(L, 1);
+      const std::string& val_mt_key = sol::usertype_traits<T>::metatable();
+      luaL_getmetatable(L, val_mt_key.c_str());
+
+      if (lua_type(L, -1) == LUA_TNIL) {
+        Log::error("[make_component_ref] No metatable found for type '{}' — Lua access will fail!", mt_key);
+      }
+    }
+
+    lua_setmetatable(L, -2);
+
+    // Pop the userdata from the stack into a sol::object
+    return sol::stack::pop<sol::object>(L);
+  }
+
+  // ============================================================================
   // bind_field_type_if_needed — recursively binds field types before the parent
   // ============================================================================
 
@@ -146,7 +212,7 @@ namespace Engine::LuaBindings {
               !ReflectionLibrary::has_reflector_v<FieldType> &&
               !ReflectionLibrary::is_reflected_enum_v<FieldType>)
   void bind_field_type_if_needed(sol::state& lua) {
-    if (!is_bound<FieldType>()) {
+    if (!is_bound<FieldType>(lua)) {
       bind_reflected_type<FieldType>(lua);
     }
   }
@@ -156,7 +222,7 @@ namespace Engine::LuaBindings {
     requires (ReflectionLibrary::has_reflector_v<FieldType> &&
               !ReflectionLibrary::is_reflected_enum_v<FieldType>)
   void bind_field_type_if_needed(sol::state& lua) {
-    if (!is_bound<FieldType>()) {
+    if (!is_bound<FieldType>(lua)) {
       bind_reflected_custom<FieldType>(lua);
     }
   }
@@ -165,7 +231,7 @@ namespace Engine::LuaBindings {
   template <typename FieldType>
     requires ReflectionLibrary::is_reflected_enum_v<FieldType>
   void bind_field_type_if_needed(sol::state& lua) {
-    if (!is_bound<FieldType>()) {
+    if (!is_bound<FieldType>(lua)) {
       bind_reflected_enum<FieldType>(lua);
     }
   }
@@ -182,7 +248,7 @@ namespace Engine::LuaBindings {
 
   template <typename T>
   void bind_reflected_type(sol::state& lua) {
-    if (is_bound<T>()) return;
+    if (is_bound<T>(lua)) return;
     mark_bound<T>();
 
     std::string name = short_name(ReflectionLibrary::ReflectionInfo<T>::class_name);
@@ -224,7 +290,7 @@ namespace Engine::LuaBindings {
 
   template <typename T>
   void bind_reflected_custom(sol::state& lua) {
-    if (is_bound<T>()) return;
+    if (is_bound<T>(lua)) return;
     mark_bound<T>();
 
     using Reflector = typename T::Reflector;
@@ -279,7 +345,7 @@ namespace Engine::LuaBindings {
   template <typename T>
     requires ReflectionLibrary::is_reflected_enum_v<T>
   void bind_reflected_enum(sol::state& lua) {
-    if (is_bound<T>()) return;
+    if (is_bound<T>(lua)) return;
     mark_bound<T>();
 
     std::string name = short_name(ReflectionLibrary::EnumInfo<T>::enum_name);

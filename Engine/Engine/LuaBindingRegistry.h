@@ -7,8 +7,8 @@
 //          macro pushes a lambda here. LuaManager::init() drains the list once,
 //          after all component types have been registered.
 //
-//          Now that Sol2 is in the precompiled header, this file uses Sol2 types
-//          directly for type-safe binder and getter signatures.
+//          This file includes sol/sol.hpp directly for type-safe binder and
+//          getter signatures.
 //
 // Copyright (c) 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
