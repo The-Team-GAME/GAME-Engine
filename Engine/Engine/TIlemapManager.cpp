@@ -21,6 +21,11 @@
 #include "FileIO/Settings.h"
 #include "Systems/CollisionSystem.h"
 
+// Define this macro to force ALL tiles to use the Default (greedy-merged) collider,
+// disabling custom AABB and Polygon colliders. Useful while per-tile polygon colliders
+// are under development.
+#define TILE_COLLIDER_FORCE_DEFAULT
+
 namespace TilemapManager {
   namespace {
     // Grid settings
@@ -153,6 +158,10 @@ namespace TilemapManager {
 
     // Helper lambda to get collider type for a tile by looking up in atlas entry
     auto get_tile_collider_type = [&](const Engine::Graphics::Tile& tile) -> Engine::Graphics::TileColliderType {
+#ifdef TILE_COLLIDER_FORCE_DEFAULT
+      (void)tile;
+      return Engine::Graphics::TileColliderType::Default;
+#else
       if (!tile.is_valid()) return Engine::Graphics::TileColliderType::Default;
 
       if (tile.atlas_index >= 0 && tile.atlas_index < static_cast<int>(project_settings.loaded_tilemaps.size())) {
@@ -164,6 +173,7 @@ namespace TilemapManager {
       }
 
       return Engine::Graphics::TileColliderType::Default; // Default if no config found
+#endif
       };
 
     // Helper struct for rectangle merging
