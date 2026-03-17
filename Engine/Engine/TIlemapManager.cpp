@@ -158,10 +158,6 @@ namespace TilemapManager {
 
     // Helper lambda to get collider type for a tile by looking up in atlas entry
     auto get_tile_collider_type = [&](const Engine::Graphics::Tile& tile) -> Engine::Graphics::TileColliderType {
-#ifdef TILE_COLLIDER_FORCE_DEFAULT
-      (void)tile;
-      return Engine::Graphics::TileColliderType::Default;
-#else
       if (!tile.is_valid()) return Engine::Graphics::TileColliderType::Default;
 
       if (tile.atlas_index >= 0 && tile.atlas_index < static_cast<int>(project_settings.loaded_tilemaps.size())) {
@@ -173,7 +169,6 @@ namespace TilemapManager {
       }
 
       return Engine::Graphics::TileColliderType::Default; // Default if no config found
-#endif
       };
 
     // Helper struct for rectangle merging
@@ -298,6 +293,8 @@ namespace TilemapManager {
     }
 
     // Create individual collision entities for AABB and Polygon collider type tiles
+    // (disabled when TILE_COLLIDER_FORCE_DEFAULT is set — non-Default tiles get no collider)
+#ifndef TILE_COLLIDER_FORCE_DEFAULT
     for (int rel_y = 0; rel_y < height; ++rel_y) {
       for (int rel_x = 0; rel_x < width; ++rel_x) {
         int abs_x = min_x + rel_x;
@@ -383,6 +380,7 @@ namespace TilemapManager {
         }
       }
     }
+#endif // TILE_COLLIDER_FORCE_DEFAULT
 
     broadcast_world_bounds();
   }
