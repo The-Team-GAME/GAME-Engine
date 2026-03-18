@@ -169,33 +169,6 @@ namespace ViewportToolbar {
         if (icon_button(LucideIcons::BoxSelect, "Select (M)", tool == TilemapPanel::ToolMode::Select))
           TilemapPanel::set_tool_mode(TilemapPanel::ToolMode::Select);
       }
-      else if (ManualColliderPanel::is_manual_collider_mode_enabled()) {
-        // ---- Manual Collider tool buttons ----
-        bool ptr = ManualColliderPanel::is_pointer_tool_active();
-
-        if (icon_button(LucideIcons::Move, "Grab / Move (W)", !ptr && current_gizmo_mode == Components::GizmoMode::GrabMove)) {
-          ManualColliderPanel::set_pointer_tool_active(false);
-          current_gizmo_mode = Components::GizmoMode::GrabMove;
-        }
-
-        if (icon_button(LucideIcons::Crosshair, "Arrows X/Y (E)", !ptr && current_gizmo_mode == Components::GizmoMode::ArrowMove)) {
-          ManualColliderPanel::set_pointer_tool_active(false);
-          current_gizmo_mode = Components::GizmoMode::ArrowMove;
-        }
-
-        if (icon_button(LucideIcons::RotateCw, "Rotate (R)", !ptr && current_gizmo_mode == Components::GizmoMode::Rotate)) {
-          ManualColliderPanel::set_pointer_tool_active(false);
-          current_gizmo_mode = Components::GizmoMode::Rotate;
-        }
-
-        if (icon_button(LucideIcons::Scaling, "Scale (T)", !ptr && current_gizmo_mode == Components::GizmoMode::Scale)) {
-          ManualColliderPanel::set_pointer_tool_active(false);
-          current_gizmo_mode = Components::GizmoMode::Scale;
-        }
-
-        if (icon_button(LucideIcons::MousePointer, "Pointer / Vertex Edit (P)", ptr))
-          ManualColliderPanel::set_pointer_tool_active(true);
-      }
       else {
         // ---- Gizmo tool buttons (vertical layout) ----
         if (icon_button(LucideIcons::Move, "Grab / Move (W)", current_gizmo_mode == Components::GizmoMode::GrabMove))

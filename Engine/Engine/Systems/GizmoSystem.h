@@ -168,12 +168,6 @@ namespace Engine
           return;
         }
 
-        // if pointer tool is active in manual collider mode, suppress gizmo drag
-        if (ManualColliderPanel::is_pointer_tool_active()) {
-          entity.remove_component<Components::Gizmo>();
-          return;
-        }
-
         // UI entities use screen-space coordinates (not affected by camera)
         const auto mouse_opt = entity.has_component<Components::UI>()
           ? Engine::Input::get_mouse_position_if_in_viewport()
@@ -430,9 +424,6 @@ namespace Engine
         auto* gizmo = entity.get_component<Components::Gizmo>();
 
         if (!tr || !gizmo) return;
-
-        // ManualCollider entities draw their own gizmo visuals in ManualColliderPanel::draw_overlay()
-        if (entity.has_component<Components::ManualCollider>()) return;
 
         // UI entities draw gizmos in screen space (not affected by camera)
         const bool is_ui = entity.has_component<Components::UI>();
