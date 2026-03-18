@@ -18,7 +18,9 @@ def get_texture_path(entity_or_prefab_data: dict) -> str:
     return path if isinstance(path, str) else ""
 
 
-def load_prefab_metadata(prefabs_dir: Path) -> tuple[dict[str, dict[str, str]], dict[str, dict[str, str]]]:
+def load_prefab_metadata(
+    prefabs_dir: Path,
+) -> tuple[dict[str, dict[str, str]], dict[str, dict[str, str]]]:
     prefab_map: dict[str, dict[str, str]] = {}
     texture_map: dict[str, dict[str, str]] = {}
     for prefab_path in sorted(prefabs_dir.glob("*.json")):
@@ -90,19 +92,40 @@ def set_prefab_reference(entity: dict, prefab_info: dict[str, str]) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Restore missing prefab bindings for monkey entities in a level JSON file.")
+    parser = argparse.ArgumentParser(
+        description="Restore missing prefab bindings for monkey entities in a level JSON file."
+    )
     parser.add_argument("level", type=Path, help="Path to the level JSON file")
-    parser.add_argument("--prefabs-dir", type=Path, default=Path("Engine/Assets/prefabs"), help="Path to the prefabs directory")
-    parser.add_argument("--prefab-name-substring", default="monkey", help="Only repair entities whose matched prefab name contains this substring")
-    parser.add_argument("--overwrite-existing", action="store_true", help="Rewrite existing prefab_reference blocks for matching entities as well")
-    parser.add_argument("--dry-run", action="store_true", help="Report what would be changed without writing the file")
+    parser.add_argument(
+        "--prefabs-dir",
+        type=Path,
+        default=Path("Engine/Assets/prefabs"),
+        help="Path to the prefabs directory",
+    )
+    parser.add_argument(
+        "--prefab-name-substring",
+        default="monkey",
+        help="Only repair entities whose matched prefab name contains this substring",
+    )
+    parser.add_argument(
+        "--overwrite-existing",
+        action="store_true",
+        help="Rewrite existing prefab_reference blocks for matching entities as well",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Report what would be changed without writing the file",
+    )
     args = parser.parse_args()
 
     with args.level.open("r", encoding="utf-8") as handle:
         level_payload = json.load(handle)
 
     _, texture_map = load_prefab_metadata(args.prefabs_dir)
-    targets = collect_targets(level_payload, texture_map, args.prefab_name_substring, args.overwrite_existing)
+    targets = collect_targets(
+        level_payload, texture_map, args.prefab_name_substring, args.overwrite_existing
+    )
 
     if not targets:
         print("No matching entities found for repair.")
