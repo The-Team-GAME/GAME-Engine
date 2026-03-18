@@ -109,6 +109,23 @@ namespace ImGuiWidgets {
 
   /*=================================================================================
   Function Brief:
+  Renders a UI anchor editor with a 3x3 preset grid and pixel offset fields
+  for Components::UI fields.
+
+  Parameters:
+  field_value - Reference to the GenericValue containing anchor and offset data
+  modified    - [out] Set to true if the values were modified by user input
+
+  Returns:
+  true if the field was handled and rendered, false otherwise.
+
+  Where to call it:
+  From specialized field renderers for UI components.
+  ==================================================================================*/
+  bool render_ui_anchor_field(ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity = Engine::ECS::Entity(Engine::ECS::INVALID_ENTITY));
+
+  /*=================================================================================
+  Function Brief:
   Renders a texture atlas preview widget for Components::TextureAtlas fields.
   Only works when an entity is provided (requires Texture component).
 
