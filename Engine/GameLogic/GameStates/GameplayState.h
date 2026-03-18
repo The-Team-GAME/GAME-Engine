@@ -30,7 +30,7 @@ class GameplayState : public Engine::Scene
 {
   static constexpr const char* GAMEPLAY_BGM_EVENT = "event:/BGM/LevelBGM";
   static constexpr const char* GAMEPLAY_BATTLECRY_EVENT = "event:/SFX/PlayerStartCry";
-  static constexpr float TIPS_BUTTON_HUD_X = 1373.0f;
+  static constexpr float TIPS_BUTTON_HUD_X = -227.0f;
   static constexpr float TIPS_BUTTON_HUD_Y = 92.0f;
   static constexpr float TIPS_BUTTON_SIZE = 220.0f;
   static constexpr float TIPS_OVERLAY_CENTER_X = 800.0f;
@@ -106,10 +106,10 @@ public:
     // Positions are in screen coordinates (0,0 is top-left, 1600x900 viewport)
     // Pause button - top right (screen coords: 1600 - padding - half_width)
     auto pause_btn = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(1500.0f, 90.0f, 0.0f, 100.0f, 100.0f)
+      .add_component<Components::Transform2D>(-100.0f, 90.0f, 0.0f, 100.0f, 100.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/Pause.png"))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-      .add_component<Components::UI>()
+      .add_component<Components::UI>(1.0f, 0.0f)
       .add_component<Components::RuntimeOnly>()
       .add_to_layer("main_menu_4");
     pause_button_id = pause_btn.get_id();
@@ -119,6 +119,7 @@ public:
     if (tips_btn.is_valid()) {
       tips_button_id = tips_btn.get_id();
       set_tips_button_layer("main_menu_4");
+      if (auto* ui = tips_btn.get_component<Components::UI>()) ui->anchor = { 1.0f, 0.0f };
       set_tips_button_hud_position();
     }
     else {
@@ -126,18 +127,18 @@ public:
         .add_component<Components::Transform2D>(TIPS_BUTTON_HUD_X, TIPS_BUTTON_HUD_Y, 0.0f, TIPS_BUTTON_SIZE, TIPS_BUTTON_SIZE)
         .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/TipsBook.png"))
         .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-        .add_component<Components::UI>()
+        .add_component<Components::UI>(1.0f, 0.0f)
         .add_component<Components::RuntimeOnly>()
         .add_to_layer("main_menu_4");
       tips_button_id = tips_btn_created.get_id();
     }
 
-    // Upgrade button — bottom-right corner, 64x64, alpha-hidden until upgrade is available
+    // Upgrade button — bottom-left corner, 64x64, alpha-hidden until upgrade is available
     auto upg_btn = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(1500.0f, 800.0f, 0.0f, 64.0f * 4.0f, 64.0f * 4.0f)
+      .add_component<Components::Transform2D>(128.0f, -128.0f, 0.0f, 64.0f * 4.0f, 64.0f * 4.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/skill_upgrades.png"))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.0f)  // start invisible
-      .add_component<Components::UI>()
+      .add_component<Components::UI>(0.0f, 1.0f)
       .add_component<Components::RuntimeOnly>()
       .add_to_layer("main_menu_4");
     upgrade_btn_id = upg_btn.get_id();
@@ -284,6 +285,7 @@ public:
       ? (TIPS_OVERLAY_CENTER_X + half_w - TIPS_NAV_MARGIN_X - button_half)
       : (TIPS_OVERLAY_CENTER_X - half_w + TIPS_NAV_MARGIN_X + button_half);
     float y = TIPS_OVERLAY_CENTER_Y + half_h - TIPS_NAV_MARGIN_Y - button_half;
+    x -= 1600.0f; // convert to anchor-relative offset (anchor.x = 1.0 => final_x = 1600 + position.x)
 
     set_tips_button_position(x, y);
   }
