@@ -19,6 +19,7 @@
 #include "LucideIcons.h"
 #include "ViewportPanel.h"
 #include "TilemapPanel.h"
+#include "ManualColliderPanel.h"
 #include "../ImGuiManager.h"
 #include "../Logger.h"
 

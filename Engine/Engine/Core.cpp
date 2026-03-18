@@ -41,6 +41,7 @@
 #include "Lua/LuaComponentBindings.h"
 #include "HotReloadManager.h"
 #include "GUI/TilemapPanel.h"
+#include "GUI/ManualColliderPanel.h"
 #include "UpgradeManager.h"
 #include "UpgradeUIStateMachine.h"
 #include "Firebase/FirebaseManager.h"
@@ -441,6 +442,7 @@ namespace Engine
 
 #ifndef GAME_BUILD
         TilemapPanel::update();
+        ManualColliderPanel::update();
 #endif
         ImGuiManager::update();
 
@@ -482,6 +484,7 @@ namespace Engine
 
 #ifndef GAME_BUILD
       TilemapPanel::draw_overlay();
+      ManualColliderPanel::draw_overlay();
 #endif
 
       if (show_fps_overlay)

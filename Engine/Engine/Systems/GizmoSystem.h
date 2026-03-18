@@ -29,6 +29,7 @@
 #include "../GUI/ViewportPanel.h"
 #include "../ImGuiManager.h"
 #include "../GUI/ViewportToolbar.h"
+#include "../GUI/ManualColliderPanel.h"
 #include "../UndoManager/UndoManager.h"
 #include "../ProjectSaveManager.h"
 #include "GizmoUtils.h"
@@ -197,6 +198,8 @@ namespace Engine
         const Math::Vec2D bl_r = { rect_center.x + (-hw) * xdir.x + (hh)*ydir.x, rect_center.y + (-hw) * xdir.y + (hh)*ydir.y };
         const Math::Vec2D mid_top_w{ (tl_r.x + tr_r.x) * 0.5f, (tl_r.y + tr_r.y) * 0.5f };
         const Math::Vec2D mid_right_w{ (tr_r.x + br_r.x) * 0.5f, (tr_r.y + br_r.y) * 0.5f };
+        const Math::Vec2D mid_bottom_w{ (bl_r.x + br_r.x) * 0.5f, (bl_r.y + br_r.y) * 0.5f };
+        const Math::Vec2D mid_left_w{ (tl_r.x + bl_r.x) * 0.5f, (tl_r.y + bl_r.y) * 0.5f };
 
         // Rotation ring geometry (ring always centered; knob along -ydir)
         const float ring_radius = 0.5f * std::max(rect_size.x, rect_size.y) + gizmo->rotate_ring_padding;
@@ -242,6 +245,14 @@ namespace Engine
             gizmo->hover_handle = Components::GizmoHandleType::ScaleBR;
           else if (over_corner(bl_r))
             gizmo->hover_handle = Components::GizmoHandleType::ScaleBL;
+          else if (over_corner(mid_top_w))
+            gizmo->hover_handle = Components::GizmoHandleType::ScaleTop;
+          else if (over_corner(mid_right_w))
+            gizmo->hover_handle = Components::GizmoHandleType::ScaleRight;
+          else if (over_corner(mid_bottom_w))
+            gizmo->hover_handle = Components::GizmoHandleType::ScaleBottom;
+          else if (over_corner(mid_left_w))
+            gizmo->hover_handle = Components::GizmoHandleType::ScaleLeft;
         }
         if (gizmo->hover_handle == Components::GizmoHandleType::None && allow_axes) {
           const float len_x = std::max(12.0f, rect_size.x * gizmo->arrow_length_factor) + gizmo->arrow_outside_extra;
@@ -292,6 +303,18 @@ namespace Engine
             case Components::GizmoHandleType::ScaleBL:
               gizmo->scale_anchor = tr_r;
               break;
+            case Components::GizmoHandleType::ScaleTop:
+              gizmo->scale_anchor = mid_bottom_w;
+              break;
+            case Components::GizmoHandleType::ScaleRight:
+              gizmo->scale_anchor = mid_left_w;
+              break;
+            case Components::GizmoHandleType::ScaleBottom:
+              gizmo->scale_anchor = mid_top_w;
+              break;
+            case Components::GizmoHandleType::ScaleLeft:
+              gizmo->scale_anchor = mid_right_w;
+              break;
             case Components::GizmoHandleType::RotateHandle:
               gizmo->rotate_pivot = rect_center;
               gizmo->start_angle_rad = std::atan2(mouse.y - rect_center.y, mouse.x - rect_center.x);
@@ -308,8 +331,12 @@ namespace Engine
         // ---------------- Drag ----------------
         const bool held = Engine::Input::is_held(KeyCode::MouseLeft);
 
-        // When mouse is released, send modification event with undo support
+        // When mouse is released, snap rotation (if rotating) and send modification event with undo support
         if (!held && gizmo->is_dragging && gizmo->active_handle != Components::GizmoHandleType::None) {
+          if (gizmo->active_handle == Components::GizmoHandleType::RotateHandle) {
+            tr->rotation = std::round(tr->rotation / 45.0f) * 45.0f;
+          }
+
           // Capture final transform state
           Components::Transform2D final_transform = *tr;
 
@@ -388,6 +415,41 @@ namespace Engine
             delta_deg = std::round(delta_deg / GizmoUtil::kSnapAngle) * GizmoUtil::kSnapAngle;
           }
           tr->rotation = gizmo->start_rotation + delta_deg;
+          // Snap to 45° when close
+          {
+            const float snap = std::round(tr->rotation / 45.0f) * 45.0f;
+            const float diff = std::abs(tr->rotation - snap);
+            constexpr float snap_threshold = 6.0f; // degrees
+            if (diff <= snap_threshold) tr->rotation = snap;
+          }
+        } break;
+
+        case Components::GizmoHandleType::ScaleTop:
+        case Components::GizmoHandleType::ScaleBottom:
+        {
+          if (!allow_scale) break;
+          const Math::Vec2D anchor_local = GizmoUtil::rot_deg(gizmo->scale_anchor, rect_center, -tr->rotation);
+          const Math::Vec2D mouse_local = GizmoUtil::rot_deg(mouse, rect_center, -tr->rotation);
+          float dy = mouse_local.y - anchor_local.y;
+          float new_h = std::max(GizmoUtil::kMinScale, std::abs(dy));
+          Math::Vec2D center_local{ anchor_local.x, anchor_local.y + dy * 0.5f };
+          const Math::Vec2D center_world = GizmoUtil::rot_deg(center_local, rect_center, tr->rotation);
+          tr->position = center_world;
+          tr->scale = { gizmo->start_scale.x, new_h };
+        } break;
+
+        case Components::GizmoHandleType::ScaleRight:
+        case Components::GizmoHandleType::ScaleLeft:
+        {
+          if (!allow_scale) break;
+          const Math::Vec2D anchor_local = GizmoUtil::rot_deg(gizmo->scale_anchor, rect_center, -tr->rotation);
+          const Math::Vec2D mouse_local = GizmoUtil::rot_deg(mouse, rect_center, -tr->rotation);
+          float dx = mouse_local.x - anchor_local.x;
+          float new_w = std::max(GizmoUtil::kMinScale, std::abs(dx));
+          Math::Vec2D center_local{ anchor_local.x + dx * 0.5f, anchor_local.y };
+          const Math::Vec2D center_world = GizmoUtil::rot_deg(center_local, rect_center, tr->rotation);
+          tr->position = center_world;
+          tr->scale = { new_w, gizmo->start_scale.y };
         } break;
 
         case Components::GizmoHandleType::ScaleTL:
@@ -423,6 +485,10 @@ namespace Engine
         auto* gizmo = entity.get_component<Components::Gizmo>();
 
         if (!tr || !gizmo) return;
+
+        // ManualCollider entities are drawn by ManualColliderPanel::draw_overlay()
+        // which uses col->width/height directly for correct gizmo sizing.
+        if (entity.has_component<Components::ManualCollider>()) return;
 
         // UI entities draw gizmos in screen space (not affected by camera)
         const bool is_ui = entity.has_component<Components::UI>();
@@ -470,6 +536,8 @@ namespace Engine
         const Math::Vec2D bl_r = { rect_center.x + (-hw) * xdir.x + (hh)*ydir.x, rect_center.y + (-hw) * xdir.y + (hh)*ydir.y };
         const Math::Vec2D mid_top_w{ (tl_r.x + tr_r.x) * 0.5f, (tl_r.y + tr_r.y) * 0.5f };
         const Math::Vec2D mid_right_w{ (tr_r.x + br_r.x) * 0.5f, (tr_r.y + br_r.y) * 0.5f };
+        const Math::Vec2D mid_bottom_w{ (bl_r.x + br_r.x) * 0.5f, (bl_r.y + br_r.y) * 0.5f };
+        const Math::Vec2D mid_left_w{ (tl_r.x + bl_r.x) * 0.5f, (tl_r.y + bl_r.y) * 0.5f };
 
         // Scale handles — hidden when multiple entities are selected (unified scale instead)
         if (gizmo_mode == Components::GizmoMode::Scale && !multi_sel_draw) {
@@ -481,6 +549,10 @@ namespace Engine
           draw_handle(tr_r, gizmo->hover_handle == Components::GizmoHandleType::ScaleTR);
           draw_handle(br_r, gizmo->hover_handle == Components::GizmoHandleType::ScaleBR);
           draw_handle(bl_r, gizmo->hover_handle == Components::GizmoHandleType::ScaleBL);
+          draw_handle(mid_top_w,    gizmo->hover_handle == Components::GizmoHandleType::ScaleTop);
+          draw_handle(mid_right_w,  gizmo->hover_handle == Components::GizmoHandleType::ScaleRight);
+          draw_handle(mid_bottom_w, gizmo->hover_handle == Components::GizmoHandleType::ScaleBottom);
+          draw_handle(mid_left_w,   gizmo->hover_handle == Components::GizmoHandleType::ScaleLeft);
         }
 
         // Rotation ring + crosshair + knob

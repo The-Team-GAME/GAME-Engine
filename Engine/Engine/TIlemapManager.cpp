@@ -21,6 +21,11 @@
 #include "FileIO/Settings.h"
 #include "Systems/CollisionSystem.h"
 
+// Define this macro to force ALL tiles to use the Default (greedy-merged) collider,
+// disabling custom AABB and Polygon colliders. Useful while per-tile polygon colliders
+// are under development.
+#define TILE_COLLIDER_FORCE_DEFAULT
+
 namespace TilemapManager {
   namespace {
     // Grid settings
@@ -288,6 +293,8 @@ namespace TilemapManager {
     }
 
     // Create individual collision entities for AABB and Polygon collider type tiles
+    // (disabled when TILE_COLLIDER_FORCE_DEFAULT is set — non-Default tiles get no collider)
+#ifndef TILE_COLLIDER_FORCE_DEFAULT
     for (int rel_y = 0; rel_y < height; ++rel_y) {
       for (int rel_x = 0; rel_x < width; ++rel_x) {
         int abs_x = min_x + rel_x;
@@ -373,6 +380,7 @@ namespace TilemapManager {
         }
       }
     }
+#endif // TILE_COLLIDER_FORCE_DEFAULT
 
     broadcast_world_bounds();
   }
