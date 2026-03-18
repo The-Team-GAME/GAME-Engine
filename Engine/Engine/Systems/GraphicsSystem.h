@@ -56,6 +56,19 @@ namespace Engine
       );
     }
 
+    // Helper: compute the final screen-space position for a UI element.
+    // final_pos = vres * anchor + Transform2D.position
+    // When anchor=(0,0) this is identical to the old behaviour (raw transform position).
+    // When anchor is set, Transform2D.position acts as a pixel offset from the anchor,
+    // so gizmo drag works correctly out of the box.
+    inline Math::Vec2D compute_ui_position(const Components::UI& ui, const Components::Transform2D& transform) {
+      auto vres = Engine::Graphics::get_virtual_resolution();
+      return Math::Vec2D(
+        vres.x * ui.anchor.x + transform.position.x,
+        vres.y * ui.anchor.y + transform.position.y
+      );
+    }
+
     // Helper: draw a texture tiled across the visible area at a given parallax draw position.
     template<typename DrawFn>
     inline void draw_parallax_tiled(const Math::Vec2D& draw_pos, const Math::Vec2D& entity_scale,
@@ -101,9 +114,10 @@ namespace Engine
 
         if (ui) {
           // Render in screen space (not affected by camera)
+          Math::Vec2D pos = compute_ui_position(*ui, *transform);
           Engine::Graphics::draw_texture_ui(
             texture->texture_handle,
-            Math::Vec2D(transform->position.x, transform->position.y),
+            pos,
             Math::Vec2D(transform->scale.x, transform->scale.y),
             transform->rotation,
             *color,
@@ -166,10 +180,11 @@ namespace Engine
 
           if (ui) {
             // Render in screen space (not affected by camera)
+            Math::Vec2D pos = compute_ui_position(*ui, *transform);
             Engine::Graphics::draw_subtexture_ui(
               texture->texture_handle,
               subTexture.tex_coords,
-              Math::Vec2D(transform->position.x, transform->position.y),
+              pos,
               Math::Vec2D(transform->scale.x, transform->scale.y),
               transform->rotation,
               *color,
