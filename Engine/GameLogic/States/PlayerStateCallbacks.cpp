@@ -210,7 +210,6 @@ namespace PlayerStateCallbacks
     return hitbox;
   }
 
-
   // ===========================================================================================
   // Controls the player's ability to provide inputs
   // ===========================================================================================
@@ -715,7 +714,7 @@ namespace PlayerStateCallbacks
   inline void post_uppercut_on_enter([[maybe_unused]] ECS::Entity entity)
   {
     Log::info("Player: Entered Post Uppercut state");
-
+    default_state = true;
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
     rigid->apply_force = false;
@@ -732,10 +731,13 @@ namespace PlayerStateCallbacks
       assert(state_machine);
       state_machine->change_state("UppercutFalling");
     }
+    take_input(entity);
   }
 
   inline void post_uppercut_on_exit([[maybe_unused]] ECS::Entity entity)
   {
+    default_state = false;
+
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
     rigid->apply_force = true; // renabling gravity
