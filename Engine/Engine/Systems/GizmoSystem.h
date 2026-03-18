@@ -177,14 +177,20 @@ namespace Engine
 
         const auto mouse = mouse_opt.value();
 
-        // Text entities now use Transform2D position as center and scale as bounds (like regular entities)
-        Math::Vec2D rect_center = tr->position;
+        // Resolve the screen-space center: for anchored UI entities this is
+        // vres * anchor + position; for everything else it's just position.
+        Math::Vec2D anchor_offset{ 0.0f, 0.0f };
+        if (auto* ui_comp = entity.get_component<Components::UI>()) {
+          auto vres = Engine::Graphics::get_virtual_resolution();
+          anchor_offset = { vres.x * ui_comp->anchor.x, vres.y * ui_comp->anchor.y };
+        }
+        Math::Vec2D rect_center = { tr->position.x + anchor_offset.x, tr->position.y + anchor_offset.y };
         Math::Vec2D rect_size = tr->scale;
         const float hw = tr->scale.x * 0.5f, hh = tr->scale.y * 0.5f;
-        Math::Vec2D tl = { tr->position.x - hw, tr->position.y - hh };
-        Math::Vec2D trc = { tr->position.x + hw, tr->position.y - hh };
-        Math::Vec2D br = { tr->position.x + hw, tr->position.y + hh };
-        Math::Vec2D bl = { tr->position.x - hw, tr->position.y + hh };
+        Math::Vec2D tl  = { rect_center.x - hw, rect_center.y - hh };
+        Math::Vec2D trc = { rect_center.x + hw, rect_center.y - hh };
+        Math::Vec2D br  = { rect_center.x + hw, rect_center.y + hh };
+        Math::Vec2D bl  = { rect_center.x - hw, rect_center.y + hh };
 
         // Local axes from rotation
         const float ang = tr->rotation * GizmoUtil::kPi / 180.0f;
@@ -288,7 +294,7 @@ namespace Engine
             gizmo->start_pos = tr->position;
             gizmo->start_scale = tr->scale;
             gizmo->start_rotation = tr->rotation;
-            gizmo->drag_offset = { mouse.x - tr->position.x, mouse.y - tr->position.y };
+            gizmo->drag_offset = { mouse.x - rect_center.x, mouse.y - rect_center.y };
 
             switch (gizmo->active_handle) {
             case Components::GizmoHandleType::ScaleTL:
@@ -384,8 +390,8 @@ namespace Engine
         switch (gizmo->active_handle) {
         case Components::GizmoHandleType::Body:
           if (!allow_body) break; // ignore when mode disallows body
-          tr->position.x = mouse.x - gizmo->drag_offset.x;
-          tr->position.y = mouse.y - gizmo->drag_offset.y;
+          tr->position.x = mouse.x - gizmo->drag_offset.x - anchor_offset.x;
+          tr->position.y = mouse.y - gizmo->drag_offset.y - anchor_offset.y;
           break;
 
         case Components::GizmoHandleType::AxisX: {
@@ -504,8 +510,14 @@ namespace Engine
           GizmoUtil::draw_line_auto(is_ui, start, end, thick, col);
           };
 
-        // All entities (including text) use Transform2D position as center and scale as bounds
-        Math::Vec2D rect_center = tr->position;
+        // Resolve the screen-space center: for anchored UI entities this is
+        // vres * anchor + position; for everything else it's just position.
+        Math::Vec2D draw_anchor_offset{ 0.0f, 0.0f };
+        if (auto* ui_comp = entity.get_component<Components::UI>()) {
+          auto vres = Engine::Graphics::get_virtual_resolution();
+          draw_anchor_offset = { vres.x * ui_comp->anchor.x, vres.y * ui_comp->anchor.y };
+        }
+        Math::Vec2D rect_center = { tr->position.x + draw_anchor_offset.x, tr->position.y + draw_anchor_offset.y };
         Math::Vec2D rect_size = tr->scale;
 
         // Read gizmo mode from the viewport toolbar (global state)

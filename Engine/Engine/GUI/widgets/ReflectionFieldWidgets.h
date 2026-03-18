@@ -122,7 +122,7 @@ namespace ImGuiWidgets {
   Where to call it:
   From specialized field renderers for UI components.
   ==================================================================================*/
-  bool render_ui_anchor_field(ReflectionLibrary::GenericValue& field_value, bool& modified);
+  bool render_ui_anchor_field(ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity = Engine::ECS::Entity(Engine::ECS::INVALID_ENTITY));
 
   /*=================================================================================
   Function Brief:

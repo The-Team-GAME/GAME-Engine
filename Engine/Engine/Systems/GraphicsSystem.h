@@ -57,18 +57,16 @@ namespace Engine
     }
 
     // Helper: compute the final screen-space position for a UI element.
-    // If anchor is non-zero or offset is non-zero, position is derived from
-    // virtual_resolution * anchor + offset. Otherwise falls back to transform position.
+    // final_pos = vres * anchor + Transform2D.position
+    // When anchor=(0,0) this is identical to the old behaviour (raw transform position).
+    // When anchor is set, Transform2D.position acts as a pixel offset from the anchor,
+    // so gizmo drag works correctly out of the box.
     inline Math::Vec2D compute_ui_position(const Components::UI& ui, const Components::Transform2D& transform) {
-      if (ui.anchor.x != 0.0f || ui.anchor.y != 0.0f ||
-          ui.offset.x != 0.0f || ui.offset.y != 0.0f) {
-        auto vres = Engine::Graphics::get_virtual_resolution();
-        return Math::Vec2D(
-          vres.x * ui.anchor.x + ui.offset.x,
-          vres.y * ui.anchor.y + ui.offset.y
-        );
-      }
-      return transform.position;
+      auto vres = Engine::Graphics::get_virtual_resolution();
+      return Math::Vec2D(
+        vres.x * ui.anchor.x + transform.position.x,
+        vres.y * ui.anchor.y + transform.position.y
+      );
     }
 
     // Helper: draw a texture tiled across the visible area at a given parallax draw position.

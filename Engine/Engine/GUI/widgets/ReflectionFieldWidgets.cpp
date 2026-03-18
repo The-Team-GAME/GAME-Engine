@@ -28,6 +28,7 @@
 #include <algorithm>
 #include "../../FunctionRegistry.h"
 #include "../../Audio/AudioSystem.h"
+#include "../../Graphics/Renderer.h"
 
 namespace ImGuiWidgets {
 
@@ -258,7 +259,20 @@ namespace ImGuiWidgets {
     return true;
   }
 
-  bool render_ui_anchor_field(ReflectionLibrary::GenericValue& field_value, bool& modified) {
+  // Helper: when anchor changes, shift Transform2D.position so the entity stays
+  // at the same screen position: new_pos = old_pos + vres*(old_anchor - new_anchor)
+  static void compensate_position_for_anchor(Engine::ECS::Entity entity,
+                                              float old_ax, float old_ay,
+                                              float new_ax, float new_ay) {
+    if (!entity.is_valid()) return;
+    auto* tr = entity.get_component<Components::Transform2D>();
+    if (!tr) return;
+    auto vres = Engine::Graphics::get_virtual_resolution();
+    tr->position.x += vres.x * (old_ax - new_ax);
+    tr->position.y += vres.y * (old_ay - new_ay);
+  }
+
+  bool render_ui_anchor_field(ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity) {
     // 3x3 anchor preset grid
     static const char* labels[3][3] = {
       { "TL", "TC", "TR" },
@@ -272,12 +286,17 @@ namespace ImGuiWidgets {
     float cur_ay = static_cast<float>(field_value["anchor"]["y"].getDouble());
 
     ImGui::Text("Anchor");
+    ImGui::SameLine();
+    ImGui::TextDisabled("(?)");
+    if (ImGui::IsItemHovered())
+      ImGui::SetTooltip("Sets the screen-space origin.\nTransform2D position is a pixel offset from this anchor.\nChanging anchor keeps the entity at the same screen position.");
     for (int row = 0; row < 3; row++) {
       for (int col = 0; col < 3; col++) {
         bool active = (cur_ax == axs[col] && cur_ay == ays[row]);
         if (active) ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.6f, 1.0f, 1.0f));
         std::string btn_id = std::string(labels[row][col]) + "##anchor_" + std::to_string(row) + "_" + std::to_string(col);
         if (ImGui::Button(btn_id.c_str(), ImVec2(28, 22))) {
+          compensate_position_for_anchor(entity, cur_ax, cur_ay, axs[col], ays[row]);
           field_value["anchor"]["x"] = static_cast<double>(axs[col]);
           field_value["anchor"]["y"] = static_cast<double>(ays[row]);
           modified = true;
@@ -292,23 +311,14 @@ namespace ImGuiWidgets {
     ImGui::Text("Custom  ");
     ImGui::SameLine();
     if (ImGui::DragFloat2("##AnchorCustom", anchor, 0.01f, 0.0f, 1.0f, "%.2f")) {
+      compensate_position_for_anchor(entity, cur_ax, cur_ay, anchor[0], anchor[1]);
       field_value["anchor"]["x"] = static_cast<double>(anchor[0]);
       field_value["anchor"]["y"] = static_cast<double>(anchor[1]);
       modified = true;
     }
 
-    // Offset fields
-    float offset[2] = {
-      static_cast<float>(field_value["offset"]["x"].getDouble()),
-      static_cast<float>(field_value["offset"]["y"].getDouble())
-    };
-    ImGui::Text("Offset  ");
-    ImGui::SameLine();
-    if (ImGui::DragFloat2("##UIOffset", offset, 1.0f)) {
-      field_value["offset"]["x"] = static_cast<double>(offset[0]);
-      field_value["offset"]["y"] = static_cast<double>(offset[1]);
-      modified = true;
-    }
+    // Remind the user that position is the editable offset
+    ImGui::TextDisabled("Position offset set via Transform2D or gizmo drag");
 
     return true;
   }
@@ -1310,7 +1320,7 @@ namespace ImGuiWidgets {
     }
 
     if (type_hint == "Components::UI") {
-      return render_ui_anchor_field(field_value, modified);
+      return render_ui_anchor_field(field_value, modified, entity);
     }
 
     if (type_hint == "Components::TextureAtlas") {
