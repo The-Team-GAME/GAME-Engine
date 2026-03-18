@@ -1039,6 +1039,10 @@ namespace Engine {
         if (entity.has_component<Components::TileCollider>()) {
           return;
         }
+        // Skip runtime-only entities spawned by scene logic (e.g. UI buttons, transient zones)
+        if (entity.has_component<Components::RuntimeOnly>()) {
+          return;
+        }
 
         ReflectionLibrary::GenericValue entity_value = ECS::entity_to_generic_value(entity);
         entities.push_back(std::move(entity_value));

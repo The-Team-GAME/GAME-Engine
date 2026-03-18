@@ -40,6 +40,10 @@ namespace Components
   // Entities with this should not be modifyable by game dev
   struct Internal {};
 
+  // Marker component for entities spawned at runtime (e.g. in Scene::load/init).
+  // These are never serialized to level files.
+  struct RuntimeOnly {};
+
   // Component for entities that should be destroyed after a certain time
   struct Lifetime {
     f32 destroy_at = 0.0f;     // Time (from Engine::Time::get_time()) when entity should be destroyed
@@ -70,3 +74,4 @@ namespace Components
 REGISTER_COMPONENT(Components::Lifetime, destroy_at)
 REGISTER_COMPONENT(Components::FrameLifetime, frames_remaining)
 REGISTER_COMPONENT(Components::Name, name)
+REFLECT_FIELDS(Components::RuntimeOnly);

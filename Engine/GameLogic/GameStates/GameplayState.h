@@ -90,6 +90,7 @@ public:
     Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(14600.0f, 830.0f, 0.0f, 100.0f, 200.0f)
       .add_component<Components::Interactable>(50.0f, "show_victory", "", "")
+      .add_component<Components::RuntimeOnly>()
       .add_to_layer("effect");
 
     // // Old man NPC - press E to interact and show dialogue
@@ -109,6 +110,7 @@ public:
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/Pause.png"))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()
+      .add_component<Components::RuntimeOnly>()
       .add_to_layer("main_menu_4");
     pause_button_id = pause_btn.get_id();
 
@@ -125,6 +127,7 @@ public:
         .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/TipsBook.png"))
         .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
         .add_component<Components::UI>()
+        .add_component<Components::RuntimeOnly>()
         .add_to_layer("main_menu_4");
       tips_button_id = tips_btn_created.get_id();
     }
@@ -135,6 +138,7 @@ public:
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/skill_upgrades.png"))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.0f)  // start invisible
       .add_component<Components::UI>()
+      .add_component<Components::RuntimeOnly>()
       .add_to_layer("main_menu_4");
     upgrade_btn_id = upg_btn.get_id();
     Engine::UpgradeUIStateMachine::instance().set_upgrade_button(upgrade_btn_id);
@@ -299,6 +303,7 @@ public:
       .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
       .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.5f)
       .add_component<Components::UI>()
+      .add_component<Components::RuntimeOnly>()
       .add_to_layer("main_menu_4");
     tips_bg_id = bg.get_id();
 
@@ -308,6 +313,7 @@ public:
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/InstructionsTips.png"))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()
+      .add_component<Components::RuntimeOnly>()
       .add_to_layer("main_menu_5");
     tips_overlay_id = overlay.get_id();
 
@@ -342,6 +348,7 @@ public:
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/InstructionsTips2.png"))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()
+      .add_component<Components::RuntimeOnly>()
       .add_to_layer("main_menu_5");
     tips_overlay_page2_id = overlay2.get_id();
 
@@ -368,6 +375,7 @@ public:
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/InstructionsTips.png"))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()
+      .add_component<Components::RuntimeOnly>()
       .add_to_layer("main_menu_5");
     tips_overlay_id = overlay.get_id();
 
