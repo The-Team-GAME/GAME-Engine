@@ -56,6 +56,21 @@ namespace Engine
       );
     }
 
+    // Helper: compute the final screen-space position for a UI element.
+    // If anchor is non-zero or offset is non-zero, position is derived from
+    // virtual_resolution * anchor + offset. Otherwise falls back to transform position.
+    inline Math::Vec2D compute_ui_position(const Components::UI& ui, const Components::Transform2D& transform) {
+      if (ui.anchor.x != 0.0f || ui.anchor.y != 0.0f ||
+          ui.offset.x != 0.0f || ui.offset.y != 0.0f) {
+        auto vres = Engine::Graphics::get_virtual_resolution();
+        return Math::Vec2D(
+          vres.x * ui.anchor.x + ui.offset.x,
+          vres.y * ui.anchor.y + ui.offset.y
+        );
+      }
+      return transform.position;
+    }
+
     // Helper: draw a texture tiled across the visible area at a given parallax draw position.
     template<typename DrawFn>
     inline void draw_parallax_tiled(const Math::Vec2D& draw_pos, const Math::Vec2D& entity_scale,
@@ -101,9 +116,10 @@ namespace Engine
 
         if (ui) {
           // Render in screen space (not affected by camera)
+          Math::Vec2D pos = compute_ui_position(*ui, *transform);
           Engine::Graphics::draw_texture_ui(
             texture->texture_handle,
-            Math::Vec2D(transform->position.x, transform->position.y),
+            pos,
             Math::Vec2D(transform->scale.x, transform->scale.y),
             transform->rotation,
             *color,
@@ -166,10 +182,11 @@ namespace Engine
 
           if (ui) {
             // Render in screen space (not affected by camera)
+            Math::Vec2D pos = compute_ui_position(*ui, *transform);
             Engine::Graphics::draw_subtexture_ui(
               texture->texture_handle,
               subTexture.tex_coords,
-              Math::Vec2D(transform->position.x, transform->position.y),
+              pos,
               Math::Vec2D(transform->scale.x, transform->scale.y),
               transform->rotation,
               *color,

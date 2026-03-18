@@ -557,10 +557,18 @@ namespace Components
   };
 
 
-  // Tag component for UI elements - renders in screen space (not affected by camera)
+  // Component for UI elements - renders in screen space (not affected by camera)
+  // anchor: normalized screen position (0,0)=top-left, (0.5,0.5)=center, (1,1)=bottom-right
+  // offset: pixel offset from the anchor point in virtual resolution space
+  // When anchor is (0,0) and offset is (0,0), falls back to Transform2D.position
   struct UI
   {
+    Math::Vec2D anchor{ 0.0f, 0.0f };
+    Math::Vec2D offset{ 0.0f, 0.0f };
+
     UI() = default;
+    UI(f32 ax, f32 ay, f32 ox = 0.0f, f32 oy = 0.0f)
+      : anchor(ax, ay), offset(ox, oy) {}
   };
 
   // Parallax scrolling component - makes the entity scroll at a fraction of the camera speed
@@ -590,7 +598,7 @@ REGISTER_COMPONENT(Components::Text, content, font_scale, line_spacing, alignmen
 REGISTER_COMPONENT(Components::Camera, is_active, is_smooth, smooth_factor, smooth_factor_direction_change, rotation_smooth, zoom_smooth, look_ahead_distance, look_ahead_smooth, dead_zone_radius, target_offset)
 REGISTER_COMPONENT(Components::Distortion, intensity, speed, mesh_intensity)
 REGISTER_COMPONENT(Components::Flip, value)
-REGISTER_COMPONENT(Components::UI)
+REGISTER_COMPONENT(Components::UI, anchor, offset)
 REGISTER_COMPONENT_CUSTOM(Components::Color, r, g, b, a)
 REGISTER_COMPONENT_CUSTOM(Components::Texture, path)
 REGISTER_COMPONENT_CUSTOM(Components::Font, path, font_size)
