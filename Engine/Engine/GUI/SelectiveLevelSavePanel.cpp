@@ -82,6 +82,9 @@ namespace {
 
         ReflectionLibrary::GenericValue prefab_ref = ReflectionLibrary::Object();
         prefab_ref["id"] = instance_data.prefab_id;
+        if (!instance_data.prefab_filepath.empty()) {
+          prefab_ref["filepath"] = instance_data.prefab_filepath;
+        }
 
         // Serialize field overrides
         ReflectionLibrary::GenericValue overrides_obj = ReflectionLibrary::Object();
