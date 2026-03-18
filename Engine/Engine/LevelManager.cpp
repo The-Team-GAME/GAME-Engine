@@ -1044,6 +1044,14 @@ namespace Engine {
         entities.push_back(std::move(entity_value));
         });
 
+      // Sort entities by ID for deterministic JSON output
+      std::sort(entities.begin(), entities.end(),
+        [](const ReflectionLibrary::GenericValue& a, const ReflectionLibrary::GenericValue& b) {
+          int64_t id_a = a.has("id") ? a["id"].getInt() : 0;
+          int64_t id_b = b.has("id") ? b["id"].getInt() : 0;
+          return id_a < id_b;
+        });
+
       return entities;
     }
 

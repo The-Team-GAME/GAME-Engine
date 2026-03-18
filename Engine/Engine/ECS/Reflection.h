@@ -22,6 +22,7 @@
 #include "../Logger.h"
 #include <unordered_map>
 #include <memory>
+#include <algorithm>
 
 namespace Engine {
   namespace ECS {
@@ -113,6 +114,12 @@ namespace Engine {
           component_entry["data"] = array->to_generic_value(entity_id);
 
           components_array.push_back(component_entry);
+          });
+
+        // Sort components alphabetically by type name for deterministic JSON output
+        std::sort(components_array.begin(), components_array.end(),
+          [](const ReflectionLibrary::GenericValue& a, const ReflectionLibrary::GenericValue& b) {
+            return a["type"].getString() < b["type"].getString();
           });
 
         return components_array;
