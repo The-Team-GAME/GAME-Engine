@@ -3,37 +3,35 @@
         "components": [
             {
                 "data": {
-                    "acceleration": {
-                        "x": 0.0,
-                        "y": 0.0
-                    },
-                    "apply_force": true,
-                    "gravity": {
-                        "x": 0.0,
-                        "y": 1000.0
-                    },
-                    "is_jumping": false,
-                    "is_static": false,
-                    "mass": 2.0,
-                    "on_ground": true,
-                    "use_gravity": true,
-                    "velocity": {
-                        "x": 0.0,
-                        "y": 0.0
-                    },
-                    "x_terminal_velocity": 500.0,
-                    "y_terminal_velocity": 1000.0
+                    "atlas_indices": [
+                        0,
+                        1,
+                        2,
+                        3,
+                        4,
+                        5
+                    ],
+                    "before_times": [
+                        0.0,
+                        0.25,
+                        0.5,
+                        0.75,
+                        1.0,
+                        1.25
+                    ],
+                    "durations": [
+                        0.25,
+                        0.25,
+                        0.25,
+                        0.25,
+                        0.25,
+                        0.25
+                    ],
+                    "is_looping": true,
+                    "startTime": 319.6811218261719,
+                    "totalDuration": 1.5
                 },
-                "type": "Components::RigidBody"
-            },
-            {
-                "data": {
-                    "value": {
-                        "x": -1.0,
-                        "y": 1.0
-                    }
-                },
-                "type": "Components::Flip"
+                "type": "Components::Animation"
             },
             {
                 "data": {
@@ -78,171 +76,71 @@
             },
             {
                 "data": {
-                    "path": "images/GameMonkeySpriteSheets/walk.png"
+                    "current_hp": 25,
+                    "max_hp": 25
                 },
-                "type": "Components::Texture"
+                "type": "Components::EnemyHealth"
             },
             {
                 "data": {
-                    "drawIndex": 2,
-                    "tex_coords_list": [
-                        [
-                            {
-                                "x": 0.0,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.1666666716337204,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.1666666716337204,
-                                "y": 0.0
-                            },
-                            {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        ],
-                        [
-                            {
-                                "x": 0.1666666716337204,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.3333333432674408,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.3333333432674408,
-                                "y": 0.0
-                            },
-                            {
-                                "x": 0.1666666716337204,
-                                "y": 0.0
-                            }
-                        ],
-                        [
-                            {
-                                "x": 0.3333333432674408,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.5,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.5,
-                                "y": 0.0
-                            },
-                            {
-                                "x": 0.3333333432674408,
-                                "y": 0.0
-                            }
-                        ],
-                        [
-                            {
-                                "x": 0.5,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.6666666865348816,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.6666666865348816,
-                                "y": 0.0
-                            },
-                            {
-                                "x": 0.5,
-                                "y": 0.0
-                            }
-                        ],
-                        [
-                            {
-                                "x": 0.6666666865348816,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.8333333134651184,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.8333333134651184,
-                                "y": 0.0
-                            },
-                            {
-                                "x": 0.6666666865348816,
-                                "y": 0.0
-                            }
-                        ],
-                        [
-                            {
-                                "x": 0.8333333134651184,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 1.0,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 1.0,
-                                "y": 0.0
-                            },
-                            {
-                                "x": 0.8333333134651184,
-                                "y": 0.0
-                            }
-                        ]
-                    ]
-                },
-                "type": "Components::TextureAtlas"
-            },
-            {
-                "data": {
-                    "atlas_indices": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5
-                    ],
-                    "before_times": [
-                        0.0,
-                        0.25,
-                        0.5,
-                        0.75,
-                        1.0,
-                        1.25
-                    ],
-                    "durations": [
-                        0.25,
-                        0.25,
-                        0.25,
-                        0.25,
-                        0.25,
-                        0.25
-                    ],
-                    "is_looping": true,
-                    "startTime": 700.810302734375,
-                    "totalDuration": 1.5
-                },
-                "type": "Components::Animation"
-            },
-            {
-                "data": {
-                    "position": {
-                        "x": 2309.09033203125,
-                        "y": 1793.9288330078125
-                    },
-                    "rotation": 0.0,
-                    "scale": {
-                        "x": 250.0,
-                        "y": 250.0
+                    "value": {
+                        "x": -1.0,
+                        "y": 1.0
                     }
                 },
-                "type": "Components::Transform2D"
+                "type": "Components::Flip"
+            },
+            {
+                "data": {
+                    "acceleration": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "apply_force": true,
+                    "gravity": {
+                        "x": 0.0,
+                        "y": 1000.0
+                    },
+                    "is_jumping": false,
+                    "is_static": false,
+                    "mass": 2.0,
+                    "on_ground": true,
+                    "use_gravity": true,
+                    "velocity": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "x_terminal_velocity": 500.0,
+                    "y_terminal_velocity": 1000.0
+                },
+                "type": "Components::RigidBody"
+            },
+            {
+                "data": {
+                    "attack_cooldown": 3.0,
+                    "attack_windup": 0.5,
+                    "chase_range": 700.0,
+                    "chase_speed": 100.0,
+                    "close_attack_range": 180.0,
+                    "damage": 1,
+                    "dash_attack_range": 400.0,
+                    "dash_cooldown": 1.0,
+                    "dash_indicator_height": 100.0,
+                    "dash_speed": 1000.0,
+                    "dash_windup_duration": 1.0,
+                    "detection_range": 600.0,
+                    "hitbox_height": 128.0,
+                    "hitbox_offset_x": 80.0,
+                    "hitbox_offset_y": 120.0,
+                    "hitbox_width": 120.0,
+                    "knockback": {
+                        "x": 500.0,
+                        "y": -100.0
+                    },
+                    "leap_height": 50.0,
+                    "leap_speed": 200.0
+                },
+                "type": "Components::SlingshotMonkey"
             },
             {
                 "data": {
@@ -286,7 +184,7 @@
                                             0.2029999941587448
                                         ],
                                         "is_looping": true,
-                                        "startTime": 897.5797119140625,
+                                        "startTime": 396.2542419433594,
                                         "totalDuration": 1.1029999256134033
                                     },
                                     "collider_data": {
@@ -806,7 +704,7 @@
                                             0.25
                                         ],
                                         "is_looping": true,
-                                        "startTime": 897.5797119140625,
+                                        "startTime": 396.2542419433594,
                                         "totalDuration": 1.5
                                     },
                                     "collider_data": {
@@ -984,7 +882,7 @@
                                             0.25
                                         ],
                                         "is_looping": true,
-                                        "startTime": 897.5797119140625,
+                                        "startTime": 396.2542419433594,
                                         "totalDuration": 1.5
                                     },
                                     "collider_data": {
@@ -1174,7 +1072,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 897.5797119140625,
+                                        "startTime": 396.2542419433594,
                                         "totalDuration": 1.0000001192092896
                                     },
                                     "collider_data": {
@@ -1700,7 +1598,7 @@
                                             0.23999999463558197
                                         ],
                                         "is_looping": true,
-                                        "startTime": 897.5797119140625,
+                                        "startTime": 396.2542419433594,
                                         "totalDuration": 1.9199999570846558
                                     },
                                     "collider_data": {
@@ -1932,7 +1830,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 897.5797119140625,
+                                        "startTime": 396.2542419433594,
                                         "totalDuration": 1.3000001907348633
                                     },
                                     "collider_data": {
@@ -2443,7 +2341,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 897.5797119140625,
+                                        "startTime": 396.2542419433594,
                                         "totalDuration": 0.30000001192092896
                                     },
                                     "collider_data": {
@@ -2543,37 +2441,139 @@
             },
             {
                 "data": {
-                    "attack_cooldown": 3.0,
-                    "attack_windup": 0.5,
-                    "chase_range": 700.0,
-                    "chase_speed": 100.0,
-                    "close_attack_range": 180.0,
-                    "damage": 1,
-                    "dash_attack_range": 400.0,
-                    "dash_cooldown": 1.0,
-                    "dash_indicator_height": 100.0,
-                    "dash_speed": 1000.0,
-                    "dash_windup_duration": 1.0,
-                    "detection_range": 600.0,
-                    "hitbox_height": 128.0,
-                    "hitbox_offset_x": 80.0,
-                    "hitbox_offset_y": 120.0,
-                    "hitbox_width": 120.0,
-                    "knockback": {
-                        "x": 500.0,
-                        "y": -100.0
-                    },
-                    "leap_height": 50.0,
-                    "leap_speed": 200.0
+                    "path": "images/GameMonkeySpriteSheets/walk.png"
                 },
-                "type": "Components::SlingshotMonkey"
+                "type": "Components::Texture"
             },
             {
                 "data": {
-                    "current_hp": 25,
-                    "max_hp": 25
+                    "drawIndex": 2,
+                    "tex_coords_list": [
+                        [
+                            {
+                                "x": 0.0,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.1666666716337204,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.1666666716337204,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.1666666716337204,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.3333333432674408,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.3333333432674408,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.1666666716337204,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.3333333432674408,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.5,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.5,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.3333333432674408,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.5,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.6666666865348816,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.6666666865348816,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.5,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.6666666865348816,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.8333333134651184,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.8333333134651184,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.6666666865348816,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.8333333134651184,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 1.0,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 1.0,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.8333333134651184,
+                                "y": 0.0
+                            }
+                        ]
+                    ]
                 },
-                "type": "Components::EnemyHealth"
+                "type": "Components::TextureAtlas"
+            },
+            {
+                "data": {
+                    "position": {
+                        "x": 2309.09033203125,
+                        "y": 1793.9288330078125
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 250.0,
+                        "y": 250.0
+                    }
+                },
+                "type": "Components::Transform2D"
             }
         ],
         "filepath": "prefabs/slingshot_monkey.json",
