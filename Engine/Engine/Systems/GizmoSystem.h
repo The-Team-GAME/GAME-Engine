@@ -29,6 +29,7 @@
 #include "../GUI/ViewportPanel.h"
 #include "../ImGuiManager.h"
 #include "../GUI/ViewportToolbar.h"
+#include "../GUI/ManualColliderPanel.h"
 #include "../UndoManager/UndoManager.h"
 #include "../ProjectSaveManager.h"
 #include "GizmoUtils.h"
@@ -163,6 +164,12 @@ namespace Engine
 
         // if tilemap mode is enabled, remove gizmo and return
         if (TilemapPanel::is_tilemap_mode_enabled()) {
+          entity.remove_component<Components::Gizmo>();
+          return;
+        }
+
+        // if pointer tool is active in manual collider mode, suppress gizmo drag
+        if (ManualColliderPanel::is_pointer_tool_active()) {
           entity.remove_component<Components::Gizmo>();
           return;
         }
