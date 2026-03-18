@@ -111258,7 +111258,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "lazy_monkey"
+                "name": "lazy_monkey",
+                "prefab_reference": {
+                    "id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                    "filepath": "prefabs/lazy_monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -112550,7 +112559,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "lazy_monkey"
+                "name": "lazy_monkey",
+                "prefab_reference": {
+                    "id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                    "filepath": "prefabs/lazy_monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -114135,7 +114153,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "spray can monkey"
+                "name": "spray can monkey",
+                "prefab_reference": {
+                    "id": "89422b47-e4df-40afa-bf83-340b457c61f8",
+                    "filepath": "prefabs/spray can monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -115720,7 +115747,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "spray can monkey"
+                "name": "spray can monkey",
+                "prefab_reference": {
+                    "id": "89422b47-e4df-40afa-bf83-340b457c61f8",
+                    "filepath": "prefabs/spray can monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -117012,7 +117048,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "lazy_monkey"
+                "name": "lazy_monkey",
+                "prefab_reference": {
+                    "id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                    "filepath": "prefabs/lazy_monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -118304,7 +118349,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "lazy_monkey"
+                "name": "lazy_monkey",
+                "prefab_reference": {
+                    "id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                    "filepath": "prefabs/lazy_monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -119596,7 +119650,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "lazy_monkey"
+                "name": "lazy_monkey",
+                "prefab_reference": {
+                    "id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                    "filepath": "prefabs/lazy_monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -120888,7 +120951,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "lazy_monkey"
+                "name": "lazy_monkey",
+                "prefab_reference": {
+                    "id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                    "filepath": "prefabs/lazy_monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -122180,7 +122252,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "lazy_monkey"
+                "name": "lazy_monkey",
+                "prefab_reference": {
+                    "id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                    "filepath": "prefabs/lazy_monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -123472,7 +123553,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "lazy_monkey"
+                "name": "lazy_monkey",
+                "prefab_reference": {
+                    "id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                    "filepath": "prefabs/lazy_monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -124764,7 +124854,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "lazy_monkey"
+                "name": "lazy_monkey",
+                "prefab_reference": {
+                    "id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                    "filepath": "prefabs/lazy_monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -126349,7 +126448,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "spray can monkey"
+                "name": "spray can monkey",
+                "prefab_reference": {
+                    "id": "89422b47-e4df-40afa-bf83-340b457c61f8",
+                    "filepath": "prefabs/spray can monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -127641,7 +127749,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "lazy_monkey"
+                "name": "lazy_monkey",
+                "prefab_reference": {
+                    "id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                    "filepath": "prefabs/lazy_monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -129226,7 +129343,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "spray can monkey"
+                "name": "spray can monkey",
+                "prefab_reference": {
+                    "id": "89422b47-e4df-40afa-bf83-340b457c61f8",
+                    "filepath": "prefabs/spray can monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -130518,7 +130644,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "lazy_monkey"
+                "name": "lazy_monkey",
+                "prefab_reference": {
+                    "id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                    "filepath": "prefabs/lazy_monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -131810,7 +131945,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "lazy_monkey"
+                "name": "lazy_monkey",
+                "prefab_reference": {
+                    "id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                    "filepath": "prefabs/lazy_monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -133102,7 +133246,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "lazy_monkey"
+                "name": "lazy_monkey",
+                "prefab_reference": {
+                    "id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                    "filepath": "prefabs/lazy_monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -134394,7 +134547,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "lazy_monkey"
+                "name": "lazy_monkey",
+                "prefab_reference": {
+                    "id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                    "filepath": "prefabs/lazy_monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -135686,7 +135848,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "lazy_monkey"
+                "name": "lazy_monkey",
+                "prefab_reference": {
+                    "id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                    "filepath": "prefabs/lazy_monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -137011,7 +137182,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "PunchingBag"
+                "name": "PunchingBag",
+                "prefab_reference": {
+                    "id": "f37cff6e-616d-4014b-96a4-13286958943e",
+                    "filepath": "prefabs/PunchingBag.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -138303,7 +138483,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "lazy_monkey"
+                "name": "lazy_monkey",
+                "prefab_reference": {
+                    "id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                    "filepath": "prefabs/lazy_monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -139595,7 +139784,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "lazy_monkey"
+                "name": "lazy_monkey",
+                "prefab_reference": {
+                    "id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                    "filepath": "prefabs/lazy_monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -140887,7 +141085,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "lazy_monkey"
+                "name": "lazy_monkey",
+                "prefab_reference": {
+                    "id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                    "filepath": "prefabs/lazy_monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -142472,7 +142679,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "spray can monkey"
+                "name": "spray can monkey",
+                "prefab_reference": {
+                    "id": "89422b47-e4df-40afa-bf83-340b457c61f8",
+                    "filepath": "prefabs/spray can monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -143764,7 +143980,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "lazy_monkey"
+                "name": "lazy_monkey",
+                "prefab_reference": {
+                    "id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                    "filepath": "prefabs/lazy_monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -145349,7 +145574,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "spray can monkey"
+                "name": "spray can monkey",
+                "prefab_reference": {
+                    "id": "89422b47-e4df-40afa-bf83-340b457c61f8",
+                    "filepath": "prefabs/spray can monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -146934,7 +147168,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "spray can monkey"
+                "name": "spray can monkey",
+                "prefab_reference": {
+                    "id": "89422b47-e4df-40afa-bf83-340b457c61f8",
+                    "filepath": "prefabs/spray can monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -148226,7 +148469,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "lazy_monkey"
+                "name": "lazy_monkey",
+                "prefab_reference": {
+                    "id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                    "filepath": "prefabs/lazy_monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -149811,7 +150063,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "spray can monkey"
+                "name": "spray can monkey",
+                "prefab_reference": {
+                    "id": "89422b47-e4df-40afa-bf83-340b457c61f8",
+                    "filepath": "prefabs/spray can monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -151103,7 +151364,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "lazy_monkey"
+                "name": "lazy_monkey",
+                "prefab_reference": {
+                    "id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                    "filepath": "prefabs/lazy_monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -152395,7 +152665,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "lazy_monkey"
+                "name": "lazy_monkey",
+                "prefab_reference": {
+                    "id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                    "filepath": "prefabs/lazy_monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -153687,7 +153966,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "lazy_monkey"
+                "name": "lazy_monkey",
+                "prefab_reference": {
+                    "id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                    "filepath": "prefabs/lazy_monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -154979,7 +155267,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "lazy_monkey"
+                "name": "lazy_monkey",
+                "prefab_reference": {
+                    "id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                    "filepath": "prefabs/lazy_monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -156564,7 +156861,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "spray can monkey"
+                "name": "spray can monkey",
+                "prefab_reference": {
+                    "id": "89422b47-e4df-40afa-bf83-340b457c61f8",
+                    "filepath": "prefabs/spray can monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -158149,7 +158455,16 @@
                 "layers": [
                     "enemy"
                 ],
-                "name": "spray can monkey"
+                "name": "spray can monkey",
+                "prefab_reference": {
+                    "id": "89422b47-e4df-40afa-bf83-340b457c61f8",
+                    "filepath": "prefabs/spray can monkey.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -265564,7 +265879,16 @@
                 "layers": [
                     "player"
                 ],
-                "name": "player_with_hitbox"
+                "name": "player_with_hitbox",
+                "prefab_reference": {
+                    "id": "59fcc5a1-1735-40361-987d-3a72895b2523",
+                    "filepath": "prefabs/player_with_hitbox.json",
+                    "overrides": {
+                        "Components::Transform2D": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
