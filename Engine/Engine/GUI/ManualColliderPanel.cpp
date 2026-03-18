@@ -55,6 +55,9 @@ namespace ManualColliderPanel {
     // Scale-change tracking for AABB/OBB sync (Transform2D.scale → BoxCollider.width/height)
     std::unordered_map<Engine::ECS::EntityID, Math::Vec2D> prev_scales;
 
+    // Rotation-change tracking for OBB polygon sync
+    std::unordered_map<Engine::ECS::EntityID, float> prev_rotations;
+
     // Pointer tool drag state — Polygon vertex editing
     int drag_vertex_idx = -1;
 
@@ -141,6 +144,162 @@ namespace ManualColliderPanel {
         col->polygon.rotation = tr->rotation;
       }
       prev_scales[entity.get_id()] = tr->scale;
+    }
+
+    // ---- Helper: ensure Transform2D.scale matches collider bounds ----
+    // Called every frame to guarantee the gizmo system sees correct dimensions.
+    void force_sync_scale(Engine::ECS::Entity entity,
+      Components::Transform2D* tr,
+      Components::BoxCollider* col) {
+      // Skip if the gizmo is actively being dragged (scale tool changes tr->scale)
+      auto* gizmo = entity.get_component<Components::Gizmo>();
+      if (gizmo && gizmo->is_dragging) return;
+
+      float want_w, want_h;
+      if (col->type == Components::ColliderType::POLYGON && !col->polygon.vertices.empty()) {
+        float minX = col->polygon.vertices[0].x, maxX = minX;
+        float minY = col->polygon.vertices[0].y, maxY = minY;
+        for (const auto& v : col->polygon.vertices) {
+          if (v.x < minX) minX = v.x; if (v.x > maxX) maxX = v.x;
+          if (v.y < minY) minY = v.y; if (v.y > maxY) maxY = v.y;
+        }
+        want_w = maxX - minX;
+        want_h = maxY - minY;
+      }
+      else {
+        want_w = col->width;
+        want_h = col->height;
+      }
+      constexpr float eps = 0.01f;
+      if (std::abs(tr->scale.x - want_w) > eps || std::abs(tr->scale.y - want_h) > eps) {
+        tr->scale = { want_w, want_h };
+        prev_scales[entity.get_id()] = tr->scale;
+      }
+    }
+
+    // ---- Gizmo visual constants (match GizmoComponents defaults) ----
+    constexpr float GIZMO_HANDLE_SZ       = 10.0f;
+    constexpr float GIZMO_ARROW_LEN_FAC   = 0.6f;
+    constexpr float GIZMO_ARROW_EXTRA     = 18.0f;
+    constexpr float GIZMO_ARROW_HEAD      = 12.0f;
+    constexpr float GIZMO_ARROW_THICK     = 3.0f;
+    constexpr float GIZMO_RING_PAD        = 10.0f;
+    constexpr float GIZMO_RING_THICK      = 2.0f;
+    constexpr float GIZMO_KNOB_RADIUS     = 8.0f;
+    constexpr float GIZMO_KNOB_OFFSET     = 8.0f;
+    const Math::Vec4D GIZMO_COL_NORMAL    = { 0.1f, 0.8f, 1.0f, 1.0f };
+    const Math::Vec4D GIZMO_COL_HOVER     = { 1.0f, 0.9f, 0.1f, 1.0f };
+    const Math::Vec4D GIZMO_COL_OUTLINE   = { 0.0f, 1.0f, 0.0f, 1.0f };
+    const Math::Vec4D GIZMO_COL_X_AXIS    = { 0.2f, 1.0f, 0.2f, 1.0f };
+    const Math::Vec4D GIZMO_COL_Y_AXIS    = { 1.0f, 0.2f, 0.2f, 1.0f };
+    constexpr float kPi = 3.14159265f;
+
+    // ---- Helper: draw gizmo tool visuals for a ManualCollider entity ----
+    void draw_gizmo_tools(Components::Transform2D* tr, Components::BoxCollider* col,
+      Engine::ECS::Entity entity) {
+      auto gizmo_mode = ViewportToolbar::get_gizmo_mode();
+      auto* gizmo = entity.get_component<Components::Gizmo>();
+
+      // Compute effective half-extents from collider
+      float hw, hh;
+      Math::Vec2D center = tr->position + col->offset;
+      if (col->type == Components::ColliderType::POLYGON && !col->polygon.vertices.empty()) {
+        float minX = col->polygon.vertices[0].x, maxX = minX;
+        float minY = col->polygon.vertices[0].y, maxY = minY;
+        for (const auto& v : col->polygon.vertices) {
+          if (v.x < minX) minX = v.x; if (v.x > maxX) maxX = v.x;
+          if (v.y < minY) minY = v.y; if (v.y > maxY) maxY = v.y;
+        }
+        hw = (maxX - minX) * 0.5f;
+        hh = (maxY - minY) * 0.5f;
+      }
+      else {
+        hw = col->width * 0.5f;
+        hh = col->height * 0.5f;
+      }
+
+      // Local axes from rotation
+      float ang = tr->rotation * kPi / 180.0f;
+      Math::Vec2D xdir = { std::cos(ang), std::sin(ang) };
+      Math::Vec2D ydir = { -std::sin(ang), std::cos(ang) };
+
+      // Rotated corners
+      Math::Vec2D tl_r = { center.x + (-hw)*xdir.x + (-hh)*ydir.x, center.y + (-hw)*xdir.y + (-hh)*ydir.y };
+      Math::Vec2D tr_r = { center.x + (hw)*xdir.x + (-hh)*ydir.x,  center.y + (hw)*xdir.y + (-hh)*ydir.y };
+      Math::Vec2D br_r = { center.x + (hw)*xdir.x + (hh)*ydir.x,   center.y + (hw)*xdir.y + (hh)*ydir.y };
+      Math::Vec2D bl_r = { center.x + (-hw)*xdir.x + (hh)*ydir.x,  center.y + (-hw)*xdir.y + (hh)*ydir.y };
+      Math::Vec2D mid_top   = { (tl_r.x + tr_r.x)*0.5f, (tl_r.y + tr_r.y)*0.5f };
+      Math::Vec2D mid_right = { (tr_r.x + br_r.x)*0.5f, (tr_r.y + br_r.y)*0.5f };
+
+      // Green selection outline (matches standard gizmo)
+      Engine::Graphics::draw_rect_outline(center, { hw*2, hh*2 }, tr->rotation, 2.0f, GIZMO_COL_OUTLINE);
+
+      // ---- Scale mode: 4 corner handles ----
+      if (gizmo_mode == Components::GizmoMode::Scale) {
+        auto draw_handle = [&](Math::Vec2D pos, Components::GizmoHandleType ht) {
+          bool hovered = gizmo && gizmo->hover_handle == ht;
+          Math::Vec4D c = hovered ? GIZMO_COL_HOVER : GIZMO_COL_NORMAL;
+          Engine::Graphics::draw_rect_outline(pos, { GIZMO_HANDLE_SZ, GIZMO_HANDLE_SZ }, tr->rotation, 2.0f, c);
+        };
+        draw_handle(tl_r, Components::GizmoHandleType::ScaleTL);
+        draw_handle(tr_r, Components::GizmoHandleType::ScaleTR);
+        draw_handle(br_r, Components::GizmoHandleType::ScaleBR);
+        draw_handle(bl_r, Components::GizmoHandleType::ScaleBL);
+      }
+
+      // ---- Rotate mode: ring + crosshair + knob ----
+      if (gizmo_mode == Components::GizmoMode::Rotate) {
+        float ring_radius = std::max(hw, hh) + GIZMO_RING_PAD;
+        bool rot_hover = gizmo && gizmo->hover_handle == Components::GizmoHandleType::RotateHandle;
+        Math::Vec4D ring_col = rot_hover ? GIZMO_COL_HOVER : GIZMO_COL_NORMAL;
+
+        Engine::Graphics::draw_circle_outline(center, ring_radius, GIZMO_RING_THICK, ring_col, 64);
+
+        // Crosshair (local axes)
+        Engine::Graphics::draw_line(
+          { center.x - xdir.x*ring_radius, center.y - xdir.y*ring_radius },
+          { center.x + xdir.x*ring_radius, center.y + xdir.y*ring_radius },
+          1.5f, GIZMO_COL_X_AXIS);
+        Engine::Graphics::draw_line(
+          { center.x - ydir.x*ring_radius, center.y - ydir.y*ring_radius },
+          { center.x + ydir.x*ring_radius, center.y + ydir.y*ring_radius },
+          1.5f, GIZMO_COL_Y_AXIS);
+
+        // Knob
+        Math::Vec2D knob = { center.x - ydir.x*(ring_radius + GIZMO_KNOB_OFFSET),
+                             center.y - ydir.y*(ring_radius + GIZMO_KNOB_OFFSET) };
+        Engine::Graphics::draw_circle_outline(knob, GIZMO_KNOB_RADIUS, 2.0f, ring_col, 24);
+      }
+
+      // ---- ArrowMove mode: X and Y axis arrows ----
+      if (gizmo_mode == Components::GizmoMode::ArrowMove) {
+        float len_x = std::max(12.0f, hw*2 * GIZMO_ARROW_LEN_FAC) + GIZMO_ARROW_EXTRA;
+        float len_y = std::max(12.0f, hh*2 * GIZMO_ARROW_LEN_FAC) + GIZMO_ARROW_EXTRA;
+
+        // X axis
+        {
+          bool hov = gizmo && gizmo->hover_handle == Components::GizmoHandleType::AxisX;
+          Math::Vec4D c = hov ? GIZMO_COL_HOVER : GIZMO_COL_NORMAL;
+          Math::Vec2D from = mid_right;
+          Math::Vec2D shaft = { from.x + xdir.x*(len_x*0.5f), from.y + xdir.y*(len_x*0.5f) };
+          Engine::Graphics::draw_rect_outline(shaft, { len_x, GIZMO_ARROW_THICK }, tr->rotation, GIZMO_ARROW_THICK, c);
+          Math::Vec2D tip = { from.x + xdir.x*len_x, from.y + xdir.y*len_x };
+          Engine::Graphics::draw_rect_outline(tip, { GIZMO_ARROW_HEAD, GIZMO_ARROW_THICK }, tr->rotation + 45.0f, GIZMO_ARROW_THICK, c);
+          Engine::Graphics::draw_rect_outline(tip, { GIZMO_ARROW_HEAD, GIZMO_ARROW_THICK }, tr->rotation - 45.0f, GIZMO_ARROW_THICK, c);
+        }
+
+        // Y axis
+        {
+          bool hov = gizmo && gizmo->hover_handle == Components::GizmoHandleType::AxisY;
+          Math::Vec4D c = hov ? GIZMO_COL_HOVER : GIZMO_COL_NORMAL;
+          Math::Vec2D from = mid_top;
+          Math::Vec2D shaft = { from.x - ydir.x*(len_y*0.5f), from.y - ydir.y*(len_y*0.5f) };
+          Engine::Graphics::draw_rect_outline(shaft, { len_y, GIZMO_ARROW_THICK }, tr->rotation + 90.0f, GIZMO_ARROW_THICK, c);
+          Math::Vec2D tip = { from.x - ydir.x*len_y, from.y - ydir.y*len_y };
+          Engine::Graphics::draw_rect_outline(tip, { GIZMO_ARROW_HEAD, GIZMO_ARROW_THICK }, tr->rotation + 90.0f + 45.0f, GIZMO_ARROW_THICK, c);
+          Engine::Graphics::draw_rect_outline(tip, { GIZMO_ARROW_HEAD, GIZMO_ARROW_THICK }, tr->rotation + 90.0f - 45.0f, GIZMO_ARROW_THICK, c);
+        }
+      }
     }
 
     // ---- Helper: create a ManualCollider entity ----
@@ -471,6 +630,11 @@ namespace ManualColliderPanel {
           tr->rotation, thick, color);
       }
 
+      // ---- Gizmo tool visuals (selected entity, non-pointer mode) ----
+      if (is_sel && mode_enabled && !pointer_tool_active && entity.has_component<Components::Gizmo>()) {
+        draw_gizmo_tools(tr, col, entity);
+      }
+
       // ---- Pointer-tool handles (selected entity only) ----
       if (!is_sel || !pointer_tool_active || !mode_enabled) continue;
 
@@ -523,18 +687,31 @@ namespace ManualColliderPanel {
       else if (Engine::Input::is_pressed_raw(K::W)) {
         pointer_tool_active = false;
         ViewportToolbar::set_gizmo_mode(Components::GizmoMode::GrabMove);
+        // Re-add Gizmo so the manipulation system picks the entity up
+        Engine::ECS::Entity sel(selected_id);
+        if (sel.is_valid() && sel.has_component<Components::Transform2D>() && !sel.has_component<Components::Gizmo>())
+          Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(selected_id);
       }
       else if (Engine::Input::is_pressed_raw(K::E)) {
         pointer_tool_active = false;
         ViewportToolbar::set_gizmo_mode(Components::GizmoMode::ArrowMove);
+        Engine::ECS::Entity sel(selected_id);
+        if (sel.is_valid() && sel.has_component<Components::Transform2D>() && !sel.has_component<Components::Gizmo>())
+          Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(selected_id);
       }
       else if (Engine::Input::is_pressed_raw(K::R)) {
         pointer_tool_active = false;
         ViewportToolbar::set_gizmo_mode(Components::GizmoMode::Rotate);
+        Engine::ECS::Entity sel(selected_id);
+        if (sel.is_valid() && sel.has_component<Components::Transform2D>() && !sel.has_component<Components::Gizmo>())
+          Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(selected_id);
       }
       else if (Engine::Input::is_pressed_raw(K::T)) {
         pointer_tool_active = false;
         ViewportToolbar::set_gizmo_mode(Components::GizmoMode::Scale);
+        Engine::ECS::Entity sel(selected_id);
+        if (sel.is_valid() && sel.has_component<Components::Transform2D>() && !sel.has_component<Components::Gizmo>())
+          Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(selected_id);
       }
 
       // Delete selected collider
@@ -576,12 +753,41 @@ namespace ManualColliderPanel {
       }
     }
 
-    // ---- Scale sync: Transform2D.scale → BoxCollider.width/height (AABB/OBB) ----
-    // Runs every frame so the gizmo Scale tool keeps collider geometry in sync.
+    // ---- Sync selected_id from gizmo selection ----
+    // If the entity with the Gizmo component is a ManualCollider, adopt it as our selection.
+    Engine::ECS::for_each_entity_with<Components::Gizmo>([](Engine::ECS::Entity gizmo_entity) {
+      if (gizmo_entity.has_component<Components::ManualCollider>()) {
+        selected_id = gizmo_entity.get_id();
+      }
+    });
+
+    // ---- Scale + Rotation sync for AABB/OBB ----
+    // Runs every frame so the gizmo Scale/Rotate tools keep collider geometry in sync.
     for (auto& entity : Engine::ECS::get_entities_with<Components::ManualCollider>()) {
       auto* tr = entity.get_component<Components::Transform2D>();
       auto* col = entity.get_component<Components::BoxCollider>();
       if (!tr || !col) continue;
+
+      // Force-sync: ensure tr->scale matches collider bounds so the gizmo system
+      // always sees correct dimensions (fixes gizmo rendering for collider entities).
+      force_sync_scale(entity, tr, col);
+
+      // --- Rotation sync (OBB only) ---
+      if (col->type == Components::ColliderType::OBB) {
+        auto rot_it = prev_rotations.find(entity.get_id());
+        if (rot_it == prev_rotations.end()) {
+          prev_rotations[entity.get_id()] = tr->rotation;
+        }
+        else {
+          constexpr float eps = 0.001f;
+          if (std::abs(rot_it->second - tr->rotation) > eps) {
+            col->polygon.rotation = tr->rotation;
+            rot_it->second = tr->rotation;
+          }
+        }
+      }
+
+      // --- Scale sync (AABB/OBB only) ---
       if (col->type == Components::ColliderType::POLYGON) continue;
 
       auto it = prev_scales.find(entity.get_id());

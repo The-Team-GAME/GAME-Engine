@@ -431,6 +431,9 @@ namespace Engine
 
         if (!tr || !gizmo) return;
 
+        // ManualCollider entities draw their own gizmo visuals in ManualColliderPanel::draw_overlay()
+        if (entity.has_component<Components::ManualCollider>()) return;
+
         // UI entities draw gizmos in screen space (not affected by camera)
         const bool is_ui = entity.has_component<Components::UI>();
 
