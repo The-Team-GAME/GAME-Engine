@@ -122,8 +122,10 @@ namespace ManualColliderPanel {
                                   center.y + (hw)*xdir.y + (hh)*ydir.y };
       const Math::Vec2D bl_r = { center.x + (-hw) * xdir.x + (hh)*ydir.x,
                                   center.y + (-hw) * xdir.y + (hh)*ydir.y };
-      const Math::Vec2D mid_top_r = { (tl_r.x + tr_r.x) * 0.5f, (tl_r.y + tr_r.y) * 0.5f };
-      const Math::Vec2D mid_right_r = { (tr_r.x + br_r.x) * 0.5f, (tr_r.y + br_r.y) * 0.5f };
+      const Math::Vec2D mid_top_r    = { (tl_r.x + tr_r.x) * 0.5f, (tl_r.y + tr_r.y) * 0.5f };
+      const Math::Vec2D mid_right_r  = { (tr_r.x + br_r.x) * 0.5f, (tr_r.y + br_r.y) * 0.5f };
+      const Math::Vec2D mid_bottom_r = { (bl_r.x + br_r.x) * 0.5f, (bl_r.y + br_r.y) * 0.5f };
+      const Math::Vec2D mid_left_r   = { (tl_r.x + bl_r.x) * 0.5f, (tl_r.y + bl_r.y) * 0.5f };
 
       // Selection outline (green, using collider dims)
       Engine::Graphics::draw_rect_outline(center, { col->width, col->height },
@@ -138,10 +140,14 @@ namespace ManualColliderPanel {
           Engine::Graphics::draw_rect_outline(c,
             { gizmo->handle_size, gizmo->handle_size }, tr->rotation, 2.0f, hcol);
           };
-        draw_handle(tl_r, gizmo->hover_handle == Components::GizmoHandleType::ScaleTL);
-        draw_handle(tr_r, gizmo->hover_handle == Components::GizmoHandleType::ScaleTR);
-        draw_handle(br_r, gizmo->hover_handle == Components::GizmoHandleType::ScaleBR);
-        draw_handle(bl_r, gizmo->hover_handle == Components::GizmoHandleType::ScaleBL);
+        draw_handle(tl_r,         gizmo->hover_handle == Components::GizmoHandleType::ScaleTL);
+        draw_handle(tr_r,         gizmo->hover_handle == Components::GizmoHandleType::ScaleTR);
+        draw_handle(br_r,         gizmo->hover_handle == Components::GizmoHandleType::ScaleBR);
+        draw_handle(bl_r,         gizmo->hover_handle == Components::GizmoHandleType::ScaleBL);
+        draw_handle(mid_top_r,    gizmo->hover_handle == Components::GizmoHandleType::ScaleTop);
+        draw_handle(mid_right_r,  gizmo->hover_handle == Components::GizmoHandleType::ScaleRight);
+        draw_handle(mid_bottom_r, gizmo->hover_handle == Components::GizmoHandleType::ScaleBottom);
+        draw_handle(mid_left_r,   gizmo->hover_handle == Components::GizmoHandleType::ScaleLeft);
       }
 
       // ---- Rotation ring + crosshair + knob ----
