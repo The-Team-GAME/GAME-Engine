@@ -340,15 +340,15 @@ namespace ManualColliderPanel {
 
     // Layer assignment
     {
-      const auto& layer_names = get_layer_names();
+      const auto& layer_names_sel = get_layer_names();
       auto layers = sel.get_layers();
 
       // Find the first layer this entity is on
       std::string cur_layer;
       for (Engine::ECS::LayerID lid = 0;
-        lid < static_cast<Engine::ECS::LayerID>(layer_names.size()); ++lid) {
-        if (!layer_names[lid].empty() && layers.test(lid)) {
-          cur_layer = layer_names[lid];
+        lid < static_cast<Engine::ECS::LayerID>(layer_names_sel.size()); ++lid) {
+        if (!layer_names_sel[lid].empty() && layers.test(lid)) {
+          cur_layer = layer_names_sel[lid];
           break;
         }
       }
@@ -359,8 +359,8 @@ namespace ManualColliderPanel {
       ImGui::SetNextItemWidth(180.0f);
       if (ImGui::BeginCombo("##mc_sel_layer", cur_layer.c_str())) {
         for (Engine::ECS::LayerID lid = 0;
-          lid < static_cast<Engine::ECS::LayerID>(layer_names.size()); ++lid) {
-          const std::string& lname = layer_names[lid];
+          lid < static_cast<Engine::ECS::LayerID>(layer_names_sel.size()); ++lid) {
+          const std::string& lname = layer_names_sel[lid];
           if (lname.empty()) continue;
           bool is_cur = (lname == cur_layer);
           if (ImGui::Selectable(lname.c_str(), is_cur) && lname != cur_layer) {
@@ -383,9 +383,14 @@ namespace ManualColliderPanel {
       mark_dirty();
     }
 
-    // Rotation — hidden and locked for AABB
+    // Rotation — hidden and locked for AABB; snaps to 45° increments
     if (col->type == Components::ColliderType::OBB) {
       if (ImGui::DragFloat("Rotation##mc", &tr->rotation, 0.5f)) {
+        col->polygon.rotation = tr->rotation;
+        mark_dirty();
+      }
+      if (ImGui::IsItemDeactivatedAfterEdit()) {
+        tr->rotation = std::round(tr->rotation / 45.0f) * 45.0f;
         col->polygon.rotation = tr->rotation;
         mark_dirty();
       }
