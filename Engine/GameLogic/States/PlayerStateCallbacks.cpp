@@ -32,19 +32,10 @@ namespace PlayerStateCallbacks
   // ========================================================================
   // Taking Updates in to handle the states
   // ========================================================================
-  void take_input(ECS::Entity entity)
+  void handle_cooldowns(ECS::Entity entity)
   {
-    Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
-    Components::RigidBody* player_rigid = entity.get_component<Components::RigidBody>();
     Components::Player* player_comp = entity.get_component<Components::Player>();
-    Components::Flip* flip = entity.get_component<Components::Flip>();
-    Components::Health* health = entity.get_component<Components::Health>();
-
-    if (!state_machine || !player_rigid || !player_comp || !flip || !health)
-    {
-      Log::error("PlayerStateCallbacks: Missing required components on entity {}", entity.get_id());
-      return;
-    }
+    assert(player_comp);
 
     // Handling cooldowns
     if (!player_comp->dash.ready())
@@ -58,6 +49,21 @@ namespace PlayerStateCallbacks
     if (!player_comp->smash.ready())
     {
       player_comp->smash.cd_timer -= Time::get_fixed_dt();
+    }
+  }
+
+  void take_input(ECS::Entity entity)
+  {
+    Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
+    Components::RigidBody* player_rigid = entity.get_component<Components::RigidBody>();
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    Components::Flip* flip = entity.get_component<Components::Flip>();
+    Components::Health* health = entity.get_component<Components::Health>();
+
+    if (!state_machine || !player_rigid || !player_comp || !flip || !health)
+    {
+      Log::error("PlayerStateCallbacks: Missing required components on entity {}", entity.get_id());
+      return;
     }
 
 #pragma region Atk Input
@@ -187,6 +193,7 @@ namespace PlayerStateCallbacks
   }
 
   inline void idle_on_update(Engine::ECS::Entity entity) {
+    handle_cooldowns(entity);
     take_input(entity);
   }
 #pragma endregion
@@ -204,6 +211,7 @@ namespace PlayerStateCallbacks
 
   inline void walking_on_update(Engine::ECS::Entity entity)
   {
+    handle_cooldowns(entity);
     // we set an exit criteria for the walking state instead of reseting it every frame as the animation sequence needs the state to be constant for this to work
     Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
     assert(sm);
@@ -249,6 +257,7 @@ namespace PlayerStateCallbacks
 
   inline void jumping_on_update(Engine::ECS::Entity entity)
   {
+    handle_cooldowns(entity);
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
 
@@ -284,6 +293,7 @@ namespace PlayerStateCallbacks
 
   inline void falling_on_update(ECS::Entity entity)
   {
+    handle_cooldowns(entity);
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
     if (rigid->on_ground)
@@ -329,6 +339,7 @@ namespace PlayerStateCallbacks
 
   inline void dash_on_update(ECS::Entity entity)
   {
+    handle_cooldowns(entity);
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
     if (player_comp->dash.timer_end())
@@ -379,6 +390,7 @@ namespace PlayerStateCallbacks
 
   inline void stunned_on_update(ECS::Entity entity)
   {
+    handle_cooldowns(entity);
     Components::Animation* animation = entity.get_component<Components::Animation>();
     assert(animation);
     if (animation->has_ended()) 
@@ -422,6 +434,7 @@ namespace PlayerStateCallbacks
   }
 
   inline void attack1_on_update(Engine::ECS::Entity entity) {
+    handle_cooldowns(entity);
     Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
     Components::Animation* animation = entity.get_component<Components::Animation>();
     assert(state_machine);
@@ -448,6 +461,7 @@ namespace PlayerStateCallbacks
   // ========================================================================
 
   inline void attack2_on_enter(Engine::ECS::Entity entity) {
+    handle_cooldowns(entity);
     Log::info("Player: Attack 2 (Second Punch)");
     Components::Player* player_comp = entity.get_component<Components::Player>();
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
@@ -507,6 +521,7 @@ namespace PlayerStateCallbacks
 
   inline void pre_attack3_on_update(Engine::ECS::Entity entity) 
   {
+    handle_cooldowns(entity);
     Components::Animation* animation = entity.get_component<Components::Animation>();
     assert(animation);
     if (animation->has_ended())
@@ -582,6 +597,7 @@ namespace PlayerStateCallbacks
 
   inline void pre_uppercut_on_update(ECS::Entity entity)
   {
+    handle_cooldowns(entity);
     Components::Animation* animation = entity.get_component<Components::Animation>();
     assert(animation);
     if (animation->has_ended())
@@ -726,6 +742,7 @@ namespace PlayerStateCallbacks
 
   inline void leap_on_update(ECS::Entity entity)
   {
+    handle_cooldowns(entity);
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
     if (player_comp->leap.timer_end())
