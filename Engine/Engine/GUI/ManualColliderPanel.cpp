@@ -40,7 +40,8 @@ namespace ManualColliderPanel {
   namespace {
 
     Engine::ECS::EntityID selected_id = Engine::ECS::INVALID_ENTITY;
-    std::string placement_layer = "default";
+    // std::string placement_layer = "default";
+    std::string placement_layer = "tilemap_foreground_mid";
 
     // Scale-change tracking: Transform2D.scale → BoxCollider.width/height
     std::unordered_map<Engine::ECS::EntityID, Math::Vec2D> prev_scales;
