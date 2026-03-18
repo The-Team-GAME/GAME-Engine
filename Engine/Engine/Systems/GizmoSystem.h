@@ -309,8 +309,12 @@ namespace Engine
         // ---------------- Drag ----------------
         const bool held = Engine::Input::is_held(KeyCode::MouseLeft);
 
-        // When mouse is released, send modification event with undo support
+        // When mouse is released, snap rotation (if rotating) and send modification event with undo support
         if (!held && gizmo->is_dragging && gizmo->active_handle != Components::GizmoHandleType::None) {
+          if (gizmo->active_handle == Components::GizmoHandleType::RotateHandle) {
+            tr->rotation = std::round(tr->rotation / 45.0f) * 45.0f;
+          }
+
           // Capture final transform state
           Components::Transform2D final_transform = *tr;
 
@@ -389,6 +393,13 @@ namespace Engine
             delta_deg = std::round(delta_deg / GizmoUtil::kSnapAngle) * GizmoUtil::kSnapAngle;
           }
           tr->rotation = gizmo->start_rotation + delta_deg;
+          // Snap to 45° when close
+          {
+            const float snap = std::round(tr->rotation / 45.0f) * 45.0f;
+            const float diff = std::abs(tr->rotation - snap);
+            constexpr float snap_threshold = 6.0f; // degrees
+            if (diff <= snap_threshold) tr->rotation = snap;
+          }
         } break;
 
         case Components::GizmoHandleType::ScaleTL:

@@ -383,14 +383,9 @@ namespace ManualColliderPanel {
       mark_dirty();
     }
 
-    // Rotation — hidden and locked for AABB; snaps to 45° increments
+    // Rotation — hidden and locked for AABB
     if (col->type == Components::ColliderType::OBB) {
       if (ImGui::DragFloat("Rotation##mc", &tr->rotation, 0.5f)) {
-        col->polygon.rotation = tr->rotation;
-        mark_dirty();
-      }
-      if (ImGui::IsItemDeactivatedAfterEdit()) {
-        tr->rotation = std::round(tr->rotation / 45.0f) * 45.0f;
         col->polygon.rotation = tr->rotation;
         mark_dirty();
       }
