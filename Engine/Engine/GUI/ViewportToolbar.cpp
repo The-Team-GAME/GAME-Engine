@@ -19,8 +19,11 @@
 #include "LucideIcons.h"
 #include "ViewportPanel.h"
 #include "TilemapPanel.h"
+#include "ManualColliderPanel.h"
 #include "../ImGuiManager.h"
 #include "../Logger.h"
+#include "../InputManager.h"
+
 
 namespace ViewportToolbar {
 
@@ -144,6 +147,14 @@ namespace ViewportToolbar {
       ImGuiWindowFlags_NoCollapse |
       ImGuiWindowFlags_NoScrollbar |
       ImGuiWindowFlags_NoFocusOnAppearing;
+
+    // ---- Gizmo keybinds (outside ImGui window, raw input like TilemapPanel) ----
+    if (!TilemapPanel::is_tilemap_mode_enabled()) {
+      if (Engine::Input::is_pressed_raw(Engine::KeyCode::W)) current_gizmo_mode = Components::GizmoMode::GrabMove;
+      else if (Engine::Input::is_pressed_raw(Engine::KeyCode::E)) current_gizmo_mode = Components::GizmoMode::ArrowMove;
+      else if (Engine::Input::is_pressed_raw(Engine::KeyCode::R)) current_gizmo_mode = Components::GizmoMode::Rotate;
+      else if (Engine::Input::is_pressed_raw(Engine::KeyCode::T)) current_gizmo_mode = Components::GizmoMode::Scale;
+    }
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(TOOLBAR_PADDING, TOOLBAR_PADDING));
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(BUTTON_SPACING, BUTTON_SPACING));
