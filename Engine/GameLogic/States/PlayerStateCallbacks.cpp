@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------------
-// file:    PlayerStateCallbacks.h
+// file:    PlayerStateCallbacks.cpp
 // project: Monkey Stole My GPA
 //
 // author:  Cheng Ming Xian (90%)
@@ -16,6 +16,7 @@
 //-----------------------------------------------------------------------------------
 
 #include "pch.h"
+#include "PlayerStateCallbacks.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/HeartrateComponent.h"
 #include "../Components/HealthComponents.h"
@@ -54,9 +55,29 @@ namespace PlayerStateCallbacks
 
   void take_input(ECS::Entity entity)
   {
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    if (!player_comp)
+    {
+      Log::error("PlayerStateCallbacks: Missing Player component on entity {}", entity.get_id());
+      return;
+    }
+#ifndef GAME_BUILD
+    if (Engine::Input::is_pressed(Engine::KeyCode::F8))
+    {
+      if (player_comp->god_mode)
+      {
+        player_comp->god_mode = false;
+        Log::info("Player: God Mode Toggled Off");
+      }
+      else
+      {
+        player_comp->god_mode = true;
+        Log::info("Player: God Mode Toggled On");
+      }
+    }
+#endif
     Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
     Components::RigidBody* player_rigid = entity.get_component<Components::RigidBody>();
-    Components::Player* player_comp = entity.get_component<Components::Player>();
     Components::Flip* flip = entity.get_component<Components::Flip>();
     Components::Health* health = entity.get_component<Components::Health>();
 
@@ -66,6 +87,10 @@ namespace PlayerStateCallbacks
       return;
     }
 
+    if (player_comp->input_lock)
+    {
+      return;
+    }
 #pragma region Atk Input
     if (Engine::Input::is_pressed(Engine::KeyCode::K)
       && player_comp->uppercut.ready())
@@ -155,7 +180,9 @@ namespace PlayerStateCallbacks
     }
   }
 
+  // ===========================================================================================
   // Takes in the parent entity as well as the attack data of the attack to generate a hitbox
+  // ===========================================================================================
   ECS::Entity create_hitbox(ECS::Entity parent, Components::AttackData& atk_data)
   {
     Components::Transform2D* xform = parent.get_component<Components::Transform2D>();
@@ -181,6 +208,33 @@ namespace PlayerStateCallbacks
     // Knockback Y is always positive (up) in our config, but physics needs negative for up
     attack->knockback.y = -std::abs(attack->knockback.y);
     return hitbox;
+  }
+
+
+  // ===========================================================================================
+  // Controls the player's ability to provide inputs
+  // ===========================================================================================
+  void player_input_lock()
+  {
+    ECS::Entity player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+    Components::Player* player_comp = player_entity.get_component<Components::Player>();
+    if (!player_comp)
+    {
+      Log::error("PlayerStateCallbacks: Missing Player component on entity {}", player_entity.get_id());
+      return;
+    }
+    player_comp->input_lock = true;
+  }
+  void player_input_unlock()
+  {
+    ECS::Entity player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+    Components::Player* player_comp = player_entity.get_component<Components::Player>();
+    if (!player_comp)
+    {
+      Log::error("PlayerStateCallbacks: Missing Player component on entity {}", player_entity.get_id());
+      return;
+    }
+    player_comp->input_lock = false;
   }
 
 #pragma region idle state;

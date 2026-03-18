@@ -211,8 +211,6 @@ static void register_collision_callbacks()
   Engine::ECS::LayerRegistry::register_collision_callback("damage_player", "player",
     [](Engine::ECS::Entity attack_entity, Engine::ECS::Entity player_entity)
     {
-      Log::info("Player took damage!");
-
       Components::Attack* attack = attack_entity.get_component<Components::Attack>();
       Components::Health* health = player_entity.get_component<Components::Health>();
       Components::RigidBody* rigid = player_entity.get_component<Components::RigidBody>();
@@ -224,10 +222,10 @@ static void register_collision_callbacks()
       }
 
       if (health && rigid) {
-        if (!attack->should_apply_damage(player_entity) || player_comp->damage_immune) {
+        if (!attack->should_apply_damage(player_entity) || player_comp->damage_immune || player_comp->god_mode) {
           return;
         }
-
+        Log::info("Player took damage!");
         const int previous_health = health->value;
 
         // Decrease HP by 1 per hit
