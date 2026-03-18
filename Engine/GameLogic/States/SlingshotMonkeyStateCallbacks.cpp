@@ -239,7 +239,7 @@ namespace SlingshotMonkeyStateCallbacks
         initial_width,
         Slingshot_monkey->dash_indicator_height
       )
-      .add_component<Components::Texture>(Engine::Resources::load_texture("images/white.png")) // Use a white texture for colored rect
+      .add_component<Components::Texture>(Engine::Resources::get_rect_texture()) // Use a white texture for colored rect
       .add_component<Components::Color>(Math::Vec4D(1.0f, 0.3f, 0.3f, 0.5f)); // Semi-transparent red
 
     // Store initial direction for the indicator
