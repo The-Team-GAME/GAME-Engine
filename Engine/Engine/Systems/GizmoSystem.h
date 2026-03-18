@@ -425,6 +425,10 @@ namespace Engine
 
         if (!tr || !gizmo) return;
 
+        // ManualCollider entities are drawn by ManualColliderPanel::draw_overlay()
+        // which uses col->width/height directly for correct gizmo sizing.
+        if (entity.has_component<Components::ManualCollider>()) return;
+
         // UI entities draw gizmos in screen space (not affected by camera)
         const bool is_ui = entity.has_component<Components::UI>();
 

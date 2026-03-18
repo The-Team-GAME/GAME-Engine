@@ -17,6 +17,7 @@
 #include "../Precompiled.h"
 #include "ManualColliderPanel.h"
 #include "LucideIcons.h"
+#include "ViewportToolbar.h"
 #include "../ECS/ECS.h"
 #include "../Components/CollisionComponents.h"
 #include "../Components/SpatialComponents.h"
@@ -49,8 +50,8 @@ namespace ManualColliderPanel {
 
     // ---- Visual constants ----
     constexpr float OUTLINE_THICK = 2.0f;
-    constexpr float SEL_THICK     = 3.5f;
-    const Math::Vec4D COLOR_OUTLINE     = { 1.0f, 0.0f, 1.0f, 1.0f };   // Magenta
+    constexpr float SEL_THICK = 3.5f;
+    const Math::Vec4D COLOR_OUTLINE = { 1.0f, 0.0f, 1.0f, 1.0f };   // Magenta
     const Math::Vec4D COLOR_SEL_OUTLINE = { 1.0f, 0.55f, 1.0f, 1.0f };  // Bright magenta
 
     // ---- Helpers ----
@@ -68,9 +69,9 @@ namespace ManualColliderPanel {
     void sync_collider_from_scale(Engine::ECS::Entity entity,
       Components::Transform2D* tr,
       Components::BoxCollider* col) {
-      col->width  = tr->scale.x;
+      col->width = tr->scale.x;
       col->height = tr->scale.y;
-      col->aabb.half_width  = tr->scale.x * 0.5f;
+      col->aabb.half_width = tr->scale.x * 0.5f;
       col->aabb.half_height = tr->scale.y * 0.5f;
       if (col->type == Components::ColliderType::OBB) {
         col->polygon = Polygon::create_box(col->width, col->height);
@@ -86,10 +87,117 @@ namespace ManualColliderPanel {
       auto* gizmo = entity.get_component<Components::Gizmo>();
       if (gizmo && gizmo->is_dragging) return; // let the scale gizmo run freely
       constexpr float eps = 0.01f;
-      if (std::abs(tr->scale.x - col->width)  > eps ||
-          std::abs(tr->scale.y - col->height) > eps) {
+      if (std::abs(tr->scale.x - col->width) > eps ||
+        std::abs(tr->scale.y - col->height) > eps) {
         tr->scale = { col->width, col->height };
         prev_scales[entity.get_id()] = tr->scale;
+      }
+    }
+
+    // Draw gizmo handles for a selected ManualCollider entity using collider
+    // dimensions directly so the gizmo is always correctly sized regardless of
+    // tr->scale sync timing.
+    void draw_gizmo_tools(Engine::ECS::Entity entity,
+      Components::Transform2D* tr,
+      Components::BoxCollider* col) {
+      auto* gizmo = entity.get_component<Components::Gizmo>();
+      if (!gizmo) return;
+
+      constexpr float kPi = 3.14159265358979323846f;
+
+      const Math::Vec2D center = tr->position;
+      const float hw = col->width * 0.5f;
+      const float hh = col->height * 0.5f;
+      const float ang = tr->rotation * kPi / 180.0f;
+      const Math::Vec2D xdir = { std::cos(ang),  std::sin(ang) };   // local +X
+      const Math::Vec2D ydir = { -std::sin(ang), std::cos(ang) };   // local +Y
+
+      // Rotated corners & edge midpoints
+      const Math::Vec2D tl_r = { center.x + (-hw) * xdir.x + (-hh) * ydir.x,
+                                  center.y + (-hw) * xdir.y + (-hh) * ydir.y };
+      const Math::Vec2D tr_r = { center.x + (hw)*xdir.x + (-hh) * ydir.x,
+                                  center.y + (hw)*xdir.y + (-hh) * ydir.y };
+      const Math::Vec2D br_r = { center.x + (hw)*xdir.x + (hh)*ydir.x,
+                                  center.y + (hw)*xdir.y + (hh)*ydir.y };
+      const Math::Vec2D bl_r = { center.x + (-hw) * xdir.x + (hh)*ydir.x,
+                                  center.y + (-hw) * xdir.y + (hh)*ydir.y };
+      const Math::Vec2D mid_top_r = { (tl_r.x + tr_r.x) * 0.5f, (tl_r.y + tr_r.y) * 0.5f };
+      const Math::Vec2D mid_right_r = { (tr_r.x + br_r.x) * 0.5f, (tr_r.y + br_r.y) * 0.5f };
+
+      // Selection outline (green, using collider dims)
+      Engine::Graphics::draw_rect_outline(center, { col->width, col->height },
+        tr->rotation, gizmo->outline_thickness, gizmo->outline_color);
+
+      const auto mode = ViewportToolbar::get_gizmo_mode();
+
+      // ---- Scale handles ----
+      if (mode == Components::GizmoMode::Scale) {
+        auto draw_handle = [&](const Math::Vec2D& c, bool hovered) {
+          const Math::Vec4D hcol = hovered ? gizmo->handle_hover_color : gizmo->handle_color;
+          Engine::Graphics::draw_rect_outline(c,
+            { gizmo->handle_size, gizmo->handle_size }, tr->rotation, 2.0f, hcol);
+          };
+        draw_handle(tl_r, gizmo->hover_handle == Components::GizmoHandleType::ScaleTL);
+        draw_handle(tr_r, gizmo->hover_handle == Components::GizmoHandleType::ScaleTR);
+        draw_handle(br_r, gizmo->hover_handle == Components::GizmoHandleType::ScaleBR);
+        draw_handle(bl_r, gizmo->hover_handle == Components::GizmoHandleType::ScaleBL);
+      }
+
+      // ---- Rotation ring + crosshair + knob ----
+      if (mode == Components::GizmoMode::Rotate) {
+        const float ring_r = 0.5f * std::max(col->width, col->height) + gizmo->rotate_ring_padding;
+        const Math::Vec2D knob = { center.x - ydir.x * (ring_r + gizmo->rotate_knob_offset),
+                                   center.y - ydir.y * (ring_r + gizmo->rotate_knob_offset) };
+        const Math::Vec4D ring_col = (gizmo->hover_handle == Components::GizmoHandleType::RotateHandle)
+          ? gizmo->handle_hover_color : gizmo->handle_color;
+
+        Engine::Graphics::draw_circle_outline(center, ring_r, gizmo->rotate_ring_thickness, ring_col, 64);
+
+        const Math::Vec4D colX{ 0.2f, 1.0f, 0.2f, 1.0f };
+        const Math::Vec4D colY{ 1.0f, 0.2f, 0.2f, 1.0f };
+        Engine::Graphics::draw_line(
+          { center.x - xdir.x * ring_r, center.y - xdir.y * ring_r },
+          { center.x + xdir.x * ring_r, center.y + xdir.y * ring_r }, 1.5f, colX);
+        Engine::Graphics::draw_line(
+          { center.x - ydir.x * ring_r, center.y - ydir.y * ring_r },
+          { center.x + ydir.x * ring_r, center.y + ydir.y * ring_r }, 1.5f, colY);
+
+        Engine::Graphics::draw_circle_outline(knob, gizmo->rotate_handle_radius,
+          gizmo->outline_thickness, ring_col, 24);
+      }
+
+      // ---- Axis arrows ----
+      if (mode == Components::GizmoMode::ArrowMove) {
+        const float len_x = std::max(12.0f, col->width * gizmo->arrow_length_factor) + gizmo->arrow_outside_extra;
+        const float len_y = std::max(12.0f, col->height * gizmo->arrow_length_factor) + gizmo->arrow_outside_extra;
+
+        // X axis
+        {
+          const Math::Vec2D shaft_c = { mid_right_r.x + xdir.x * (len_x * 0.5f),
+                                        mid_right_r.y + xdir.y * (len_x * 0.5f) };
+          const Math::Vec4D ac = (gizmo->hover_handle == Components::GizmoHandleType::AxisX)
+            ? gizmo->handle_hover_color : gizmo->handle_color;
+          Engine::Graphics::draw_rect_outline(shaft_c, { len_x, gizmo->arrow_thickness },
+            tr->rotation, gizmo->arrow_thickness, ac);
+          const float hs = gizmo->arrow_head_size;
+          const Math::Vec2D tip = { mid_right_r.x + xdir.x * len_x, mid_right_r.y + xdir.y * len_x };
+          Engine::Graphics::draw_rect_outline(tip, { hs, gizmo->arrow_thickness }, tr->rotation + 45.0f, gizmo->arrow_thickness, ac);
+          Engine::Graphics::draw_rect_outline(tip, { hs, gizmo->arrow_thickness }, tr->rotation - 45.0f, gizmo->arrow_thickness, ac);
+        }
+
+        // Y axis
+        {
+          const Math::Vec2D shaft_c = { mid_top_r.x - ydir.x * (len_y * 0.5f),
+                                        mid_top_r.y - ydir.y * (len_y * 0.5f) };
+          const Math::Vec4D ac = (gizmo->hover_handle == Components::GizmoHandleType::AxisY)
+            ? gizmo->handle_hover_color : gizmo->handle_color;
+          Engine::Graphics::draw_rect_outline(shaft_c, { len_y, gizmo->arrow_thickness },
+            tr->rotation + 90.0f, gizmo->arrow_thickness, ac);
+          const float hs = gizmo->arrow_head_size;
+          const Math::Vec2D tip = { mid_top_r.x - ydir.x * len_y, mid_top_r.y - ydir.y * len_y };
+          Engine::Graphics::draw_rect_outline(tip, { hs, gizmo->arrow_thickness }, tr->rotation + 90.0f + 45.0f, gizmo->arrow_thickness, ac);
+          Engine::Graphics::draw_rect_outline(tip, { hs, gizmo->arrow_thickness }, tr->rotation + 90.0f - 45.0f, gizmo->arrow_thickness, ac);
+        }
       }
     }
 
@@ -97,7 +205,7 @@ namespace ManualColliderPanel {
     Engine::ECS::Entity spawn_collider(Components::ColliderType ctype,
       const std::string& layer_name) {
       auto bounds = Engine::Graphics::get_camera_bounds();
-      Math::Vec2D pos   = { (bounds.min_x + bounds.max_x) * 0.5f,
+      Math::Vec2D pos = { (bounds.min_x + bounds.max_x) * 0.5f,
                              (bounds.min_y + bounds.max_y) * 0.5f };
       constexpr float grid = 64.0f;
       Math::Vec2D scale = { grid, grid };
@@ -222,7 +330,7 @@ namespace ManualColliderPanel {
       return;
     }
 
-    auto* tr  = sel.get_component<Components::Transform2D>();
+    auto* tr = sel.get_component<Components::Transform2D>();
     auto* col = sel.get_component<Components::BoxCollider>();
     if (!tr || !col) { ImGui::End(); return; }
 
@@ -251,7 +359,7 @@ namespace ManualColliderPanel {
     int type_idx = (col->type == Components::ColliderType::AABB) ? 0 : 1;
     const char* type_names[] = { "AABB", "OBB" };
     if (ImGui::Combo("Type##mc", &type_idx, type_names, 2)) {
-      float w = col->width  > 0.0f ? col->width  : 64.0f;
+      float w = col->width > 0.0f ? col->width : 64.0f;
       float h = col->height > 0.0f ? col->height : 64.0f;
       if (type_idx == 0) {
         col->type = Components::ColliderType::AABB;
@@ -271,9 +379,9 @@ namespace ManualColliderPanel {
     // Size
     float dims[2] = { col->width, col->height };
     if (ImGui::DragFloat2("Size (W/H)##mc", dims, 0.5f, 0.1f, 50000.0f)) {
-      col->width  = dims[0];
+      col->width = dims[0];
       col->height = dims[1];
-      col->aabb.half_width  = dims[0] * 0.5f;
+      col->aabb.half_width = dims[0] * 0.5f;
       col->aabb.half_height = dims[1] * 0.5f;
       if (col->type == Components::ColliderType::OBB) {
         col->polygon = Polygon::create_box(col->width, col->height);
@@ -294,7 +402,7 @@ namespace ManualColliderPanel {
     ImGui::Separator();
 
     ImGui::DragFloat("Kinetic Friction##mc", &col->kinetic_friction, 0.01f, 0.0f, 2.0f);
-    ImGui::DragFloat("Static Friction##mc",  &col->static_friction,  0.01f, 0.0f, 2.0f);
+    ImGui::DragFloat("Static Friction##mc", &col->static_friction, 0.01f, 0.0f, 2.0f);
     ImGui::Checkbox("Resolve Collisions##mc", &col->resolve_collisions);
 
     ImGui::End();
@@ -307,13 +415,13 @@ namespace ManualColliderPanel {
   void draw_overlay() {
 #ifndef GAME_BUILD
     for (auto& entity : Engine::ECS::get_entities_with<Components::ManualCollider>()) {
-      auto* tr  = entity.get_component<Components::Transform2D>();
+      auto* tr = entity.get_component<Components::Transform2D>();
       auto* col = entity.get_component<Components::BoxCollider>();
       if (!tr || !col) continue;
 
       bool        is_sel = (entity.get_id() == selected_id);
-      Math::Vec4D color  = is_sel ? COLOR_SEL_OUTLINE : COLOR_OUTLINE;
-      float       thick  = is_sel ? SEL_THICK : OUTLINE_THICK;
+      Math::Vec4D color = is_sel ? COLOR_SEL_OUTLINE : COLOR_OUTLINE;
+      float       thick = is_sel ? SEL_THICK : OUTLINE_THICK;
       Math::Vec2D center = tr->position + col->offset;
 
       if (col->type == Components::ColliderType::AABB) {
@@ -324,6 +432,10 @@ namespace ManualColliderPanel {
         Engine::Graphics::draw_rect_outline(
           center, { col->width, col->height }, tr->rotation, thick, color);
       }
+
+      // Draw gizmo handles for the selected entity (uses collider dims, not tr->scale)
+      if (is_sel && entity.has_component<Components::Gizmo>())
+        draw_gizmo_tools(entity, tr, col);
     }
 #endif
   }
@@ -337,10 +449,10 @@ namespace ManualColliderPanel {
     Engine::ECS::for_each_entity_with<Components::Gizmo>([](Engine::ECS::Entity e) {
       if (e.has_component<Components::ManualCollider>())
         selected_id = e.get_id();
-    });
+      });
 
     for (auto& entity : Engine::ECS::get_entities_with<Components::ManualCollider>()) {
-      auto* tr  = entity.get_component<Components::Transform2D>();
+      auto* tr = entity.get_component<Components::Transform2D>();
       auto* col = entity.get_component<Components::BoxCollider>();
       if (!tr || !col) continue;
 
