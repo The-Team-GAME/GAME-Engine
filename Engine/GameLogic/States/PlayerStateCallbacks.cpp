@@ -66,6 +66,20 @@ namespace PlayerStateCallbacks
       return;
     }
 
+    if (Engine::Input::is_pressed(Engine::KeyCode::F9))
+    {
+      if (player_comp->god_mode)
+      {
+        player_comp->god_mode = false;
+        Log::info("Player: God Mode Toggled Off");
+      } 
+      else
+      {
+        player_comp->god_mode = true;
+        Log::info("Player: God Mode Toggled On");
+      }
+    }
+
 #pragma region Atk Input
     if (Engine::Input::is_pressed(Engine::KeyCode::K)
       && player_comp->uppercut.ready())
