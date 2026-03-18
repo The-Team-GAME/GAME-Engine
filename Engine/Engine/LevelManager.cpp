@@ -250,7 +250,7 @@ namespace Engine {
 
           ECS::for_each_entity([&](ECS::Entity entity) {
             snapshot_rebuild.source_ids.push_back(entity.get_id());
-          });
+            });
 
           if (snapshot_rebuild.source_ids.empty()) {
             snapshot_rebuild.active = false;
@@ -638,10 +638,10 @@ namespace Engine {
       if (snapshot_rebuild.active && snapshot_rebuild.level_id == level_id) {
         // Destroy any partially-cloned snapshot entities
         for (auto id : snapshot_rebuild.built_ids) {
-            if (ECS::get_entity(id).is_valid()) {
-                ECS::activate_entity(id);
-                ECS::Entity(id).destroy();
-            }
+          if (ECS::get_entity(id).is_valid()) {
+            ECS::activate_entity(id);
+            ECS::Entity(id).destroy();
+          }
         }
         snapshot_rebuild.active = false;
         snapshot_rebuild.source_ids.clear();
