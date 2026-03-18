@@ -66,7 +66,7 @@ namespace PlayerStateCallbacks
       return;
     }
 
-    if (Engine::Input::is_pressed(Engine::KeyCode::F9))
+    if (Engine::Input::is_pressed(Engine::KeyCode::F8))
     {
       if (player_comp->god_mode)
       {
