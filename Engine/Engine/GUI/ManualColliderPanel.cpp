@@ -337,6 +337,44 @@ namespace ManualColliderPanel {
     ImGui::Text("Entity %u", static_cast<unsigned>(selected_id));
     ImGui::Separator();
 
+    // Layer assignment
+    {
+      const auto& layer_names = get_layer_names();
+      auto layers = sel.get_layers();
+
+      // Find the first layer this entity is on
+      std::string cur_layer;
+      for (Engine::ECS::LayerID lid = 0;
+        lid < static_cast<Engine::ECS::LayerID>(layer_names.size()); ++lid) {
+        if (!layer_names[lid].empty() && layers.test(lid)) {
+          cur_layer = layer_names[lid];
+          break;
+        }
+      }
+
+      ImGui::AlignTextToFramePadding();
+      ImGui::Text("Layer:");
+      ImGui::SameLine();
+      ImGui::SetNextItemWidth(180.0f);
+      if (ImGui::BeginCombo("##mc_sel_layer", cur_layer.c_str())) {
+        for (Engine::ECS::LayerID lid = 0;
+          lid < static_cast<Engine::ECS::LayerID>(layer_names.size()); ++lid) {
+          const std::string& lname = layer_names[lid];
+          if (lname.empty()) continue;
+          bool is_cur = (lname == cur_layer);
+          if (ImGui::Selectable(lname.c_str(), is_cur) && lname != cur_layer) {
+            sel.clear_layers();
+            sel.add_to_layer(lname);
+            mark_dirty();
+          }
+          if (is_cur) ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+      }
+    }
+
+    ImGui::Separator();
+
     // Position
     float pos_arr[2] = { tr->position.x, tr->position.y };
     if (ImGui::DragFloat2("Position##mc", pos_arr, 1.0f)) {
