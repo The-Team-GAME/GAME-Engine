@@ -82,6 +82,8 @@ namespace Components
     Vec2D knockback_value;
     Vec2D knockback_recieved{ 100'000.f, 50'000.f };
     bool damage_immune = false;
+    bool god_mode = false;
+    bool input_lock = false; // prevents the player from moving from keyboard inputs
 
     Vec2D respawn_point{ 0.0f, 0.0f };
     bool has_checkpoint = false;
