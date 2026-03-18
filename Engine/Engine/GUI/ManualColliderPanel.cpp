@@ -453,6 +453,9 @@ namespace ManualColliderPanel {
   // ===========================================================================
   void draw_overlay() {
 #ifndef GAME_BUILD
+    // Only show overlay outlines when the debug layer is enabled.
+    if (!Engine::ECS::is_layer_active("debug")) return;
+
     for (auto& entity : Engine::ECS::get_entities_with<Components::ManualCollider>()) {
       auto* tr = entity.get_component<Components::Transform2D>();
       auto* col = entity.get_component<Components::BoxCollider>();
