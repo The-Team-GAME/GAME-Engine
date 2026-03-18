@@ -2,28 +2,10 @@
     "data": {
         "components": [
             {
-                "data": {},
-                "type": "Components::UI"
-            },
-            {
-                "data": {
-                    "a": 1.0,
-                    "b": 1.0,
-                    "g": 1.0,
-                    "r": 1.0
-                },
-                "type": "Components::Color"
-            },
-            {
-                "data": {
-                    "path": "images/skill_smash.png"
-                },
-                "type": "Components::Texture"
-            },
-            {
                 "data": {
                     "blueprint_id": "SmashCooldown",
                     "current_state_name": "READY",
+                    "property_anim_playing": false,
                     "states": [
                         {
                             "first": "CD_1",
@@ -40,7 +22,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 1110.95751953125,
+                                        "startTime": 3765.005859375,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -703,7 +685,6 @@
                                     }
                                 },
                                 "audio": null,
-                                "fmod_audio": null,
                                 "name": "CD_1",
                                 "on_enter_callback": {
                                     "name": ""
@@ -713,7 +694,8 @@
                                 },
                                 "on_update_callback": {
                                     "name": "smash_update"
-                                }
+                                },
+                                "property_animation": null
                             }
                         },
                         {
@@ -731,7 +713,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 1110.95751953125,
+                                        "startTime": 3765.005859375,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -1394,7 +1376,6 @@
                                     }
                                 },
                                 "audio": null,
-                                "fmod_audio": null,
                                 "name": "CD_2",
                                 "on_enter_callback": {
                                     "name": ""
@@ -1404,7 +1385,8 @@
                                 },
                                 "on_update_callback": {
                                     "name": "smash_update"
-                                }
+                                },
+                                "property_animation": null
                             }
                         },
                         {
@@ -1422,7 +1404,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 1110.95751953125,
+                                        "startTime": 3765.005859375,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -2085,7 +2067,6 @@
                                     }
                                 },
                                 "audio": null,
-                                "fmod_audio": null,
                                 "name": "CD_3",
                                 "on_enter_callback": {
                                     "name": ""
@@ -2095,7 +2076,8 @@
                                 },
                                 "on_update_callback": {
                                     "name": "smash_update"
-                                }
+                                },
+                                "property_animation": null
                             }
                         },
                         {
@@ -2113,7 +2095,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 1110.95751953125,
+                                        "startTime": 3765.005859375,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -2776,7 +2758,6 @@
                                     }
                                 },
                                 "audio": null,
-                                "fmod_audio": null,
                                 "name": "CD_4",
                                 "on_enter_callback": {
                                     "name": ""
@@ -2786,7 +2767,8 @@
                                 },
                                 "on_update_callback": {
                                     "name": "smash_update"
-                                }
+                                },
+                                "property_animation": null
                             }
                         },
                         {
@@ -2804,7 +2786,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 1110.95751953125,
+                                        "startTime": 3765.005859375,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -3467,7 +3449,6 @@
                                     }
                                 },
                                 "audio": null,
-                                "fmod_audio": null,
                                 "name": "CD_5",
                                 "on_enter_callback": {
                                     "name": ""
@@ -3477,7 +3458,8 @@
                                 },
                                 "on_update_callback": {
                                     "name": "smash_update"
-                                }
+                                },
+                                "property_animation": null
                             }
                         },
                         {
@@ -3495,7 +3477,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 1110.95751953125,
+                                        "startTime": 3765.005859375,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -4158,7 +4140,6 @@
                                     }
                                 },
                                 "audio": null,
-                                "fmod_audio": null,
                                 "name": "CD_6",
                                 "on_enter_callback": {
                                     "name": ""
@@ -4168,7 +4149,8 @@
                                 },
                                 "on_update_callback": {
                                     "name": "smash_update"
-                                }
+                                },
+                                "property_animation": null
                             }
                         },
                         {
@@ -4186,7 +4168,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 1110.95751953125,
+                                        "startTime": 3765.005859375,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -4849,7 +4831,6 @@
                                     }
                                 },
                                 "audio": null,
-                                "fmod_audio": null,
                                 "name": "CD_7",
                                 "on_enter_callback": {
                                     "name": ""
@@ -4859,7 +4840,8 @@
                                 },
                                 "on_update_callback": {
                                     "name": "smash_update"
-                                }
+                                },
+                                "property_animation": null
                             }
                         },
                         {
@@ -4877,7 +4859,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 1110.95751953125,
+                                        "startTime": 3765.005859375,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -5540,7 +5522,6 @@
                                     }
                                 },
                                 "audio": null,
-                                "fmod_audio": null,
                                 "name": "CD_8",
                                 "on_enter_callback": {
                                     "name": ""
@@ -5550,7 +5531,8 @@
                                 },
                                 "on_update_callback": {
                                     "name": "smash_update"
-                                }
+                                },
+                                "property_animation": null
                             }
                         },
                         {
@@ -5568,7 +5550,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 1110.95751953125,
+                                        "startTime": 3765.005859375,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -6231,7 +6213,6 @@
                                     }
                                 },
                                 "audio": null,
-                                "fmod_audio": null,
                                 "name": "CD_9",
                                 "on_enter_callback": {
                                     "name": ""
@@ -6241,7 +6222,8 @@
                                 },
                                 "on_update_callback": {
                                     "name": "smash_update"
-                                }
+                                },
+                                "property_animation": null
                             }
                         },
                         {
@@ -6337,7 +6319,7 @@
                                             0.02500000037252903
                                         ],
                                         "is_looping": false,
-                                        "startTime": 1110.95751953125,
+                                        "startTime": 3765.005859375,
                                         "totalDuration": 0.6749998927116394
                                     },
                                     "collider_data": null,
@@ -7000,7 +6982,6 @@
                                     }
                                 },
                                 "audio": null,
-                                "fmod_audio": null,
                                 "name": "CD_TRANSITION",
                                 "on_enter_callback": {
                                     "name": ""
@@ -7010,7 +6991,8 @@
                                 },
                                 "on_update_callback": {
                                     "name": "smash_update"
-                                }
+                                },
+                                "property_animation": null
                             }
                         },
                         {
@@ -7028,7 +7010,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": true,
-                                        "startTime": 1110.95751953125,
+                                        "startTime": 3765.005859375,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -7691,7 +7673,6 @@
                                     }
                                 },
                                 "audio": null,
-                                "fmod_audio": null,
                                 "name": "READY",
                                 "on_enter_callback": {
                                     "name": ""
@@ -7701,12 +7682,46 @@
                                 },
                                 "on_update_callback": {
                                     "name": "smash_update"
-                                }
+                                },
+                                "property_animation": null
                             }
                         }
                     ]
                 },
                 "type": "Components::StateMachine"
+            },
+            {
+                "data": {
+                    "position": {
+                        "x": 462.9319763183594,
+                        "y": 244.4990234375
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 189.42138671875,
+                        "y": 189.42138671875
+                    }
+                },
+                "type": "Components::Transform2D"
+            },
+            {
+                "data": {},
+                "type": "Components::UI"
+            },
+            {
+                "data": {
+                    "a": 1.0,
+                    "b": 1.0,
+                    "g": 1.0,
+                    "r": 1.0
+                },
+                "type": "Components::Color"
+            },
+            {
+                "data": {
+                    "path": "images/skill_smash.png"
+                },
+                "type": "Components::Texture"
             },
             {
                 "data": {
@@ -8376,39 +8391,10 @@
                         0.07999999821186066
                     ],
                     "is_looping": true,
-                    "startTime": 1110.95751953125,
+                    "startTime": 3765.005859375,
                     "totalDuration": 0.07999999821186066
                 },
                 "type": "Components::Animation"
-            },
-            {
-                "data": {
-                    "position": {
-                        "x": 371.13299560546875,
-                        "y": 188.91433715820313
-                    },
-                    "rotation": 0.0,
-                    "scale": {
-                        "x": 146.89453125,
-                        "y": 146.89453125
-                    }
-                },
-                "type": "Components::Transform2D"
-            },
-            {
-                "data": {
-                    "local_offset": {
-                        "x": 371.13299560546875,
-                        "y": 188.91433715820313
-                    },
-                    "offset_initialized": true,
-                    "parent_id": 5927,
-                    "prev_parent_pos": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "type": "Components::Parent"
             }
         ],
         "filepath": "prefabs/SkillSmash.json",

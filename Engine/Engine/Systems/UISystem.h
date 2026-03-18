@@ -23,14 +23,21 @@
 
 #include "../ECS/ECS.h"
 #include "../Components/Components.h"
+#include "../Audio/AudioSystem.h"
 #include "../InputManager.h"
 #include "../FunctionRegistry.h"
 #include "../Time.h"
+#include <unordered_set>
 
 namespace Engine
 {
   namespace Systems
   {
+
+    namespace {
+      static constexpr const char* UI_BUTTON_HOVER_EVENT = "event:/SFXUI/ButtonHover";
+      static constexpr const char* UI_BUTTON_CLICK_EVENT = "event:/SFXUI/ButtonClick";
+    }
 
     class ClickableSystem : public Engine::ECS::System {
     public:
@@ -46,12 +53,24 @@ namespace Engine
         if (!clickable || !tr || !box_collider) return;
         if (Engine::Time::get_paused()) return;
 
+        const Engine::ECS::EntityID id = entity.get_id();
+        const bool was_hovered = hovered_entities_.find(id) != hovered_entities_.end();
+
         // UI entities use screen-space coordinates (not affected by camera)
         const auto mouse_opt = entity.has_component<Components::UI>()
           ? Engine::Input::get_mouse_position_if_in_viewport()
           : Engine::Input::get_mouse_world_position_if_in_viewport();
 
         if (!mouse_opt.has_value()) {
+          if (was_hovered) {
+            hovered_entities_.erase(id);
+            if (!clickable->exit_hover.empty()) {
+              auto exit_func = clickable->exit_hover.get<void(Engine::ECS::Entity)>();
+              if (exit_func) {
+                exit_func(entity);
+              }
+            }
+          }
           return;
         }
 
@@ -65,6 +84,13 @@ namespace Engine
 
         // mouse click detection
         if (inside) {
+          if (!was_hovered) {
+            hovered_entities_.insert(id);
+            if (!clickable->on_click.empty()) {
+              Engine::AudioSystem::playEvent(UI_BUTTON_HOVER_EVENT);
+            }
+          }
+
           // Call on_hover if function is set
           if (!clickable->on_hover.empty()) {
             auto hover_func = clickable->on_hover.get<void(Engine::ECS::Entity)>();
@@ -76,6 +102,8 @@ namespace Engine
           if (Engine::Input::is_pressed(KeyCode::MouseLeft)) {
             // Call on_click if function is set
             if (!clickable->on_click.empty()) {
+              Engine::AudioSystem::playEvent(UI_BUTTON_CLICK_EVENT);
+
               auto click_func = clickable->on_click.get<void()>();
               if (click_func) {
                 click_func();
@@ -86,6 +114,10 @@ namespace Engine
           }
         }
         else {
+          if (was_hovered) {
+            hovered_entities_.erase(id);
+          }
+
           // Call exit_hover if function is set
           if (!clickable->exit_hover.empty()) {
             auto exit_func = clickable->exit_hover.get<void(Engine::ECS::Entity)>();
@@ -152,6 +184,8 @@ namespace Engine
 
         return inside;
       }
+
+      std::unordered_set<Engine::ECS::EntityID> hovered_entities_;
     };
 
     // System to handle dynamic button collider updates

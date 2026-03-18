@@ -209,6 +209,10 @@ namespace Engine {
       ==================================================================================*/
       ENGINE_API void remove_entity(EntityID entity);
 
+      // Clears all tracked entities without calling on_entity_removed.
+      // Used during world switching to reset entity tracking before rebuilding.
+      ENGINE_API void reset_entity_tracking();
+
       /*=================================================================================
       Function Brief:
       Returns the set of all entities currently tracked by this system.

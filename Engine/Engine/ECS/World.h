@@ -173,6 +173,25 @@ namespace Engine {
     ==================================================================================*/
     ENGINE_API void destroy_world();
 
+    // ============================================================================
+    // Multi-World Management
+    // ============================================================================
+
+    // Creates a new world with layer/collision config cloned from the active world.
+    // Returns the new world's ID. Does NOT set it as active.
+    ENGINE_API WorldID create_world();
+
+    // Destroys a non-active world and frees all its data.
+    // Returns false if the world doesn't exist or is currently active.
+    ENGINE_API bool destroy_world(WorldID id);
+
+    // Switches the active world. Rebuilds system entity sets for the new world.
+    // The previous world's entities remain intact but are no longer processed.
+    ENGINE_API void set_active_world(WorldID id);
+
+    // Returns the ID of the currently active world.
+    ENGINE_API WorldID get_active_world();
+
     /*=================================================================================
     Function Brief:
     Destroys all entities that have the specified component types.
@@ -197,6 +216,22 @@ namespace Engine {
     Before performing operations on an entity to ensure it hasn't been destroyed.
     ==================================================================================*/
     ENGINE_API bool is_entity_active(const Entity entity);
+
+    // ============================================================================
+    // Entity Activation / Deactivation (for level switching optimization)
+    // ============================================================================
+
+    // Deactivates an entity: removes it from active_entities and layer sets,
+    // but preserves all component data, signatures, layers, names, and prefab data.
+    // Deactivated entities are invisible to all systems, queries, and iteration.
+    ENGINE_API void deactivate_entity(EntityID id);
+
+    // Reactivates a previously deactivated entity: re-inserts it into active_entities
+    // and layer sets, and re-registers it with matching systems.
+    ENGINE_API void activate_entity(EntityID id);
+
+    // Returns true if the entity is currently deactivated (alive but suspended).
+    ENGINE_API bool is_entity_deactivated(EntityID id);
 
     /* =================== //
     // Entity naming        //

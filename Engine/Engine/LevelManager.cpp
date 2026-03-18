@@ -26,6 +26,9 @@
 #include "TilemapManager.h"
 #include <algorithm>
 #include <unordered_set>
+#include <thread>
+#include <mutex>
+#include <chrono>
 
 namespace {
   std::unordered_map<std::string, Engine::LevelState> open_levels;
@@ -33,6 +36,21 @@ namespace {
   std::string active_level_id;
   std::string current_level_path;  // Actual file path (empty for new levels)
   const std::string empty_string;
+  std::mutex preload_mutex;
+  std::unordered_map<std::string, Engine::EntityList> preload_results;
+
+  // Global preloaded snapshot map: level_path → deactivated entity IDs (pristine state)
+  std::unordered_map<std::string, std::vector<Engine::ECS::EntityID>> preloaded_snapshots;
+
+  // Incremental snapshot rebuild tracking
+  struct SnapshotRebuild {
+    std::string level_id;
+    std::vector<Engine::ECS::EntityID> source_ids;  // Entity IDs to clone from
+    std::vector<Engine::ECS::EntityID> built_ids;   // Cloned entity IDs so far
+    size_t index = 0;                                // Current progress
+    bool active = false;
+  };
+  SnapshotRebuild snapshot_rebuild;
 
   // Helper function to check if a serialized entity is a tile collision entity
   // These are temporary entities rebuilt by TilemapManager and should not be loaded from files
@@ -116,6 +134,13 @@ namespace {
     }
   }
 
+  std::string normalize_level_path(const std::string& filepath, bool append_resource_path)
+  {
+    return append_resource_path
+      ? Engine::Path(Engine::Resources::resource_path).join(filepath).normalize().to_string()
+      : Engine::Path(filepath).normalize().to_string();
+  }
+
   // Call on_exit via the Level component in the world (if exists)
   void call_level_exit() {
     auto level_entity = Engine::ECS::get_first_entity_with<Components::Level>();
@@ -137,20 +162,255 @@ namespace {
       }
     }
   }
+
+  bool is_reloadable_level_id(const std::string& level_id)
+  {
+    return !level_id.empty() && !level_id.starts_with("__new_");
+  }
 }
 
 namespace Engine {
   namespace LevelManager {
 
+    // Forward declarations
+    void build_preloaded_snapshot(LevelState& state);
+
+    void queue_preload_refresh(const std::string& level_id)
+    {
+      if (!is_reloadable_level_id(level_id)) {
+        return;
+      }
+
+      auto it = open_levels.find(level_id);
+      if (it == open_levels.end()) {
+        return;
+      }
+
+      LevelState& state = it->second;
+      if (state.preload_in_progress) {
+        state.preload_refresh_queued = true;
+        return;
+      }
+
+      state.preload_in_progress = true;
+      state.preload_refresh_queued = false;
+
+      Log::info("[LevelManager] Preload refresh scheduled: {}", level_id);
+
+      std::string level_path = level_id;
+      std::thread([level_path]() {
+        Engine::EntityList entities = Engine::FileIO::deserialize_level_from_json_file(level_path);
+        std::lock_guard<std::mutex> lock(preload_mutex);
+        preload_results[level_path] = std::move(entities);
+        }).detach();
+    }
+
+    void process_preload_results()
+    {
+      // --- Handle background JSON deserialization results ---
+      {
+        std::unordered_map<std::string, EntityList> ready;
+        {
+          std::lock_guard<std::mutex> lock(preload_mutex);
+          if (!preload_results.empty()) {
+            ready.swap(preload_results);
+          }
+        }
+
+        for (auto& [level_id, entities] : ready) {
+          auto it = open_levels.find(level_id);
+          if (it == open_levels.end()) {
+            continue;
+          }
+
+          LevelState& state = it->second;
+          state.preloaded_entities = std::move(entities);
+          state.preload_ready = !state.preloaded_entities.empty();
+          state.preload_in_progress = false;
+          state.cached_entities = state.preloaded_entities;
+
+          Resources::cache_level(level_id, state.preloaded_entities, false, false);
+          Log::info("[LevelManager] Preload refresh completed: {}", level_id);
+
+          if (state.preload_refresh_queued) {
+            state.preload_refresh_queued = false;
+            queue_preload_refresh(level_id);
+          }
+        }
+      }
+
+      // --- Incremental snapshot rebuild (time-budgeted) ---
+      // --- Incremental snapshot rebuild (time-budgeted) ---
+      // After a reload consumes the snapshot, rebuild it across multiple frames
+      // by cloning a batch of entities per frame within a 2ms time budget.
+      if (snapshot_rebuild.active) {
+        // First frame: capture source entity IDs and clean up old snapshot
+        if (snapshot_rebuild.source_ids.empty() && snapshot_rebuild.index == 0) {
+          clear_preloaded_snapshot(snapshot_rebuild.level_id);
+
+          ECS::for_each_entity([&](ECS::Entity entity) {
+            snapshot_rebuild.source_ids.push_back(entity.get_id());
+          });
+
+          if (snapshot_rebuild.source_ids.empty()) {
+            snapshot_rebuild.active = false;
+          }
+        }
+        else {
+          // Clone a batch of entities within the time budget
+          auto deadline = std::chrono::steady_clock::now() + std::chrono::microseconds(2000);
+
+          while (snapshot_rebuild.index < snapshot_rebuild.source_ids.size()) {
+            ECS::EntityID source_id = snapshot_rebuild.source_ids[snapshot_rebuild.index];
+            ECS::Entity source(source_id);
+
+            if (source.is_valid()) {
+              ECS::Entity cloned = ECS::clone_entity(source);
+              if (cloned.is_valid()) {
+                ECS::EntityID clone_id = cloned.get_id();
+                ECS::deactivate_entity(clone_id);
+                snapshot_rebuild.built_ids.push_back(clone_id);
+              }
+            }
+
+            ++snapshot_rebuild.index;
+
+            if (std::chrono::steady_clock::now() >= deadline) {
+              break; // Budget exhausted, continue next frame
+            }
+          }
+
+          // Check if rebuild is complete
+          if (snapshot_rebuild.index >= snapshot_rebuild.source_ids.size()) {
+            if (!snapshot_rebuild.built_ids.empty()) {
+              preloaded_snapshots[snapshot_rebuild.level_id] = std::move(snapshot_rebuild.built_ids);
+            }
+            snapshot_rebuild.active = false;
+            snapshot_rebuild.source_ids.clear();
+            snapshot_rebuild.built_ids.clear();
+            snapshot_rebuild.index = 0;
+            Log::info("[LevelManager] Incremental snapshot rebuild completed: {}", snapshot_rebuild.level_id);
+          }
+        }
+      }
+    }
+
+    EntityList get_preloaded_or_disk(LevelState& state, const std::string& level_id)
+    {
+      if (state.preload_ready && !state.preloaded_entities.empty()) {
+        return state.preloaded_entities;
+      }
+
+      return Resources::load_level(level_id, false, false);
+    }
+
+    // Reactivates a level's deactivated entities. This is the fast path — no deserialization.
+    void activate_level(LevelState& state)
+    {
+      for (ECS::EntityID id : state.live_entity_ids) {
+        ECS::activate_entity(id);
+      }
+      state.live_entity_ids.clear();
+      state.has_live_entities = false;
+    }
+
+    // Destroys all deactivated entities owned by a level state.
+    void destroy_level_entities(LevelState& state)
+    {
+      if (state.has_live_entities) {
+        for (ECS::EntityID id : state.live_entity_ids) {
+          // Re-activate so process_housekeeping can destroy them properly
+          ECS::activate_entity(id);
+          ECS::Entity(id).destroy();
+        }
+        state.live_entity_ids.clear();
+        state.has_live_entities = false;
+        ECS::process_housekeeping();
+      }
+    }
+
+    // Deactivates all current world entities and stores their IDs in the level state.
+    // This is the fast path — no serialization needed.
+    void deactivate_active_level()
+    {
+      if (active_level_id.empty()) return;
+
+      auto it = open_levels.find(active_level_id);
+      if (it == open_levels.end()) return;
+
+      LevelState& state = it->second;
+      state.live_entity_ids.clear();
+
+      ECS::for_each_entity([&](ECS::Entity entity) {
+        state.live_entity_ids.push_back(entity.get_id());
+        });
+
+      // Deactivate all entities (removes from active set and layer sets, preserves data)
+      for (ECS::EntityID id : state.live_entity_ids) {
+        ECS::deactivate_entity(id);
+      }
+
+      state.has_live_entities = true;
+      state.cached_entities.clear(); // No serialized cache needed
+
+      Log::info("Deactivated level: {} ({} entities)",
+        active_level_id,
+        state.live_entity_ids.size());
+    }
+
+    bool has_preloaded_snapshot(const std::string& level_id)
+    {
+      return preloaded_snapshots.find(level_id) != preloaded_snapshots.end() && !preloaded_snapshots[level_id].empty();
+    }
+
+    void clear_preloaded_snapshot(const std::string& level_id)
+    {
+      auto it = preloaded_snapshots.find(level_id);
+      if (it != preloaded_snapshots.end()) {
+        for (ECS::EntityID id : it->second) {
+          if (ECS::get_entity(id).is_valid()) {
+            ECS::activate_entity(id);
+            ECS::Entity(id).destroy();
+          }
+        }
+        it->second.clear();
+        preloaded_snapshots.erase(it);
+        ECS::process_housekeeping();
+      }
+    }
+
+    void build_preloaded_snapshot(LevelState& state)
+    {
+      (void)state;
+      if (active_level_id.empty()) return;
+      clear_preloaded_snapshot(active_level_id);
+      auto& snapshot = preloaded_snapshots[active_level_id];
+
+      ECS::for_each_entity([&](ECS::Entity entity) {
+        ECS::Entity cloned = ECS::clone_entity(entity);
+        if (cloned.is_valid()) {
+          ECS::EntityID id = cloned.get_id();
+          ECS::deactivate_entity(id);
+          snapshot.push_back(id);
+        }
+        });
+
+      Log::info("[LevelManager] Built preloaded snapshot with {} entities.", snapshot.size());
+    }
+
     std::string open_level(const std::string& filepath, bool append_resource_path)
     {
       // Get the full normalized path - this becomes the level ID
-      std::string full_path = append_resource_path
-        ? Path(Resources::resource_path).join(filepath).normalize().to_string()
-        : Path(filepath).normalize().to_string();
+      std::string full_path = normalize_level_path(filepath, append_resource_path);
 
       // Check if this level is already open
       if (is_level_open(full_path)) {
+        if (full_path == active_level_id) {
+          reload_level(full_path);
+          Log::info("Reloaded active level: {}", full_path);
+          return full_path;
+        }
+
         switch_to_level(full_path);
         Log::info("Switched to existing level: {}", full_path);
         return full_path;
@@ -165,9 +425,12 @@ namespace Engine {
       // Load the level from disk
       EntityList entities = Resources::load_level(filepath, append_resource_path, false);
 
-      // Create a new level state
+      // Single-world approach
       LevelState new_state;
-      new_state.cached_entities = EntityList();  // Empty - entities go into world
+      new_state.cached_entities = EntityList();
+      new_state.preloaded_entities = entities;
+      new_state.preload_ready = true;
+      new_state.keep_loaded = false;
 
       open_levels[full_path] = std::move(new_state);
       level_order.push_back(full_path);
@@ -189,6 +452,10 @@ namespace Engine {
       // Call on_init callback (via Level component if present)
       call_level_init();
 
+      build_preloaded_snapshot(open_levels[full_path]);
+
+      queue_preload_refresh(full_path);
+
       Log::info("Opened level: {}", full_path);
       EventManager::send_event<Events::ToastEvent>(
         "Opened: " + Path(full_path).get_filename(),
@@ -196,6 +463,66 @@ namespace Engine {
         2.0f
       );
 
+      return full_path;
+    }
+
+    std::string preload_level(const std::string& filepath, bool append_resource_path)
+    {
+      std::string full_path = normalize_level_path(filepath, append_resource_path);
+
+      Log::info("[LevelManager] Preload requested: {}", full_path);
+
+      auto existing = open_levels.find(full_path);
+      if (existing != open_levels.end()) {
+        existing->second.keep_loaded = true;
+        queue_preload_refresh(full_path);
+        Log::info("[LevelManager] Level already resident, marking keep_loaded: {}", full_path);
+        return full_path;
+      }
+
+      EntityList entities = Resources::load_level(filepath, append_resource_path, false);
+
+      // Single-world approach with deactivation
+      std::unordered_set<ECS::EntityID> existing_ids;
+      ECS::for_each_entity([&](ECS::Entity entity) {
+        existing_ids.insert(entity.get_id());
+        });
+
+      instantiate_entities(entities, false);
+
+      LevelState new_state;
+      ECS::for_each_entity([&](ECS::Entity entity) {
+        if (existing_ids.find(entity.get_id()) == existing_ids.end()) {
+          new_state.live_entity_ids.push_back(entity.get_id());
+        }
+        });
+
+      for (ECS::EntityID id : new_state.live_entity_ids) {
+        ECS::deactivate_entity(id);
+      }
+
+      // Build snapshot for instant reload
+      clear_preloaded_snapshot(full_path);
+      auto& snapshot = preloaded_snapshots[full_path];
+      for (ECS::EntityID id : new_state.live_entity_ids) {
+        ECS::Entity cloned = ECS::clone_entity(ECS::Entity(id));
+        if (cloned.is_valid()) {
+          ECS::EntityID clone_id = cloned.get_id();
+          ECS::deactivate_entity(clone_id);
+          snapshot.push_back(clone_id);
+        }
+      }
+
+      new_state.has_live_entities = !new_state.live_entity_ids.empty();
+      new_state.keep_loaded = true;
+      new_state.preloaded_entities = entities;
+      new_state.preload_ready = true;
+
+      open_levels[full_path] = std::move(new_state);
+      level_order.push_back(full_path);
+
+      Log::info("[LevelManager] Preloaded level as inactive: {} ({} entities)", full_path, open_levels[full_path].live_entity_ids.size());
+      queue_preload_refresh(full_path);
       return full_path;
     }
 
@@ -214,6 +541,7 @@ namespace Engine {
       // Create a new empty level state
       LevelState new_state;
       new_state.cached_entities = EntityList();
+      new_state.keep_loaded = false;
 
       open_levels[level_id] = std::move(new_state);
       level_order.push_back(level_id);
@@ -258,14 +586,135 @@ namespace Engine {
 
       LevelState& state = open_levels[level_id];
 
-      // Instantiate cached level into world
-      instantiate_entities(state.cached_entities, true);
-      state.cached_entities = EntityList();  // Clear cache
+      // Single-world approach
+      if (state.has_live_entities) {
+        // Fast path: reactivate deactivated entities
+        activate_level(state);
+      }
+      else if (has_preloaded_snapshot(level_id)) {
+        for (ECS::EntityID id : preloaded_snapshots[level_id]) {
+          ECS::activate_entity(id);
+        }
+        preloaded_snapshots.erase(level_id);
+      }
+      else {
+        // Cold path: instantiate from resident preloaded data when available
+        EntityList entities = get_preloaded_or_disk(state, level_id);
+        instantiate_entities(entities, true);
+        state.cached_entities = entities;
+      }
+
+      Log::info("Switched to level: {}", level_id);
 
       // Call on_init (via Level component if present)
       call_level_init();
 
-      Log::info("Switched to level: {}", level_id);
+      if (!has_preloaded_snapshot(level_id)) {
+        build_preloaded_snapshot(state);
+      }
+    }
+
+    void reload_level(const std::string& level_id)
+    {
+      if (!is_level_open(level_id)) {
+        Log::warning("Cannot reload level - not open: {}", level_id);
+        return;
+      }
+
+      if (!is_reloadable_level_id(level_id)) {
+        Log::warning("Cannot reload level without a file path: {}", level_id);
+        return;
+      }
+
+      auto it = open_levels.find(level_id);
+      if (it == open_levels.end()) {
+        return;
+      }
+
+      LevelState& state = it->second;
+      const bool is_active = (level_id == active_level_id);
+
+      // Cancel any in-progress incremental rebuild for this level
+      if (snapshot_rebuild.active && snapshot_rebuild.level_id == level_id) {
+        // Destroy any partially-cloned snapshot entities
+        for (auto id : snapshot_rebuild.built_ids) {
+            if (ECS::get_entity(id).is_valid()) {
+                ECS::activate_entity(id);
+                ECS::Entity(id).destroy();
+            }
+        }
+        snapshot_rebuild.active = false;
+        snapshot_rebuild.source_ids.clear();
+        snapshot_rebuild.built_ids.clear();
+        snapshot_rebuild.index = 0;
+        ECS::process_housekeeping();
+      }
+
+      if (has_preloaded_snapshot(level_id) && is_active) {
+        if (is_active) {
+          call_level_exit();
+        }
+
+        ECS::for_each_entity([](ECS::Entity entity) {
+          entity.destroy();
+          });
+        ECS::process_housekeeping();
+
+        for (ECS::EntityID id : preloaded_snapshots[level_id]) {
+          ECS::activate_entity(id);
+        }
+        preloaded_snapshots.erase(level_id);
+
+        current_level_path = level_id;
+        call_level_init();
+
+        // Defer snapshot rebuild to next frame so reload returns instantly
+        snapshot_rebuild.active = true;
+        snapshot_rebuild.level_id = level_id;
+        snapshot_rebuild.source_ids.clear();
+        snapshot_rebuild.built_ids.clear();
+        snapshot_rebuild.index = 0;
+
+        queue_preload_refresh(level_id);
+        Log::info("[LevelManager] Reloaded level from preloaded snapshot: {}", level_id);
+        return;
+      }
+
+      EntityList reload_entities = get_preloaded_or_disk(state, level_id);
+      if (reload_entities.empty()) {
+        Log::warning("Reload failed - no entities loaded: {}", level_id);
+        return;
+      }
+
+      state.cached_entities = reload_entities;
+      state.preloaded_entities = reload_entities;
+      state.preload_ready = true;
+
+      if (is_active) {
+        call_level_exit();
+      }
+
+      if (is_active) {
+        instantiate_entities(reload_entities, true);
+        current_level_path = level_id;
+        call_level_init();
+        // Defer snapshot rebuild incrementally so reload returns instantly
+        snapshot_rebuild.active = true;
+        snapshot_rebuild.level_id = level_id;
+        snapshot_rebuild.source_ids.clear();
+        snapshot_rebuild.built_ids.clear();
+        snapshot_rebuild.index = 0;
+      }
+      else {
+        // If this level has stale deactivated live entities, destroy them so
+        // reopening starts from pristine state and does not accumulate entities.
+        destroy_level_entities(state);
+        state.has_live_entities = false;
+        state.live_entity_ids.clear();
+      }
+
+      queue_preload_refresh(level_id);
+      Log::info("[LevelManager] Reloaded level: {}", level_id);
     }
 
     bool close_level(const std::string& level_id)
@@ -274,6 +723,8 @@ namespace Engine {
         Log::warning("Cannot close level - not open: {}", level_id);
         return false;
       }
+
+      LevelState& closing_state = open_levels[level_id];
 
       // Call on_exit if closing active level
       if (level_id == active_level_id) {
@@ -284,19 +735,38 @@ namespace Engine {
       auto it = std::find(level_order.begin(), level_order.end(), level_id);
       size_t index = std::distance(level_order.begin(), it);
 
+      // Single-world approach
+      // If closing a non-active level with live entities, destroy them
+      if (level_id != active_level_id) {
+        destroy_level_entities(closing_state);
+      }
+
       // If closing active level, switch to another
       if (level_id == active_level_id) {
         if (level_order.size() > 1) {
           size_t new_index = (index > 0) ? index - 1 : 1;
           std::string new_active = level_order[new_index];
 
-          LevelState& state = open_levels[new_active];
-          current_level_path = new_active.starts_with("__new_") ? "" : new_active;
-          instantiate_entities(state.cached_entities, true);
-          state.cached_entities = EntityList();
+          // Destroy active entities first
+          ECS::for_each_entity([](ECS::Entity entity) {
+            entity.destroy();
+            });
+          ECS::process_housekeeping();
+
           active_level_id = new_active;
+          current_level_path = new_active.starts_with("__new_") ? "" : new_active;
+
+          LevelState& state = open_levels[new_active];
+          if (state.has_live_entities) {
+            activate_level(state);
+          }
+          else {
+            instantiate_entities(state.cached_entities, true);
+            state.cached_entities = EntityList();
+          }
 
           call_level_init();
+          build_preloaded_snapshot(state);
         }
         else {
           // Closing last level
@@ -308,6 +778,8 @@ namespace Engine {
           current_level_path = "";
         }
       }
+
+      clear_preloaded_snapshot(level_id);
 
       // Remove from containers
       open_levels.erase(level_id);
@@ -324,6 +796,8 @@ namespace Engine {
         return false;
       }
 
+      LevelState& state = open_levels[level_id];
+
       if (level_id.starts_with("__new_")) {
         Log::warning("Cannot save new level without path. Use save_level_as instead.");
         return false;
@@ -333,6 +807,10 @@ namespace Engine {
 
       if (Resources::save_level(level_id, entities_to_save, false)) {
         Log::info("Saved level: {}", level_id);
+        if (level_id == active_level_id) {
+          build_preloaded_snapshot(state);
+        }
+        queue_preload_refresh(level_id);
         EventManager::send_event<Events::ToastEvent>(
           "Saved: " + Path(level_id).get_filename(),
           Events::ToastType::Info,
@@ -366,6 +844,8 @@ namespace Engine {
 
       // Move state to new ID
       LevelState old_state = std::move(open_levels[level_id]);
+      old_state.preload_in_progress = false;
+      old_state.preload_refresh_queued = false;
 
       auto it = std::find(level_order.begin(), level_order.end(), level_id);
       *it = new_level_id;
@@ -379,6 +859,7 @@ namespace Engine {
       }
 
       Log::info("Saved level as: {}", new_level_id);
+      queue_preload_refresh(new_level_id);
       EventManager::send_event<Events::ToastEvent>(
         "Saved as: " + Path(new_level_id).get_filename(),
         Events::ToastType::Info,
@@ -427,6 +908,8 @@ namespace Engine {
 
     void call_active_update()
     {
+      process_preload_results();
+
       // Call on_update via the Level component in the world
       auto level_entity = ECS::get_first_entity_with<Components::Level>();
       if (level_entity.is_valid()) {
@@ -444,12 +927,8 @@ namespace Engine {
       auto it = open_levels.find(active_level_id);
       if (it == open_levels.end()) return;
 
-      LevelState& state = it->second;
-      state.cached_entities = capture_world_entities();
-
-      Log::info("Cached level: {} ({} entities)",
-        active_level_id,
-        state.cached_entities.size());
+      // Use fast deactivation path instead of full serialization
+      deactivate_active_level();
     }
 
     EntityList get_entities_for_save(const std::string& level_id)
@@ -461,24 +940,80 @@ namespace Engine {
 
       LevelState& state = it->second;
 
-      // Get entities from world if active, otherwise from cache
+      // Get entities from world if active
       if (level_id == active_level_id) {
         return capture_world_entities();
       }
-      else {
-        return state.cached_entities;
+
+      // If level has live deactivated entities, temporarily activate to serialize
+      if (state.has_live_entities) {
+        // Activate, serialize, then deactivate again
+        activate_level(state);
+        EntityList result = capture_world_entities();
+
+        // Re-deactivate them
+        state.live_entity_ids.clear();
+        ECS::for_each_entity([&](ECS::Entity entity) {
+          state.live_entity_ids.push_back(entity.get_id());
+          });
+        for (ECS::EntityID id : state.live_entity_ids) {
+          ECS::deactivate_entity(id);
+        }
+        state.has_live_entities = true;
+
+        return result;
       }
+
+      // Fall back to serialized cache
+      if (state.preload_ready && !state.preloaded_entities.empty()) {
+        return state.preloaded_entities;
+      }
+
+      return state.cached_entities;
     }
 
-    void clear_all()
+    void clear_all(bool preserve_preloaded_levels)
     {
+      Log::info("[LevelManager] Clearing levels. preserve_preloaded_levels={}", preserve_preloaded_levels);
+
       // Call on_exit for active level
       if (!active_level_id.empty() && is_level_open(active_level_id)) {
         call_level_exit();
       }
 
-      open_levels.clear();
-      level_order.clear();
+      // Single-world approach
+      if (preserve_preloaded_levels && !active_level_id.empty()) {
+        auto active_it = open_levels.find(active_level_id);
+        if (active_it != open_levels.end() && active_it->second.keep_loaded) {
+          Log::info("[LevelManager] Active level is preloaded; preserving snapshot for scene clear: {}", active_level_id);
+        }
+      }
+
+      std::unordered_map<std::string, LevelState> preserved_levels;
+      std::vector<std::string> preserved_order;
+
+      // Destroy all deactivated entities unless explicitly preserved.
+      for (auto& [id, state] : open_levels) {
+        const bool preserve_state = preserve_preloaded_levels && state.keep_loaded;
+
+        if (preserve_state) {
+          // Preserve only pristine preload snapshot; drop dirty live entities.
+          destroy_level_entities(state);
+          Log::info("[LevelManager] Preserving preloaded level across scene clear: {}", id);
+          preserved_order.push_back(id);
+          preserved_levels.emplace(id, std::move(state));
+        }
+        else if (id == active_level_id) {
+          clear_preloaded_snapshot(id);
+        }
+        else if (id != active_level_id) {
+          destroy_level_entities(state);
+          clear_preloaded_snapshot(id);
+        }
+      }
+
+      open_levels = std::move(preserved_levels);
+      level_order = std::move(preserved_order);
       active_level_id = "";
       current_level_path = "";
 
@@ -487,7 +1022,7 @@ namespace Engine {
         });
       ECS::process_housekeeping();
 
-      Log::info("Cleared all levels");
+      Log::info("Cleared levels. Preserved {} preloaded levels.", open_levels.size());
     }
 
     void set_current_level_path(const std::string& path)
@@ -515,6 +1050,60 @@ namespace Engine {
     void instantiate_entities(const EntityList& entities, bool clear_world)
     {
       Log::info("Instantiating level with {} entities.", entities.size());
+
+      // Pre-scan all entities to warm the texture and font caches before instantiation.
+      // This avoids redundant cache lookups during component deserialization and ensures
+      // all unique resources are loaded once upfront.
+      {
+        std::unordered_set<std::string> texture_paths;
+        std::unordered_set<std::string> font_keys; // "path|size" to deduplicate
+        struct FontEntry { std::string path; int size; };
+        std::vector<FontEntry> font_entries;
+
+        for (const auto& entity_value : entities) {
+          if (!entity_value.has("components") || !entity_value["components"].isArray()) continue;
+
+          const auto& components = entity_value["components"].getArray();
+          for (const auto& comp : components) {
+            if (!comp.has("type") || !comp.has("data")) continue;
+
+            const std::string& type = comp["type"].getString();
+            const auto& data = comp["data"];
+
+            if (type == "Components::Texture") {
+              if (data.isObject() && data.has("path") && data["path"].isString()) {
+                const std::string& path = data["path"].getString();
+                if (!path.empty()) {
+                  texture_paths.insert(path);
+                }
+              }
+            }
+            else if (type == "Components::Font") {
+              if (data.isObject() && data.has("path") && data["path"].isString()) {
+                const std::string& path = data["path"].getString();
+                int font_size = 32; // default
+                if (data.has("font_size") && data["font_size"].isInt()) {
+                  font_size = static_cast<int>(data["font_size"].getInt());
+                }
+                if (!path.empty()) {
+                  std::string key = path + "|" + std::to_string(font_size);
+                  if (font_keys.insert(key).second) {
+                    font_entries.push_back({ path, font_size });
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // Batch-load all unique textures and fonts to warm the cache
+        for (const auto& path : texture_paths) {
+          Resources::load_texture(path, true);
+        }
+        for (const auto& entry : font_entries) {
+          Resources::load_font(entry.path, entry.size, true);
+        }
+      }
 
       if (clear_world) {
         ECS::for_each_entity([](ECS::Entity entity) {

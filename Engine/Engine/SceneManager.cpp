@@ -29,8 +29,8 @@
 namespace Engine
 {
   namespace Systems {
-    void add_camera_shake(f32 amplitude, f32 duration) {
-      CameraSystem::add_shake(amplitude, duration);
+    void add_camera_shake(f32 trauma) {
+      CameraSystem::add_shake(trauma);
     }
   }
 

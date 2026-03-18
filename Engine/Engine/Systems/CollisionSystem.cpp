@@ -203,14 +203,8 @@ void col2D::update()
           {
             // Object is sliding - apply kinetic friction opposing motion
             rigid->force += -tangent * std::min(required_friction_force_to_stop, friction_experienced);
-            rigid->force += normal_force;
-            //if (friction_experienced > required_friction_force_to_stop)
-            //{
-            //  std::cout << "Applying Friction Rquired to stop\n";
-            //}
-            //else { std::cout << "Applying Experienced Friction\n"; }
           }
-          //std::cout << "current velocity: " << rigid->velocity << std::endl << std::endl;
+          rigid->force += normal_force;
         }
         //==================================//
       }

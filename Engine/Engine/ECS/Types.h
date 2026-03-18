@@ -31,6 +31,7 @@ namespace Engine {
     using EntityID = size_t;
     using ComponentTypeID = size_t;
     using LayerID = size_t;
+    using WorldID = uint32_t;
     using EntityPairHash = size_t; // Used for hashing entity pairs in for_each_entity_pair
 
     /* =================== //
@@ -40,6 +41,7 @@ namespace Engine {
     inline constexpr ComponentTypeID INVALID_COMPONENT_TYPE = 0;
     inline constexpr LayerID INVALID_LAYER = 0;
     inline constexpr LayerID DEFAULT_LAYER = 1;
+    inline constexpr WorldID INVALID_WORLD = 0;
     inline constexpr size_t MAX_COMPONENTS = 64;
     inline constexpr size_t MAX_LAYERS = 32;
 

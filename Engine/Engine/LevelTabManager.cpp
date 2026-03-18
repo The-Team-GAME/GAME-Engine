@@ -52,6 +52,7 @@ namespace Engine {
       // If tab already exists, just switch to it
       if (tab_exists(full_path)) {
         switch_to_tab(full_path);
+        LevelManager::reload_level(full_path);
         tabs[full_path].needs_selection = true;
         return true;
       }

@@ -5,11 +5,12 @@
                 "data": {
                     "acceleration": {
                         "x": 0.0,
-                        "y": 1000.0
+                        "y": 0.0
                     },
+                    "apply_force": true,
                     "gravity": {
                         "x": 0.0,
-                        "y": 1000.0
+                        "y": 2000.0
                     },
                     "is_jumping": false,
                     "is_static": false,
@@ -18,7 +19,7 @@
                     "use_gravity": true,
                     "velocity": {
                         "x": 0.0,
-                        "y": 16.666667938232422
+                        "y": 0.0
                     },
                     "x_terminal_velocity": 500.0,
                     "y_terminal_velocity": 500.0
@@ -37,19 +38,19 @@
             {
                 "data": {
                     "aabb": {
-                        "half_height": 45.97529602050781,
-                        "half_width": 15.679586410522461,
+                        "half_height": 68.88287353515625,
+                        "half_width": 28.051769256591797,
                         "pos": {
-                            "x": -655.39453125,
-                            "y": 1042.331787109375
+                            "x": -1028.5667724609375,
+                            "y": 1019.3448486328125
                         }
                     },
                     "collided": false,
-                    "height": 91.95059204101563,
+                    "height": 137.7657470703125,
                     "kinetic_friction": 0.800000011920929,
                     "offset": {
-                        "x": -1.089303970336914,
-                        "y": 16.428695678710938
+                        "x": -1.8699378967285156,
+                        "y": 24.62359619140625
                     },
                     "polygon": {
                         "position": {
@@ -62,7 +63,7 @@
                     "radius": 0.0,
                     "resolve_collisions": false,
                     "type": "AABB",
-                    "width": 31.359172821044922
+                    "width": 56.103538513183594
                 },
                 "type": "Components::BoxCollider"
             },
@@ -278,24 +279,24 @@
                         0.0
                     ],
                     "durations": [
-                        0.15000000596046448
+                        0.10000000149011612
                     ],
-                    "is_looping": false,
-                    "startTime": 2405.67138671875,
-                    "totalDuration": 0.15000000596046448
+                    "is_looping": true,
+                    "startTime": 648.9010620117188,
+                    "totalDuration": 0.10000000149011612
                 },
                 "type": "Components::Animation"
             },
             {
                 "data": {
                     "position": {
-                        "x": -654.3052368164063,
-                        "y": 1026.180908203125
+                        "x": -1026.69677734375,
+                        "y": 994.7212524414063
                     },
                     "rotation": 0.0,
                     "scale": {
-                        "x": 128.0,
-                        "y": 128.0
+                        "x": 192.0,
+                        "y": 192.0
                     }
                 },
                 "type": "Components::Transform2D"
@@ -303,8 +304,8 @@
             {
                 "data": {
                     "local_offset": {
-                        "x": -654.3052368164063,
-                        "y": 1025.903076171875
+                        "x": -1026.69677734375,
+                        "y": 994.7212524414063
                     },
                     "offset_initialized": true,
                     "parent_id": 18,
@@ -326,26 +327,30 @@
                             "second": {
                                 "animation": {
                                     "animation": {
-                                        "atlas_indices": [],
-                                        "before_times": [],
-                                        "durations": [],
+                                        "atlas_indices": [
+                                            0
+                                        ],
+                                        "before_times": [
+                                            0.0
+                                        ],
+                                        "durations": [
+                                            0.10000000149011612
+                                        ],
                                         "is_looping": true,
-                                        "startTime": 2405.67138671875,
-                                        "totalDuration": 0.0
+                                        "startTime": 648.9010620117188,
+                                        "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": {
-                                        "height": 91.38279724121094,
+                                        "height": 137.7657470703125,
                                         "offset": {
-                                            "x": -0.9214649200439453,
-                                            "y": 17.92578887939453
+                                            "x": -1.8699378967285156,
+                                            "y": 24.62359619140625
                                         },
+                                        "type": "AABB",
                                         "vertices": [],
-                                        "width": 30.93326187133789
+                                        "width": 56.103538513183594
                                     },
-                                    "scale": {
-                                        "x": 256.0,
-                                        "y": 256.0
-                                    },
+                                    "scale": null,
                                     "texture": {
                                         "path": "images/PunchingBag_spritesheet.png"
                                     },
@@ -568,22 +573,20 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 2405.67138671875,
+                                        "startTime": 648.9010620117188,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": {
-                                        "height": 91.38279724121094,
+                                        "height": 137.7657470703125,
                                         "offset": {
-                                            "x": -0.9214649200439453,
-                                            "y": 17.92578887939453
+                                            "x": -1.8699378967285156,
+                                            "y": 24.62359619140625
                                         },
+                                        "type": "AABB",
                                         "vertices": [],
-                                        "width": 30.93326187133789
+                                        "width": 56.103538513183594
                                     },
-                                    "scale": {
-                                        "x": 256.0,
-                                        "y": 256.0
-                                    },
+                                    "scale": null,
                                     "texture": {
                                         "path": "images/PunchingBag_spritesheet.png"
                                     },
@@ -811,22 +814,20 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": false,
-                                        "startTime": 2405.67138671875,
+                                        "startTime": 648.9010620117188,
                                         "totalDuration": 0.4000000059604645
                                     },
                                     "collider_data": {
-                                        "height": 91.38279724121094,
+                                        "height": 137.7657470703125,
                                         "offset": {
-                                            "x": -0.9214649200439453,
-                                            "y": 17.92578887939453
+                                            "x": -1.8699378967285156,
+                                            "y": 24.62359619140625
                                         },
+                                        "type": "AABB",
                                         "vertices": [],
-                                        "width": 30.93326187133789
+                                        "width": 56.103538513183594
                                     },
-                                    "scale": {
-                                        "x": 256.0,
-                                        "y": 256.0
-                                    },
+                                    "scale": null,
                                     "texture": {
                                         "path": "images/PunchingBag_spritesheet.png"
                                     },
@@ -1054,22 +1055,20 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": false,
-                                        "startTime": 2405.67138671875,
+                                        "startTime": 648.9010620117188,
                                         "totalDuration": 0.4000000059604645
                                     },
                                     "collider_data": {
-                                        "height": 91.38279724121094,
+                                        "height": 137.7657470703125,
                                         "offset": {
-                                            "x": -0.9214649200439453,
-                                            "y": 17.92578887939453
+                                            "x": -1.8699378967285156,
+                                            "y": 24.62359619140625
                                         },
+                                        "type": "AABB",
                                         "vertices": [],
-                                        "width": 30.93326187133789
+                                        "width": 56.103538513183594
                                     },
-                                    "scale": {
-                                        "x": 256.0,
-                                        "y": 256.0
-                                    },
+                                    "scale": null,
                                     "texture": {
                                         "path": "images/PunchingBag_spritesheet.png"
                                     },
@@ -1272,6 +1271,24 @@
                                 },
                                 "property_animation": null
                             }
+                        },
+                        {
+                            "first": "Death",
+                            "second": {
+                                "animation": null,
+                                "audio": null,
+                                "name": "Death",
+                                "on_enter_callback": {
+                                    "name": "PunchingBagStateCallbacks::death_on_enter"
+                                },
+                                "on_exit_callback": {
+                                    "name": ""
+                                },
+                                "on_update_callback": {
+                                    "name": ""
+                                },
+                                "property_animation": null
+                            }
                         }
                     ]
                 },
@@ -1288,14 +1305,15 @@
                     "knockback": {
                         "x": -500.0,
                         "y": -0.0
-                    }
+                    },
+                    "play_punch_hit_sfx": true
                 },
                 "type": "Components::Attack"
             },
             {
                 "data": {
-                    "current_hp": 0,
-                    "max_hp": 5
+                    "current_hp": 6767,
+                    "max_hp": 6767
                 },
                 "type": "Components::EnemyHealth"
             }

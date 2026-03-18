@@ -28,6 +28,7 @@
 
 namespace Engine {
   namespace ECS {
+
     class Entity; // Forward declaration
 
     namespace Internal {
@@ -43,17 +44,18 @@ namespace Engine {
       };
 
       struct WorldContainers {
+        WorldID world_id = INVALID_WORLD;
         EntityID next_entity_id = 1;
         LayerID next_layer_id = 2; // Start at 2 (0 = INVALID_LAYER, 1 = DEFAULT_LAYER)
         SparseSet<EntityID> active_entities;
         SparseSet<EntityID> entities_to_destroy;
+        SparseSet<EntityID> deactivated_entities; // Entities suspended (kept alive but not iterated/rendered)
         std::vector<ComponentSignature> entity_signatures;  // Indexed by EntityID — O(1) direct access
         std::vector<LayerID> entity_highest_layer; // Cached highest layer per entity (indexed by EntityID)
         std::vector<LayerSignature> entity_layers;  // Indexed by EntityID — O(1) direct access
         std::unordered_map<EntityID, std::string> entity_names;
         std::unordered_map<EntityID, PrefabInstanceData> prefab_instances;
         std::array<std::unique_ptr<IComponentArray>, MAX_COMPONENTS> component_arrays{};
-        std::vector<std::unique_ptr<System>> systems;
         std::vector<std::pair<EntityID, ComponentTypeID>> components_to_remove;
         std::unordered_map<std::string, LayerID> layer_name_to_id;
         std::vector<std::string> layer_id_to_name;
@@ -91,22 +93,25 @@ namespace Engine {
         }
       };
 
-      /*=================================================================================
-      Function Brief:
-      Returns a reference to the global ECS container struct holding all world state.
-
-      Parameters:
-      None.
-
-      Where to call it:
-      Internally by the ECS when accessing entity, component, or system data.
-      ==================================================================================*/
+      // Active world pointer (points to the currently active WorldContainers)
       ENGINE_API extern WorldContainers* g_containers;
+
+      // Global systems vector (shared across all worlds)
+      ENGINE_API extern std::vector<std::unique_ptr<System>> g_systems;
+
       ENGINE_API WorldContainers& init_containers();
       inline WorldContainers& get_containers() {
         if (g_containers) [[likely]] return *g_containers;
         return init_containers();
       }
+
+      // Accessor for global systems
+      inline std::vector<std::unique_ptr<System>>& get_systems() { return g_systems; }
+
+      // World registry helpers (implemented in WorldData.cpp)
+      ENGINE_API WorldID get_active_world_id();
+      ENGINE_API std::unordered_map<WorldID, WorldContainers*>& get_world_registry();
+      ENGINE_API WorldID get_next_world_id();
 
     } // namespace Internal
   } // namespace ECS

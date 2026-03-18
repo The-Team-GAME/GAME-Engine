@@ -127,6 +127,33 @@ namespace Engine {
         bool has_errors() const { return !errors.empty(); }
       };
 
+      // Cached component type name -> type ID lookup map for fast deserialization.
+      // Rebuilt lazily when component registrations change.
+      inline std::unordered_map<std::string, ComponentTypeID>& get_component_type_map() {
+        static std::unordered_map<std::string, ComponentTypeID> map;
+        static size_t last_count = 0;
+
+        // Rebuild if component registrations may have changed
+        auto& containers = Internal::get_containers();
+        size_t current_count = 0;
+        for (ComponentTypeID id = 0; id < MAX_COMPONENTS; ++id) {
+          if (containers.component_arrays[id]) ++current_count;
+        }
+
+        if (current_count != last_count) {
+          map.clear();
+          for (ComponentTypeID id = 0; id < MAX_COMPONENTS; ++id) {
+            auto& arr = containers.component_arrays[id];
+            if (arr) {
+              map[arr->get_type_name()] = id;
+            }
+          }
+          last_count = current_count;
+        }
+
+        return map;
+      }
+
       /*=================================================================================
       Function Brief:
       Deserializes components from a JSON array and adds them to the specified storage.
@@ -163,34 +190,30 @@ namespace Engine {
             Log::warning("Deserializing component '{}' with null data.", component_type);
           }
 
-          // Find matching component array type in world
-          bool found = false;
-          for (ComponentTypeID type_id = 0; type_id < MAX_COMPONENTS; ++type_id) {
+          // Find matching component array type via cached lookup map
+          auto& type_map = get_component_type_map();
+          auto map_it = type_map.find(component_type);
+          if (map_it != type_map.end()) {
+            ComponentTypeID type_id = map_it->second;
             auto& world_array = containers.component_arrays[type_id];
-            if (!world_array) continue;
-            if (world_array->get_type_name() == component_type) {
-              found = true;
-              // Create storage if it doesn't exist
-              if (storage.find(type_id) == storage.end()) {
-                storage[type_id] = world_array->create_empty();
-              }
 
-              // Add component to storage and check for errors
-              if (!storage[type_id]->add_component_from_generic_value(entity_id, component_data)) {
-                std::string error = "Failed to deserialize component '" + component_type + "': data may be corrupted or component structure has changed";
-                Log::warning("{}", error);
-                result.errors.push_back(error);
-              }
-              else {
-                // Update signature only on success
-                signature.set(type_id);
-              }
+            // Create storage if it doesn't exist
+            if (storage.find(type_id) == storage.end()) {
+              storage[type_id] = world_array->create_empty();
+            }
 
-              break;
+            // Add component to storage and check for errors
+            if (!storage[type_id]->add_component_from_generic_value(entity_id, component_data)) {
+              std::string error = "Failed to deserialize component '" + component_type + "': data may be corrupted or component structure has changed";
+              Log::warning("{}", error);
+              result.errors.push_back(error);
+            }
+            else {
+              // Update signature only on success
+              signature.set(type_id);
             }
           }
-
-          if (!found) {
+          else {
             std::string error = "No registered component type found for '" + component_type + "' during deserialization";
             Log::warning("{}", error);
             result.errors.push_back(error);
@@ -222,30 +245,25 @@ namespace Engine {
             Log::warning("Deserializing component '{}' with null data.", component_type);
           }
 
-          // Find matching component array type in world
-          bool found = false;
-          for (ComponentTypeID type_id = 0; type_id < MAX_COMPONENTS; ++type_id) {
+          // Find matching component array type via cached lookup map
+          auto& type_map = get_component_type_map();
+          auto map_it = type_map.find(component_type);
+          if (map_it != type_map.end()) {
+            ComponentTypeID type_id = map_it->second;
             auto& world_array = containers.component_arrays[type_id];
-            if (!world_array) continue;
-            if (world_array->get_type_name() == component_type) {
-              found = true;
 
-              // Add component directly to world storage and check for errors
-              if (!world_array->add_component_from_generic_value(entity_id, component_data)) {
-                std::string error = "Failed to deserialize component '" + component_type + "': data may be corrupted or component structure has changed";
-                Log::warning("{}", error);
-                result.errors.push_back(error);
-              }
-              else {
-                // Update signature only on success
-                signature.set(type_id);
-              }
-
-              break;
+            // Add component directly to world storage and check for errors
+            if (!world_array->add_component_from_generic_value(entity_id, component_data)) {
+              std::string error = "Failed to deserialize component '" + component_type + "': data may be corrupted or component structure has changed";
+              Log::warning("{}", error);
+              result.errors.push_back(error);
+            }
+            else {
+              // Update signature only on success
+              signature.set(type_id);
             }
           }
-
-          if (!found) {
+          else {
             std::string error = "No registered component type found for '" + component_type + "' during deserialization";
             Log::warning("{}", error);
             result.errors.push_back(error);

@@ -531,11 +531,16 @@ namespace Components
       // Apply optional collider override if specified
       if (anim.collider_data.has_value()) {
         if (auto* box = owner_entity_->get_component<BoxCollider>()) {
+          box->type = anim.collider_data->type;
           box->width = anim.collider_data->width;
           box->height = anim.collider_data->height;
           box->offset = anim.collider_data->offset;
           box->aabb.half_width = box->width / 2.0f;
           box->aabb.half_height = box->height / 2.0f;
+          
+          if (box->type == Components::ColliderType::POLYGON) {
+            box->polygon.vertices = anim.collider_data->vertices;
+          }
         }
       }
     }
@@ -688,7 +693,7 @@ namespace Components
 
 } // namespace Components
 
-REFLECT_FIELDS(Components::ColliderData, width, height, offset, vertices)
+REFLECT_FIELDS(Components::ColliderData, type, width, height, offset, vertices)
 REFLECT_FIELDS(Components::State, name, on_enter_callback, on_update_callback, on_exit_callback, animation, audio, property_animation)
 REFLECT_FIELDS(Components::StateAnimation, texture, texture_atlas, animation, scale, collider_data)
 REGISTER_COMPONENT(Components::StateMachine, states, current_state_name, blueprint_id, property_anim_playing)

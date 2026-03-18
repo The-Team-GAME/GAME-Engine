@@ -16,6 +16,7 @@
 #include "InputManager.h"
 #include "Time.h"
 #include "Logger.h"
+#include "Audio/AudioSystem.h"
 #include "FileIO/Settings.h"
 #include "FileIO/SettingsManager.h"
 #include "Easing.h"
@@ -29,7 +30,37 @@ namespace Engine
 
   // ---- Singleton ----
 
-  namespace { UpgradeUIStateMachine* g_upgrade_ui_sm = nullptr; }
+  namespace {
+    UpgradeUIStateMachine* g_upgrade_ui_sm = nullptr;
+    static constexpr const char* UPGRADE_LOWPASS_SNAPSHOT_INSTANCE = "upgrade_lowpass_snapshot";
+    static constexpr const char* UPGRADE_LOWPASS_SNAPSHOT_EVENT = "snapshot:/LowpassSnapshot";
+    static bool gUpgradeLowpassSnapshotActive = false;
+
+    void start_upgrade_lowpass_snapshot()
+    {
+      if (gUpgradeLowpassSnapshotActive) return;
+
+      if (!Engine::AudioSystem::createEventInstance(UPGRADE_LOWPASS_SNAPSHOT_INSTANCE, UPGRADE_LOWPASS_SNAPSHOT_EVENT)) {
+        return;
+      }
+
+      if (!Engine::AudioSystem::startEventInstance(UPGRADE_LOWPASS_SNAPSHOT_INSTANCE)) {
+        Engine::AudioSystem::releaseEventInstance(UPGRADE_LOWPASS_SNAPSHOT_INSTANCE);
+        return;
+      }
+
+      gUpgradeLowpassSnapshotActive = true;
+    }
+
+    void stop_upgrade_lowpass_snapshot()
+    {
+      if (!gUpgradeLowpassSnapshotActive) return;
+
+      Engine::AudioSystem::stopEventInstance(UPGRADE_LOWPASS_SNAPSHOT_INSTANCE, false);
+      Engine::AudioSystem::releaseEventInstance(UPGRADE_LOWPASS_SNAPSHOT_INSTANCE);
+      gUpgradeLowpassSnapshotActive = false;
+    }
+  }
 
   UpgradeUIStateMachine& UpgradeUIStateMachine::instance()
   {
@@ -87,6 +118,7 @@ namespace Engine
       // Destroy picker entities and resume time
       destroy_picker_entities();
       Time::set_time_scale(1.0f);
+      stop_upgrade_lowpass_snapshot();
       break;
     }
     default:
@@ -97,7 +129,7 @@ namespace Engine
   void UpgradeUIStateMachine::on_enter(UpgradeFlowState new_state)
   {
     auto& mgr = UpgradeManager::instance();
-    auto& cfg = FileIO::SettingsManager<FileIO::CardAnimSettings>::get_mutable();
+    //auto& cfg = FileIO::SettingsManager<FileIO::CardAnimSettings>::get_mutable();
 
     switch (new_state)
     {
@@ -122,6 +154,7 @@ namespace Engine
       // Pause time and spawn picker UI
       Time::set_time_scale(0.0001f);
       spawn_picker_entities();
+      start_upgrade_lowpass_snapshot();
       break;
     }
     case UpgradeFlowState::Applying:
@@ -722,7 +755,7 @@ namespace Engine
 
         // Convert the flying card into a mini-card so it joins the wave
         {
-          constexpr float ss_scale = 2.0f;
+          //constexpr float ss_scale = 2.0f;
           constexpr int   ss_card_w = 128;
           constexpr int   ss_card_h = 224;
           constexpr int   ss_rows = 1;
@@ -956,7 +989,7 @@ namespace Engine
       {
         int idx_in_row = row_pos[cat];
         int total_in_row = row_card_count[cat];
-        bool is_last = (idx_in_row == total_in_row - 1);
+        //bool is_last = (idx_in_row == total_in_row - 1);
 
         float x;
         if (!cfg.enable_card_stack || total_in_row <= 4)
@@ -1092,6 +1125,8 @@ namespace Engine
 
   void UpgradeUIStateMachine::reset()
   {
+    stop_upgrade_lowpass_snapshot();
+
     if (state_ == UpgradeFlowState::PickerOpen)
     {
       destroy_picker_entities();
@@ -1131,9 +1166,9 @@ namespace Engine
     // Same layout constants as spawn_picker_entities
     constexpr float ss_scale = 2.0f;
     constexpr float card_display_w = 128.0f * ss_scale;  // 256
-    constexpr float card_display_h = 224.0f * ss_scale;  // 448
+    //constexpr float card_display_h = 224.0f * ss_scale;  // 448
     constexpr float mini_w = card_display_w / 6.0f;
-    constexpr float mini_h = card_display_h / 6.0f;
+    //constexpr float mini_h = card_display_h / 6.0f;
     constexpr float mini_gap = 2.0f;
     constexpr float panel_img_w = 192.0f;
     constexpr float panel_scale = 2.0f;

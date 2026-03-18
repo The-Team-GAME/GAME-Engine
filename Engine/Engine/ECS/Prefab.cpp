@@ -411,7 +411,14 @@ namespace Engine {
       // Serialize layers and components using helper functions
       result["layers"] = Serialization::serialize_layers(prefab_impl->get_layers());
       result["components"] = Serialization::serialize_components(
-        [&prefab](auto callback) { prefab.for_each_component(callback); },
+        [&prefab](auto callback) {
+          prefab.for_each_component([&callback](const std::string& type_name, IComponentArray* array) {
+            // Skip Components::Parent — parent IDs are runtime-specific
+            // and become invalid when instantiating prefabs in different contexts
+            if (type_name == "Components::Parent") return;
+            callback(type_name, array);
+          });
+        },
         0 // Using dummy entity ID 0 for prefabs
       );
 

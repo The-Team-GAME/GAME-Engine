@@ -20,6 +20,7 @@
 #include <vector>
 #include "EngineExport.h"
 #include "Reflection/ReflectionLibrary/GenericValue.h"
+#include "ECS/Types.h"
 
 namespace Engine {
 
@@ -31,7 +32,15 @@ namespace Engine {
   LevelState - Stores the cached state of an open level.
   ==================================================================================*/
   struct LevelState {
-    EntityList cached_entities;  // Entity data when not active (empty when active)
+    ECS::WorldID world_id = ECS::INVALID_WORLD;      // World containing this level's entities
+    EntityList cached_entities;                        // Serialized entity data (editor cold-load path)
+    std::vector<ECS::EntityID> live_entity_ids;        // Deactivated entity IDs (editor fast-switch path)
+    bool has_live_entities = false;                     // True if entities are alive but deactivated (editor)
+    EntityList preloaded_entities;                     // Deserialized entity data for cold-path reload
+    bool preload_ready = false;                        // Preloaded entity data is ready
+    bool preload_in_progress = false;                  // Background preload refresh running
+    bool preload_refresh_queued = false;               // Another refresh requested while running
+    bool keep_loaded = false;                          // Keep this level resident until manually unloaded
   };
 
   namespace LevelManager {
@@ -44,11 +53,18 @@ namespace Engine {
     // If already open, switches to it. Calls on_exit for previous and on_init for new.
     ENGINE_API std::string open_level(const std::string& filepath, bool append_resource_path = true);
 
+    // Preloads a level from disk into the ECS world as inactive entities.
+    // Returns the level ID (normalized path). Preloaded levels stay resident until closed.
+    ENGINE_API std::string preload_level(const std::string& filepath, bool append_resource_path = true);
+
     // Creates a new empty level. Returns the level ID (__new_X format).
     ENGINE_API std::string create_new_level();
 
     // Switches to an already-open level. Calls on_exit/on_init callbacks.
     ENGINE_API void switch_to_level(const std::string& level_id);
+
+    // Reloads a level from its preloaded snapshot (or disk fallback).
+    ENGINE_API void reload_level(const std::string& level_id);
 
     // Closes a level. Returns false if it doesn't exist.
     // Switches to another open level if closing the active one.
@@ -86,6 +102,16 @@ namespace Engine {
     ENGINE_API size_t get_open_level_count();
 
     // ============================================================================
+    // Preloaded Snapshot Management
+    // ============================================================================
+
+    // Returns true if a preloaded snapshot exists for the given level path.
+    ENGINE_API bool has_preloaded_snapshot(const std::string& level_id);
+
+    // Clears the preloaded snapshot for a level, destroying its deactivated entities.
+    ENGINE_API void clear_preloaded_snapshot(const std::string& level_id);
+
+    // ============================================================================
     // Lifecycle Callbacks
     // ============================================================================
 
@@ -103,7 +129,7 @@ namespace Engine {
     ENGINE_API EntityList get_entities_for_save(const std::string& level_id);
 
     // Clears all open levels and the world.
-    ENGINE_API void clear_all();
+    ENGINE_API void clear_all(bool preserve_preloaded_levels = true);
 
     // ============================================================================
     // Entity Serialization Utilities

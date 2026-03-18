@@ -2,17 +2,17 @@
 // file:    AudioSystem.h
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
+// author:  How Hong Chin Ryan (100%)
 //          Primary author
 //
-// email:   chew.s@digipen.edu
+// email:   hongchinryan.how@digipen.edu
 //
 // brief:   Public interface for the FMOD-based audio system. Provides sound
 //          loading, playback control, and spatial audio functionality.
 //          Supports 2D and 3D audio positioning with volume and looping controls.
 //          Integrates with the resource management system for automatic cleanup.
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
@@ -46,7 +46,11 @@ namespace Engine {
     // Event playback (one-shot)
     // ------------------------------------------------------------
     ENGINE_API bool playEvent(const std::string& eventPath);
-    ENGINE_API bool playEventAtPosition(const std::string& eventPath, const Math::Vec2D& position);
+    ENGINE_API bool stopEvent(const std::string& eventPath, bool immediate = true);
+    // minDistance: radius where sound is full volume and mostly centered (default 500)
+    // maxDistance: radius where sound fades to silence (default 2000)
+    // soundSpread: 0-100, how much sound spreads between speakers when close (0=point source, 100=wide stereo)
+    ENGINE_API bool playEventAtPosition(const std::string& eventPath, const Math::Vec2D& position, float minDistance = 500.0f, float maxDistance = 2000.0f, float soundSpread = 50.0f);
 
     // ------------------------------------------------------------
     // Event instance management (persistent events)
@@ -81,6 +85,11 @@ namespace Engine {
     ENGINE_API bool setVCAVolume(const std::string& vcaPath, float volume);
     ENGINE_API bool getBusVolume(const std::string& busPath, float& outVolume);
     ENGINE_API bool getVCAVolume(const std::string& vcaPath, float& outVolume);
+
+    // Scene BGM helpers (single managed BGM instance across scene transitions)
+    ENGINE_API bool playSceneMusic(const std::string& eventPath, float volume = 1.0f, bool immediateStop = true);
+    ENGINE_API bool stopSceneMusic(bool immediate = true);
+    ENGINE_API bool isSceneMusicPlaying();
 
     // ------------------------------------------------------------
     // Global controls

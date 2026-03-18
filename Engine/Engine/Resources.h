@@ -86,6 +86,8 @@ namespace Engine {
 
     // Prefab loading and saving
     ENGINE_API Engine::ECS::Prefab load_prefab(const std::string& filepath, bool append_resource_path = true, bool persist = false);
+    // Overload: load prefab from pre-parsed GenericValue (avoids re-reading + re-parsing the file)
+    ENGINE_API Engine::ECS::Prefab load_prefab_from_generic_value(const std::string& filepath, const ReflectionLibrary::GenericValue& parsed_value, bool append_resource_path = true, bool persist = false);
     ENGINE_API bool save_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab, bool append_resource_path = true);
 
     // Add prefab to cache without saving to disk
@@ -93,6 +95,8 @@ namespace Engine {
 
     // Level loading and saving
     ENGINE_API Engine::EntityList load_level(const std::string& filepath, bool append_resource_path = true, bool persist = false);
+    // Overload: load level from pre-parsed GenericValue (avoids re-reading + re-parsing the file)
+    ENGINE_API Engine::EntityList load_level_from_generic_value(const std::string& filepath, const ReflectionLibrary::GenericValue& parsed_value, bool append_resource_path = true, bool persist = false);
     ENGINE_API bool save_level(const std::string& filepath, const Engine::EntityList& entities, bool append_resource_path = true);
 
     // Add level to cache without saving to disk

@@ -66717,7 +66717,7 @@
                                                 "y": 135.0
                                             },
                                             "texture": {
-                                                "path": "images/TurretMonkeySpriteSheets/dmg.png"
+                                                "path": "images/TurretMonkeySpriteSheets/death.png"
                                             },
                                             "texture_atlas": {
                                                 "drawIndex": -1,
@@ -71343,7 +71343,7 @@
                                                 "y": 135.0
                                             },
                                             "texture": {
-                                                "path": "images/TurretMonkeySpriteSheets/dmg.png"
+                                                "path": "images/TurretMonkeySpriteSheets/death.png"
                                             },
                                             "texture_atlas": {
                                                 "drawIndex": -1,
@@ -74384,7 +74384,7 @@
                                                 "y": 135.0
                                             },
                                             "texture": {
-                                                "path": "images/TurretMonkeySpriteSheets/dmg.png"
+                                                "path": "images/TurretMonkeySpriteSheets/death.png"
                                             },
                                             "texture_atlas": {
                                                 "drawIndex": -1,
@@ -76133,7 +76133,7 @@
                                                 "y": 135.0
                                             },
                                             "texture": {
-                                                "path": "images/TurretMonkeySpriteSheets/dmg.png"
+                                                "path": "images/TurretMonkeySpriteSheets/death.png"
                                             },
                                             "texture_atlas": {
                                                 "drawIndex": -1,
@@ -82051,7 +82051,7 @@
                                                 "y": 135.0
                                             },
                                             "texture": {
-                                                "path": "images/TurretMonkeySpriteSheets/dmg.png"
+                                                "path": "images/TurretMonkeySpriteSheets/death.png"
                                             },
                                             "texture_atlas": {
                                                 "drawIndex": -1,
@@ -93137,7 +93137,7 @@
                                                 "y": 135.0
                                             },
                                             "texture": {
-                                                "path": "images/TurretMonkeySpriteSheets/dmg.png"
+                                                "path": "images/TurretMonkeySpriteSheets/death.png"
                                             },
                                             "texture_atlas": {
                                                 "drawIndex": -1,
@@ -94886,7 +94886,7 @@
                                                 "y": 135.0
                                             },
                                             "texture": {
-                                                "path": "images/TurretMonkeySpriteSheets/dmg.png"
+                                                "path": "images/TurretMonkeySpriteSheets/death.png"
                                             },
                                             "texture_atlas": {
                                                 "drawIndex": -1,
@@ -98220,7 +98220,7 @@
                                                 "y": 135.0
                                             },
                                             "texture": {
-                                                "path": "images/TurretMonkeySpriteSheets/dmg.png"
+                                                "path": "images/TurretMonkeySpriteSheets/death.png"
                                             },
                                             "texture_atlas": {
                                                 "drawIndex": -1,

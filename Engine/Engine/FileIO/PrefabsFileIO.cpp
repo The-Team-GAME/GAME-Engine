@@ -34,13 +34,7 @@ namespace Engine {
       return ReflectionLibrary::generic_value_to_json(generic_value, true);
     }
 
-    Engine::ECS::Prefab deserialize_prefab_from_json(const std::string& json_str) {
-      std::optional<ReflectionLibrary::GenericValue> generic_value_opt = ReflectionLibrary::generic_value_from_json(json_str);
-      if (!generic_value_opt.has_value()) {
-        return Engine::ECS::Prefab(); // Return empty prefab handle
-      }
-
-      ReflectionLibrary::GenericValue generic_value = generic_value_opt.value();
+    Engine::ECS::Prefab deserialize_prefab_from_generic_value(const ReflectionLibrary::GenericValue& generic_value) {
       if (!generic_value.isObject() || !generic_value.getObject().contains("dataType") ||
           generic_value["dataType"].getString() != "Prefab" ||
           !generic_value.getObject().contains("data")) {
@@ -49,8 +43,16 @@ namespace Engine {
             return Engine::ECS::Prefab(); // Return empty prefab handle
       }
 
-      
       return Engine::ECS::prefab_from_generic_value(generic_value["data"]);
+    }
+
+    Engine::ECS::Prefab deserialize_prefab_from_json(const std::string& json_str) {
+      std::optional<ReflectionLibrary::GenericValue> generic_value_opt = ReflectionLibrary::generic_value_from_json(json_str);
+      if (!generic_value_opt.has_value()) {
+        return Engine::ECS::Prefab(); // Return empty prefab handle
+      }
+
+      return deserialize_prefab_from_generic_value(generic_value_opt.value());
     }
 
     bool serialize_prefab_to_json_file(const std::string& filepath, const Engine::ECS::Prefab& prefab)

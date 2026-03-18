@@ -16,6 +16,10 @@
 #include "FunctionRegistry.h"
 #include "Components/StateMachineBlueprintRegistry.h"
 
+namespace {
+  constexpr const char* PRELOADED_GAMEPLAY_LEVEL = "levels/LevelOneTestingExtra.json";
+}
+
 /*=================================================================================
 Function Brief:
 Common game initialization and loop logic.
@@ -92,6 +96,11 @@ void RunGame()
   // (Player, LazyMonkey, EnemyHealth, etc.) are registered before
   // prefab deserialization tries to look them up.
   Engine::Resources::load_all_prefabs();
+
+  // Warm the gameplay level once at startup so the first transition into gameplay
+  // can reuse the instantiated entities instead of loading from disk again.
+  Log::info("[EntryPoint] Requesting preload for gameplay level: {}", PRELOADED_GAMEPLAY_LEVEL);
+  Engine::LevelManager::preload_level(PRELOADED_GAMEPLAY_LEVEL);
 
 #ifndef GAME_BUILD
   // ── Start source file watcher ───────────────────────────────────────

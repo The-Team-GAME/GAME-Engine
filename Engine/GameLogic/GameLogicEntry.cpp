@@ -2,6 +2,15 @@
 // file:    GameLogicEntry.cpp
 // project: Monkey Stole My GPA
 //
+// author:  Chew Shee Yang (85%)
+//          Primary author
+//          Cheng Ming Xian (15%)
+//          Co-Author
+// 
+//
+// email:   chew.s@digipen.edu
+//          c.mingxian@digipen.edu
+// 
 // brief:   DLL entry point for GameLogic hot-reload. Exports RegisterGameLogic()
 //          and UnregisterGameLogic() functions called by the Engine's
 //          HotReloadManager. RegisterGameLogic sets up all game-specific
@@ -29,6 +38,7 @@
 #include "GameStates/VictoryState.h"
 #include "GameStates/OptionsState.h"
 #include "GameStates/VideoPlaybackState.h"
+#include "GameStates/OpeningCutsceneState.h"
 
 // Game systems
 #include "Systems/HealthSystem.h"
@@ -49,6 +59,11 @@
 #include "Components/HeartrateComponent.h"
 #include "Components/HealthComponents.h"
 #include "Components/InteractableComponents.h"
+#include "../Engine/LevelManager.h"
+
+namespace {
+  static constexpr const char* PLAYER_HEARTBEAT_EVENT = "event:/SFX/PlayerHeartBeat";
+}
 
 // =============================================================================
 // Knockback Helper Function
@@ -130,12 +145,12 @@ static void register_collision_callbacks()
 
         int damage = attack->damage;
         enemy_health->take_damage(damage);
-        Engine::Systems::add_camera_shake(42.0f, 0.16f);
+        Engine::Systems::add_camera_shake(0.2f);
         Log::info("camera shake requested on enemy hit");
         Log::info("Enemy took {} damage! HP: {}/{}", damage, enemy_health->current_hp, enemy_health->max_hp);
 
-        Engine::AudioSystem::playEvent("event:/SFX/PlayerHit");
-        Log::info("Playing FMOD event: event:/SFX/PlayerHit");
+        Engine::AudioSystem::playEvent("event:/SFX/PlayerPunch");
+        Log::info("Playing FMOD event: event:/SFX/PlayerPunch");
 
         if (enemy_health->current_hp <= 0) {
           if (state_machine->get_current_state() != "Death") {
@@ -213,6 +228,8 @@ static void register_collision_callbacks()
           return;
         }
 
+        const int previous_health = health->value;
+
         // Decrease HP by 1 per hit
         health->damage(1);
         Log::info("Player took damage! HP: {}/{}", health->value, health->max);
@@ -225,9 +242,16 @@ static void register_collision_callbacks()
         Engine::AudioSystem::playEvent("event:/SFX/PlayerHurt");
         Log::info("Playing FMOD event: event:/SFX/PlayerHurt");
 
+        if (previous_health > 2 && health->value > 0 && health->value <= 2)
+        {
+          Engine::AudioSystem::playEvent(PLAYER_HEARTBEAT_EVENT);
+          Log::info("Playing FMOD event: {}", PLAYER_HEARTBEAT_EVENT);
+        }
+
         // Trigger death state immediately when HP reaches 0
         if (health->is_dead())
         {
+          Engine::AudioSystem::stopEvent(PLAYER_HEARTBEAT_EVENT, true);
           Log::info("Player is dead!");
           Components::StateMachine* state_machine = player_entity.get_component<Components::StateMachine>();
           if (state_machine && state_machine->get_current_state() != "Death")
@@ -286,21 +310,21 @@ static void register_upgrade_applicators()
     [](Engine::FileIO::UpgradeType type, float value) {
       auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
       if (!player_entity.is_valid()) return;
-      auto* player = player_entity.get_component<Components::Player>();
-      if (!player) return;
+      auto* player_comp = player_entity.get_component<Components::Player>();
+      if (!player_comp) return;
 
       if (type == Engine::FileIO::UpgradeType::Flat) {
-        player->attack1_data.dmg += value;
-        player->attack2_data.dmg += value;
-        player->attack3_data.dmg += value;
+        player_comp->attack1_data.dmg += value;
+        player_comp->attack2_data.dmg += value;
+        player_comp->attack3_data.dmg += value;
       }
       else {
-        player->attack1_data.dmg *= value;
-        player->attack2_data.dmg *= value;
-        player->attack3_data.dmg *= value;
+        player_comp->attack1_data.dmg *= value;
+        player_comp->attack2_data.dmg *= value;
+        player_comp->attack3_data.dmg *= value;
       }
       Log::info("[UpgradeApplicator] attack_damage applied — atk1:{} atk2:{} atk3:{}",
-        player->attack1_data.dmg, player->attack2_data.dmg, player->attack3_data.dmg);
+        player_comp->attack1_data.dmg, player_comp->attack2_data.dmg, player_comp->attack3_data.dmg);
     });
 
   // "uppercut_damage" — modifies uppercut_data.dmg
@@ -308,14 +332,14 @@ static void register_upgrade_applicators()
     [](Engine::FileIO::UpgradeType type, float value) {
       auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
       if (!player_entity.is_valid()) return;
-      auto* player = player_entity.get_component<Components::Player>();
-      if (!player) return;
+      auto* player_comp = player_entity.get_component<Components::Player>();
+      if (!player_comp) return;
 
       if (type == Engine::FileIO::UpgradeType::Flat)
-        player->uppercut_data.dmg += value;
+        player_comp->uppercut_data.dmg += value;
       else
-        player->uppercut_data.dmg *= value;
-      Log::info("[UpgradeApplicator] uppercut_damage applied — dmg:{}", player->uppercut_data.dmg);
+        player_comp->uppercut_data.dmg *= value;
+      Log::info("[UpgradeApplicator] uppercut_damage applied — dmg:{}", player_comp->uppercut_data.dmg);
     });
 
   // "downsmash_damage" — modifies smash_data.dmg
@@ -323,14 +347,14 @@ static void register_upgrade_applicators()
     [](Engine::FileIO::UpgradeType type, float value) {
       auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
       if (!player_entity.is_valid()) return;
-      auto* player = player_entity.get_component<Components::Player>();
-      if (!player) return;
+      auto* player_comp = player_entity.get_component<Components::Player>();
+      if (!player_comp) return;
 
       if (type == Engine::FileIO::UpgradeType::Flat)
-        player->smash_data.dmg += value;
+        player_comp->smash_data.dmg += value;
       else
-        player->smash_data.dmg *= value;
-      Log::info("[UpgradeApplicator] downsmash_damage applied — dmg:{}", player->smash_data.dmg);
+        player_comp->smash_data.dmg *= value;
+      Log::info("[UpgradeApplicator] downsmash_damage applied — dmg:{}", player_comp->smash_data.dmg);
     });
 
   // "uppercut_cooldown" — Flat: cooldown = max(0, cooldown - value)
@@ -338,14 +362,14 @@ static void register_upgrade_applicators()
     [](Engine::FileIO::UpgradeType type, float value) {
       auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
       if (!player_entity.is_valid()) return;
-      auto* player = player_entity.get_component<Components::Player>();
-      if (!player) return;
+      auto* player_comp = player_entity.get_component<Components::Player>();
+      if (!player_comp) return;
 
       if (type == Engine::FileIO::UpgradeType::Flat)
-        player->uppercut.cooldown = std::max(0.0f, player->uppercut.cooldown - value);
+        player_comp->uppercut.cooldown = std::max(0.0f, player_comp->uppercut.cooldown - value);
       else
-        player->uppercut.cooldown = std::max(0.0f, player->uppercut.cooldown * value);
-      Log::info("[UpgradeApplicator] uppercut_cooldown applied — cd:{}", player->uppercut.cooldown);
+        player_comp->uppercut.cooldown = std::max(0.0f, player_comp->uppercut.cooldown * value);
+      Log::info("[UpgradeApplicator] uppercut_cooldown applied — cd:{}", player_comp->uppercut.cooldown);
     });
 
   // "downsmash_cooldown" — Flat: cooldown = max(0, cooldown - value)
@@ -368,14 +392,14 @@ static void register_upgrade_applicators()
     [](Engine::FileIO::UpgradeType type, float value) {
       auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
       if (!player_entity.is_valid()) return;
-      auto* player = player_entity.get_component<Components::Player>();
-      if (!player) return;
+      auto* player_comp = player_entity.get_component<Components::Player>();
+      if (!player_comp) return;
 
       if (type == Engine::FileIO::UpgradeType::Flat)
-        player->dash.cooldown = std::max(0.0f, player->dash.cooldown - value);
+        player_comp->dash.cooldown = std::max(0.0f, player_comp->dash.cooldown - value);
       else
-        player->dash.cooldown = std::max(0.0f, player->dash.cooldown * value);
-      Log::info("[UpgradeApplicator] dash_cooldown applied — cd:{}", player->dash.cooldown);
+        player_comp->dash.cooldown = std::max(0.0f, player_comp->dash.cooldown * value);
+      Log::info("[UpgradeApplicator] dash_cooldown applied — cd:{}", player_comp->dash.cooldown);
     });
 }
 
@@ -393,13 +417,18 @@ static void register_function_callbacks()
     }));
   reg.register_function<void()>("pause_menu_restart", std::function<void()>([]() {
     Log::info("Restarting level from pause menu");
-    Engine::SceneManager::load_scene("GameplayState");
+    Engine::SceneManager::pop_scene();
+    const std::string& level_id = Engine::LevelManager::get_active_level_id();
+    if (!level_id.empty()) {
+      Engine::LevelManager::reload_level(level_id);
+    }
     }));
   reg.register_function<void()>("pause_menu_options", std::function<void()>([]() {
     Log::info("Opening options from pause menu");
     }));
   reg.register_function<void()>("pause_menu_exit", std::function<void()>([]() {
     Log::info("Exiting to main menu from pause menu");
+    Engine::AudioSystem::stopEvent(PLAYER_HEARTBEAT_EVENT, true);
     Engine::SceneManager::load_scene("MainMenuState");
     }));
 
@@ -444,7 +473,7 @@ static void register_function_callbacks()
 
   // Main menu button callbacks
   reg.register_function<void()>("start_game", std::function<void()>([]() {
-    Engine::SceneManager::load_scene("GameplayState");
+    Engine::SceneManager::load_scene("OpeningCutsceneState");
     }));
   reg.register_function<void()>("options_menu", std::function<void()>([]() {
     }));
@@ -486,6 +515,7 @@ static void register_scenes()
   Engine::SceneManager::register_scene<VictoryState>("VictoryState");
   Engine::SceneManager::register_scene<OptionsState>("OptionsState");
   Engine::SceneManager::register_scene<VideoPlaybackState>("VideoPlaybackState");
+  Engine::SceneManager::register_scene<OpeningCutsceneState>("OpeningCutsceneState");
 }
 
 static void register_systems()
