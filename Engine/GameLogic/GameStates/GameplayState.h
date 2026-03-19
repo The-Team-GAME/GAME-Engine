@@ -123,11 +123,11 @@ public:
       tips_button_id = tips_btn_created.get_id();
     }
 
-    // Upgrade button — bottom-left corner, 64x64, alpha-hidden until upgrade is available
+    // Upgrade button — bottom-left corner, always visible; only clickable when upgrade is available
     auto upg_btn = Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(128.0f, -128.0f, 0.0f, 64.0f * 4.0f, 64.0f * 4.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/skill_upgrades.png"))
-      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.0f)  // start invisible
+      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)  // always visible
       .add_component<Components::UI>(0.0f, 1.0f)
       .add_component<Components::RuntimeOnly>()
       .add_to_layer("main_menu_4");
@@ -152,16 +152,20 @@ public:
     // Pause button click detection (screen coords)
     if (pause_button_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(pause_button_id))) {
       auto* pause_transform = Engine::ECS::Entity(pause_button_id).get_component<Components::Transform2D>();
-      float half_w = pause_transform->scale.x / 2.0f;
-      float half_h = pause_transform->scale.y / 2.0f;
+      auto* pause_ui        = Engine::ECS::Entity(pause_button_id).get_component<Components::UI>();
+      if (pause_transform && pause_ui) {
+        auto screen_pos = Engine::Systems::compute_ui_position(*pause_ui, *pause_transform);
+        float half_w = pause_transform->scale.x / 2.0f;
+        float half_h = pause_transform->scale.y / 2.0f;
 
-      if (mouse_pos.x >= pause_transform->position.x - half_w &&
-        mouse_pos.x <= pause_transform->position.x + half_w &&
-        mouse_pos.y >= pause_transform->position.y - half_h &&
-        mouse_pos.y <= pause_transform->position.y + half_h) {
-        if (Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
-          Engine::SceneManager::push_scene("PauseState");
-          return;
+        if (mouse_pos.x >= screen_pos.x - half_w &&
+          mouse_pos.x <= screen_pos.x + half_w &&
+          mouse_pos.y >= screen_pos.y - half_h &&
+          mouse_pos.y <= screen_pos.y + half_h) {
+          if (Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
+            Engine::SceneManager::push_scene("PauseState");
+            return;
+          }
         }
       }
     }
@@ -169,17 +173,21 @@ public:
     // Tips button click detection (screen coords)
     if (tips_button_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(tips_button_id))) {
       auto* tips_transform = Engine::ECS::Entity(tips_button_id).get_component<Components::Transform2D>();
-      float half_w = tips_transform->scale.x / 2.0f;
-      float half_h = tips_transform->scale.y / 2.0f;
+      auto* tips_ui        = Engine::ECS::Entity(tips_button_id).get_component<Components::UI>();
+      if (tips_transform && tips_ui) {
+        auto screen_pos = Engine::Systems::compute_ui_position(*tips_ui, *tips_transform);
+        float half_w = tips_transform->scale.x / 2.0f;
+        float half_h = tips_transform->scale.y / 2.0f;
 
-      if (mouse_pos.x >= tips_transform->position.x - half_w &&
-        mouse_pos.x <= tips_transform->position.x + half_w &&
-        mouse_pos.y >= tips_transform->position.y - half_h &&
-        mouse_pos.y <= tips_transform->position.y + half_h) {
-        if (Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
-          TipsBookState::tips_button_id = tips_button_id;
-          Engine::SceneManager::push_scene("TipsBookState");
-          return;
+        if (mouse_pos.x >= screen_pos.x - half_w &&
+          mouse_pos.x <= screen_pos.x + half_w &&
+          mouse_pos.y >= screen_pos.y - half_h &&
+          mouse_pos.y <= screen_pos.y + half_h) {
+          if (Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
+            TipsBookState::tips_button_id = tips_button_id;
+            Engine::SceneManager::push_scene("TipsBookState");
+            return;
+          }
         }
       }
     }
@@ -196,6 +204,9 @@ public:
       Engine::SceneManager::push_scene("PauseState");
       return;
     }
+
+    // Drive upgrade state machine (handles Tab key + upgrade button click)
+    Engine::UpgradeUIStateMachine::instance().update();
 
   };
 

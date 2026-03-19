@@ -20,6 +20,7 @@
 #include "FileIO/Settings.h"
 #include "FileIO/SettingsManager.h"
 #include "Easing.h"
+#include "Graphics/Renderer.h"
 #include <cmath>
 #include <random>
 
@@ -110,12 +111,6 @@ namespace Engine
     {
     case UpgradeFlowState::Available:
     {
-      // Hide upgrade button when leaving Available
-      if (upgrade_btn_id_ != 0 && ECS::is_entity_active(ECS::Entity(upgrade_btn_id_)))
-      {
-        auto* c = ECS::Entity(upgrade_btn_id_).get_component<Components::Color>();
-        if (c) c->a = 0.0f;
-      }
       break;
     }
     case UpgradeFlowState::PickerOpen:
@@ -140,12 +135,6 @@ namespace Engine
     {
     case UpgradeFlowState::Available:
     {
-      // Show upgrade button
-      if (upgrade_btn_id_ != 0 && ECS::is_entity_active(ECS::Entity(upgrade_btn_id_)))
-      {
-        auto* c = ECS::Entity(upgrade_btn_id_).get_component<Components::Color>();
-        if (c) c->a = 1.0f;
-      }
       break;
     }
     case UpgradeFlowState::Rolling:
@@ -208,20 +197,24 @@ namespace Engine
         break;
       }
 
-      // Check for 'I' key or mouse click on upgrade button
-      bool open_picker = Input::is_pressed(KeyCode::I);
+      // Check for Tab key or mouse click on upgrade button
+      bool open_picker = Input::is_pressed(KeyCode::Tab);
 
       if (!open_picker && upgrade_btn_id_ != 0
         && ECS::is_entity_active(ECS::Entity(upgrade_btn_id_)))
       {
-        auto* t = ECS::Entity(upgrade_btn_id_).get_component<Components::Transform2D>();
-        if (t)
+        auto* t  = ECS::Entity(upgrade_btn_id_).get_component<Components::Transform2D>();
+        auto* ui = ECS::Entity(upgrade_btn_id_).get_component<Components::UI>();
+        if (t && ui)
         {
+          auto vres = Engine::Graphics::get_virtual_resolution();
           glm::vec2 mouse = Input::get_mouse_position();
+          float sx = vres.x * ui->anchor.x + t->position.x;
+          float sy = vres.y * ui->anchor.y + t->position.y;
           float hw = t->scale.x / 2.0f;
           float hh = t->scale.y / 2.0f;
-          if (mouse.x >= t->position.x - hw && mouse.x <= t->position.x + hw &&
-            mouse.y >= t->position.y - hh && mouse.y <= t->position.y + hh)
+          if (mouse.x >= sx - hw && mouse.x <= sx + hw &&
+            mouse.y >= sy - hh && mouse.y <= sy + hh)
           {
             if (Input::is_pressed(KeyCode::MouseLeft))
               open_picker = true;

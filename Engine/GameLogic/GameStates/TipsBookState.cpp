@@ -8,6 +8,7 @@
 //-----------------------------------------------------------------------------------
 #include "pch.h"
 #include "TipsBookState.h"
+#include "../../Engine/Engine/Graphics/Renderer.h"
 
 // ============================================================
 // Nav button helpers
@@ -165,13 +166,17 @@ void TipsBookState::update()
     return;
 
   glm::vec2 mouse_pos = Engine::Input::get_mouse_position();
-  auto* t = Engine::ECS::Entity(tips_button_id).get_component<Components::Transform2D>();
-  if (!t) return;
+  auto* t  = Engine::ECS::Entity(tips_button_id).get_component<Components::Transform2D>();
+  auto* ui = Engine::ECS::Entity(tips_button_id).get_component<Components::UI>();
+  if (!t || !ui) return;
 
-  float hw = t->scale.x * 0.5f;
-  float hh = t->scale.y * 0.5f;
-  bool  hovered = (mouse_pos.x >= t->position.x - hw && mouse_pos.x <= t->position.x + hw &&
-                   mouse_pos.y >= t->position.y - hh && mouse_pos.y <= t->position.y + hh);
+  auto vres    = Engine::Graphics::get_virtual_resolution();
+  float sx     = vres.x * ui->anchor.x + t->position.x;
+  float sy     = vres.y * ui->anchor.y + t->position.y;
+  float hw     = t->scale.x * 0.5f;
+  float hh     = t->scale.y * 0.5f;
+  bool  hovered = (mouse_pos.x >= sx - hw && mouse_pos.x <= sx + hw &&
+                   mouse_pos.y >= sy - hh && mouse_pos.y <= sy + hh);
 
   if (hovered && Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
     if (page == 1) show_page2();
