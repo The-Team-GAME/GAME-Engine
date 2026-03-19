@@ -31,6 +31,14 @@ void OldManDialogueState::load()
 {
   is_open = true;
 
+  Components::Text dialogue_text(OLD_MAN_DIALOGUE_TEXT, 0.5f);
+  dialogue_text.line_spacing = 1.15f;
+  dialogue_text.alignment = Components::TextAlignment::Left;
+
+  Components::Text continue_text("Press any key to continue", 0.5f);
+  continue_text.line_spacing = 1.0f;
+  continue_text.alignment = Components::TextAlignment::Center;
+
   dimmer_id_ = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(SCREEN_CENTER_X, SCREEN_CENTER_Y, 0.0f, 1600.0f, 900.0f)
     .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
@@ -61,7 +69,7 @@ void OldManDialogueState::load()
   dialogue_text_id_ = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(SCREEN_CENTER_X - 170.0f, SCREEN_CENTER_Y + 255.0f, 0.0f, 680.0f, 190.0f)
     .add_component<Components::Font>(Engine::Resources::load_font("fonts/FiveFontsatFreddy's-Regular.ttf", 48))
-    .add_component<Components::Text>(OLD_MAN_DIALOGUE_TEXT, 0.5f, 1.15f, Components::TextAlignment::Left)
+    .add_component<Components::Text>(std::move(dialogue_text))
     .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 1.0f)
     .add_component<Components::UI>()
     .add_component<Components::RuntimeOnly>()
@@ -71,7 +79,7 @@ void OldManDialogueState::load()
   continue_text_id_ = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(SCREEN_CENTER_X - 10.0f, SCREEN_CENTER_Y + 390.0f, 0.0f, 520.0f, 48.0f)
     .add_component<Components::Font>(Engine::Resources::load_font("fonts/FiveFontsatFreddy's-Regular.ttf", 32))
-    .add_component<Components::Text>("Press any key to continue", 0.5f, 1.0f, Components::TextAlignment::Center)
+    .add_component<Components::Text>(std::move(continue_text))
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
     .add_component<Components::UI>()
     .add_component<Components::RuntimeOnly>()
