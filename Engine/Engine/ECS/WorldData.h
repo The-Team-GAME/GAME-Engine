@@ -39,6 +39,7 @@ namespace Engine {
       // ====================================== */
       struct PrefabInstanceData {
         std::string prefab_id; // Now stores UUID instead of file path
+        std::string prefab_filepath; // Stable relative asset path for editor/source actions
         // Map: ComponentTypeID -> set of overridden field paths (e.g., "color", "scale.x")
         std::unordered_map<ComponentTypeID, std::unordered_set<std::string>> field_overrides;
       };

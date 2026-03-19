@@ -47,6 +47,7 @@ namespace {
     std::string level_id;
     std::vector<Engine::ECS::EntityID> source_ids;  // Entity IDs to clone from
     std::vector<Engine::ECS::EntityID> built_ids;   // Cloned entity IDs so far
+    std::unordered_map<Engine::ECS::EntityID, Engine::ECS::EntityID> id_remap;
     size_t index = 0;                                // Current progress
     bool active = false;
   };
@@ -167,6 +168,64 @@ namespace {
   {
     return !level_id.empty() && !level_id.starts_with("__new_");
   }
+
+  void remap_cloned_hierarchy_ids(
+    const std::unordered_map<Engine::ECS::EntityID, Engine::ECS::EntityID>& id_remap,
+    const std::vector<Engine::ECS::EntityID>& cloned_ids)
+  {
+    for (Engine::ECS::EntityID clone_id : cloned_ids) {
+      Engine::ECS::Entity entity(clone_id);
+      if (!entity.is_valid()) {
+        continue;
+      }
+
+      if (auto* parent_comp = entity.get_component<Components::Parent>()) {
+        auto it = id_remap.find(parent_comp->parent_id);
+        if (it != id_remap.end()) {
+          parent_comp->parent_id = it->second;
+        }
+      }
+
+      if (auto* children_comp = entity.get_component<Components::Children>()) {
+        for (auto& child_id : children_comp->child_ids) {
+          auto it = id_remap.find(child_id);
+          if (it != id_remap.end()) {
+            child_id = it->second;
+          }
+        }
+      }
+    }
+  }
+
+  std::vector<Engine::ECS::EntityID> clone_snapshot_entities(
+    const std::vector<Engine::ECS::EntityID>& source_ids)
+  {
+    std::vector<Engine::ECS::EntityID> cloned_ids;
+    cloned_ids.reserve(source_ids.size());
+
+    std::unordered_map<Engine::ECS::EntityID, Engine::ECS::EntityID> id_remap;
+    id_remap.reserve(source_ids.size());
+
+    for (Engine::ECS::EntityID source_id : source_ids) {
+      Engine::ECS::Entity source(source_id);
+      if (!source.is_valid()) {
+        continue;
+      }
+
+      Engine::ECS::Entity cloned = Engine::ECS::clone_entity(source);
+      if (!cloned.is_valid()) {
+        continue;
+      }
+
+      Engine::ECS::EntityID clone_id = cloned.get_id();
+      Engine::ECS::deactivate_entity(clone_id);
+      cloned_ids.push_back(clone_id);
+      id_remap[source_id] = clone_id;
+    }
+
+    remap_cloned_hierarchy_ids(id_remap, cloned_ids);
+    return cloned_ids;
+  }
 }
 
 namespace Engine {
@@ -247,10 +306,11 @@ namespace Engine {
         // First frame: capture source entity IDs and clean up old snapshot
         if (snapshot_rebuild.source_ids.empty() && snapshot_rebuild.index == 0) {
           clear_preloaded_snapshot(snapshot_rebuild.level_id);
+          snapshot_rebuild.id_remap.clear();
 
           ECS::for_each_entity([&](ECS::Entity entity) {
             snapshot_rebuild.source_ids.push_back(entity.get_id());
-          });
+            });
 
           if (snapshot_rebuild.source_ids.empty()) {
             snapshot_rebuild.active = false;
@@ -270,6 +330,7 @@ namespace Engine {
                 ECS::EntityID clone_id = cloned.get_id();
                 ECS::deactivate_entity(clone_id);
                 snapshot_rebuild.built_ids.push_back(clone_id);
+                snapshot_rebuild.id_remap[source_id] = clone_id;
               }
             }
 
@@ -283,11 +344,13 @@ namespace Engine {
           // Check if rebuild is complete
           if (snapshot_rebuild.index >= snapshot_rebuild.source_ids.size()) {
             if (!snapshot_rebuild.built_ids.empty()) {
+              remap_cloned_hierarchy_ids(snapshot_rebuild.id_remap, snapshot_rebuild.built_ids);
               preloaded_snapshots[snapshot_rebuild.level_id] = std::move(snapshot_rebuild.built_ids);
             }
             snapshot_rebuild.active = false;
             snapshot_rebuild.source_ids.clear();
             snapshot_rebuild.built_ids.clear();
+            snapshot_rebuild.id_remap.clear();
             snapshot_rebuild.index = 0;
             Log::info("[LevelManager] Incremental snapshot rebuild completed: {}", snapshot_rebuild.level_id);
           }
@@ -384,16 +447,13 @@ namespace Engine {
       (void)state;
       if (active_level_id.empty()) return;
       clear_preloaded_snapshot(active_level_id);
-      auto& snapshot = preloaded_snapshots[active_level_id];
-
+      std::vector<ECS::EntityID> source_ids;
       ECS::for_each_entity([&](ECS::Entity entity) {
-        ECS::Entity cloned = ECS::clone_entity(entity);
-        if (cloned.is_valid()) {
-          ECS::EntityID id = cloned.get_id();
-          ECS::deactivate_entity(id);
-          snapshot.push_back(id);
-        }
+        source_ids.push_back(entity.get_id());
         });
+
+      auto& snapshot = preloaded_snapshots[active_level_id];
+      snapshot = clone_snapshot_entities(source_ids);
 
       Log::info("[LevelManager] Built preloaded snapshot with {} entities.", snapshot.size());
     }
@@ -424,12 +484,6 @@ namespace Engine {
 
       // Load the level from disk
       EntityList entities = Resources::load_level(filepath, append_resource_path, false);
-
-      // Guard: abort if deserialization returned nothing (file missing, corrupt, etc.)
-      if (entities.empty()) {
-        Log::error("[LevelManager] Failed to load level (0 entities): {}", full_path);
-        return "";
-      }
 
       // Single-world approach
       LevelState new_state;
@@ -510,14 +564,7 @@ namespace Engine {
       // Build snapshot for instant reload
       clear_preloaded_snapshot(full_path);
       auto& snapshot = preloaded_snapshots[full_path];
-      for (ECS::EntityID id : new_state.live_entity_ids) {
-        ECS::Entity cloned = ECS::clone_entity(ECS::Entity(id));
-        if (cloned.is_valid()) {
-          ECS::EntityID clone_id = cloned.get_id();
-          ECS::deactivate_entity(clone_id);
-          snapshot.push_back(clone_id);
-        }
-      }
+      snapshot = clone_snapshot_entities(new_state.live_entity_ids);
 
       new_state.has_live_entities = !new_state.live_entity_ids.empty();
       new_state.keep_loaded = true;
@@ -644,14 +691,15 @@ namespace Engine {
       if (snapshot_rebuild.active && snapshot_rebuild.level_id == level_id) {
         // Destroy any partially-cloned snapshot entities
         for (auto id : snapshot_rebuild.built_ids) {
-            if (ECS::get_entity(id).is_valid()) {
-                ECS::activate_entity(id);
-                ECS::Entity(id).destroy();
-            }
+          if (ECS::get_entity(id).is_valid()) {
+            ECS::activate_entity(id);
+            ECS::Entity(id).destroy();
+          }
         }
         snapshot_rebuild.active = false;
         snapshot_rebuild.source_ids.clear();
         snapshot_rebuild.built_ids.clear();
+        snapshot_rebuild.id_remap.clear();
         snapshot_rebuild.index = 0;
         ECS::process_housekeeping();
       }
@@ -679,15 +727,13 @@ namespace Engine {
         snapshot_rebuild.level_id = level_id;
         snapshot_rebuild.source_ids.clear();
         snapshot_rebuild.built_ids.clear();
+        snapshot_rebuild.id_remap.clear();
         snapshot_rebuild.index = 0;
 
         queue_preload_refresh(level_id);
         Log::info("[LevelManager] Reloaded level from preloaded snapshot: {}", level_id);
         return;
       }
-
-      // Invalidate resource cache so reload fetches fresh from disk
-      Resources::level_cache.erase(level_id);
 
       EntityList reload_entities = get_preloaded_or_disk(state, level_id);
       if (reload_entities.empty()) {
@@ -712,6 +758,7 @@ namespace Engine {
         snapshot_rebuild.level_id = level_id;
         snapshot_rebuild.source_ids.clear();
         snapshot_rebuild.built_ids.clear();
+        snapshot_rebuild.id_remap.clear();
         snapshot_rebuild.index = 0;
       }
       else {
@@ -1048,9 +1095,21 @@ namespace Engine {
         if (entity.has_component<Components::TileCollider>()) {
           return;
         }
+        // Skip runtime-only entities spawned by scene logic (e.g. UI buttons, transient zones)
+        if (entity.has_component<Components::RuntimeOnly>()) {
+          return;
+        }
 
         ReflectionLibrary::GenericValue entity_value = ECS::entity_to_generic_value(entity);
         entities.push_back(std::move(entity_value));
+        });
+
+      // Sort entities by ID for deterministic JSON output
+      std::sort(entities.begin(), entities.end(),
+        [](const ReflectionLibrary::GenericValue& a, const ReflectionLibrary::GenericValue& b) {
+          int64_t id_a = a.has("id") ? a["id"].getInt() : 0;
+          int64_t id_b = b.has("id") ? b["id"].getInt() : 0;
+          return id_a < id_b;
         });
 
       return entities;

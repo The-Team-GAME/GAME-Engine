@@ -39,6 +39,7 @@
 #include "Easing.h"
 #include "HotReloadManager.h"
 #include "GUI/TilemapPanel.h"
+#include "GUI/ManualColliderPanel.h"
 #include "UpgradeManager.h"
 #include "UpgradeUIStateMachine.h"
 #include "Firebase/FirebaseManager.h"
@@ -300,13 +301,11 @@ namespace Engine
         }
 #endif
 
-#ifndef GAME_BUILD
         if (Engine::Input::is_pressed(KeyCode::P))
         {
           Engine::Time::toggle_paused();
           Log::info("Physics Step Mode: {}", (Engine::Time::get_paused() ? "ON" : "OFF"));
         }
-#endif
 
         // FMOD Test: Press H to play hurt sound
         if (Engine::Input::is_pressed(KeyCode::H))
@@ -422,6 +421,7 @@ namespace Engine
 
 #ifndef GAME_BUILD
         TilemapPanel::update();
+        ManualColliderPanel::update();
 #endif
         ImGuiManager::update();
 
@@ -463,6 +463,7 @@ namespace Engine
 
 #ifndef GAME_BUILD
       TilemapPanel::draw_overlay();
+      ManualColliderPanel::draw_overlay();
 #endif
 
       if (show_fps_overlay)

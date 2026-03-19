@@ -184,6 +184,13 @@ namespace
     return buf.GetString();
   }
 
+  static bool is_empty_document_json(const std::string& json)
+  {
+    rapidjson::Document doc;
+    doc.Parse(json.c_str());
+    return !doc.HasParseError() && doc.IsObject() && doc.ObjectEmpty();
+  }
+
   // Parse the RTDB collection response into CachedDocument list.
   // RTDB returns an object keyed by doc ID: {"doc1":{...},"doc2":{...}}
   // or "null" if the path doesn't exist.
@@ -503,6 +510,17 @@ namespace
             });
         }
       });
+  }
+
+  // Stop the current live-update watch (if any).
+  static void stop_live_watch()
+  {
+    if (live_watch_id >= 0)
+    {
+      Engine::Firebase::unwatch(live_watch_id);
+      push_log("UNWATCH", true, "Stopped watch " + std::to_string(live_watch_id));
+      live_watch_id = -1;
+    }
   }
 
   // Fetch the list of top-level collection names from RTDB root.

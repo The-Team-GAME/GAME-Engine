@@ -29,9 +29,49 @@
 #include "../Graphics/Renderer.h"
 #include "../EventManager/EventManager.h"
 #include "../Events/EngineEvents.h"
+#include <algorithm>
 
 namespace Engine {
   namespace ECS {
+
+    namespace {
+      void detach_hierarchy_links(Entity entity) {
+        if (!entity.is_valid()) {
+          return;
+        }
+
+        if (entity.has_component<Components::Parent>()) {
+          auto* parent_comp = entity.get_component<Components::Parent>();
+          if (parent_comp && parent_comp->parent_id != INVALID_ENTITY) {
+            Entity parent = get_entity(parent_comp->parent_id);
+            if (parent.is_valid() && parent.has_component<Components::Children>()) {
+              auto* children_comp = parent.get_component<Components::Children>();
+              auto& child_ids = children_comp->child_ids;
+              child_ids.erase(std::remove(child_ids.begin(), child_ids.end(), entity.get_id()), child_ids.end());
+            }
+          }
+        }
+
+        if (entity.has_component<Components::Children>()) {
+          auto* children_comp = entity.get_component<Components::Children>();
+          if (children_comp) {
+            for (EntityID child_id : children_comp->child_ids) {
+              Entity child = get_entity(child_id);
+              if (!child.is_valid() || !child.has_component<Components::Parent>()) {
+                continue;
+              }
+
+              auto* child_parent = child.get_component<Components::Parent>();
+              if (child_parent && child_parent->parent_id == entity.get_id()) {
+                child_parent->parent_id = INVALID_ENTITY;
+                child_parent->offset_initialized = false;
+                Internal::entity_component_changed(child_id);
+              }
+            }
+          }
+        }
+      }
+    }
 
     // ============================================================================
     // PrefabImpl Implementation
@@ -293,6 +333,7 @@ namespace Engine {
       if (!prefab_id.empty()) {
         Internal::PrefabInstanceData instance_data;
         instance_data.prefab_id = prefab_id; // Store UUID in prefab_id field
+        instance_data.prefab_filepath = prefab_impl->get_prefab_filepath();
 
         // Mark Transform2D as fully overridden (Transform2D should never sync from prefab)
         auto transform_type_id = ComponentTypeManager::get_type_id<Components::Transform2D>();
@@ -345,6 +386,18 @@ namespace Engine {
         world_ptr->add_component_from_generic_value(entity_id, component_data);
       }
 
+      const std::string& prefab_id = prefab_impl->get_prefab_id();
+      if (!prefab_id.empty()) {
+        Internal::PrefabInstanceData instance_data;
+        instance_data.prefab_id = prefab_id;
+        instance_data.prefab_filepath = prefab_impl->get_prefab_filepath();
+
+        auto transform_type_id = ComponentTypeManager::get_type_id<Components::Transform2D>();
+        instance_data.field_overrides[transform_type_id].insert("*");
+
+        containers.prefab_instances[entity_id] = std::move(instance_data);
+      }
+
       // Notify systems about the new entity
       Internal::entity_component_changed(entity_id);
 
@@ -380,6 +433,7 @@ namespace Engine {
         if (!prefab_uuid.empty()) {
           Internal::PrefabInstanceData instance_data;
           instance_data.prefab_id = prefab_uuid;
+          instance_data.prefab_filepath = prefab.get_impl()->get_prefab_filepath();
 
           // Mark Transform2D as fully overridden (Transform2D should never sync from prefab)
           auto transform_type_id = ComponentTypeManager::get_type_id<Components::Transform2D>();
@@ -390,6 +444,95 @@ namespace Engine {
       }
 
       return prefab;
+    }
+
+    bool bind_entity_to_prefab(Entity entity, const Prefab& prefab) {
+      if (!entity.is_valid() || !prefab.is_valid()) {
+        return false;
+      }
+
+      auto prefab_impl = prefab.get_impl();
+      if (!prefab_impl) {
+        return false;
+      }
+
+      auto& containers = Internal::get_containers();
+      const EntityID entity_id = entity.get_id();
+      const ComponentTypeID transform_type_id = ComponentTypeManager::get_type_id<Components::Transform2D>();
+      const bool preserve_transform = entity.has_component<Components::Transform2D>();
+      ReflectionLibrary::GenericValue preserved_transform;
+      if (preserve_transform) {
+        auto& transform_array = containers.component_arrays[transform_type_id];
+        if (transform_array) {
+          preserved_transform = transform_array->to_generic_value(entity_id);
+        }
+      }
+
+      detach_hierarchy_links(entity);
+
+      if (entity_id < containers.entity_signatures.size()) {
+        const ComponentSignature old_signature = containers.entity_signatures[entity_id];
+        for (ComponentTypeID type_id = 0; type_id < MAX_COMPONENTS; ++type_id) {
+          if (!old_signature.test(type_id)) {
+            continue;
+          }
+
+          auto& array = containers.component_arrays[type_id];
+          if (array) {
+            array->remove_entity(entity_id);
+          }
+        }
+      }
+
+      if (entity_id < containers.entity_signatures.size()) {
+        containers.entity_signatures[entity_id] = prefab_impl->get_signature();
+      }
+
+      entity.clear_layers();
+      const LayerSignature& prefab_layers = prefab_impl->get_layers();
+      for (LayerID layer = 0; layer < containers.layer_id_to_name.size(); ++layer) {
+        if (prefab_layers.test(layer)) {
+          containers.entity_layers[entity_id].set(layer);
+          Internal::add_entity_to_layer_set(entity_id, layer);
+        }
+      }
+
+      for (const auto& [type_id, prefab_array] : prefab_impl->get_component_storage()) {
+        auto& world_ptr = containers.component_arrays[type_id];
+        if (!world_ptr) {
+          world_ptr = prefab_array->create_empty();
+        }
+
+        ReflectionLibrary::GenericValue component_data = prefab_array->to_generic_value(0);
+        world_ptr->add_component_from_generic_value(entity_id, component_data);
+      }
+
+      if (preserve_transform) {
+        auto& transform_array = containers.component_arrays[transform_type_id];
+        if (transform_array) {
+          if (prefab_impl->get_signature().test(transform_type_id)) {
+            transform_array->set_component_from_generic_value(entity_id, preserved_transform);
+          }
+          else {
+            transform_array->add_component_from_generic_value(entity_id, preserved_transform);
+            if (entity_id < containers.entity_signatures.size()) {
+              containers.entity_signatures[entity_id].set(transform_type_id);
+            }
+          }
+        }
+      }
+
+      Internal::PrefabInstanceData instance_data;
+      instance_data.prefab_id = prefab_impl->get_prefab_id();
+      instance_data.prefab_filepath = prefab_impl->get_prefab_filepath();
+
+      if (entity.has_component<Components::Transform2D>()) {
+        instance_data.field_overrides[transform_type_id].insert("*");
+      }
+
+      containers.prefab_instances[entity_id] = std::move(instance_data);
+      Internal::entity_component_changed(entity_id);
+      return true;
     }
 
     ReflectionLibrary::GenericValue prefab_to_generic_value(const Prefab& prefab) {
@@ -417,7 +560,7 @@ namespace Engine {
             // and become invalid when instantiating prefabs in different contexts
             if (type_name == "Components::Parent") return;
             callback(type_name, array);
-          });
+            });
         },
         0 // Using dummy entity ID 0 for prefabs
       );
@@ -622,6 +765,10 @@ namespace Engine {
         return ""; // Not a prefab instance
       }
 
+      if (!it->second.prefab_filepath.empty()) {
+        return it->second.prefab_filepath;
+      }
+
       // Look up the prefab by UUID to find its filepath
       const std::string& prefab_id = it->second.prefab_id;
       for (const auto& [path, weak_prefab] : Engine::Resources::prefab_cache) {
@@ -630,10 +777,12 @@ namespace Engine {
           // Prefer the filepath stored on the impl
           const std::string& impl_path = shared_prefab_impl->get_prefab_filepath();
           if (!impl_path.empty()) {
+            it->second.prefab_filepath = impl_path;
             return impl_path;
           }
           // Fallback: derive relative path from cache key (which is the full path)
-          return Engine::Path(path).to_relative(Engine::Resources::resource_path).to_string();
+          it->second.prefab_filepath = Engine::Path(path).to_relative(Engine::Resources::resource_path).to_string();
+          return it->second.prefab_filepath;
         }
       }
 

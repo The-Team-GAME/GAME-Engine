@@ -30,7 +30,7 @@ class GameplayState : public Engine::Scene
 {
   static constexpr const char* GAMEPLAY_BGM_EVENT = "event:/BGM/LevelBGM";
   static constexpr const char* GAMEPLAY_BATTLECRY_EVENT = "event:/SFX/PlayerStartCry";
-  static constexpr float TIPS_BUTTON_HUD_X = 1373.0f;
+  static constexpr float TIPS_BUTTON_HUD_X = -227.0f;
   static constexpr float TIPS_BUTTON_HUD_Y = 92.0f;
   static constexpr float TIPS_BUTTON_SIZE = 220.0f;
   static constexpr float TIPS_OVERLAY_CENTER_X = 800.0f;
@@ -83,30 +83,14 @@ public:
 
     // TODO: REMOVE 
     player_entity.add_component<Components::Health>(5, 5);
-
-    // Fix camera follow: parent the camera entity to the player so CameraSystem tracks it
-    if (player_entity.is_valid()) {
-      auto camera_entity = Engine::ECS::get_first_entity_with<Components::Camera>();
-      if (camera_entity.is_valid()) {
-        if (!camera_entity.has_component<Components::Parent>()) {
-          camera_entity.add_component<Components::Parent>(player_entity.get_id());
-        }
-        else {
-          auto* parent_comp = camera_entity.get_component<Components::Parent>();
-          if (parent_comp) {
-            parent_comp->parent_id = player_entity.get_id();
-            parent_comp->offset_initialized = false; // Let HierarchySystem recalculate
-          }
-        }
-      }
-    }
     // player_entity.add_component<Components::HeartHUDSprite>();
 
     // Victory zone - triggers victory screen when player enters
     // TODO: Position this at the end of the level
     Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(14614.0f, 609.0f, 0.0f, 100.0f, 200.0f)
+      .add_component<Components::Transform2D>(14600.0f, 830.0f, 0.0f, 100.0f, 200.0f)
       .add_component<Components::Interactable>(50.0f, "show_victory", "", "")
+      .add_component<Components::RuntimeOnly>()
       .add_to_layer("effect");
 
     // // Old man NPC - press E to interact and show dialogue
@@ -122,10 +106,11 @@ public:
     // Positions are in screen coordinates (0,0 is top-left, 1600x900 viewport)
     // Pause button - top right (screen coords: 1600 - padding - half_width)
     auto pause_btn = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(1500.0f, 90.0f, 0.0f, 100.0f, 100.0f)
+      .add_component<Components::Transform2D>(-100.0f, 90.0f, 0.0f, 100.0f, 100.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/Pause.png"))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-      .add_component<Components::UI>()
+      .add_component<Components::UI>(1.0f, 0.0f)
+      .add_component<Components::RuntimeOnly>()
       .add_to_layer("main_menu_4");
     pause_button_id = pause_btn.get_id();
 
@@ -134,6 +119,7 @@ public:
     if (tips_btn.is_valid()) {
       tips_button_id = tips_btn.get_id();
       set_tips_button_layer("main_menu_4");
+      if (auto* ui = tips_btn.get_component<Components::UI>()) ui->anchor = { 1.0f, 0.0f };
       set_tips_button_hud_position();
     }
     else {
@@ -141,17 +127,19 @@ public:
         .add_component<Components::Transform2D>(TIPS_BUTTON_HUD_X, TIPS_BUTTON_HUD_Y, 0.0f, TIPS_BUTTON_SIZE, TIPS_BUTTON_SIZE)
         .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/TipsBook.png"))
         .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-        .add_component<Components::UI>()
+        .add_component<Components::UI>(1.0f, 0.0f)
+        .add_component<Components::RuntimeOnly>()
         .add_to_layer("main_menu_4");
       tips_button_id = tips_btn_created.get_id();
     }
 
-    // Upgrade button — bottom-right corner, 64x64, alpha-hidden until upgrade is available
+    // Upgrade button — bottom-left corner, 64x64, alpha-hidden until upgrade is available
     auto upg_btn = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(1500.0f, 800.0f, 0.0f, 64.0f * 4.0f, 64.0f * 4.0f)
+      .add_component<Components::Transform2D>(128.0f, -128.0f, 0.0f, 64.0f * 4.0f, 64.0f * 4.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/skill_upgrades.png"))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.0f)  // start invisible
-      .add_component<Components::UI>()
+      .add_component<Components::UI>(0.0f, 1.0f)
+      .add_component<Components::RuntimeOnly>()
       .add_to_layer("main_menu_4");
     upgrade_btn_id = upg_btn.get_id();
     Engine::UpgradeUIStateMachine::instance().set_upgrade_button(upgrade_btn_id);
@@ -234,12 +222,6 @@ public:
       }
     }
 
-    // Open tip book with I key
-    if (!tips_shown && Engine::Input::is_pressed(Engine::KeyCode::I)) {
-      show_tips_overlay();
-      return;
-    }
-
     // Check if pause button is pressed (keyboard)
     if (Engine::Input::is_pressed(Engine::KeyCode::Escape)) {
       Engine::SceneManager::push_scene("PauseState");
@@ -303,6 +285,7 @@ public:
       ? (TIPS_OVERLAY_CENTER_X + half_w - TIPS_NAV_MARGIN_X - button_half)
       : (TIPS_OVERLAY_CENTER_X - half_w + TIPS_NAV_MARGIN_X + button_half);
     float y = TIPS_OVERLAY_CENTER_Y + half_h - TIPS_NAV_MARGIN_Y - button_half;
+    x -= 1600.0f; // convert to anchor-relative offset (anchor.x = 1.0 => final_x = 1600 + position.x)
 
     set_tips_button_position(x, y);
   }
@@ -322,6 +305,7 @@ public:
       .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
       .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.5f)
       .add_component<Components::UI>()
+      .add_component<Components::RuntimeOnly>()
       .add_to_layer("main_menu_4");
     tips_bg_id = bg.get_id();
 
@@ -331,6 +315,7 @@ public:
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/InstructionsTips.png"))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()
+      .add_component<Components::RuntimeOnly>()
       .add_to_layer("main_menu_5");
     tips_overlay_id = overlay.get_id();
 
@@ -365,6 +350,7 @@ public:
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/InstructionsTips2.png"))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()
+      .add_component<Components::RuntimeOnly>()
       .add_to_layer("main_menu_5");
     tips_overlay_page2_id = overlay2.get_id();
 
@@ -391,6 +377,7 @@ public:
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/InstructionsTips.png"))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()
+      .add_component<Components::RuntimeOnly>()
       .add_to_layer("main_menu_5");
     tips_overlay_id = overlay.get_id();
 

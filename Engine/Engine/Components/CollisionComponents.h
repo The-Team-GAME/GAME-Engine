@@ -327,9 +327,15 @@ namespace Components
     }
 
   };
+
+  // Marker component for manually-placed collider entities (created via ManualColliderPanel).
+  // Distinct from TileCollider (auto-generated) so the panel can enumerate them independently.
+  struct ManualCollider {
+  };
 }
 
 REFLECT_ENUM(Components::ColliderType, AABB, OBB, POLYGON)
 REFLECT_FIELDS(AABB, pos, half_width, half_height)
 REFLECT_FIELDS(Polygon, vertices, position, rotation)
 REGISTER_COMPONENT(Components::BoxCollider, resolve_collisions, collided, type, width, height, radius, polygon, aabb, offset, kinetic_friction)
+REGISTER_COMPONENT(Components::ManualCollider)

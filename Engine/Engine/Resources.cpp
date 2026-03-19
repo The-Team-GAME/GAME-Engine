@@ -729,23 +729,16 @@ Engine::EntityList Engine::Resources::load_level(const std::string& filepath, bo
   // Deserialize level
   Engine::EntityList entities = Engine::FileIO::deserialize_level_from_json_file(full_path);
 
-  // Only cache non-empty results to prevent permanently caching failed loads
-  if (entities.empty())
+  // Cache the level
+  level_cache[full_path] = entities;
+  if (persist)
   {
-    Log::warning("Level deserialized with 0 entities (not cached): {}", full_path);
+    persistent_resources.push_back(entities);
+    Log::info("Level loaded (persistent): {}", full_path);
   }
   else
   {
-    level_cache[full_path] = entities;
-    if (persist)
-    {
-      persistent_resources.push_back(entities);
-      Log::info("Level loaded (persistent): {}", full_path);
-    }
-    else
-    {
-      Log::info("Level loaded: {}", full_path);
-    }
+    Log::info("Level loaded: {}", full_path);
   }
 
   return entities;

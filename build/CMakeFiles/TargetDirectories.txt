@@ -1,0 +1,5 @@
+C:/Users/ryan/Desktop/School/Gam200/GAME/build/CMakeFiles/freetype.dir
+C:/Users/ryan/Desktop/School/Gam200/GAME/build/CMakeFiles/PACKAGE.dir
+C:/Users/ryan/Desktop/School/Gam200/GAME/build/CMakeFiles/INSTALL.dir
+C:/Users/ryan/Desktop/School/Gam200/GAME/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/ryan/Desktop/School/Gam200/GAME/build/CMakeFiles/ZERO_CHECK.dir

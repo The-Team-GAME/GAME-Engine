@@ -3,37 +3,51 @@
         "components": [
             {
                 "data": {
-                    "acceleration": {
-                        "x": 0.0,
-                        "y": 0.0
-                    },
-                    "apply_force": true,
-                    "gravity": {
-                        "x": 0.0,
-                        "y": 1000.0
-                    },
-                    "is_jumping": false,
-                    "is_static": false,
-                    "mass": 1.0,
-                    "on_ground": true,
-                    "use_gravity": true,
-                    "velocity": {
-                        "x": 0.0,
-                        "y": 0.0
-                    },
-                    "x_terminal_velocity": 500.0,
-                    "y_terminal_velocity": 500.0
+                    "atlas_indices": [
+                        0,
+                        1,
+                        2,
+                        3,
+                        4,
+                        5
+                    ],
+                    "before_times": [
+                        0.0,
+                        0.10000000149011612,
+                        0.20000000298023224,
+                        0.30000001192092896,
+                        0.4000000059604645,
+                        0.5
+                    ],
+                    "durations": [
+                        0.10000000149011612,
+                        0.10000000149011612,
+                        0.10000000149011612,
+                        0.10000000149011612,
+                        0.10000000149011612,
+                        0.10000000149011612
+                    ],
+                    "is_looping": true,
+                    "startTime": 213.40283203125,
+                    "totalDuration": 0.6000000238418579
                 },
-                "type": "Components::RigidBody"
+                "type": "Components::Animation"
             },
             {
                 "data": {
-                    "value": {
-                        "x": -1.0,
-                        "y": 1.0
-                    }
+                    "damage": 20,
+                    "damage_interval": 0.10000000149011612,
+                    "impact_vfx_texture": {
+                        "path": ""
+                    },
+                    "is_continuous": false,
+                    "knockback": {
+                        "x": -300.0,
+                        "y": -400.0
+                    },
+                    "play_punch_hit_sfx": true
                 },
-                "type": "Components::Flip"
+                "type": "Components::Attack"
             },
             {
                 "data": {
@@ -41,8 +55,8 @@
                         "half_height": 59.71012496948242,
                         "half_width": 60.53240966796875,
                         "pos": {
-                            "x": 1662.650146484375,
-                            "y": 2500.596923828125
+                            "x": 3168.70361328125,
+                            "y": 452.3190612792969
                         }
                     },
                     "collided": false,
@@ -78,220 +92,255 @@
             },
             {
                 "data": {
-                    "path": "images/SprayPaintMonkeySpriteSheets/Spraypaint_Idle_Spritesheet.png"
+                    "current_hp": 15,
+                    "max_hp": 15
                 },
-                "type": "Components::Texture"
+                "type": "Components::EnemyHealth"
             },
             {
                 "data": {
-                    "drawIndex": 7,
-                    "tex_coords_list": [
-                        [
-                            {
-                                "x": 0.0,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.125,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.125,
-                                "y": 0.0
-                            },
-                            {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        ],
-                        [
-                            {
-                                "x": 0.125,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.25,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.25,
-                                "y": 0.0
-                            },
-                            {
-                                "x": 0.125,
-                                "y": 0.0
-                            }
-                        ],
-                        [
-                            {
-                                "x": 0.25,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.375,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.375,
-                                "y": 0.0
-                            },
-                            {
-                                "x": 0.25,
-                                "y": 0.0
-                            }
-                        ],
-                        [
-                            {
-                                "x": 0.375,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.5,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.5,
-                                "y": 0.0
-                            },
-                            {
-                                "x": 0.375,
-                                "y": 0.0
-                            }
-                        ],
-                        [
-                            {
-                                "x": 0.5,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.625,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.625,
-                                "y": 0.0
-                            },
-                            {
-                                "x": 0.5,
-                                "y": 0.0
-                            }
-                        ],
-                        [
-                            {
-                                "x": 0.625,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.75,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.75,
-                                "y": 0.0
-                            },
-                            {
-                                "x": 0.625,
-                                "y": 0.0
-                            }
-                        ],
-                        [
-                            {
-                                "x": 0.75,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.875,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.875,
-                                "y": 0.0
-                            },
-                            {
-                                "x": 0.75,
-                                "y": 0.0
-                            }
-                        ],
-                        [
-                            {
-                                "x": 0.875,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 1.0,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 1.0,
-                                "y": 0.0
-                            },
-                            {
-                                "x": 0.875,
-                                "y": 0.0
-                            }
-                        ]
-                    ]
-                },
-                "type": "Components::TextureAtlas"
-            },
-            {
-                "data": {
-                    "atlas_indices": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7
-                    ],
-                    "before_times": [
-                        0.0,
-                        0.15000000596046448,
-                        0.30000001192092896,
-                        0.45000001788139343,
-                        0.6000000238418579,
-                        0.75,
-                        0.8999999761581421,
-                        1.0499999523162842
-                    ],
-                    "durations": [
-                        0.15000000596046448,
-                        0.15000000596046448,
-                        0.15000000596046448,
-                        0.15000000596046448,
-                        0.15000000596046448,
-                        0.15000000596046448,
-                        0.15000000596046448,
-                        0.15000000596046448
-                    ],
-                    "is_looping": true,
-                    "startTime": 66.8575210571289,
-                    "totalDuration": 1.1999999284744263
-                },
-                "type": "Components::Animation"
-            },
-            {
-                "data": {
-                    "position": {
-                        "x": 1675.1556396484375,
-                        "y": 2480.2890625
-                    },
-                    "rotation": 0.0,
-                    "scale": {
-                        "x": 160.0,
-                        "y": 160.0
+                    "value": {
+                        "x": -1.0,
+                        "y": 1.0
                     }
                 },
-                "type": "Components::Transform2D"
+                "type": "Components::Flip"
+            },
+            {
+                "data": {
+                    "acceleration": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "apply_force": true,
+                    "gravity": {
+                        "x": 0.0,
+                        "y": 1000.0
+                    },
+                    "is_jumping": false,
+                    "is_static": false,
+                    "mass": 1.0,
+                    "on_ground": true,
+                    "use_gravity": true,
+                    "velocity": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "x_terminal_velocity": 500.0,
+                    "y_terminal_velocity": 500.0
+                },
+                "type": "Components::RigidBody"
+            },
+            {
+                "data": {
+                    "attack_cooldown": 5.0,
+                    "attack_range": 800.0,
+                    "attack_windup": 0.5,
+                    "chase_range": 1000.0,
+                    "chase_speed": 80.0,
+                    "cloud_initial_vx": -150.0,
+                    "cloud_spawn_time": 186.10801696777344,
+                    "damage": 20,
+                    "detection_range": 1200.0,
+                    "knockback": {
+                        "x": 300.0,
+                        "y": 400.0
+                    },
+                    "last_attack_time": 185.0078887939453,
+                    "spray_duration": 4.0,
+                    "spray_range": 150.0,
+                    "spray_width": 80.0
+                },
+                "type": "Components::SprayCanMonkey"
             },
             {
                 "data": {
                     "blueprint_id": "SprayCanMonkey",
-                    "current_state_name": "Idle",
+                    "current_state_name": "Chasing",
                     "property_anim_playing": false,
                     "states": [
+                        {
+                            "first": "Chasing",
+                            "second": {
+                                "animation": {
+                                    "animation": {
+                                        "atlas_indices": [
+                                            0,
+                                            1,
+                                            2,
+                                            3,
+                                            4,
+                                            5
+                                        ],
+                                        "before_times": [
+                                            0.0,
+                                            0.10000000149011612,
+                                            0.20000000298023224,
+                                            0.30000001192092896,
+                                            0.4000000059604645,
+                                            0.5
+                                        ],
+                                        "durations": [
+                                            0.10000000149011612,
+                                            0.10000000149011612,
+                                            0.10000000149011612,
+                                            0.10000000149011612,
+                                            0.10000000149011612,
+                                            0.10000000149011612
+                                        ],
+                                        "is_looping": true,
+                                        "startTime": 213.40283203125,
+                                        "totalDuration": 0.6000000238418579
+                                    },
+                                    "collider_data": {
+                                        "height": 119.42024993896484,
+                                        "offset": {
+                                            "x": 12.505538940429688,
+                                            "y": 20.30795669555664
+                                        },
+                                        "type": "AABB",
+                                        "vertices": [],
+                                        "width": 121.0648193359375
+                                    },
+                                    "scale": {
+                                        "x": 160.0,
+                                        "y": 160.0
+                                    },
+                                    "texture": {
+                                        "path": "images/SprayPaintMonkeySpriteSheets/Spraypaint_Walk_Spritesheet.png"
+                                    },
+                                    "texture_atlas": {
+                                        "drawIndex": -1,
+                                        "tex_coords_list": [
+                                            [
+                                                {
+                                                    "x": 0.0,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.1666666716337204,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.1666666716337204,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.0,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.1666666716337204,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.3333333432674408,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.3333333432674408,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.1666666716337204,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.3333333432674408,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.5,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.5,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.3333333432674408,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.5,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.6666666865348816,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.6666666865348816,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.5,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.6666666865348816,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.8333333134651184,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.8333333134651184,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.6666666865348816,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.8333333134651184,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 1.0,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 1.0,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.8333333134651184,
+                                                    "y": 0.0
+                                                }
+                                            ]
+                                        ]
+                                    }
+                                },
+                                "audio": {
+                                    "event_path": "",
+                                    "loop": true,
+                                    "volume": 0.5
+                                },
+                                "name": "Chasing",
+                                "on_enter_callback": {
+                                    "name": "SprayCanMonkey::chasing_on_enter"
+                                },
+                                "on_exit_callback": {
+                                    "name": "SprayCanMonkey::chasing_on_exit"
+                                },
+                                "on_update_callback": {
+                                    "name": "SprayCanMonkey::chasing_on_update"
+                                },
+                                "property_animation": null
+                            }
+                        },
                         {
                             "first": "Spraying",
                             "second": {
@@ -349,7 +398,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 66.8575210571289,
+                                        "startTime": 213.40283203125,
                                         "totalDuration": 1.700000286102295
                                     },
                                     "collider_data": {
@@ -664,188 +713,6 @@
                             }
                         },
                         {
-                            "first": "Chasing",
-                            "second": {
-                                "animation": {
-                                    "animation": {
-                                        "atlas_indices": [
-                                            0,
-                                            1,
-                                            2,
-                                            3,
-                                            4,
-                                            5
-                                        ],
-                                        "before_times": [
-                                            0.0,
-                                            0.10000000149011612,
-                                            0.20000000298023224,
-                                            0.30000001192092896,
-                                            0.4000000059604645,
-                                            0.5
-                                        ],
-                                        "durations": [
-                                            0.10000000149011612,
-                                            0.10000000149011612,
-                                            0.10000000149011612,
-                                            0.10000000149011612,
-                                            0.10000000149011612,
-                                            0.10000000149011612
-                                        ],
-                                        "is_looping": true,
-                                        "startTime": 66.8575210571289,
-                                        "totalDuration": 0.6000000238418579
-                                    },
-                                    "collider_data": {
-                                        "height": 119.42024993896484,
-                                        "offset": {
-                                            "x": 12.505538940429688,
-                                            "y": 20.30795669555664
-                                        },
-                                        "type": "AABB",
-                                        "vertices": [],
-                                        "width": 121.0648193359375
-                                    },
-                                    "scale": {
-                                        "x": 160.0,
-                                        "y": 160.0
-                                    },
-                                    "texture": {
-                                        "path": "images/SprayPaintMonkeySpriteSheets/Spraypaint_Walk_Spritesheet.png"
-                                    },
-                                    "texture_atlas": {
-                                        "drawIndex": -1,
-                                        "tex_coords_list": [
-                                            [
-                                                {
-                                                    "x": 0.0,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.1666666716337204,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.1666666716337204,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.0,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.1666666716337204,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.3333333432674408,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.3333333432674408,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.1666666716337204,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.3333333432674408,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.5,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.5,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.3333333432674408,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.5,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.6666666865348816,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.6666666865348816,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.5,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.6666666865348816,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.8333333134651184,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.8333333134651184,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.6666666865348816,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.8333333134651184,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 1.0,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 1.0,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.8333333134651184,
-                                                    "y": 0.0
-                                                }
-                                            ]
-                                        ]
-                                    }
-                                },
-                                "audio": {
-                                    "event_path": "",
-                                    "loop": true,
-                                    "volume": 0.5
-                                },
-                                "name": "Chasing",
-                                "on_enter_callback": {
-                                    "name": "SprayCanMonkey::chasing_on_enter"
-                                },
-                                "on_exit_callback": {
-                                    "name": "SprayCanMonkey::chasing_on_exit"
-                                },
-                                "on_update_callback": {
-                                    "name": "SprayCanMonkey::chasing_on_update"
-                                },
-                                "property_animation": null
-                            }
-                        },
-                        {
                             "first": "Death",
                             "second": {
                                 "animation": {
@@ -860,7 +727,7 @@
                                             0.5
                                         ],
                                         "is_looping": true,
-                                        "startTime": 66.8575210571289,
+                                        "startTime": 213.40283203125,
                                         "totalDuration": 0.5
                                     },
                                     "collider_data": {
@@ -955,6 +822,125 @@
                             }
                         },
                         {
+                            "first": "Hit",
+                            "second": {
+                                "animation": {
+                                    "animation": {
+                                        "atlas_indices": [
+                                            0,
+                                            1,
+                                            2
+                                        ],
+                                        "before_times": [
+                                            0.0,
+                                            0.30000001192092896,
+                                            0.4000000059604645
+                                        ],
+                                        "durations": [
+                                            0.30000001192092896,
+                                            0.10000000149011612,
+                                            0.10000000149011612
+                                        ],
+                                        "is_looping": true,
+                                        "startTime": 213.40283203125,
+                                        "totalDuration": 0.5
+                                    },
+                                    "collider_data": {
+                                        "height": 119.42024993896484,
+                                        "offset": {
+                                            "x": 12.505538940429688,
+                                            "y": 20.30795669555664
+                                        },
+                                        "type": "AABB",
+                                        "vertices": [],
+                                        "width": 121.0648193359375
+                                    },
+                                    "scale": {
+                                        "x": 160.0,
+                                        "y": 160.0
+                                    },
+                                    "texture": {
+                                        "path": "images/SprayPaintMonkeySpriteSheets/Spraypaint_Damaged_Spritesheet.png"
+                                    },
+                                    "texture_atlas": {
+                                        "drawIndex": -1,
+                                        "tex_coords_list": [
+                                            [
+                                                {
+                                                    "x": 0.0,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.3333333432674408,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.3333333432674408,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.0,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.3333333432674408,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.6666666865348816,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.6666666865348816,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.3333333432674408,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.6666666865348816,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 1.0,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 1.0,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.6666666865348816,
+                                                    "y": 0.0
+                                                }
+                                            ]
+                                        ]
+                                    }
+                                },
+                                "audio": {
+                                    "event_path": "",
+                                    "loop": false,
+                                    "volume": 0.6000000238418579
+                                },
+                                "name": "Hit",
+                                "on_enter_callback": {
+                                    "name": "SprayCanMonkey::hit_on_enter"
+                                },
+                                "on_exit_callback": {
+                                    "name": "SprayCanMonkey::hit_on_exit"
+                                },
+                                "on_update_callback": {
+                                    "name": "SprayCanMonkey::hit_on_update"
+                                },
+                                "property_animation": null
+                            }
+                        },
+                        {
                             "first": "Windup",
                             "second": {
                                 "animation": {
@@ -990,7 +976,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 66.8575210571289,
+                                        "startTime": 213.40283203125,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": {
@@ -1175,125 +1161,6 @@
                             }
                         },
                         {
-                            "first": "Hit",
-                            "second": {
-                                "animation": {
-                                    "animation": {
-                                        "atlas_indices": [
-                                            0,
-                                            1,
-                                            2
-                                        ],
-                                        "before_times": [
-                                            0.0,
-                                            0.30000001192092896,
-                                            0.4000000059604645
-                                        ],
-                                        "durations": [
-                                            0.30000001192092896,
-                                            0.10000000149011612,
-                                            0.10000000149011612
-                                        ],
-                                        "is_looping": true,
-                                        "startTime": 66.8575210571289,
-                                        "totalDuration": 0.5
-                                    },
-                                    "collider_data": {
-                                        "height": 119.42024993896484,
-                                        "offset": {
-                                            "x": 12.505538940429688,
-                                            "y": 20.30795669555664
-                                        },
-                                        "type": "AABB",
-                                        "vertices": [],
-                                        "width": 121.0648193359375
-                                    },
-                                    "scale": {
-                                        "x": 160.0,
-                                        "y": 160.0
-                                    },
-                                    "texture": {
-                                        "path": "images/SprayPaintMonkeySpriteSheets/Spraypaint_Damaged_Spritesheet.png"
-                                    },
-                                    "texture_atlas": {
-                                        "drawIndex": -1,
-                                        "tex_coords_list": [
-                                            [
-                                                {
-                                                    "x": 0.0,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.3333333432674408,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.3333333432674408,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.0,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.3333333432674408,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.6666666865348816,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.6666666865348816,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.3333333432674408,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.6666666865348816,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 1.0,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 1.0,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.6666666865348816,
-                                                    "y": 0.0
-                                                }
-                                            ]
-                                        ]
-                                    }
-                                },
-                                "audio": {
-                                    "event_path": "",
-                                    "loop": false,
-                                    "volume": 0.6000000238418579
-                                },
-                                "name": "Hit",
-                                "on_enter_callback": {
-                                    "name": "SprayCanMonkey::hit_on_enter"
-                                },
-                                "on_exit_callback": {
-                                    "name": "SprayCanMonkey::hit_on_exit"
-                                },
-                                "on_update_callback": {
-                                    "name": "SprayCanMonkey::hit_on_update"
-                                },
-                                "property_animation": null
-                            }
-                        },
-                        {
                             "first": "Idle",
                             "second": {
                                 "animation": {
@@ -1329,7 +1196,7 @@
                                             0.15000000596046448
                                         ],
                                         "is_looping": true,
-                                        "startTime": 66.8575210571289,
+                                        "startTime": 213.40283203125,
                                         "totalDuration": 1.1999999284744263
                                     },
                                     "collider_data": {
@@ -1519,48 +1386,139 @@
             },
             {
                 "data": {
-                    "attack_cooldown": 3.0,
-                    "attack_range": 800.0,
-                    "attack_windup": 0.5,
-                    "chase_range": 1000.0,
-                    "chase_speed": 80.0,
-                    "cloud_initial_vx": -150.0,
-                    "cloud_spawn_time": 7.504971981048584,
-                    "damage": 20,
-                    "detection_range": 1200.0,
-                    "knockback": {
-                        "x": 300.0,
-                        "y": 400.0
-                    },
-                    "last_attack_time": 41.47240447998047,
-                    "spray_duration": 7.0,
-                    "spray_range": 150.0,
-                    "spray_width": 80.0
+                    "path": "images/SprayPaintMonkeySpriteSheets/Spraypaint_Walk_Spritesheet.png"
                 },
-                "type": "Components::SprayCanMonkey"
+                "type": "Components::Texture"
             },
             {
                 "data": {
-                    "damage": 20,
-                    "damage_interval": 0.10000000149011612,
-                    "impact_vfx_texture": {
-                        "path": ""
-                    },
-                    "is_continuous": false,
-                    "knockback": {
-                        "x": -300.0,
-                        "y": -400.0
-                    },
-                    "play_punch_hit_sfx": true
+                    "drawIndex": 5,
+                    "tex_coords_list": [
+                        [
+                            {
+                                "x": 0.0,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.1666666716337204,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.1666666716337204,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.1666666716337204,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.3333333432674408,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.3333333432674408,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.1666666716337204,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.3333333432674408,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.5,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.5,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.3333333432674408,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.5,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.6666666865348816,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.6666666865348816,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.5,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.6666666865348816,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.8333333134651184,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.8333333134651184,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.6666666865348816,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.8333333134651184,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 1.0,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 1.0,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.8333333134651184,
+                                "y": 0.0
+                            }
+                        ]
+                    ]
                 },
-                "type": "Components::Attack"
+                "type": "Components::TextureAtlas"
             },
             {
                 "data": {
-                    "current_hp": 15,
-                    "max_hp": 15
+                    "position": {
+                        "x": 3181.209228515625,
+                        "y": 432.0111083984375
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 160.0,
+                        "y": 160.0
+                    }
                 },
-                "type": "Components::EnemyHealth"
+                "type": "Components::Transform2D"
             }
         ],
         "filepath": "prefabs/spray can monkey.json",

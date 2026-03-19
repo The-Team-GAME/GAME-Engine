@@ -3,7 +3,6 @@
   <ItemGroup>
     <ClCompile Include="Audio\AudioSystem.cpp" />
     <ClCompile Include="Audio\AudioSystemExample.cpp" />
-
     <ClCompile Include="Components\StateMachineBlueprintRegistry.cpp" />
     <ClCompile Include="ECS\PrefabMergeUtils.cpp" />
     <ClCompile Include="ECS\Types.cpp" />
@@ -18,7 +17,6 @@
     <ClCompile Include="FileIO\ColliderMeshFileIO.cpp" />
     <ClCompile Include="FileIO\FileDialog.cpp" />
     <ClCompile Include="FileIO\Helpers.cpp" />
-    <ClCompile Include="FileIO\GameSettingsBridge.cpp" />
     <ClCompile Include="FileIO\PrefabsFileIO.cpp" />
     <ClCompile Include="FileIO\LevelFileIO.cpp" />
     <ClCompile Include="Graphics\Renderer.cpp" />
@@ -74,11 +72,19 @@
     <ClCompile Include="Time.cpp" />
     <ClCompile Include="UpgradeManager.cpp" />
     <ClCompile Include="WindowManager.cpp" />
+    <ClCompile Include="Firebase\FirebaseHTTP.cpp" />
+    <ClCompile Include="Firebase\FirebaseManager.cpp" />
+    <ClCompile Include="Firebase\FirebaseListener.cpp" />
+    <ClCompile Include="Firebase\FirebaseAuth.cpp" />
+    <ClCompile Include="Video\VideoPlayer.cpp" />
+    <ClCompile Include="GUI\FirebasePanel.cpp" />
+    <ClCompile Include="GUI\DiceMiniGamePanel.cpp" />
+    <ClCompile Include="UpgradeUIStateMachine.cpp" />
+    <ClCompile Include="GUI\ManualColliderPanel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Audio\AudioSystem.h" />
     <ClInclude Include="Audio\GameAudio.h" />
-
     <ClInclude Include="Components\GraphicsComponents.h" />
     <ClInclude Include="Components\PhysicsComponents.h" />
     <ClInclude Include="Components\UtilityComponents.h" />
@@ -107,7 +113,6 @@
     <ClInclude Include="FileIO\FileDialog.h" />
     <ClInclude Include="FileIO\Helpers.h" />
     <ClInclude Include="FileIO\Settings.h" />
-    <ClInclude Include="FileIO\GameSettingsBridge.h" />
     <ClInclude Include="FileIO\PrefabsFileIO.h" />
     <ClInclude Include="FileIO\SettingsManager.h" />
     <ClInclude Include="FileIO\LevelFileIO.h" />
@@ -193,6 +198,19 @@
     <ClInclude Include="TypeDef.h" />
     <ClInclude Include="UpgradeManager.h" />
     <ClInclude Include="WindowManager.h" />
+    <ClInclude Include="Firebase\FirebaseTypes.h" />
+    <ClInclude Include="Firebase\FirebaseHTTP.h" />
+    <ClInclude Include="Firebase\FirebaseManager.h" />
+    <ClInclude Include="Firebase\FirebaseListener.h" />
+    <ClInclude Include="Firebase\FirebaseLuaBindings.h" />
+    <ClInclude Include="Firebase\FirebaseAuth.h" />
+    <ClInclude Include="Video\VideoPlayer.h" />
+    <ClInclude Include="GUI\FirebasePanel.h" />
+    <ClInclude Include="GUI\DiceMiniGamePanel.h" />
+    <ClInclude Include="UpgradeUIStateMachine.h" />
+    <ClInclude Include="GUI\ManualColliderPanel.h" />
+    <ClInclude Include="GUI\LogConsolePanel.h" />
+    <ClInclude Include="GUI\ConfigurationPanel.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

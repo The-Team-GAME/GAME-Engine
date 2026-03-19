@@ -34,11 +34,13 @@ HOW THESE MACROS WORK:
    - Anonymous namespace = private to this translation unit
    - Prevents naming conflicts across files
 
-3. struct CONCAT(AutoRegister_, __LINE__)
+3. struct CONCAT(AutoRegister_, __COUNTER__)
    - CONCAT(A, B) → AB (concatenates tokens)
-   - __LINE__ → current line number (e.g., 42)
+   - __COUNTER__ → unique integer that increments with each use in a TU
    - Result: struct AutoRegister_42
-   - Each macro use gets a UNIQUE struct name
+   - Each macro use gets a UNIQUE struct name regardless of line number
+   - __COUNTER__ is captured once via an _IMPL helper so every reference
+     inside one macro expansion shares the same value
 
 4. Constructor runs AUTOMATICALLY during static initialization (before main())
    - Calls register_component<CLASS_NAME>() to register with ECS
@@ -51,32 +53,71 @@ HOW THESE MACROS WORK:
 ===================================================================================
 */
 
-// Standard component registration (ECS + Reflection + Lua binding)
-#define REGISTER_COMPONENT(CLASS_NAME, ...) \
-    REFLECT_FIELDS(CLASS_NAME, __VA_ARGS__) \
+// Helper function to register component for Lua binding (implemented in LuaComponentBindings.h)
+namespace Engine {
+  namespace LuaBindings {
+    namespace Internal {
+      void register_component_for_binding(std::function<void()> binding_func);
+
+      template<typename T>
+      void register_component_lua();
+    }
+  }
+}
+
+// Implementation helpers — receive the already-expanded counter value N so
+// every use of it within the same macro expansion gets the same number.
+#define REGISTER_COMPONENT_IMPL(CLASS_NAME, N) \
     namespace { \
-        struct CONCAT(AutoRegister_, __LINE__) { \
-            CONCAT(AutoRegister_, __LINE__)() { \
+        struct CONCAT(AutoRegister_, N) { \
+            CONCAT(AutoRegister_, N)() { \
                 Engine::ECS::register_component<CLASS_NAME>(); \
-                Engine::LuaBindingRegistry::instance().push({ \
-                    Engine::LuaBindings::short_name(#CLASS_NAME), \
-                    /* binder: register the usertype with Sol2 */ \
-                    [](sol::state& lua) { \
-                        Engine::LuaBindings::bind_reflected_type<CLASS_NAME>(lua); \
-                    }, \
-                    /* getter: return a reference to the live component (non-owning) */ \
-                    /* Uses make_component_ref which manually sets the correct       */ \
-                    /* metatable, bypassing sol2's undefined_metatable path that can */ \
-                    /* create a mismatched metatable in cross-DLL builds.            */ \
-                    [](sol::state_view lua, Engine::ECS::Entity entity) -> sol::object { \
-                        auto* comp = entity.get_component<CLASS_NAME>(); \
-                        return Engine::LuaBindings::make_component_ref<CLASS_NAME>(lua, comp); \
-                    } \
-                }); \
             } \
         }; \
-        static CONCAT(AutoRegister_, __LINE__) CONCAT(auto_register_instance, __LINE__); \
+        static CONCAT(AutoRegister_, N) CONCAT(auto_register_instance, N); \
     }
+
+#define REGISTER_COMPONENT_LUA_IMPL(CLASS_NAME, N) \
+    namespace { \
+        struct CONCAT(AutoRegister_, N) { \
+            CONCAT(AutoRegister_, N)() { \
+                Engine::ECS::register_component<CLASS_NAME>(); \
+                Engine::LuaBindings::Internal::register_component_lua<CLASS_NAME>(); \
+            } \
+        }; \
+        static CONCAT(AutoRegister_, N) CONCAT(auto_register_instance, N); \
+    }
+
+#define REGISTER_COMPONENT_CUSTOM_IMPL(CLASS_NAME, N) \
+    namespace { \
+        struct CONCAT(AutoRegister_, N) { \
+            CONCAT(AutoRegister_, N)() { \
+                Engine::ECS::register_component<CLASS_NAME>(); \
+            } \
+        }; \
+        static CONCAT(AutoRegister_, N) CONCAT(auto_register_instance, N); \
+    }
+
+#define REGISTER_COMPONENT_CUSTOM_LUA_IMPL(CLASS_NAME, N) \
+    namespace { \
+        struct CONCAT(AutoRegister_, N) { \
+            CONCAT(AutoRegister_, N)() { \
+                Engine::ECS::register_component<CLASS_NAME>(); \
+                Engine::LuaBindings::Internal::register_component_lua<CLASS_NAME>(); \
+            } \
+        }; \
+        static CONCAT(AutoRegister_, N) CONCAT(auto_register_instance, N); \
+    }
+
+// Standard component registration (ECS + Reflection only)
+#define REGISTER_COMPONENT(CLASS_NAME, ...) \
+    REFLECT_FIELDS(CLASS_NAME, __VA_ARGS__) \
+    REGISTER_COMPONENT_IMPL(CLASS_NAME, __COUNTER__)
+
+// Component registration with Lua binding (ECS + Reflection + Lua)
+#define REGISTER_COMPONENT_LUA(CLASS_NAME, ...) \
+    REFLECT_FIELDS(CLASS_NAME, __VA_ARGS__) \
+    REGISTER_COMPONENT_LUA_IMPL(CLASS_NAME, __COUNTER__)
 
 // Method binder for components — augments an already-registered Sol2 usertype
 // with extra C++ methods. Use from GameLogic (or Engine) to expose methods
@@ -105,26 +146,9 @@ HOW THESE MACROS WORK:
 // Custom reflector version (ECS + Custom Reflection + Lua binding)
 #define REGISTER_COMPONENT_CUSTOM(CLASS_NAME, ...) \
     REFLECT_CUSTOM(CLASS_NAME, __VA_ARGS__) \
-    namespace { \
-        struct CONCAT(AutoRegister_, __LINE__) { \
-            CONCAT(AutoRegister_, __LINE__)() { \
-                Engine::ECS::register_component<CLASS_NAME>(); \
-                Engine::LuaBindingRegistry::instance().push({ \
-                    Engine::LuaBindings::short_name(#CLASS_NAME), \
-                    /* binder: register the usertype with Sol2 */ \
-                    [](sol::state& lua) { \
-                        Engine::LuaBindings::bind_reflected_custom<CLASS_NAME>(lua); \
-                    }, \
-                    /* getter: return a reference to the live component (non-owning) */ \
-                    /* Uses make_component_ref which manually sets the correct       */ \
-                    /* metatable, bypassing sol2's undefined_metatable path that can */ \
-                    /* create a mismatched metatable in cross-DLL builds.            */ \
-                    [](sol::state_view lua, Engine::ECS::Entity entity) -> sol::object { \
-                        auto* comp = entity.get_component<CLASS_NAME>(); \
-                        return Engine::LuaBindings::make_component_ref<CLASS_NAME>(lua, comp); \
-                    } \
-                }); \
-            } \
-        }; \
-        static CONCAT(AutoRegister_, __LINE__) CONCAT(auto_register_instance, __LINE__); \
-    }
+    REGISTER_COMPONENT_CUSTOM_IMPL(CLASS_NAME, __COUNTER__)
+
+// Custom reflector with Lua binding (ECS + Custom Reflection + Lua)
+#define REGISTER_COMPONENT_CUSTOM_LUA(CLASS_NAME, ...) \
+    REFLECT_CUSTOM(CLASS_NAME, __VA_ARGS__) \
+    REGISTER_COMPONENT_CUSTOM_LUA_IMPL(CLASS_NAME, __COUNTER__)

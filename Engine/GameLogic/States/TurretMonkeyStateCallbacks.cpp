@@ -21,6 +21,62 @@
 namespace TurretMonkeyStateCallbacks
 {
 
+  namespace
+  {
+    inline void face_player_horizontally(Engine::ECS::Entity entity) {
+      auto* flip = entity.get_component<Components::Flip>();
+      auto* self_transform = entity.get_component<Components::Transform2D>();
+      if (!flip || !self_transform) {
+        return;
+      }
+
+      auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+      if (!player_entity.is_valid()) {
+        return;
+      }
+
+      auto* player_transform = player_entity.get_component<Components::Transform2D>();
+      if (!player_transform) {
+        return;
+      }
+
+      float dx = player_transform->position.x - self_transform->position.x;
+      if (std::abs(dx) < 0.001f) {
+        return;
+      }
+
+      flip->value.x = (dx > 0.0f) ? 1.0f : -1.0f;
+    }
+
+    inline std::unordered_map<Engine::ECS::EntityID, Math::Vec2D>& turret_facing_locks() {
+      static std::unordered_map<Engine::ECS::EntityID, Math::Vec2D> locks;
+      return locks;
+    }
+
+    inline void lock_turret_facing(Engine::ECS::Entity entity) {
+      if (auto* flip = entity.get_component<Components::Flip>()) {
+        turret_facing_locks()[entity.get_id()] = flip->value;
+      }
+    }
+
+    inline void apply_locked_turret_facing(Engine::ECS::Entity entity) {
+      auto* flip = entity.get_component<Components::Flip>();
+      if (!flip) {
+        return;
+      }
+
+      auto& locks = turret_facing_locks();
+      auto it = locks.find(entity.get_id());
+      if (it != locks.end()) {
+        flip->value = it->second;
+      }
+    }
+
+    inline void clear_turret_facing_lock(Engine::ECS::Entity entity) {
+      turret_facing_locks().erase(entity.get_id());
+    }
+  }
+
   // ========================================================================
   // Bannana Projectile
   // ========================================================================
@@ -276,6 +332,9 @@ namespace TurretMonkeyStateCallbacks
 
     if (!Turret_monkey) return;
 
+    // Normal (non-turret) behaviour: face the player while idle.
+    face_player_horizontally(entity);
+
     float current_time = Engine::Time::get_time();
     float time_in_idle = current_time - Turret_monkey->last_attack_time;
 
@@ -335,6 +394,12 @@ namespace TurretMonkeyStateCallbacks
         float dx = player_transform->position.x - Turret_monkey_transform->position.x;
         float distance = std::abs(dx); // Only horizontal distance for sidescrolling
 
+        // Normal (non-turret) behaviour: face the player while chasing,
+        // even when we're close enough to stop moving.
+        if (flip && std::abs(dx) >= 0.001f) {
+          flip->value.x = (dx > 0.0f) ? 1.0f : -1.0f;
+        }
+
         // Chase player horizontally using physics (force-based)
         if (distance > Turret_monkey->long_attack_range) {
           float desired_vx = (dx > 0 ? Turret_monkey->chase_speed : -Turret_monkey->chase_speed);
@@ -342,10 +407,6 @@ namespace TurretMonkeyStateCallbacks
           float delta_v = desired_vx - rigid->velocity.x;
           float force_x = (delta_v / dt) * rigid->mass; // F = m * dv/dt
           Engine::Systems::Physics2DSystem::add_force(*rigid, Math::Vec2D(force_x, 0.0f));
-          // Update flip direction based on movement
-          if (flip) {
-            flip->value.x = (dx > 0 ? 1.0f : -1.0f);
-          }
         }
         else {
           // Stop moving when close enough to attack
@@ -388,6 +449,9 @@ namespace TurretMonkeyStateCallbacks
       Turret_monkey->last_attack_time = Engine::Time::get_time();
     }
 
+    // Normal (non-turret) behaviour: face the player immediately on windup.
+    face_player_horizontally(entity);
+
     Log::info("Turret Monkey: Winding up for attack");
   }
 
@@ -401,16 +465,14 @@ namespace TurretMonkeyStateCallbacks
     float current_time = Engine::Time::get_time();
     float windup_elapsed = current_time - Turret_monkey->last_attack_time;
 
-    // Get player entity to face them during windup
+    // Normal (non-turret) behaviour: face the player during windup.
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
-
     if (player_entity.is_valid()) {
       auto* Turret_monkey_transform = entity.get_component<Components::Transform2D>();
       auto* player_transform = player_entity.get_component<Components::Transform2D>();
 
       if (Turret_monkey_transform && player_transform && flip) {
         float dx = player_transform->position.x - Turret_monkey_transform->position.x;
-        // Update flip direction to face player during wind-up
         flip->value.x = (dx > 0 ? 1.0f : -1.0f);
       }
     }
@@ -440,29 +502,22 @@ namespace TurretMonkeyStateCallbacks
       Turret_monkey->last_attack_time = Engine::Time::get_time();
     }
 
+    lock_turret_facing(entity);
+
     Log::info("Turret Monkey: Entered Turret state (stuck to wall)");
   }
 
   inline void turret_on_update(Engine::ECS::Entity entity) {
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
     auto* state_machine = entity.get_component<Components::StateMachine>();
-    auto* flip = entity.get_component<Components::Flip>();
 
     if (!Turret_monkey) return;
 
+    apply_locked_turret_facing(entity);
+
     float current_time = Engine::Time::get_time();
 
-    // Face the player while stuck()
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
-    if (player_entity.is_valid()) {
-      auto* Turret_monkey_transform = entity.get_component<Components::Transform2D>();
-      auto* player_transform = player_entity.get_component<Components::Transform2D>();
-
-      if (Turret_monkey_transform && player_transform && flip) {
-        float dx = player_transform->position.x - Turret_monkey_transform->position.x;
-        flip->value.x = (dx > 0 ? 1.0f : -1.0f);
-      }
-    }
 
     // When player is in range and cooldown has elapsed, go into
     // a dedicated turret windup state before firing.
@@ -508,30 +563,21 @@ namespace TurretMonkeyStateCallbacks
       Turret_monkey->last_attack_time = Engine::Time::get_time();
     }
 
+    apply_locked_turret_facing(entity);
+
     Log::info("Turret Monkey: Entered TurretWindup state");
   }
 
   inline void turret_windup_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
-    auto* flip = entity.get_component<Components::Flip>();
 
     if (!Turret_monkey || !state_machine) return;
 
+    apply_locked_turret_facing(entity);
+
     float current_time = Engine::Time::get_time();
     float windup_elapsed = current_time - Turret_monkey->last_attack_time;
-
-    // Face the player during windup
-    auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
-    if (player_entity.is_valid()) {
-      auto* Turret_monkey_transform = entity.get_component<Components::Transform2D>();
-      auto* player_transform = player_entity.get_component<Components::Transform2D>();
-
-      if (Turret_monkey_transform && player_transform && flip) {
-        float dx = player_transform->position.x - Turret_monkey_transform->position.x;
-        flip->value.x = (dx > 0 ? 1.0f : -1.0f);
-      }
-    }
 
     // After windup duration, fire in the turret attacking state
     if (windup_elapsed >= Turret_monkey->attack_windup) {
@@ -555,6 +601,8 @@ namespace TurretMonkeyStateCallbacks
       rigid->use_gravity = false;
     }
 
+    apply_locked_turret_facing(entity);
+
     // Fire a long-range projectile towards the player (ceiling turret)
     fire_turret_projectile(entity);
 
@@ -566,6 +614,8 @@ namespace TurretMonkeyStateCallbacks
     auto* animation = entity.get_component<Components::Animation>();
 
     if (!state_machine) return;
+
+    apply_locked_turret_facing(entity);
 
     // When the attack animation is done, return to turret idle state
     if (animation && animation->has_ended()) {
@@ -593,6 +643,10 @@ namespace TurretMonkeyStateCallbacks
       rigid->velocity.x = 0.0f;
     }
 
+    // Normal (non-turret) behaviour: face the player before firing so the
+    // projectile spawns from the correct side.
+    face_player_horizontally(entity);
+
     // Fire a long-range projectile towards the player
     fire_turret_projectile(entity);
 
@@ -603,6 +657,9 @@ namespace TurretMonkeyStateCallbacks
   inline void attacking_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* animation = entity.get_component<Components::Animation>();
+
+    // Keep facing the player during the attack animation.
+    face_player_horizontally(entity);
 
     // Transition back to chasing when attack animation completes
     if (animation && animation->has_ended()) {
@@ -631,6 +688,8 @@ namespace TurretMonkeyStateCallbacks
       // Ensure gravity is turned back on when we get hit
       rigid->use_gravity = true;
     }
+
+    clear_turret_facing_lock(entity);
     Log::info("tURRET Monkey: Stunned!");
   }
 
@@ -675,6 +734,7 @@ namespace TurretMonkeyStateCallbacks
   // ========================================================================
 
   inline void death_on_enter([[maybe_unused]] Engine::ECS::Entity entity) {
+    clear_turret_facing_lock(entity);
     Log::info("Turret Monkey: Died!");
   }
 
@@ -691,6 +751,68 @@ namespace TurretMonkeyStateCallbacks
   }
 
 } // namespace TurretMonkeyStateCallbacks
+
+// ============================================================================
+// Backwards-compat callback aliases
+// ============================================================================
+// Many serialized levels/prefabs reference legacy callback names like
+// "Turret_monkey_idle_update". The StateMachine blueprint sync usually
+// overwrites these to the canonical names, but if a StateMachine is missing a
+// blueprint_id (or the blueprint is not registered for some reason), we still
+// want those serialized names to resolve.
+namespace {
+  void Turret_monkey_idle_enter(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::idle_on_enter(entity); }
+  void Turret_monkey_idle_update(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::idle_on_update(entity); }
+  void Turret_monkey_chasing_enter(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::chasing_on_enter(entity); }
+  void Turret_monkey_chasing_update(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::chasing_on_update(entity); }
+  void Turret_monkey_chasing_exit(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::chasing_on_exit(entity); }
+  void Turret_monkey_windup_enter(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::windup_on_enter(entity); }
+  void Turret_monkey_windup_update(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::windup_on_update(entity); }
+  void Turret_monkey_attacking_enter(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::attacking_on_enter(entity); }
+  void Turret_monkey_attacking_update(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::attacking_on_update(entity); }
+  void Turret_monkey_attacking_exit(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::attacking_on_exit(entity); }
+  void Turret_monkey_turret_enter(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::turret_on_enter(entity); }
+  void Turret_monkey_turret_update(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::turret_on_update(entity); }
+  void Turret_monkey_turret_exit(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::turret_on_exit(entity); }
+  void Turret_monkey_turret_windup_enter(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::turret_windup_on_enter(entity); }
+  void Turret_monkey_turret_windup_update(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::turret_windup_on_update(entity); }
+  void Turret_monkey_turret_windup_exit(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::turret_windup_on_exit(entity); }
+  void Turret_monkey_turret_attacking_enter(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::turret_attacking_on_enter(entity); }
+  void Turret_monkey_turret_attacking_update(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::turret_attacking_on_update(entity); }
+  void Turret_monkey_turret_attacking_exit(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::turret_attacking_on_exit(entity); }
+  void Turret_monkey_hit_enter(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::hit_on_enter(entity); }
+  void Turret_monkey_hit_update(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::hit_on_update(entity); }
+  void Turret_monkey_hit_exit(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::hit_on_exit(entity); }
+  void Turret_monkey_death_enter(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::death_on_enter(entity); }
+  void Turret_monkey_death_update(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::death_on_update(entity); }
+  void Turret_monkey_death_exit(Engine::ECS::Entity entity) { TurretMonkeyStateCallbacks::death_on_exit(entity); }
+}
+
+REGISTER_FUNCTION(Turret_monkey_idle_enter)
+REGISTER_FUNCTION(Turret_monkey_idle_update)
+REGISTER_FUNCTION(Turret_monkey_chasing_enter)
+REGISTER_FUNCTION(Turret_monkey_chasing_update)
+REGISTER_FUNCTION(Turret_monkey_chasing_exit)
+REGISTER_FUNCTION(Turret_monkey_windup_enter)
+REGISTER_FUNCTION(Turret_monkey_windup_update)
+REGISTER_FUNCTION(Turret_monkey_attacking_enter)
+REGISTER_FUNCTION(Turret_monkey_attacking_update)
+REGISTER_FUNCTION(Turret_monkey_attacking_exit)
+REGISTER_FUNCTION(Turret_monkey_turret_enter)
+REGISTER_FUNCTION(Turret_monkey_turret_update)
+REGISTER_FUNCTION(Turret_monkey_turret_exit)
+REGISTER_FUNCTION(Turret_monkey_turret_windup_enter)
+REGISTER_FUNCTION(Turret_monkey_turret_windup_update)
+REGISTER_FUNCTION(Turret_monkey_turret_windup_exit)
+REGISTER_FUNCTION(Turret_monkey_turret_attacking_enter)
+REGISTER_FUNCTION(Turret_monkey_turret_attacking_update)
+REGISTER_FUNCTION(Turret_monkey_turret_attacking_exit)
+REGISTER_FUNCTION(Turret_monkey_hit_enter)
+REGISTER_FUNCTION(Turret_monkey_hit_update)
+REGISTER_FUNCTION(Turret_monkey_hit_exit)
+REGISTER_FUNCTION(Turret_monkey_death_enter)
+REGISTER_FUNCTION(Turret_monkey_death_update)
+REGISTER_FUNCTION(Turret_monkey_death_exit)
 
 // Register blueprint + all turret monkey state callbacks
 REGISTER_STATE_MACHINE_BLUEPRINT(TurretMonkey, "Idle",

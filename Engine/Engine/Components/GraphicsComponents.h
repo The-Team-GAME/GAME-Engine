@@ -557,10 +557,17 @@ namespace Components
   };
 
 
-  // Tag component for UI elements - renders in screen space (not affected by camera)
+  // Component for UI elements - renders in screen space (not affected by camera)
+  // anchor: normalized screen position (0,0)=top-left, (0.5,0.5)=center, (1,1)=bottom-right
+  // Transform2D.position is always added as a pixel offset from the anchor,
+  // so gizmo drag works correctly. For no anchor, anchor=(0,0) and position
+  // is the absolute screen position as before.
   struct UI
   {
+    Math::Vec2D anchor{ 0.0f, 0.0f };
+
     UI() = default;
+    explicit UI(f32 ax, f32 ay) : anchor(ax, ay) {}
   };
 
   // Parallax scrolling component - makes the entity scroll at a fraction of the camera speed
@@ -590,7 +597,7 @@ REGISTER_COMPONENT(Components::Text, content, font_scale, line_spacing, alignmen
 REGISTER_COMPONENT(Components::Camera, is_active, is_smooth, smooth_factor, smooth_factor_direction_change, rotation_smooth, zoom_smooth, look_ahead_distance, look_ahead_smooth, dead_zone_radius, target_offset)
 REGISTER_COMPONENT(Components::Distortion, intensity, speed, mesh_intensity)
 REGISTER_COMPONENT(Components::Flip, value)
-REGISTER_COMPONENT(Components::UI)
+REGISTER_COMPONENT(Components::UI, anchor)
 REGISTER_COMPONENT_CUSTOM(Components::Color, r, g, b, a)
 REGISTER_COMPONENT_CUSTOM(Components::Texture, path)
 REGISTER_COMPONENT_CUSTOM(Components::Font, path, font_size)

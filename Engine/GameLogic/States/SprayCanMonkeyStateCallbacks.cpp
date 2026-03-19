@@ -87,7 +87,7 @@ namespace SprayCanMonkey
     Engine::ECS::Entity cloud = Engine::ECS::instantiate_prefab(prefab);
 
     // Add lifetime component (despawn after 4 seconds)
-    cloud.add_component<Components::Lifetime>(7.0f);
+    cloud.add_component<Components::Lifetime>(4.0f);
 
     // Set spawn position
     if (auto* cloud_transform = cloud.get_component<Components::Transform2D>()) {

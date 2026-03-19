@@ -210,6 +210,7 @@ xcopy "$(SafeSolutionDir)\Dependencies\Lua\src\lua.dll" "$(SafeOutDir)" /s /r /y
     <ClCompile Include="Firebase\FirebaseManager.cpp" />
     <ClCompile Include="Firebase\FirebaseListener.cpp" />
     <ClCompile Include="Firebase\FirebaseAuth.cpp" />
+    <ClCompile Include="GUI\ManualColliderPanel.cpp" />
     <ClCompile Include="Video\VideoPlayer.cpp" />
     <ClCompile Include="ECS\PrefabMergeUtils.cpp" />
     <ClCompile Include="FileIO\ColliderMeshFileIO.cpp" />
@@ -237,7 +238,6 @@ xcopy "$(SafeSolutionDir)\Dependencies\Lua\src\lua.dll" "$(SafeOutDir)" /s /r /y
     <ClCompile Include="ECS\Types.cpp" />
     <ClCompile Include="FileIO\FileDialog.cpp" />
     <ClCompile Include="FileIO\Helpers.cpp" />
-    <ClCompile Include="FileIO\GameSettingsBridge.cpp" />
     <ClCompile Include="Systems\CollisionSystem.cpp" />
     <ClCompile Include="Systems\ParticleSystem.cpp" />
     <ClCompile Include="Systems\PhysicsSystem.cpp" />
@@ -295,6 +295,9 @@ xcopy "$(SafeSolutionDir)\Dependencies\Lua\src\lua.dll" "$(SafeOutDir)" /s /r /y
     <ClInclude Include="Firebase\FirebaseManager.h" />
     <ClInclude Include="Firebase\FirebaseListener.h" />
     <ClInclude Include="Firebase\FirebaseAuth.h" />
+    <ClInclude Include="GUI\ConfigurationPanel.h" />
+    <ClInclude Include="GUI\LogConsolePanel.h" />
+    <ClInclude Include="GUI\ManualColliderPanel.h" />
     <ClInclude Include="Video\VideoPlayer.h" />
     <ClInclude Include="HotReloadManager.h" />
     <ClInclude Include="ECS\PrefabMergeUtils.h" />
@@ -334,7 +337,6 @@ xcopy "$(SafeSolutionDir)\Dependencies\Lua\src\lua.dll" "$(SafeOutDir)" /s /r /y
     <ClInclude Include="FileIO\FileDialog.h" />
     <ClInclude Include="FileIO\Helpers.h" />
     <ClInclude Include="FileIO\Settings.h" />
-    <ClInclude Include="FileIO\GameSettingsBridge.h" />
     <ClInclude Include="GUI\PerformanceViewerPanel.h" />
     <ClInclude Include="GUI\SceneChooserPanel.h" />
     <ClInclude Include="Systems\CollisionSystem.h" />

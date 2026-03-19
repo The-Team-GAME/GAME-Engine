@@ -56,6 +56,19 @@ namespace Engine
       );
     }
 
+    // Helper: compute the final screen-space position for a UI element.
+    // final_pos = vres * anchor + Transform2D.position
+    // When anchor=(0,0) this is identical to the old behaviour (raw transform position).
+    // When anchor is set, Transform2D.position acts as a pixel offset from the anchor,
+    // so gizmo drag works correctly out of the box.
+    inline Math::Vec2D compute_ui_position(const Components::UI& ui, const Components::Transform2D& transform) {
+      auto vres = Engine::Graphics::get_virtual_resolution();
+      return Math::Vec2D(
+        vres.x * ui.anchor.x + transform.position.x,
+        vres.y * ui.anchor.y + transform.position.y
+      );
+    }
+
     // Helper: draw a texture tiled across the visible area at a given parallax draw position.
     template<typename DrawFn>
     inline void draw_parallax_tiled(const Math::Vec2D& draw_pos, const Math::Vec2D& entity_scale,
@@ -101,9 +114,10 @@ namespace Engine
 
         if (ui) {
           // Render in screen space (not affected by camera)
+          Math::Vec2D pos = compute_ui_position(*ui, *transform);
           Engine::Graphics::draw_texture_ui(
             texture->texture_handle,
-            Math::Vec2D(transform->position.x, transform->position.y),
+            pos,
             Math::Vec2D(transform->scale.x, transform->scale.y),
             transform->rotation,
             *color,
@@ -166,10 +180,11 @@ namespace Engine
 
           if (ui) {
             // Render in screen space (not affected by camera)
+            Math::Vec2D pos = compute_ui_position(*ui, *transform);
             Engine::Graphics::draw_subtexture_ui(
               texture->texture_handle,
               subTexture.tex_coords,
-              Math::Vec2D(transform->position.x, transform->position.y),
+              pos,
               Math::Vec2D(transform->scale.x, transform->scale.y),
               transform->rotation,
               *color,
@@ -288,7 +303,6 @@ namespace Engine
         auto* color = entity.get_component<Components::Color>();
         auto* font = entity.get_component<Components::Font>();
         auto* text = entity.get_component<Components::Text>();
-        auto* ui = entity.get_component<Components::UI>();
 
         // Transform2D scale defines the text box bounds in world units
         // Text starts at top-left corner of the bounding box
@@ -296,32 +310,19 @@ namespace Engine
         f32 text_x = transform->position.x - box_width * 0.5f;
         f32 text_y = transform->position.y - transform->scale.y * 0.5f;
 
-        if (ui) {
-          // Render in screen space (not affected by camera)
-          Engine::Graphics::draw_text_wrapped_ui(
-            font->font_handle,
-            text->content,
-            Math::Vec2D(text_x, text_y),
-            text->font_scale,
-            *color,
-            box_width,
-            text->line_spacing,
-            static_cast<int>(text->alignment)
-          );
-        }
-        else {
-          // Render in world space
-          Engine::Graphics::draw_text_wrapped(
-            font->font_handle,
-            text->content,
-            Math::Vec2D(text_x, text_y),
-            text->font_scale,
-            *color,
-            box_width,
-            text->line_spacing,
-            static_cast<int>(text->alignment)
-          );
-        }
+        // Always use wrapped text rendering with bounding box width as max_width
+        // box_width is in world units, font_scale scales text relative to world units
+        // So max_width should be box_width (both in world units)
+        Engine::Graphics::draw_text_wrapped(
+          font->font_handle,
+          text->content,
+          Math::Vec2D(text_x, text_y),
+          text->font_scale,
+          *color,
+          box_width,
+          text->line_spacing,
+          static_cast<int>(text->alignment)
+        );
       }
     };
 

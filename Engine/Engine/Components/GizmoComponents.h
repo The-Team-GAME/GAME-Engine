@@ -29,6 +29,7 @@ namespace Components
     None,
     Body,
     ScaleTL, ScaleTR, ScaleBR, ScaleBL,
+    ScaleTop, ScaleRight, ScaleBottom, ScaleLeft,
     AxisX, // move-only along +X/-X
     AxisY,  // move-only along +Y/-Y
     RotateHandle

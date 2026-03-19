@@ -216,6 +216,7 @@
     <ClInclude Include="GameStates\TurretMonkeyTestState.h" />
     <ClInclude Include="GameStates\VictoryState.h" />
     <ClInclude Include="InteractableCallbacks\OldMan.h" />
+    <ClInclude Include="States\PlayerStateCallbacks.h" />
     <ClInclude Include="Systems\DebugHitboxRenderSystem.h" />
     <ClInclude Include="Systems\EnemyHealthSystem.h" />
     <ClInclude Include="Systems\HealthSystem.h" />
