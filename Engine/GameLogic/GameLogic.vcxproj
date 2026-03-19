@@ -173,6 +173,7 @@
     <ClCompile Include="GameStates\VideoPlaybackState.cpp" />
     <ClCompile Include="GameStates\PauseState.cpp" />
     <ClCompile Include="GameStates\StressTestState.cpp" />
+    <ClCompile Include="GameStates\TipsBookState.cpp" />
     <ClCompile Include="GameStates\VictoryState.cpp" />
     <ClCompile Include="States\CheckpointCallbacks.cpp" />
     <ClCompile Include="States\EmptyStateCallbacks.cpp" />
@@ -215,6 +216,7 @@
     <ClInclude Include="GameStates\StressTestState.h" />
     <ClInclude Include="GameStates\TimelineState.h" />
     <ClInclude Include="GameStates\TurretMonkeyTestState.h" />
+    <ClInclude Include="GameStates\TipsBookState.h" />
     <ClInclude Include="GameStates\VictoryState.h" />
     <ClInclude Include="InteractableCallbacks\OldMan.h" />
     <ClInclude Include="States\PlayerStateCallbacks.h" />
