@@ -170,6 +170,7 @@
     <ClCompile Include="GameStates\BasicState.cpp" />
     <ClCompile Include="GameStates\OpeningCutsceneState.cpp" />
     <ClCompile Include="GameStates\OptionsState.cpp" />
+    <ClCompile Include="GameStates\OldManDialogueState.cpp" />
     <ClCompile Include="GameStates\VideoPlaybackState.cpp" />
     <ClCompile Include="GameStates\PauseState.cpp" />
     <ClCompile Include="GameStates\StressTestState.cpp" />
@@ -210,6 +211,7 @@
     <ClInclude Include="GameStates\LevelTestState.h" />
     <ClInclude Include="GameStates\LuaState.h" />
     <ClInclude Include="GameStates\MainMenuState.h" />
+    <ClInclude Include="GameStates\OldManDialogueState.h" />
     <ClInclude Include="GameStates\OptionsState.h" />
     <ClInclude Include="GameStates\PauseState.h" />
     <ClInclude Include="GameStates\PhysicsTestState.h" />
