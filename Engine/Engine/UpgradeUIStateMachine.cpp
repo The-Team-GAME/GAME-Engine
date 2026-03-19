@@ -86,6 +86,11 @@ namespace Engine
     upgrade_btn_id_ = id;
   }
 
+  void UpgradeUIStateMachine::set_picker_open_callback(std::function<void()> cb)
+  {
+    picker_open_cb_ = std::move(cb);
+  }
+
   // ---- Transition logic ----
 
   void UpgradeUIStateMachine::transition_to(UpgradeFlowState new_state)
@@ -155,6 +160,7 @@ namespace Engine
       Time::set_time_scale(0.0001f);
       spawn_picker_entities();
       start_upgrade_lowpass_snapshot();
+      if (picker_open_cb_) picker_open_cb_();
       break;
     }
     case UpgradeFlowState::Applying:

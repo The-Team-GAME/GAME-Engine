@@ -12,6 +12,7 @@
 #pragma once
 
 #include <vector>
+#include <functional>
 #include "EngineExport.h"
 #include "ECS/Types.h"
 
@@ -54,6 +55,10 @@ namespace Engine
     // Tell the FSM which entity is the upgrade button (call after button creation).
     ENGINE_API void set_upgrade_button(ECS::EntityID id);
 
+    // Register a callback invoked when PickerOpen is entered (use to push_scene).
+    // Pass an empty function to clear.
+    ENGINE_API void set_picker_open_callback(std::function<void()> cb);
+
   private:
     UpgradeUIStateMachine() = default;
 
@@ -72,6 +77,8 @@ namespace Engine
     void start_arc(int card_slot);
 
     UpgradeFlowState state_ = UpgradeFlowState::Idle;
+
+    std::function<void()> picker_open_cb_;
 
     // Upgrade button entity (created externally, FSM controls its alpha)
     ECS::EntityID upgrade_btn_id_ = 0;

@@ -35,6 +35,7 @@
 #include "GameStates/BehaviourState.h"
 #include "GameStates/GameplayState.h"
 #include "GameStates/TipsBookState.h"
+#include "GameStates/UpgradePickerState.h"
 #include "GameStates/PauseState.h"
 #include "GameStates/VictoryState.h"
 #include "GameStates/OptionsState.h"
@@ -511,6 +512,7 @@ static void register_scenes()
   Engine::SceneManager::register_scene<LuaState>("LuaState");
   Engine::SceneManager::register_scene<BehaviourState>("BehaviourState");
   Engine::SceneManager::register_scene<TipsBookState>("TipsBookState");
+  Engine::SceneManager::register_scene<UpgradePickerState>("UpgradePickerState");
   Engine::SceneManager::register_scene<PauseState>("PauseState");
   Engine::SceneManager::register_scene<VictoryState>("VictoryState");
   Engine::SceneManager::register_scene<OptionsState>("OptionsState");

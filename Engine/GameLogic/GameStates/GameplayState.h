@@ -19,6 +19,7 @@
 #include "pch.h"
 
 #include "TipsBookState.h"
+#include "UpgradePickerState.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/InteractableComponents.h"
 #include "../Components/HealthComponents.h"
@@ -132,6 +133,9 @@ public:
       .add_to_layer("main_menu_4");
     upgrade_btn_id = upg_btn.get_id();
     Engine::UpgradeUIStateMachine::instance().set_upgrade_button(upgrade_btn_id);
+    Engine::UpgradeUIStateMachine::instance().set_picker_open_callback([](){
+      Engine::SceneManager::push_scene("UpgradePickerState");
+    });
 
   };
 
@@ -193,8 +197,6 @@ public:
       return;
     }
 
-    Engine::UpgradeUIStateMachine::instance().update();
-
   };
 
   void set_tips_button_position(float x, float y) {
@@ -221,6 +223,7 @@ public:
   };
 
   void free() {
+    Engine::UpgradeUIStateMachine::instance().set_picker_open_callback({});
     Engine::UpgradeUIStateMachine::instance().reset();
   };
 
