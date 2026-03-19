@@ -30,8 +30,9 @@ private:
   Engine::ECS::EntityID dimmer_id_ = 0;
   Engine::ECS::EntityID dialogue_bg_id_ = 0;
   Engine::ECS::EntityID npc_portrait_id_ = 0;
-  Engine::ECS::EntityID dialogue_text_id_ = 0;
-  Engine::ECS::EntityID continue_text_id_ = 0;
+
+  Engine::Graphics::Font dialogue_font_;
+  Engine::Graphics::Font continue_font_;
 
   bool any_input_pressed() const;
 };

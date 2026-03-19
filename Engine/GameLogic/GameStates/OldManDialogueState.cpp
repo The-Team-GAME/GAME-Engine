@@ -31,13 +31,8 @@ void OldManDialogueState::load()
 {
   is_open = true;
 
-  Components::Text dialogue_text(OLD_MAN_DIALOGUE_TEXT, 0.5f);
-  dialogue_text.line_spacing = 1.15f;
-  dialogue_text.alignment = Components::TextAlignment::Left;
-
-  Components::Text continue_text("Press any key to continue", 0.5f);
-  continue_text.line_spacing = 1.0f;
-  continue_text.alignment = Components::TextAlignment::Center;
+  dialogue_font_ = Engine::Resources::load_font("fonts/FiveFontsatFreddy's-Regular.ttf", 48);
+  continue_font_ = Engine::Resources::load_font("fonts/FiveFontsatFreddy's-Regular.ttf", 32);
 
   dimmer_id_ = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(SCREEN_CENTER_X, SCREEN_CENTER_Y, 0.0f, 1600.0f, 900.0f)
@@ -66,26 +61,6 @@ void OldManDialogueState::load()
     .add_to_layer("main_menu_6")
     .get_id();
 
-  dialogue_text_id_ = Engine::ECS::create_entity()
-    .add_component<Components::Transform2D>(SCREEN_CENTER_X - 170.0f, SCREEN_CENTER_Y + 255.0f, 0.0f, 680.0f, 190.0f)
-    .add_component<Components::Font>(Engine::Resources::load_font("fonts/FiveFontsatFreddy's-Regular.ttf", 48))
-    .add_component<Components::Text>(std::move(dialogue_text))
-    .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 1.0f)
-    .add_component<Components::UI>()
-    .add_component<Components::RuntimeOnly>()
-    .add_to_layer("main_menu_6")
-    .get_id();
-
-  continue_text_id_ = Engine::ECS::create_entity()
-    .add_component<Components::Transform2D>(SCREEN_CENTER_X - 10.0f, SCREEN_CENTER_Y + 390.0f, 0.0f, 520.0f, 48.0f)
-    .add_component<Components::Font>(Engine::Resources::load_font("fonts/FiveFontsatFreddy's-Regular.ttf", 32))
-    .add_component<Components::Text>(std::move(continue_text))
-    .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-    .add_component<Components::UI>()
-    .add_component<Components::RuntimeOnly>()
-    .add_to_layer("main_menu_6")
-    .get_id();
-
   Engine::Time::set_time_scale(0.0001f);
 }
 
@@ -98,7 +73,35 @@ void OldManDialogueState::update()
   }
 }
 
-void OldManDialogueState::draw() {}
+void OldManDialogueState::draw()
+{
+  // Render dialogue text directly in screen space (same API as FPS overlay)
+  if (dialogue_font_) {
+    Engine::Graphics::draw_text_wrapped_ui(
+      dialogue_font_,
+      OLD_MAN_DIALOGUE_TEXT,
+      Math::Vec2D(185.0f, 615.0f),
+      1.0f,
+      Math::Vec4D(0.0f, 0.0f, 0.0f, 1.0f),
+      880.0f,
+      1.15f,
+      0  // Left alignment
+    );
+  }
+
+  if (continue_font_) {
+    Engine::Graphics::draw_text_wrapped_ui(
+      continue_font_,
+      "Press any key to continue",
+      Math::Vec2D(400.0f, 825.0f),
+      1.0f,
+      Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f),
+      800.0f,
+      1.0f,
+      1  // Center alignment
+    );
+  }
+}
 
 void OldManDialogueState::free() {}
 
@@ -113,18 +116,11 @@ void OldManDialogueState::unload()
   if (npc_portrait_id_ != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(npc_portrait_id_))) {
     Engine::ECS::destroy_entity(Engine::ECS::Entity(npc_portrait_id_));
   }
-  if (dialogue_text_id_ != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(dialogue_text_id_))) {
-    Engine::ECS::destroy_entity(Engine::ECS::Entity(dialogue_text_id_));
-  }
-  if (continue_text_id_ != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(continue_text_id_))) {
-    Engine::ECS::destroy_entity(Engine::ECS::Entity(continue_text_id_));
-  }
-
   dimmer_id_ = 0;
   dialogue_bg_id_ = 0;
   npc_portrait_id_ = 0;
-  dialogue_text_id_ = 0;
-  continue_text_id_ = 0;
+  dialogue_font_ = nullptr;
+  continue_font_ = nullptr;
 
   is_open = false;
   Engine::Time::set_time_scale(1.0f);
