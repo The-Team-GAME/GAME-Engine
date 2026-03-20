@@ -62,7 +62,7 @@ void VictoryState::update()
 {
   // Press any key to return to main menu
   if (any_key_pressed()) {
-    Engine::SceneManager::load_scene("NewMainMenuState");
+    Engine::SceneManager::load_scene("MainMenuState");
   }
 }
 

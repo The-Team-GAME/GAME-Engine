@@ -26,7 +26,6 @@
 // Game states
 #include "GameStates/EmptyState.h"
 #include "GameStates/MainMenuState.h"
-#include "GameStates/NewMainMenuState.h"
 #include "GameStates/Rubric2500ParticlesState.h"
 #include "GameStates/StressTestState.h"
 #include "GameStates/BasicState.h"
@@ -427,7 +426,7 @@ static void register_function_callbacks()
   reg.register_function<void()>("pause_menu_exit", std::function<void()>([]() {
     Log::info("Exiting to main menu from pause menu");
     Engine::AudioSystem::stopEvent(PLAYER_HEARTBEAT_EVENT, true);
-    Engine::SceneManager::load_scene("NewMainMenuState");
+    Engine::SceneManager::load_scene("MainMenuState");
     }));
 
   // Pause menu hover callbacks
@@ -501,7 +500,6 @@ static void register_scenes()
 {
   Engine::SceneManager::register_scene<EmptyState>("EmptyState");
   Engine::SceneManager::register_scene<MainMenuState>("MainMenuState");
-  Engine::SceneManager::register_scene<NewMainMenuState>("NewMainMenuState");
   Engine::SceneManager::register_scene<GameplayState>("GameplayState");
   Engine::SceneManager::register_scene<Rubric2500ParticlesState>("Rubric2500ParticlesState");
   Engine::SceneManager::register_scene<StressTestState>("StressTestState");

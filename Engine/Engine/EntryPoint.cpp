@@ -125,7 +125,7 @@ void RunGame()
 #endif
 
   // ── Run main game loop ──────────────────────────────────────────────
-  Engine::Core::run("NewMainMenuState");
+  Engine::Core::run("MainMenuState");
 
   // ── Cleanup ─────────────────────────────────────────────────────────
   // Core::exit() must run BEFORE unloading the DLL because scenes
