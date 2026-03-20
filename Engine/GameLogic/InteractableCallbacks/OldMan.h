@@ -1,3 +1,4 @@
+#pragma once
 
 #include "pch.h"
 #include "../../Engine/Systems/GraphicsSystem.h"
@@ -10,11 +11,15 @@ namespace OldManCallbacks
   inline ECS::EntityID dialogue_text_id = 0;
   inline bool dialogue_shown = false;
   inline bool e_key_was_down = false;  // Track previous E key state for edge detection
+  inline bool tips_overlay_request_pending = false;
 
   // Press E prompt entity shown above the oldman while in proximity
   inline ECS::EntityID press_e_prompt_id = 0;
   static constexpr float PRESS_E_FADE_SPEED = 2.5f;  // Alpha units per second
   static constexpr float PRESS_E_PROMPT_OFFSET_Y = -90.0f; // Pixels above oldman centre
+
+  bool consume_tips_overlay_request();
+  void trigger_tips_overlay_from_gameplay();
 
   void spawn_press_e_prompt(ECS::Entity oldman_entity) {
     if (press_e_prompt_id != 0) return;
@@ -114,12 +119,40 @@ namespace OldManCallbacks
     // Resume the game
     Engine::Time::set_time_scale(1.0f);
 
+    // Any valid dialogue close should request gameplay tips overlay
+    trigger_tips_overlay_from_gameplay();
+
     Log::info("Old man dialogue destroyed!");
   }
 
   void old_man_on_enter(ECS::Entity oldman_entity, ECS::Entity player_entity) {
     Log::info("Player {} entered interaction range", player_entity.get_id());
     spawn_press_e_prompt(oldman_entity);
+  }
+
+  bool consume_tips_overlay_request() {
+    bool requested = tips_overlay_request_pending;
+    tips_overlay_request_pending = false;
+    return requested;
+  }
+
+  void trigger_tips_overlay_from_gameplay() {
+    tips_overlay_request_pending = true;
+    auto on_exhausted = Engine::FunctionRegistry::instance().get_function<void()>("gameplay_oldman_dialogue_exhausted");
+    if (on_exhausted) {
+      Log::info("OldMan: triggering gameplay_oldman_dialogue_exhausted");
+      on_exhausted();
+    }
+    else {
+      Log::warning("OldMan: gameplay_oldman_dialogue_exhausted callback not found, trying gameplay_tips_button_click fallback");
+      auto on_tips_click = Engine::FunctionRegistry::instance().get_function<void()>("gameplay_tips_button_click");
+      if (on_tips_click) {
+        on_tips_click();
+      }
+      else {
+        Log::warning("OldMan: gameplay_tips_button_click fallback callback also not found");
+      }
+    }
   }
 
   void old_man_on_update(ECS::Entity oldman_entity, ECS::Entity player_entity) {
@@ -142,7 +175,7 @@ namespace OldManCallbacks
     }
 
     // Manual edge detection for E key (since time scale affects is_pressed behavior)
-    bool e_key_down = Engine::Input::is_held(Engine::KeyCode::E);
+    bool e_key_down = Engine::Input::is_held_raw(Engine::KeyCode::E);
 
     // Only trigger on the rising edge (key just went from up to down)
     if (e_key_down && !e_key_was_down) {
@@ -168,3 +201,16 @@ namespace OldManCallbacks
 REGISTER_FUNCTION(OldManCallbacks::old_man_on_enter)
 REGISTER_FUNCTION(OldManCallbacks::old_man_on_update)
 REGISTER_FUNCTION(OldManCallbacks::old_man_on_exit)
+
+namespace {
+  struct OldManLegacyAliasRegistration {
+    OldManLegacyAliasRegistration() {
+      using Sig = void(Engine::ECS::Entity, Engine::ECS::Entity);
+      Engine::FunctionRegistry::instance().register_function<Sig>("old_man_on_enter", std::function<Sig>(OldManCallbacks::old_man_on_enter));
+      Engine::FunctionRegistry::instance().register_function<Sig>("old_man_on_update", std::function<Sig>(OldManCallbacks::old_man_on_update));
+      Engine::FunctionRegistry::instance().register_function<Sig>("old_man_on_exit", std::function<Sig>(OldManCallbacks::old_man_on_exit));
+    }
+  };
+
+  static OldManLegacyAliasRegistration s_oldman_legacy_alias_registration;
+}
