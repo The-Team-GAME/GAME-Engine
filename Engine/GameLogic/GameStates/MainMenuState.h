@@ -2,7 +2,7 @@
 // file:    MainMenuState.h
 // project: Monkey Stole My GPA
 //
-// brief:   Main menu scene that loads MainMenuStart.json as its level.
+// brief:   Main menu scene that loads MainMenu.json as its level.
 //          All visuals, animations, and state transitions (Start -> Menu) are
 //          driven by the level JSON and main_menu.lua. This class only handles
 //          audio lifecycle and level loading.
@@ -22,7 +22,7 @@ class MainMenuState : public Engine::Scene
 
 public:
   void load() {
-    Engine::LevelManager::open_level("levels/MainMenuStart.json");
+    Engine::LevelManager::open_level("levels/MainMenu.json");
 
     Engine::AudioSystem::stopEvent(MAIN_MENU_HEARTBEAT_EVENT, true);
     Engine::AudioSystem::stopSceneMusic(true);
