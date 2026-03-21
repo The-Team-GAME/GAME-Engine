@@ -42,6 +42,7 @@
 #include "GameStates/OptionsState.h"
 #include "GameStates/VideoPlaybackState.h"
 #include "GameStates/OpeningCutsceneState.h"
+#include "GameStates/EnteringTrainCutsceneState.h"
 
 // Game systems
 #include "Systems/HealthSystem.h"
@@ -298,7 +299,7 @@ static void register_collision_callbacks()
     [](Engine::ECS::Entity trigger_entity, Engine::ECS::Entity player_entity)
     {
       Log::info("[Portal] Collision callback fired: trigger={}, player={}", trigger_entity.get_id(), player_entity.get_id());
-      LevelTransitionStateCallbacks::to_level_two(trigger_entity, player_entity);
+      LevelTransitionStateCallbacks::portal_entering_train_cutscene(trigger_entity, player_entity);
     });
 
   // Register reverse order too (collision system may invoke callbacks with swapped entity order).
@@ -306,7 +307,7 @@ static void register_collision_callbacks()
     [](Engine::ECS::Entity player_entity, Engine::ECS::Entity trigger_entity)
     {
       Log::info("[Portal] Collision callback fired (reverse): trigger={}, player={}", trigger_entity.get_id(), player_entity.get_id());
-      LevelTransitionStateCallbacks::to_level_two(trigger_entity, player_entity);
+      LevelTransitionStateCallbacks::portal_entering_train_cutscene(trigger_entity, player_entity);
     });
 }
 
@@ -542,6 +543,7 @@ static void register_scenes()
   Engine::SceneManager::register_scene<OptionsState>("OptionsState");
   Engine::SceneManager::register_scene<VideoPlaybackState>("VideoPlaybackState");
   Engine::SceneManager::register_scene<OpeningCutsceneState>("OpeningCutsceneState");
+  Engine::SceneManager::register_scene<EnteringTrainCutsceneState>("EnteringTrainCutsceneState");
 }
 
 static void register_systems()

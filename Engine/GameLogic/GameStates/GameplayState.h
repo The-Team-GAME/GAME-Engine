@@ -31,6 +31,8 @@
 
 class GameplayState : public Engine::Scene
 {
+  inline static std::string pending_level_to_open_{};
+
   static constexpr const char* GAMEPLAY_BGM_EVENT = "event:/BGM/LevelBGM";
   static constexpr const char* GAMEPLAY_BATTLECRY_EVENT = "event:/SFX/PlayerStartCry";
   static constexpr float TIPS_BUTTON_HUD_X = -227.0f;
@@ -67,8 +69,21 @@ class GameplayState : public Engine::Scene
   }
 
 public:
+  static void set_pending_level_to_open(const std::string& level_path)
+  {
+    pending_level_to_open_ = level_path;
+  }
+
   void load() {
-    Engine::Resources::open_level("levels/LevelOneTestingExtra.json");
+    if (!pending_level_to_open_.empty())
+    {
+      Engine::Resources::open_level(pending_level_to_open_);
+      pending_level_to_open_.clear();
+    }
+    else
+    {
+      Engine::Resources::open_level("levels/LevelOneTestingExtra.json");
+    }
 
 
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();

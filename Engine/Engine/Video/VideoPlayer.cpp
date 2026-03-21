@@ -7,6 +7,7 @@
 #include "../Graphics/Shader.h"
 #include <GL/glew.h>
 #include <fmod.hpp>
+#include <algorithm>
 #include <mutex>
 #include <vector>
 #include <cstring>
@@ -18,6 +19,34 @@
 
 namespace Engine {
   namespace Video {
+
+    static bool file_looks_like_mpeg2_video(const std::string& full_path)
+    {
+      // pl_mpeg decodes MPEG-PS containers with MPEG-1 video.
+      // If the stream is MPEG-2 video, playback typically appears as static/garbage.
+      // Detect this cheaply by scanning for an MPEG-2 "sequence extension" start code:
+      // 00 00 01 B5, then extension_id == 1 (high nibble of next byte).
+      std::FILE* f = std::fopen(full_path.c_str(), "rb");
+      if (!f) return false;
+
+      constexpr size_t kScanBytes = 512 * 1024;
+      std::vector<unsigned char> buf(kScanBytes);
+      size_t n = std::fread(buf.data(), 1, buf.size(), f);
+      std::fclose(f);
+
+      if (n < 5) return false;
+
+      for (size_t i = 0; i + 5 <= n; ++i)
+      {
+        if (buf[i] == 0x00 && buf[i + 1] == 0x00 && buf[i + 2] == 0x01 && buf[i + 3] == 0xB5)
+        {
+          unsigned char ext_id = static_cast<unsigned char>(buf[i + 4] >> 4);
+          if (ext_id == 1)
+            return true;
+        }
+      }
+      return false;
+    }
 
     // ----------------------------------------------------------------
     // Ring buffer for bridging pl_mpeg audio decode (main thread) to
@@ -354,6 +383,13 @@ namespace Engine {
         ? Engine::Path(Resources::resource_path).join(path)
         : Engine::Path(path).normalize();
 
+      if (file_looks_like_mpeg2_video(full_path))
+      {
+        Log::error("[VideoPlayer] File appears to be MPEG-2 video (unsupported by pl_mpeg): {}", full_path);
+        Log::error("[VideoPlayer] Re-encode to MPEG-1 with: ffmpeg -i input.mp4 -c:v mpeg1video -c:a mp2 -f mpeg output.mpg");
+        return false;
+      }
+
       m_impl->plm = plm_create_with_filename(full_path.c_str());
       if (!m_impl->plm)
       {
@@ -375,13 +411,13 @@ namespace Engine {
         return false;
       }
 
-      // Plane dimensions: Y is full size, Cb/Cr are half (4:2:0)
-      // pl_mpeg rounds up to macroblock boundaries (16px) internally,
-      // but we only upload the display-sized portion.
+      // Plane dimensions: Y is full size, Cb/Cr are half (4:2:0).
+      // IMPORTANT: for odd sizes, chroma planes round up.
+      // Using simple /2 truncation can misalign chroma and produce heavy artifacts.
       m_impl->plane_y_w = m_impl->width;
       m_impl->plane_y_h = m_impl->height;
-      m_impl->plane_c_w = m_impl->width / 2;
-      m_impl->plane_c_h = m_impl->height / 2;
+      m_impl->plane_c_w = (m_impl->width + 1) / 2;
+      m_impl->plane_c_h = (m_impl->height + 1) / 2;
 
       m_impl->buf_y.resize(static_cast<size_t>(m_impl->plane_y_w) * m_impl->plane_y_h, 0);
       m_impl->buf_cb.resize(static_cast<size_t>(m_impl->plane_c_w) * m_impl->plane_c_h, 128);
@@ -474,7 +510,17 @@ namespace Engine {
       if (m_impl->plm && m_impl->playing && !m_impl->paused)
       {
         m_impl->apply_volume();
-        plm_decode(m_impl->plm, static_cast<double>(Time::get_real_dt()));
+
+        // Time::get_real_dt() can spike after heavy loads (e.g. switching levels),
+        // which would cause the decoder to skip a large chunk of the video in one
+        // frame and can also overflow the audio ring buffer.
+        // Clamp the decode step to keep playback stable.
+        double decode_dt = static_cast<double>(Time::get_real_dt());
+        if (decode_dt < 0.0) decode_dt = 0.0;
+        constexpr double kMaxDecodeDt = 1.0 / 15.0; // ~66ms
+        decode_dt = (std::min)(decode_dt, kMaxDecodeDt);
+
+        plm_decode(m_impl->plm, decode_dt);
 
         if (plm_has_ended(m_impl->plm))
         {

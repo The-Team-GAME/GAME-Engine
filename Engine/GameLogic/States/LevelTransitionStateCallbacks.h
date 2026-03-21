@@ -18,7 +18,9 @@
 #include "../../Engine/LevelManager.h"
 #include "../../Engine/EventManager/EventManager.h"
 #include "../../Engine/Events/EngineEvents.h"
+#include "../../Engine/SceneManager.h"
 #include "../Components/GameplayComponent.h"
+#include "../GameStates/EnteringTrainCutsceneState.h"
 
 namespace LevelTransitionStateCallbacks
 {
@@ -44,11 +46,34 @@ namespace LevelTransitionStateCallbacks
     // Note: the level load will clear entities anyway; this just makes it robust.
     trigger_entity.destroy();
 
-    Engine::LevelManager::open_level(LEVEL_TWO_PATH);
+    // Load the next level FIRST, then play the cutscene.
+    // Core.cpp will skip ECS update/draw while the cutscene is active
+    // because EnteringTrainCutsceneState::blocks_lower_draw() returns true.
+    const std::string opened_level_id = Engine::LevelManager::open_level(LEVEL_TWO_PATH);
+    if (opened_level_id.empty())
+    {
+      Log::error("[Portal] Failed to open level: {}", LEVEL_TWO_PATH);
+      Engine::EventManager::send_event<Engine::Events::ToastEvent>(
+        std::string("Failed to open ") + LEVEL_TWO_PATH,
+        Engine::Events::ToastType::Error,
+        5.0f
+      );
+      return;
+    }
+
+    Engine::SceneManager::push_scene("EnteringTrainCutsceneState");
+  }
+
+  // Explicitly named wrapper: portal switches into the EnteringTrainCutsceneState,
+  // and that state will open LevelTwo when the cutscene ends.
+  inline void portal_entering_train_cutscene(Engine::ECS::Entity trigger_entity, Engine::ECS::Entity player_entity)
+  {
+    to_level_two(trigger_entity, player_entity);
   }
 } // namespace LevelTransitionStateCallbacks
 
 REGISTER_FUNCTION(LevelTransitionStateCallbacks::to_level_two)
+REGISTER_FUNCTION(LevelTransitionStateCallbacks::portal_entering_train_cutscene)
 
 // Editor-friendly alias (matches the pattern used by Interactable callbacks like OldMan).
 namespace {
@@ -58,6 +83,11 @@ namespace {
        Engine::FunctionRegistry::instance().register_function<Sig>(
         "level_transition_to_level_two",
         std::function<Sig>(LevelTransitionStateCallbacks::to_level_two)
+      );
+
+       Engine::FunctionRegistry::instance().register_function<Sig>(
+        "portal_entering_train_cutscene",
+        std::function<Sig>(LevelTransitionStateCallbacks::portal_entering_train_cutscene)
       );
     }
   };
