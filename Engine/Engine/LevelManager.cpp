@@ -657,6 +657,22 @@ namespace Engine {
         state.cached_entities = entities;
       }
 
+      // Ensure tile collision entities and collision world bounds are correct after a fast switch.
+      // The cold-load path handles this inside instantiate_entities().
+      for (auto& entity : ECS::get_entities_with<Components::TileMap>()) {
+        auto layers = entity.get_layers();
+        for (ECS::LayerID layer_id = 0; layer_id < ECS::MAX_LAYERS; ++layer_id) {
+          if (layers.test(layer_id)) {
+            std::string layer_name = ECS::get_layer_name(layer_id);
+            if (!layer_name.empty()) {
+              TilemapManager::rebuild_tilemap_for_layer(layer_name);
+            }
+          }
+        }
+      }
+
+      TilemapManager::broadcast_world_bounds();
+
       Log::info("Switched to level: {}", level_id);
 
       // Call on_init (via Level component if present)

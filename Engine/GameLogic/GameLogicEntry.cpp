@@ -53,6 +53,9 @@
 // Interactable callbacks
 #include "InteractableCallbacks/OldMan.h"
 
+// Level transition trigger callbacks
+#include "States/LevelTransitionStateCallbacks.h"
+
 // Upgrade system
 #include "../Engine/UpgradeManager.h"
 
@@ -288,6 +291,23 @@ static void register_collision_callbacks()
       Log::info("Projectile hit player, destroying");
       projectile_entity.destroy();
     });
+
+  // Portal volumes: player collides with a scene_change_trigger to transition levels.
+  Engine::ECS::LayerRegistry::enable_layer_collision("scene_change_trigger", "player");
+  Engine::ECS::LayerRegistry::register_collision_callback("scene_change_trigger", "player",
+    [](Engine::ECS::Entity trigger_entity, Engine::ECS::Entity player_entity)
+    {
+      Log::info("[Portal] Collision callback fired: trigger={}, player={}", trigger_entity.get_id(), player_entity.get_id());
+      LevelTransitionStateCallbacks::to_level_two(trigger_entity, player_entity);
+    });
+
+  // Register reverse order too (collision system may invoke callbacks with swapped entity order).
+  Engine::ECS::LayerRegistry::register_collision_callback("player", "scene_change_trigger",
+    [](Engine::ECS::Entity player_entity, Engine::ECS::Entity trigger_entity)
+    {
+      Log::info("[Portal] Collision callback fired (reverse): trigger={}, player={}", trigger_entity.get_id(), player_entity.get_id());
+      LevelTransitionStateCallbacks::to_level_two(trigger_entity, player_entity);
+    });
 }
 
 static void unregister_collision_callbacks()
@@ -297,6 +317,8 @@ static void unregister_collision_callbacks()
   Engine::ECS::LayerRegistry::unregister_collision_callback("damage_player", "player");
   Engine::ECS::LayerRegistry::unregister_collision_callback("projectiles", "tilemap_foreground_mid");
   Engine::ECS::LayerRegistry::unregister_collision_callback("projectiles", "player");
+  Engine::ECS::LayerRegistry::unregister_collision_callback("scene_change_trigger", "player");
+  Engine::ECS::LayerRegistry::unregister_collision_callback("player", "scene_change_trigger");
 }
 
 // =============================================================================

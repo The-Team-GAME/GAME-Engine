@@ -21,6 +21,10 @@
             "second": "player"
         },
         {
+            "first": "scene_change_trigger",
+            "second": "player"
+        },
+        {
             "first": "damage_enemy",
             "second": "enemy"
         },
