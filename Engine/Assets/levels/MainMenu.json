@@ -6,17 +6,17 @@
                     {
                         "data": {
                             "child_ids": [
-                                2304,
-                                2308,
-                                2309,
-                                2303,
-                                2310,
-                                2311,
-                                2312,
-                                2313,
-                                2314,
-                                2315,
-                                2316
+                                1862,
+                                1866,
+                                1867,
+                                1875,
+                                1868,
+                                1869,
+                                1870,
+                                1871,
+                                1872,
+                                1873,
+                                1874
                             ]
                         },
                         "type": "Components::Children"
@@ -37,7 +37,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 2302,
+                "id": 1861,
                 "layers": [
                     "default"
                 ],
@@ -45,6 +45,16 @@
             },
             {
                 "components": [
+                    {
+                        "data": {
+                            "child_ids": [
+                                1864,
+                                1863,
+                                1865
+                            ]
+                        },
+                        "type": "Components::Children"
+                    },
                     {
                         "data": {
                             "a": 1.0,
@@ -56,42 +66,18 @@
                     },
                     {
                         "data": {
-                            "position": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "rotation": 0.0,
-                            "scale": {
-                                "x": 1.0,
-                                "y": 1.0
-                            }
-                        },
-                        "type": "Components::Transform2D"
-                    },
-                    {
-                        "data": {
                             "local_offset": {
                                 "x": 0.0,
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 2302,
+                            "parent_id": 1861,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
                             }
                         },
                         "type": "Components::Parent"
-                    },
-                    {
-                        "data": {
-                            "child_ids": [
-                                2306,
-                                2305,
-                                2307
-                            ]
-                        },
-                        "type": "Components::Children"
                     },
                     {
                         "data": {
@@ -113,6 +99,24 @@
                                         },
                                         "on_update_callback": {
                                             "name": "main_menu_menu_on_update"
+                                        },
+                                        "property_animation": null
+                                    }
+                                },
+                                {
+                                    "first": "Transition",
+                                    "second": {
+                                        "animation": null,
+                                        "audio": null,
+                                        "name": "Transition",
+                                        "on_enter_callback": {
+                                            "name": "main_menu_transition_on_enter"
+                                        },
+                                        "on_exit_callback": {
+                                            "name": "main_menu_transition_on_exit"
+                                        },
+                                        "on_update_callback": {
+                                            "name": "main_menu_transition_on_update"
                                         },
                                         "property_animation": null
                                     }
@@ -190,9 +194,23 @@
                             ]
                         },
                         "type": "Components::StateMachine"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1.0,
+                                "y": 1.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
                     }
                 ],
-                "id": 2304,
+                "id": 1862,
                 "layers": [
                     "default"
                 ],
@@ -208,6 +226,21 @@
                             "r": 1.0
                         },
                         "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 800.0,
+                                "y": 443.51177978515625
+                            },
+                            "offset_initialized": true,
+                            "parent_id": 1862,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     },
                     {
                         "data": {
@@ -228,24 +261,9 @@
                             }
                         },
                         "type": "Components::Transform2D"
-                    },
-                    {
-                        "data": {
-                            "local_offset": {
-                                "x": 800.0,
-                                "y": 443.51177978515625
-                            },
-                            "offset_initialized": true,
-                            "parent_id": 2304,
-                            "prev_parent_pos": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        },
-                        "type": "Components::Parent"
                     }
                 ],
-                "id": 2305,
+                "id": 1863,
                 "layers": [
                     "default",
                     "main_menu_2"
@@ -254,6 +272,12 @@
             },
             {
                 "components": [
+                    {
+                        "data": {
+                            "child_ids": []
+                        },
+                        "type": "Components::Children"
+                    },
                     {
                         "data": {
                             "a": 1.0,
@@ -265,44 +289,18 @@
                     },
                     {
                         "data": {
-                            "path": "images/UI/MainMenu (Start)/Front.png"
-                        },
-                        "type": "Components::Texture"
-                    },
-                    {
-                        "data": {
-                            "position": {
-                                "x": 800.0,
-                                "y": 449.95611572265625
-                            },
-                            "rotation": 0.0,
-                            "scale": {
-                                "x": 1600.0,
-                                "y": 900.0
-                            }
-                        },
-                        "type": "Components::Transform2D"
-                    },
-                    {
-                        "data": {
                             "local_offset": {
                                 "x": 800.0,
                                 "y": 449.95611572265625
                             },
                             "offset_initialized": true,
-                            "parent_id": 2304,
+                            "parent_id": 1862,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
                             }
                         },
                         "type": "Components::Parent"
-                    },
-                    {
-                        "data": {
-                            "child_ids": []
-                        },
-                        "type": "Components::Children"
                     },
                     {
                         "data": {
@@ -329,6 +327,24 @@
                                     }
                                 },
                                 {
+                                    "first": "Transition",
+                                    "second": {
+                                        "animation": null,
+                                        "audio": null,
+                                        "name": "Transition",
+                                        "on_enter_callback": {
+                                            "name": "main_menu_transition_on_enter"
+                                        },
+                                        "on_exit_callback": {
+                                            "name": "main_menu_transition_on_exit"
+                                        },
+                                        "on_update_callback": {
+                                            "name": "main_menu_transition_on_update"
+                                        },
+                                        "property_animation": null
+                                    }
+                                },
+                                {
                                     "first": "Start",
                                     "second": {
                                         "animation": null,
@@ -349,9 +365,29 @@
                             ]
                         },
                         "type": "Components::StateMachine"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/MainMenu (Start)/Front.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 449.95611572265625
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 900.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
                     }
                 ],
-                "id": 2306,
+                "id": 1864,
                 "layers": [
                     "default",
                     "main_menu_4"
@@ -360,173 +396,6 @@
             },
             {
                 "components": [
-                    {
-                        "data": {
-                            "a": 1.0,
-                            "b": 1.0,
-                            "g": 1.0,
-                            "r": 1.0
-                        },
-                        "type": "Components::Color"
-                    },
-                    {
-                        "data": {
-                            "path": "images/UI/MainMenu (Start)/Brosleepy3-Sheet.png"
-                        },
-                        "type": "Components::Texture"
-                    },
-                    {
-                        "data": {
-                            "drawIndex": 6,
-                            "tex_coords_list": [
-                                [
-                                    {
-                                        "x": 0.0,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.125,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.125,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.0,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.125,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.25,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.25,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.125,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.25,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.375,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.375,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.25,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.375,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.5,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.5,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.375,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.5,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.625,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.625,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.5,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.625,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.75,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.75,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.625,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.75,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.875,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.875,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.75,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.875,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 1.0,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 1.0,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.875,
-                                        "y": 0.0
-                                    }
-                                ]
-                            ]
-                        },
-                        "type": "Components::TextureAtlas"
-                    },
                     {
                         "data": {
                             "atlas_indices": [
@@ -560,24 +429,19 @@
                                 0.10000000149011612
                             ],
                             "is_looping": true,
-                            "startTime": 203.9250030517578,
+                            "startTime": 156.41998291015625,
                             "totalDuration": 0.8000000715255737
                         },
                         "type": "Components::Animation"
                     },
                     {
                         "data": {
-                            "position": {
-                                "x": 1354.7939453125,
-                                "y": 774.271728515625
-                            },
-                            "rotation": 0.0,
-                            "scale": {
-                                "x": 450.0,
-                                "y": 450.0
-                            }
+                            "a": 1.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
                         },
-                        "type": "Components::Transform2D"
+                        "type": "Components::Color"
                     },
                     {
                         "data": {
@@ -586,7 +450,7 @@
                                 "y": 774.271728515625
                             },
                             "offset_initialized": true,
-                            "parent_id": 2304,
+                            "parent_id": 1862,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -615,7 +479,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 203.9250030517578,
+                                                "startTime": 156.41998291015625,
                                                 "totalDuration": 0.10000000149011612
                                             },
                                             "collider_data": null,
@@ -665,6 +529,24 @@
                                     }
                                 },
                                 {
+                                    "first": "Transition",
+                                    "second": {
+                                        "animation": null,
+                                        "audio": null,
+                                        "name": "Transition",
+                                        "on_enter_callback": {
+                                            "name": "main_menu_transition_on_enter"
+                                        },
+                                        "on_exit_callback": {
+                                            "name": "main_menu_transition_on_exit"
+                                        },
+                                        "on_update_callback": {
+                                            "name": "main_menu_transition_on_update"
+                                        },
+                                        "property_animation": null
+                                    }
+                                },
+                                {
                                     "first": "Start",
                                     "second": {
                                         "animation": {
@@ -700,7 +582,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 203.9250030517578,
+                                                "startTime": 156.41998291015625,
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": null,
@@ -878,9 +760,181 @@
                             ]
                         },
                         "type": "Components::StateMachine"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/MainMenu (Start)/Brosleepy3-Sheet.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "drawIndex": 0,
+                            "tex_coords_list": [
+                                [
+                                    {
+                                        "x": 0.0,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.125,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.125,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.0,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.125,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.25,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.25,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.125,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.25,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.375,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.375,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.25,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.375,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.5,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.5,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.375,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.5,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.625,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.625,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.5,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.625,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.75,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.75,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.625,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.75,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.875,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.875,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.75,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.875,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 1.0,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 1.0,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.875,
+                                        "y": 0.0
+                                    }
+                                ]
+                            ]
+                        },
+                        "type": "Components::TextureAtlas"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 1354.7939453125,
+                                "y": 774.271728515625
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 450.0,
+                                "y": 450.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
                     }
                 ],
-                "id": 2307,
+                "id": 1865,
                 "layers": [
                     "default",
                     "main_menu_3"
@@ -900,32 +954,12 @@
                     },
                     {
                         "data": {
-                            "path": "images/UI/MainMenu (Start)/AnyKeyToStartBackground.png"
-                        },
-                        "type": "Components::Texture"
-                    },
-                    {
-                        "data": {
-                            "position": {
-                                "x": 800.0,
-                                "y": 444.61468505859375
-                            },
-                            "rotation": 0.0,
-                            "scale": {
-                                "x": 1600.0,
-                                "y": 900.0
-                            }
-                        },
-                        "type": "Components::Transform2D"
-                    },
-                    {
-                        "data": {
                             "local_offset": {
                                 "x": 0.0,
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 2302,
+                            "parent_id": 1861,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -978,6 +1012,24 @@
                                     }
                                 },
                                 {
+                                    "first": "Transition",
+                                    "second": {
+                                        "animation": null,
+                                        "audio": null,
+                                        "name": "Transition",
+                                        "on_enter_callback": {
+                                            "name": "main_menu_transition_on_enter"
+                                        },
+                                        "on_exit_callback": {
+                                            "name": "main_menu_transition_on_exit"
+                                        },
+                                        "on_update_callback": {
+                                            "name": "main_menu_transition_on_update"
+                                        },
+                                        "property_animation": null
+                                    }
+                                },
+                                {
                                     "first": "Start",
                                     "second": {
                                         "animation": null,
@@ -998,9 +1050,29 @@
                             ]
                         },
                         "type": "Components::StateMachine"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/MainMenu (Start)/AnyKeyToStartBackground.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 444.61468505859375
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 900.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
                     }
                 ],
-                "id": 2308,
+                "id": 1866,
                 "layers": [
                     "default",
                     "main_menu_5"
@@ -1011,7 +1083,13 @@
                 "components": [
                     {
                         "data": {
-                            "a": 0.0,
+                            "child_ids": []
+                        },
+                        "type": "Components::Children"
+                    },
+                    {
+                        "data": {
+                            "a": 1.0,
                             "b": 1.0,
                             "g": 1.0,
                             "r": 1.0
@@ -1020,44 +1098,18 @@
                     },
                     {
                         "data": {
-                            "path": "images/UI/MainMenu (Start)/TextAnyKey.png"
-                        },
-                        "type": "Components::Texture"
-                    },
-                    {
-                        "data": {
-                            "position": {
-                                "x": 800.0,
-                                "y": 450.0
-                            },
-                            "rotation": 0.0,
-                            "scale": {
-                                "x": 1600.0,
-                                "y": 900.0
-                            }
-                        },
-                        "type": "Components::Transform2D"
-                    },
-                    {
-                        "data": {
                             "local_offset": {
                                 "x": 0.0,
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 2302,
+                            "parent_id": 1861,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
                             }
                         },
                         "type": "Components::Parent"
-                    },
-                    {
-                        "data": {
-                            "child_ids": []
-                        },
-                        "type": "Components::Children"
                     },
                     {
                         "data": {
@@ -1101,6 +1153,24 @@
                                                 }
                                             ]
                                         }
+                                    }
+                                },
+                                {
+                                    "first": "Transition",
+                                    "second": {
+                                        "animation": null,
+                                        "audio": null,
+                                        "name": "Transition",
+                                        "on_enter_callback": {
+                                            "name": "main_menu_transition_on_enter"
+                                        },
+                                        "on_exit_callback": {
+                                            "name": "main_menu_transition_on_exit"
+                                        },
+                                        "on_update_callback": {
+                                            "name": "main_menu_transition_on_update"
+                                        },
+                                        "property_animation": null
                                     }
                                 },
                                 {
@@ -1152,9 +1222,29 @@
                             ]
                         },
                         "type": "Components::StateMachine"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/MainMenu (Start)/TextAnyKey.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 900.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
                     }
                 ],
-                "id": 2309,
+                "id": 1867,
                 "layers": [
                     "default",
                     "main_menu_6"
@@ -1171,6 +1261,105 @@
                             "r": 1.0
                         },
                         "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 1861,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
+                    },
+                    {
+                        "data": {
+                            "blueprint_id": "MainMenu",
+                            "current_state_name": "Start",
+                            "property_anim_playing": false,
+                            "states": [
+                                {
+                                    "first": "Menu",
+                                    "second": {
+                                        "animation": null,
+                                        "audio": null,
+                                        "name": "Menu",
+                                        "on_enter_callback": {
+                                            "name": "main_menu_menu_on_enter"
+                                        },
+                                        "on_exit_callback": {
+                                            "name": "main_menu_menu_on_exit"
+                                        },
+                                        "on_update_callback": {
+                                            "name": "main_menu_menu_on_update"
+                                        },
+                                        "property_animation": {
+                                            "duration": 0.0010000000474974513,
+                                            "is_looping": false,
+                                            "tracks": [
+                                                {
+                                                    "easing": "Linear",
+                                                    "keyframes": [
+                                                        {
+                                                            "time": 0.0,
+                                                            "value": 1.0
+                                                        },
+                                                        {
+                                                            "time": 0.0010000000474974513,
+                                                            "value": 1.0
+                                                        }
+                                                    ],
+                                                    "target_component": "Components::Color",
+                                                    "target_field_path": "a"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                {
+                                    "first": "Transition",
+                                    "second": {
+                                        "animation": null,
+                                        "audio": null,
+                                        "name": "Transition",
+                                        "on_enter_callback": {
+                                            "name": "main_menu_transition_on_enter"
+                                        },
+                                        "on_exit_callback": {
+                                            "name": "main_menu_transition_on_exit"
+                                        },
+                                        "on_update_callback": {
+                                            "name": "main_menu_transition_on_update"
+                                        },
+                                        "property_animation": null
+                                    }
+                                },
+                                {
+                                    "first": "Start",
+                                    "second": {
+                                        "animation": null,
+                                        "audio": null,
+                                        "name": "Start",
+                                        "on_enter_callback": {
+                                            "name": "main_menu_start_on_enter"
+                                        },
+                                        "on_exit_callback": {
+                                            "name": "main_menu_start_on_exit"
+                                        },
+                                        "on_update_callback": {
+                                            "name": "main_menu_start_on_update"
+                                        },
+                                        "property_animation": null
+                                    }
+                                }
+                            ]
+                        },
+                        "type": "Components::StateMachine"
                     },
                     {
                         "data": {
@@ -1191,6 +1380,25 @@
                             }
                         },
                         "type": "Components::Transform2D"
+                    }
+                ],
+                "id": 1868,
+                "layers": [
+                    "default",
+                    "main_menu_ui"
+                ],
+                "name": "MainMenuImpact"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
                     },
                     {
                         "data": {
@@ -1199,7 +1407,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 2302,
+                            "parent_id": 1861,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -1252,6 +1460,24 @@
                                     }
                                 },
                                 {
+                                    "first": "Transition",
+                                    "second": {
+                                        "animation": null,
+                                        "audio": null,
+                                        "name": "Transition",
+                                        "on_enter_callback": {
+                                            "name": "main_menu_transition_on_enter"
+                                        },
+                                        "on_exit_callback": {
+                                            "name": "main_menu_transition_on_exit"
+                                        },
+                                        "on_update_callback": {
+                                            "name": "main_menu_transition_on_update"
+                                        },
+                                        "property_animation": null
+                                    }
+                                },
+                                {
                                     "first": "Start",
                                     "second": {
                                         "animation": null,
@@ -1272,25 +1498,6 @@
                             ]
                         },
                         "type": "Components::StateMachine"
-                    }
-                ],
-                "id": 2310,
-                "layers": [
-                    "default",
-                    "main_menu_ui"
-                ],
-                "name": "MainMenuImpact"
-            },
-            {
-                "components": [
-                    {
-                        "data": {
-                            "a": 0.0,
-                            "b": 1.0,
-                            "g": 1.0,
-                            "r": 1.0
-                        },
-                        "type": "Components::Color"
                     },
                     {
                         "data": {
@@ -1311,6 +1518,25 @@
                             }
                         },
                         "type": "Components::Transform2D"
+                    }
+                ],
+                "id": 1869,
+                "layers": [
+                    "default",
+                    "main_menu_ui"
+                ],
+                "name": "Monkey"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
                     },
                     {
                         "data": {
@@ -1319,7 +1545,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 2302,
+                            "parent_id": 1861,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -1372,6 +1598,24 @@
                                     }
                                 },
                                 {
+                                    "first": "Transition",
+                                    "second": {
+                                        "animation": null,
+                                        "audio": null,
+                                        "name": "Transition",
+                                        "on_enter_callback": {
+                                            "name": "main_menu_transition_on_enter"
+                                        },
+                                        "on_exit_callback": {
+                                            "name": "main_menu_transition_on_exit"
+                                        },
+                                        "on_update_callback": {
+                                            "name": "main_menu_transition_on_update"
+                                        },
+                                        "property_animation": null
+                                    }
+                                },
+                                {
                                     "first": "Start",
                                     "second": {
                                         "animation": null,
@@ -1392,25 +1636,6 @@
                             ]
                         },
                         "type": "Components::StateMachine"
-                    }
-                ],
-                "id": 2311,
-                "layers": [
-                    "default",
-                    "main_menu_ui"
-                ],
-                "name": "Monkey"
-            },
-            {
-                "components": [
-                    {
-                        "data": {
-                            "a": 0.0,
-                            "b": 1.0,
-                            "g": 1.0,
-                            "r": 1.0
-                        },
-                        "type": "Components::Color"
                     },
                     {
                         "data": {
@@ -1431,90 +1656,9 @@
                             }
                         },
                         "type": "Components::Transform2D"
-                    },
-                    {
-                        "data": {
-                            "local_offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "offset_initialized": false,
-                            "parent_id": 2302,
-                            "prev_parent_pos": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        },
-                        "type": "Components::Parent"
-                    },
-                    {
-                        "data": {
-                            "blueprint_id": "MainMenu",
-                            "current_state_name": "Start",
-                            "property_anim_playing": false,
-                            "states": [
-                                {
-                                    "first": "Menu",
-                                    "second": {
-                                        "animation": null,
-                                        "audio": null,
-                                        "name": "Menu",
-                                        "on_enter_callback": {
-                                            "name": "main_menu_menu_on_enter"
-                                        },
-                                        "on_exit_callback": {
-                                            "name": "main_menu_menu_on_exit"
-                                        },
-                                        "on_update_callback": {
-                                            "name": "main_menu_menu_on_update"
-                                        },
-                                        "property_animation": {
-                                            "duration": 0.0010000000474974513,
-                                            "is_looping": false,
-                                            "tracks": [
-                                                {
-                                                    "easing": "Linear",
-                                                    "keyframes": [
-                                                        {
-                                                            "time": 0.0,
-                                                            "value": 1.0
-                                                        },
-                                                        {
-                                                            "time": 0.0010000000474974513,
-                                                            "value": 1.0
-                                                        }
-                                                    ],
-                                                    "target_component": "Components::Color",
-                                                    "target_field_path": "a"
-                                                }
-                                            ]
-                                        }
-                                    }
-                                },
-                                {
-                                    "first": "Start",
-                                    "second": {
-                                        "animation": null,
-                                        "audio": null,
-                                        "name": "Start",
-                                        "on_enter_callback": {
-                                            "name": "main_menu_start_on_enter"
-                                        },
-                                        "on_exit_callback": {
-                                            "name": "main_menu_start_on_exit"
-                                        },
-                                        "on_update_callback": {
-                                            "name": "main_menu_start_on_update"
-                                        },
-                                        "property_animation": null
-                                    }
-                                }
-                            ]
-                        },
-                        "type": "Components::StateMachine"
                     }
                 ],
-                "id": 2312,
+                "id": 1870,
                 "layers": [
                     "default",
                     "main_menu_ui"
@@ -1525,38 +1669,9 @@
                 "components": [
                     {
                         "data": {
-                            "a": 0.0,
-                            "b": 1.0,
-                            "g": 1.0,
-                            "r": 1.0
-                        },
-                        "type": "Components::Color"
-                    },
-                    {
-                        "data": {
-                            "path": "images/UI/MainMenu/UI/PlayButton.png"
-                        },
-                        "type": "Components::Texture"
-                    },
-                    {
-                        "data": {
-                            "position": {
-                                "x": 665.83,
-                                "y": 294.58
-                            },
-                            "rotation": 0.0,
-                            "scale": {
-                                "x": 626.67,
-                                "y": 589.17
-                            }
-                        },
-                        "type": "Components::Transform2D"
-                    },
-                    {
-                        "data": {
                             "aabb": {
-                                "half_height": 257.88,
-                                "half_width": 236.35,
+                                "half_height": 257.8800048828125,
+                                "half_width": 236.35000610351563,
                                 "pos": {
                                     "x": 0.0,
                                     "y": 0.0
@@ -1571,50 +1686,35 @@
                             },
                             "polygon": {
                                 "position": {
-                                    "x": 665.83,
-                                    "y": 294.58
+                                    "x": 2465.830078125,
+                                    "y": 294.5799865722656
                                 },
                                 "rotation": 0.0,
                                 "vertices": [
                                     {
-                                        "x": -164.8059,
-                                        "y": 75.6221
+                                        "x": -164.80589294433594,
+                                        "y": 75.62210083007813
                                     },
                                     {
-                                        "x": -141.3225,
-                                        "y": 223.4695
+                                        "x": -141.32249450683594,
+                                        "y": 223.46949768066406
                                     },
                                     {
-                                        "x": 307.8947,
-                                        "y": -23.1058
+                                        "x": 307.89471435546875,
+                                        "y": -23.10580062866211
                                     },
                                     {
-                                        "x": 300.0669,
-                                        "y": -292.2835
+                                        "x": 300.06689453125,
+                                        "y": -292.28350830078125
                                     }
                                 ]
                             },
                             "radius": 0.0,
                             "resolve_collisions": false,
                             "type": "POLYGON",
-                            "width": 472.70
+                            "width": 472.70001220703125
                         },
                         "type": "Components::BoxCollider"
-                    },
-                    {
-                        "data": {
-                            "local_offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "offset_initialized": false,
-                            "parent_id": 2302,
-                            "prev_parent_pos": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        },
-                        "type": "Components::Parent"
                     },
                     {
                         "data": {
@@ -1632,6 +1732,30 @@
                     },
                     {
                         "data": {
+                            "a": 1.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 1861,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
+                    },
+                    {
+                        "data": {
                             "blueprint_id": "MainMenu",
                             "current_state_name": "Start",
                             "property_anim_playing": false,
@@ -1651,8 +1775,26 @@
                                         "on_update_callback": {
                                             "name": "main_menu_menu_on_update"
                                         },
+                                        "property_animation": null
+                                    }
+                                },
+                                {
+                                    "first": "Transition",
+                                    "second": {
+                                        "animation": null,
+                                        "audio": null,
+                                        "name": "Transition",
+                                        "on_enter_callback": {
+                                            "name": "main_menu_transition_on_enter"
+                                        },
+                                        "on_exit_callback": {
+                                            "name": "main_menu_transition_on_exit"
+                                        },
+                                        "on_update_callback": {
+                                            "name": "main_menu_transition_on_update"
+                                        },
                                         "property_animation": {
-                                            "duration": 0.0010000000474974513,
+                                            "duration": 0.5,
                                             "is_looping": false,
                                             "tracks": [
                                                 {
@@ -1660,15 +1802,30 @@
                                                     "keyframes": [
                                                         {
                                                             "time": 0.0,
-                                                            "value": 1.0
+                                                            "value": 2400.951416015625
                                                         },
                                                         {
-                                                            "time": 0.0010000000474974513,
-                                                            "value": 1.0
+                                                            "time": 0.5,
+                                                            "value": 665.83
                                                         }
                                                     ],
-                                                    "target_component": "Components::Color",
-                                                    "target_field_path": "a"
+                                                    "target_component": "Components::Transform2D",
+                                                    "target_field_path": "position.x"
+                                                },
+                                                {
+                                                    "easing": "Linear",
+                                                    "keyframes": [
+                                                        {
+                                                            "time": 0.0,
+                                                            "value": -809.6590576171875
+                                                        },
+                                                        {
+                                                            "time": 0.5,
+                                                            "value": 294.5799865722656
+                                                        }
+                                                    ],
+                                                    "target_component": "Components::Transform2D",
+                                                    "target_field_path": "position.y"
                                                 }
                                             ]
                                         }
@@ -1689,15 +1846,55 @@
                                         "on_update_callback": {
                                             "name": "main_menu_start_on_update"
                                         },
-                                        "property_animation": null
+                                        "property_animation": {
+                                            "duration": 1.0,
+                                            "is_looping": true,
+                                            "tracks": [
+                                                {
+                                                    "easing": "Linear",
+                                                    "keyframes": [
+                                                        {
+                                                            "time": 0.0,
+                                                            "value": 2465.83
+                                                        },
+                                                        {
+                                                            "time": 1.0,
+                                                            "value": 2465.83
+                                                        }
+                                                    ],
+                                                    "target_component": "Components::Transform2D",
+                                                    "target_field_path": "position.x"
+                                                }
+                                            ]
+                                        }
                                     }
                                 }
                             ]
                         },
                         "type": "Components::StateMachine"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/MainMenu/UI/PlayButton.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 2400.951416015625,
+                                "y": -809.6590576171875
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 626.6699829101563,
+                                "y": 589.1699829101563
+                            }
+                        },
+                        "type": "Components::Transform2D"
                     }
                 ],
-                "id": 2313,
+                "id": 1871,
                 "layers": [
                     "default",
                     "main_menu_ui"
@@ -1708,45 +1905,16 @@
                 "components": [
                     {
                         "data": {
-                            "a": 0.0,
-                            "b": 1.0,
-                            "g": 1.0,
-                            "r": 1.0
-                        },
-                        "type": "Components::Color"
-                    },
-                    {
-                        "data": {
-                            "path": "images/UI/MainMenu/UI/OptionsButton.png"
-                        },
-                        "type": "Components::Texture"
-                    },
-                    {
-                        "data": {
-                            "position": {
-                                "x": 989.17,
-                                "y": 346.67
-                            },
-                            "rotation": 0.0,
-                            "scale": {
-                                "x": 786.67,
-                                "y": 600.0
-                            }
-                        },
-                        "type": "Components::Transform2D"
-                    },
-                    {
-                        "data": {
                             "aabb": {
-                                "half_height": 234.83,
-                                "half_width": 281.80,
+                                "half_height": 234.8300018310547,
+                                "half_width": 281.79998779296875,
                                 "pos": {
                                     "x": 0.0,
                                     "y": 0.0
                                 }
                             },
                             "collided": false,
-                            "height": 469.67,
+                            "height": 469.6700134277344,
                             "kinetic_friction": 1.0,
                             "offset": {
                                 "x": 0.0,
@@ -1754,50 +1922,35 @@
                             },
                             "polygon": {
                                 "position": {
-                                    "x": 989.17,
-                                    "y": 346.67
+                                    "x": 2789.169921875,
+                                    "y": 346.6700134277344
                                 },
                                 "rotation": 0.0,
                                 "vertices": [
                                     {
-                                        "x": 362.6919,
-                                        "y": -276.3141
+                                        "x": 362.69189453125,
+                                        "y": -276.3140869140625
                                     },
                                     {
-                                        "x": 335.2945,
-                                        "y": 48.5388
+                                        "x": 335.29449462890625,
+                                        "y": 48.53879928588867
                                     },
                                     {
-                                        "x": -185.2528,
-                                        "y": 193.3529
+                                        "x": -185.2528076171875,
+                                        "y": 193.3529052734375
                                     },
                                     {
-                                        "x": -200.9083,
-                                        "y": 36.7971
+                                        "x": -200.90829467773438,
+                                        "y": 36.79710006713867
                                     }
                                 ]
                             },
                             "radius": 0.0,
                             "resolve_collisions": false,
                             "type": "POLYGON",
-                            "width": 563.60
+                            "width": 563.5999755859375
                         },
                         "type": "Components::BoxCollider"
-                    },
-                    {
-                        "data": {
-                            "local_offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "offset_initialized": false,
-                            "parent_id": 2302,
-                            "prev_parent_pos": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        },
-                        "type": "Components::Parent"
                     },
                     {
                         "data": {
@@ -1815,6 +1968,30 @@
                     },
                     {
                         "data": {
+                            "a": 1.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 1861,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
+                    },
+                    {
+                        "data": {
                             "blueprint_id": "MainMenu",
                             "current_state_name": "Start",
                             "property_anim_playing": false,
@@ -1834,8 +2011,26 @@
                                         "on_update_callback": {
                                             "name": "main_menu_menu_on_update"
                                         },
+                                        "property_animation": null
+                                    }
+                                },
+                                {
+                                    "first": "Transition",
+                                    "second": {
+                                        "animation": null,
+                                        "audio": null,
+                                        "name": "Transition",
+                                        "on_enter_callback": {
+                                            "name": "main_menu_transition_on_enter"
+                                        },
+                                        "on_exit_callback": {
+                                            "name": "main_menu_transition_on_exit"
+                                        },
+                                        "on_update_callback": {
+                                            "name": "main_menu_transition_on_update"
+                                        },
                                         "property_animation": {
-                                            "duration": 0.0010000000474974513,
+                                            "duration": 0.5699999928474426,
                                             "is_looping": false,
                                             "tracks": [
                                                 {
@@ -1843,15 +2038,30 @@
                                                     "keyframes": [
                                                         {
                                                             "time": 0.0,
-                                                            "value": 1.0
+                                                            "value": 2987.699462890625
                                                         },
                                                         {
-                                                            "time": 0.0010000000474974513,
-                                                            "value": 1.0
+                                                            "time": 0.5699999928474426,
+                                                            "value": 989.17
                                                         }
                                                     ],
-                                                    "target_component": "Components::Color",
-                                                    "target_field_path": "a"
+                                                    "target_component": "Components::Transform2D",
+                                                    "target_field_path": "position.x"
+                                                },
+                                                {
+                                                    "easing": "Linear",
+                                                    "keyframes": [
+                                                        {
+                                                            "time": 0.0,
+                                                            "value": -136.02896118164063
+                                                        },
+                                                        {
+                                                            "time": 0.5699999928474426,
+                                                            "value": 346.6700134277344
+                                                        }
+                                                    ],
+                                                    "target_component": "Components::Transform2D",
+                                                    "target_field_path": "position.y"
                                                 }
                                             ]
                                         }
@@ -1872,15 +2082,55 @@
                                         "on_update_callback": {
                                             "name": "main_menu_start_on_update"
                                         },
-                                        "property_animation": null
+                                        "property_animation": {
+                                            "duration": 1.0,
+                                            "is_looping": true,
+                                            "tracks": [
+                                                {
+                                                    "easing": "Linear",
+                                                    "keyframes": [
+                                                        {
+                                                            "time": 0.0,
+                                                            "value": 2789.17
+                                                        },
+                                                        {
+                                                            "time": 1.0,
+                                                            "value": 2789.17
+                                                        }
+                                                    ],
+                                                    "target_component": "Components::Transform2D",
+                                                    "target_field_path": "position.x"
+                                                }
+                                            ]
+                                        }
                                     }
                                 }
                             ]
                         },
                         "type": "Components::StateMachine"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/MainMenu/UI/OptionsButton.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 2987.699462890625,
+                                "y": -136.02896118164063
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 786.6699829101563,
+                                "y": 600.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
                     }
                 ],
-                "id": 2314,
+                "id": 1872,
                 "layers": [
                     "default",
                     "main_menu_ui"
@@ -1891,45 +2141,16 @@
                 "components": [
                     {
                         "data": {
-                            "a": 0.0,
-                            "b": 1.0,
-                            "g": 1.0,
-                            "r": 1.0
-                        },
-                        "type": "Components::Color"
-                    },
-                    {
-                        "data": {
-                            "path": "images/UI/MainMenu/UI/CreditsButton.png"
-                        },
-                        "type": "Components::Texture"
-                    },
-                    {
-                        "data": {
-                            "position": {
-                                "x": 1054.58,
-                                "y": 542.50
-                            },
-                            "rotation": 0.0,
-                            "scale": {
-                                "x": 917.50,
-                                "y": 331.67
-                            }
-                        },
-                        "type": "Components::Transform2D"
-                    },
-                    {
-                        "data": {
                             "aabb": {
-                                "half_height": 137.49,
-                                "half_width": 331.22,
+                                "half_height": 137.49000549316406,
+                                "half_width": 331.2200012207031,
                                 "pos": {
                                     "x": 0.0,
                                     "y": 0.0
                                 }
                             },
                             "collided": false,
-                            "height": 274.97,
+                            "height": 274.9700012207031,
                             "kinetic_friction": 1.0,
                             "offset": {
                                 "x": 315.0679931640625,
@@ -1937,50 +2158,35 @@
                             },
                             "polygon": {
                                 "position": {
-                                    "x": 1369.65,
-                                    "y": 605.12
+                                    "x": 3169.64794921875,
+                                    "y": 605.122314453125
                                 },
                                 "rotation": 0.0,
                                 "vertices": [
                                     {
-                                        "x": -527.0987,
-                                        "y": -85.1722
+                                        "x": -527.0986938476563,
+                                        "y": -85.17220306396484
                                     },
                                     {
-                                        "x": -531.0125,
-                                        "y": 52.8141
+                                        "x": -531.0125122070313,
+                                        "y": 52.8140983581543
                                     },
                                     {
-                                        "x": -91.6570,
-                                        "y": 88.0392
+                                        "x": -91.65699768066406,
+                                        "y": 88.03919982910156
                                     },
                                     {
-                                        "x": 131.4345,
-                                        "y": -186.9335
+                                        "x": 131.4344940185547,
+                                        "y": -186.93350219726563
                                     }
                                 ]
                             },
                             "radius": 0.0,
                             "resolve_collisions": false,
                             "type": "POLYGON",
-                            "width": 662.45
+                            "width": 662.4500122070313
                         },
                         "type": "Components::BoxCollider"
-                    },
-                    {
-                        "data": {
-                            "local_offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "offset_initialized": false,
-                            "parent_id": 2302,
-                            "prev_parent_pos": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        },
-                        "type": "Components::Parent"
                     },
                     {
                         "data": {
@@ -1998,6 +2204,30 @@
                     },
                     {
                         "data": {
+                            "a": 1.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 1861,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
+                    },
+                    {
+                        "data": {
                             "blueprint_id": "MainMenu",
                             "current_state_name": "Start",
                             "property_anim_playing": false,
@@ -2017,8 +2247,26 @@
                                         "on_update_callback": {
                                             "name": "main_menu_menu_on_update"
                                         },
+                                        "property_animation": null
+                                    }
+                                },
+                                {
+                                    "first": "Transition",
+                                    "second": {
+                                        "animation": null,
+                                        "audio": null,
+                                        "name": "Transition",
+                                        "on_enter_callback": {
+                                            "name": "main_menu_transition_on_enter"
+                                        },
+                                        "on_exit_callback": {
+                                            "name": "main_menu_transition_on_exit"
+                                        },
+                                        "on_update_callback": {
+                                            "name": "main_menu_transition_on_update"
+                                        },
                                         "property_animation": {
-                                            "duration": 0.0010000000474974513,
+                                            "duration": 0.6399999856948853,
                                             "is_looping": false,
                                             "tracks": [
                                                 {
@@ -2026,15 +2274,30 @@
                                                     "keyframes": [
                                                         {
                                                             "time": 0.0,
-                                                            "value": 1.0
+                                                            "value": 3543.59423828125
                                                         },
                                                         {
-                                                            "time": 0.0010000000474974513,
-                                                            "value": 1.0
+                                                            "time": 0.6399999856948853,
+                                                            "value": 1054.58
                                                         }
                                                     ],
-                                                    "target_component": "Components::Color",
-                                                    "target_field_path": "a"
+                                                    "target_component": "Components::Transform2D",
+                                                    "target_field_path": "position.x"
+                                                },
+                                                {
+                                                    "easing": "Linear",
+                                                    "keyframes": [
+                                                        {
+                                                            "time": 0.0,
+                                                            "value": 421.8251953125
+                                                        },
+                                                        {
+                                                            "time": 0.6399999856948853,
+                                                            "value": 542.5
+                                                        }
+                                                    ],
+                                                    "target_component": "Components::Transform2D",
+                                                    "target_field_path": "position.y"
                                                 }
                                             ]
                                         }
@@ -2055,15 +2318,55 @@
                                         "on_update_callback": {
                                             "name": "main_menu_start_on_update"
                                         },
-                                        "property_animation": null
+                                        "property_animation": {
+                                            "duration": 1.0,
+                                            "is_looping": true,
+                                            "tracks": [
+                                                {
+                                                    "easing": "Linear",
+                                                    "keyframes": [
+                                                        {
+                                                            "time": 0.0,
+                                                            "value": 2854.58
+                                                        },
+                                                        {
+                                                            "time": 1.0,
+                                                            "value": 2854.58
+                                                        }
+                                                    ],
+                                                    "target_component": "Components::Transform2D",
+                                                    "target_field_path": "position.x"
+                                                }
+                                            ]
+                                        }
                                     }
                                 }
                             ]
                         },
                         "type": "Components::StateMachine"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/MainMenu/UI/CreditsButton.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 3543.59423828125,
+                                "y": 421.8251953125
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 917.5,
+                                "y": 331.6700134277344
+                            }
+                        },
+                        "type": "Components::Transform2D"
                     }
                 ],
-                "id": 2315,
+                "id": 1873,
                 "layers": [
                     "default",
                     "main_menu_ui"
@@ -2074,45 +2377,16 @@
                 "components": [
                     {
                         "data": {
-                            "a": 0.0,
-                            "b": 1.0,
-                            "g": 1.0,
-                            "r": 1.0
-                        },
-                        "type": "Components::Color"
-                    },
-                    {
-                        "data": {
-                            "path": "images/UI/MainMenu/UI/ExitButton.png"
-                        },
-                        "type": "Components::Texture"
-                    },
-                    {
-                        "data": {
-                            "position": {
-                                "x": 925.42,
-                                "y": 754.58
-                            },
-                            "rotation": 0.0,
-                            "scale": {
-                                "x": 487.50,
-                                "y": 232.50
-                            }
-                        },
-                        "type": "Components::Transform2D"
-                    },
-                    {
-                        "data": {
                             "aabb": {
-                                "half_height": 110.09,
-                                "half_width": 196.19,
+                                "half_height": 110.08999633789063,
+                                "half_width": 196.19000244140625,
                                 "pos": {
                                     "x": 0.0,
                                     "y": 0.0
                                 }
                             },
                             "collided": false,
-                            "height": 220.18,
+                            "height": 220.17999267578125,
                             "kinetic_friction": 1.0,
                             "offset": {
                                 "x": 293.54180908203125,
@@ -2120,50 +2394,35 @@
                             },
                             "polygon": {
                                 "position": {
-                                    "x": 1218.96,
-                                    "y": 834.82
+                                    "x": 3018.961669921875,
+                                    "y": 834.8148803710938
                                 },
                                 "rotation": 0.0,
                                 "vertices": [
                                     {
-                                        "x": -415.5446,
-                                        "y": -181.7956
+                                        "x": -415.5445861816406,
+                                        "y": -181.79559326171875
                                     },
                                     {
-                                        "x": -450.7695,
-                                        "y": -90.7761
+                                        "x": -450.7695007324219,
+                                        "y": -90.7761001586914
                                     },
                                     {
-                                        "x": -207.1086,
-                                        "y": 38.3821
+                                        "x": -207.1085968017578,
+                                        "y": 38.38209915161133
                                     },
                                     {
-                                        "x": -58.3806,
-                                        "y": -119.1733
+                                        "x": -58.38059997558594,
+                                        "y": -119.17330169677734
                                     }
                                 ]
                             },
                             "radius": 0.0,
                             "resolve_collisions": false,
                             "type": "POLYGON",
-                            "width": 392.39
+                            "width": 392.3900146484375
                         },
                         "type": "Components::BoxCollider"
-                    },
-                    {
-                        "data": {
-                            "local_offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "offset_initialized": false,
-                            "parent_id": 2302,
-                            "prev_parent_pos": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        },
-                        "type": "Components::Parent"
                     },
                     {
                         "data": {
@@ -2181,6 +2440,30 @@
                     },
                     {
                         "data": {
+                            "a": 1.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 1861,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
+                    },
+                    {
+                        "data": {
                             "blueprint_id": "MainMenu",
                             "current_state_name": "Start",
                             "property_anim_playing": false,
@@ -2200,8 +2483,26 @@
                                         "on_update_callback": {
                                             "name": "main_menu_menu_on_update"
                                         },
+                                        "property_animation": null
+                                    }
+                                },
+                                {
+                                    "first": "Transition",
+                                    "second": {
+                                        "animation": null,
+                                        "audio": null,
+                                        "name": "Transition",
+                                        "on_enter_callback": {
+                                            "name": "main_menu_transition_on_enter"
+                                        },
+                                        "on_exit_callback": {
+                                            "name": "main_menu_transition_on_exit"
+                                        },
+                                        "on_update_callback": {
+                                            "name": "main_menu_transition_on_update"
+                                        },
                                         "property_animation": {
-                                            "duration": 0.0010000000474974513,
+                                            "duration": 0.7099999785423279,
                                             "is_looping": false,
                                             "tracks": [
                                                 {
@@ -2209,15 +2510,30 @@
                                                     "keyframes": [
                                                         {
                                                             "time": 0.0,
-                                                            "value": 1.0
+                                                            "value": 3971.094970703125
                                                         },
                                                         {
-                                                            "time": 0.0010000000474974513,
-                                                            "value": 1.0
+                                                            "time": 0.7099999785423279,
+                                                            "value": 925.42
                                                         }
                                                     ],
-                                                    "target_component": "Components::Color",
-                                                    "target_field_path": "a"
+                                                    "target_component": "Components::Transform2D",
+                                                    "target_field_path": "position.x"
+                                                },
+                                                {
+                                                    "easing": "Linear",
+                                                    "keyframes": [
+                                                        {
+                                                            "time": 0.0,
+                                                            "value": 1365.7392578125
+                                                        },
+                                                        {
+                                                            "time": 0.7099999785423279,
+                                                            "value": 754.5800170898438
+                                                        }
+                                                    ],
+                                                    "target_component": "Components::Transform2D",
+                                                    "target_field_path": "position.y"
                                                 }
                                             ]
                                         }
@@ -2238,15 +2554,55 @@
                                         "on_update_callback": {
                                             "name": "main_menu_start_on_update"
                                         },
-                                        "property_animation": null
+                                        "property_animation": {
+                                            "duration": 1.0,
+                                            "is_looping": true,
+                                            "tracks": [
+                                                {
+                                                    "easing": "Linear",
+                                                    "keyframes": [
+                                                        {
+                                                            "time": 0.0,
+                                                            "value": 2725.42
+                                                        },
+                                                        {
+                                                            "time": 1.0,
+                                                            "value": 2725.42
+                                                        }
+                                                    ],
+                                                    "target_component": "Components::Transform2D",
+                                                    "target_field_path": "position.x"
+                                                }
+                                            ]
+                                        }
                                     }
                                 }
                             ]
                         },
                         "type": "Components::StateMachine"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/MainMenu/UI/ExitButton.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 3971.094970703125,
+                                "y": 1365.7392578125
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 487.5,
+                                "y": 232.5
+                            }
+                        },
+                        "type": "Components::Transform2D"
                     }
                 ],
-                "id": 2316,
+                "id": 1874,
                 "layers": [
                     "default",
                     "main_menu_ui"
@@ -2266,32 +2622,12 @@
                     },
                     {
                         "data": {
-                            "path": "images/UI/MainMenu/BackGround/BackSky.png"
-                        },
-                        "type": "Components::Texture"
-                    },
-                    {
-                        "data": {
-                            "position": {
-                                "x": 2043.110595703125,
-                                "y": 449.10076904296875
-                            },
-                            "rotation": 0.0,
-                            "scale": {
-                                "x": 4800.0,
-                                "y": 900.0
-                            }
-                        },
-                        "type": "Components::Transform2D"
-                    },
-                    {
-                        "data": {
                             "local_offset": {
                                 "x": 0.0,
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 2302,
+                            "parent_id": 1861,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -2344,6 +2680,24 @@
                                     }
                                 },
                                 {
+                                    "first": "Transition",
+                                    "second": {
+                                        "animation": null,
+                                        "audio": null,
+                                        "name": "Transition",
+                                        "on_enter_callback": {
+                                            "name": "main_menu_transition_on_enter"
+                                        },
+                                        "on_exit_callback": {
+                                            "name": "main_menu_transition_on_exit"
+                                        },
+                                        "on_update_callback": {
+                                            "name": "main_menu_transition_on_update"
+                                        },
+                                        "property_animation": null
+                                    }
+                                },
+                                {
                                     "first": "Start",
                                     "second": {
                                         "animation": null,
@@ -2384,9 +2738,29 @@
                             ]
                         },
                         "type": "Components::StateMachine"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/MainMenu/BackGround/BackSky.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 2200.888916015625,
+                                "y": 449.10076904296875
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 4800.0,
+                                "y": 900.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
                     }
                 ],
-                "id": 2303,
+                "id": 1875,
                 "layers": [
                     "main_menu_0"
                 ],

@@ -147,6 +147,39 @@ namespace {
     return (px - origin_x + timeline_scroll_x) / timeline_zoom;
   }
 
+  // ============================================================================
+  // Helper: Read a live numeric field value from the currently selected entity
+  // Returns true and writes to out_val if the field was found and is numeric.
+  // ============================================================================
+  bool read_live_field_value(const std::string& comp_name, const std::string& field_path, double& out_val) {
+    if (selected_entity_id < 0) return false;
+    Engine::ECS::Entity live_entity(static_cast<Engine::ECS::EntityID>(selected_entity_id));
+    if (!live_entity.is_valid()) return false;
+
+    bool found = false;
+    live_entity.for_each_component([&](const std::string& type_name, Engine::ECS::IComponentArray* array) {
+      if (found || type_name != comp_name) return;
+      if (!array->is_reflectable()) return;
+
+      auto gv = array->to_generic_value(live_entity.get_id());
+      ReflectionLibrary::GenericValue* cur = &gv;
+      std::string seg;
+      std::istringstream ss(field_path);
+      while (std::getline(ss, seg, '.')) {
+        if (cur->isObject()) {
+          auto& obj = cur->getObject();
+          auto it = obj.find(seg);
+          if (it != obj.end()) { cur = &it->second; }
+          else return;
+        }
+        else return;
+      }
+      if (cur->isDouble())      { out_val = cur->getDouble();                  found = true; }
+      else if (cur->isInt())    { out_val = static_cast<double>(cur->getInt()); found = true; }
+    });
+    return found;
+  }
+
   // ============================================================================  
   // Render: Track list (left pane) 
   // ============================================================================
@@ -350,6 +383,23 @@ namespace {
           }
         }
         if (ImGui::BeginPopupContextItem(("kf_ctx_" + std::to_string(ti) + "_" + std::to_string(ki)).c_str())) {
+          // Set all selected keyframes to the live component value of their respective tracks
+          if (ImGui::MenuItem("Set to Current Value")) {
+            for (const auto& sel : selected_keyframes) {
+              int s_trk = sel.first;
+              int s_idx = sel.second;
+              if (s_trk >= 0 && s_trk < static_cast<int>(clip->tracks.size()) &&
+                  s_idx >= 0 && s_idx < static_cast<int>(clip->tracks[s_trk].keyframes.size())) {
+                auto& s_track = clip->tracks[s_trk];
+                double live_val = 0.0;
+                if (read_live_field_value(s_track.target_component, s_track.target_field_path, live_val)) {
+                  s_track.keyframes[s_idx].value = live_val;
+                }
+              }
+            }
+            ImGui::EndPopup();
+            break;
+          }
           if (ImGui::MenuItem("Delete Selected Keyframes")) {
             // Delete all selected keyframes (reverse order to maintain valid indices)
             for (auto sit = selected_keyframes.rbegin(); sit != selected_keyframes.rend(); ++sit) {
@@ -668,6 +718,17 @@ namespace {
     if (ImGui::DragFloat("Value##kf_val", &kf_val, 0.01f, -10000.0f, 10000.0f, "%.4f")) {
       kf.value = static_cast<double>(kf_val);
     }
+
+    // "Use Current" — overwrites this keyframe's value with the entity's live field value
+    ImGui::SameLine(0, 8);
+    if (ImGui::Button("Use Current##kf_use_live")) {
+      double live_val = 0.0;
+      if (read_live_field_value(track.target_component, track.target_field_path, live_val)) {
+        kf.value = live_val;
+      }
+    }
+    if (ImGui::IsItemHovered())
+      ImGui::SetTooltip("Set this keyframe's value to the entity's current live component value");
   }
 
   // ============================================================================  
@@ -827,6 +888,28 @@ void AnimatorTimelinePanel() {
   if (ImGui::Button("Stop")) {
     sm->stop_property_anim();
   }
+
+  // Capture All — set every track's keyframe at the current playhead time (or nearest) to the live value
+  ImGui::SameLine(0, 20);
+  if (ImGui::Button("Capture All")) {
+    float t = sm->get_property_anim_elapsed();
+    for (auto& track : clip->tracks) {
+      double live_val = 0.0;
+      if (read_live_field_value(track.target_component, track.target_field_path, live_val)) {
+        // Find the keyframe closest to the current playhead time
+        int best_ki = -1;
+        float best_dist = 1e30f;
+        for (int ki = 0; ki < static_cast<int>(track.keyframes.size()); ++ki) {
+          float dist = std::abs(track.keyframes[ki].time - t);
+          if (dist < best_dist) { best_dist = dist; best_ki = ki; }
+        }
+        if (best_ki >= 0)
+          track.keyframes[best_ki].value = live_val;
+      }
+    }
+  }
+  if (ImGui::IsItemHovered())
+    ImGui::SetTooltip("Set every track's nearest keyframe (to the playhead) to its current live component value");
 
   // Add Track button
   ImGui::SameLine(0, 20);

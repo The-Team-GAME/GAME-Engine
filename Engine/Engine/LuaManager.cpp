@@ -288,6 +288,7 @@ namespace Engine {
     L["StateMachine"]["has_state"]                  = &Components::StateMachine::has_state;
     L["StateMachine"]["is_first_frame"]             = &Components::StateMachine::is_first_frame;
     L["StateMachine"]["revert_to_previous_state"]   = &Components::StateMachine::revert_to_previous_state;
+    L["StateMachine"]["is_property_anim_playing"]   = &Components::StateMachine::is_property_anim_playing;
   }
 
   // ============================================================================
