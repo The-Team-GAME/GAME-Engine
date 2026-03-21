@@ -40,6 +40,17 @@ namespace {
   bool show_exit_confirmation = false;
   std::vector<char> exit_save_selections; // Tracks which dirty items user wants to save on exit (char instead of bool to avoid vector<bool> proxy)
 
+  bool should_imgui_yield_keyboard_to_game()
+  {
+    if (!gui_enabled || !main_gui_visible)
+      return false;
+
+    if (!Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode)
+      return false;
+
+    return ViewportPanel::is_viewport_focused() || ViewportPanel::is_viewport_hovered();
+  }
+
   struct PanelInfo {
     std::string name;
     std::function<void()> render_func;
@@ -151,9 +162,24 @@ namespace ImGuiManager {
     // ==================================================================================
     // Always start ImGui frame (needed for popups even when GUI is disabled)
     // ==================================================================================
+    ImGuiIO& io = ImGui::GetIO();
+    if (should_imgui_yield_keyboard_to_game())
+    {
+      io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;
+    }
+    else
+    {
+      io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    }
+
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+
+    if (should_imgui_yield_keyboard_to_game())
+    {
+      io.WantCaptureKeyboard = false;
+    }
 
     // ==================================================================================
     // Start of ImGui enabled
