@@ -13,7 +13,7 @@
                         0.07999999821186066
                     ],
                     "is_looping": true,
-                    "startTime": 124.82577514648438,
+                    "startTime": 1163.1002197265625,
                     "totalDuration": 0.07999999821186066
                 },
                 "type": "Components::Animation"
@@ -29,7 +29,7 @@
             },
             {
                 "data": {
-                    "blueprint_id": "DashCooldown",
+                    "blueprint_id": "SmashCooldown",
                     "current_state_name": "READY",
                     "property_anim_playing": false,
                     "states": [
@@ -48,13 +48,13 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 124.82577514648438,
+                                        "startTime": 1163.1002197265625,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
                                     "scale": null,
                                     "texture": {
-                                        "path": "images/skill_dash.png"
+                                        "path": "images/skill_smash.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -719,7 +719,7 @@
                                     "name": ""
                                 },
                                 "on_update_callback": {
-                                    "name": "dash_update"
+                                    "name": "smash_update"
                                 },
                                 "property_animation": null
                             }
@@ -739,13 +739,13 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 124.82577514648438,
+                                        "startTime": 1163.1002197265625,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
                                     "scale": null,
                                     "texture": {
-                                        "path": "images/skill_dash.png"
+                                        "path": "images/skill_smash.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -1410,7 +1410,7 @@
                                     "name": ""
                                 },
                                 "on_update_callback": {
-                                    "name": "dash_update"
+                                    "name": "smash_update"
                                 },
                                 "property_animation": null
                             }
@@ -1430,13 +1430,13 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 124.82577514648438,
+                                        "startTime": 1163.1002197265625,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
                                     "scale": null,
                                     "texture": {
-                                        "path": "images/skill_dash.png"
+                                        "path": "images/skill_smash.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -2101,7 +2101,7 @@
                                     "name": ""
                                 },
                                 "on_update_callback": {
-                                    "name": "dash_update"
+                                    "name": "smash_update"
                                 },
                                 "property_animation": null
                             }
@@ -2121,13 +2121,13 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 124.82577514648438,
+                                        "startTime": 1163.1002197265625,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
                                     "scale": null,
                                     "texture": {
-                                        "path": "images/skill_dash.png"
+                                        "path": "images/skill_smash.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -2792,7 +2792,7 @@
                                     "name": ""
                                 },
                                 "on_update_callback": {
-                                    "name": "dash_update"
+                                    "name": "smash_update"
                                 },
                                 "property_animation": null
                             }
@@ -2812,13 +2812,13 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 124.82577514648438,
+                                        "startTime": 1163.1002197265625,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
                                     "scale": null,
                                     "texture": {
-                                        "path": "images/skill_dash.png"
+                                        "path": "images/skill_smash.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -3483,7 +3483,7 @@
                                     "name": ""
                                 },
                                 "on_update_callback": {
-                                    "name": "dash_update"
+                                    "name": "smash_update"
                                 },
                                 "property_animation": null
                             }
@@ -3503,13 +3503,13 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 124.82577514648438,
+                                        "startTime": 1163.1002197265625,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
                                     "scale": null,
                                     "texture": {
-                                        "path": "images/skill_dash.png"
+                                        "path": "images/skill_smash.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -4174,7 +4174,7 @@
                                     "name": ""
                                 },
                                 "on_update_callback": {
-                                    "name": "dash_update"
+                                    "name": "smash_update"
                                 },
                                 "property_animation": null
                             }
@@ -4194,13 +4194,13 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 124.82577514648438,
+                                        "startTime": 1163.1002197265625,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
                                     "scale": null,
                                     "texture": {
-                                        "path": "images/skill_dash.png"
+                                        "path": "images/skill_smash.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -4865,7 +4865,7 @@
                                     "name": ""
                                 },
                                 "on_update_callback": {
-                                    "name": "dash_update"
+                                    "name": "smash_update"
                                 },
                                 "property_animation": null
                             }
@@ -4885,13 +4885,13 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 124.82577514648438,
+                                        "startTime": 1163.1002197265625,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
                                     "scale": null,
                                     "texture": {
-                                        "path": "images/skill_dash.png"
+                                        "path": "images/skill_smash.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -5556,7 +5556,7 @@
                                     "name": ""
                                 },
                                 "on_update_callback": {
-                                    "name": "dash_update"
+                                    "name": "smash_update"
                                 },
                                 "property_animation": null
                             }
@@ -5576,13 +5576,13 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 124.82577514648438,
+                                        "startTime": 1163.1002197265625,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
                                     "scale": null,
                                     "texture": {
-                                        "path": "images/skill_dash.png"
+                                        "path": "images/skill_smash.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -6247,7 +6247,7 @@
                                     "name": ""
                                 },
                                 "on_update_callback": {
-                                    "name": "dash_update"
+                                    "name": "smash_update"
                                 },
                                 "property_animation": null
                             }
@@ -6345,13 +6345,13 @@
                                             0.02500000037252903
                                         ],
                                         "is_looping": false,
-                                        "startTime": 124.82577514648438,
+                                        "startTime": 1163.1002197265625,
                                         "totalDuration": 0.6749998927116394
                                     },
                                     "collider_data": null,
                                     "scale": null,
                                     "texture": {
-                                        "path": "images/skill_dash.png"
+                                        "path": "images/skill_smash.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -7016,7 +7016,7 @@
                                     "name": ""
                                 },
                                 "on_update_callback": {
-                                    "name": "dash_update"
+                                    "name": "smash_update"
                                 },
                                 "property_animation": null
                             }
@@ -7036,13 +7036,13 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": true,
-                                        "startTime": 124.82577514648438,
+                                        "startTime": 1163.1002197265625,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
                                     "scale": null,
                                     "texture": {
-                                        "path": "images/skill_dash.png"
+                                        "path": "images/skill_smash.png"
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
@@ -7707,7 +7707,7 @@
                                     "name": ""
                                 },
                                 "on_update_callback": {
-                                    "name": "dash_update"
+                                    "name": "smash_update"
                                 },
                                 "property_animation": null
                             }
@@ -7718,7 +7718,7 @@
             },
             {
                 "data": {
-                    "path": "images/skill_dash.png"
+                    "path": "images/skill_smash.png"
                 },
                 "type": "Components::Texture"
             },
@@ -8381,8 +8381,8 @@
             {
                 "data": {
                     "position": {
-                        "x": 217.61373901367188,
-                        "y": 204.06982421875
+                        "x": 431.8304443359375,
+                        "y": 205.62213134765625
                     },
                     "rotation": 0.0,
                     "scale": {

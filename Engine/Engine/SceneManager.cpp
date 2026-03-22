@@ -28,6 +28,11 @@
 
 namespace Engine
 {
+  bool Scene::blocks_lower_draw() const
+  {
+    return false;
+  }
+
   namespace Systems {
     void add_camera_shake(f32 trauma) {
       CameraSystem::add_shake(trauma);

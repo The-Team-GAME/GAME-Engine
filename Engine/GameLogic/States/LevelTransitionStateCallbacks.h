@@ -33,6 +33,27 @@ namespace LevelTransitionStateCallbacks
     // Extra guard in case this callback is registered broadly.
     if (!player_entity.has_component<Components::Player>()) return;
 
+    // If we're already in LevelTwo, don't re-open it / re-play the cutscene.
+    // This avoids accidental infinite loops if LevelTwo contains a scene-change trigger
+    // (or the player spawns overlapping one).
+    {
+      auto normalize = [](std::string s) {
+        for (char& c : s) { if (c == '\\') c = '/'; }
+        return s;
+      };
+
+      const std::string current_path = normalize(std::string(Engine::LevelManager::get_current_level_path()));
+      const std::string target_rel = normalize(std::string(LEVEL_TWO_PATH));
+      if (!current_path.empty())
+      {
+        if (current_path.ends_with(target_rel) || current_path.ends_with("LevelTwo.json"))
+        {
+          Log::info("[Portal] Ignoring LevelTwo transition; already in LevelTwo (current={})", current_path);
+          return;
+        }
+      }
+    }
+
     Log::info("[Portal] Transition triggered: trigger={}, player={} -> {}",
       trigger_entity.get_id(), player_entity.get_id(), LEVEL_TWO_PATH);
 
@@ -46,22 +67,8 @@ namespace LevelTransitionStateCallbacks
     // Note: the level load will clear entities anyway; this just makes it robust.
     trigger_entity.destroy();
 
-    // Load the next level FIRST, then play the cutscene.
-    // Core.cpp will skip ECS update/draw while the cutscene is active
-    // because EnteringTrainCutsceneState::blocks_lower_draw() returns true.
-    const std::string opened_level_id = Engine::LevelManager::open_level(LEVEL_TWO_PATH);
-    if (opened_level_id.empty())
-    {
-      Log::error("[Portal] Failed to open level: {}", LEVEL_TWO_PATH);
-      Engine::EventManager::send_event<Engine::Events::ToastEvent>(
-        std::string("Failed to open ") + LEVEL_TWO_PATH,
-        Engine::Events::ToastType::Error,
-        5.0f
-      );
-      return;
-    }
-
-    Engine::SceneManager::push_scene("EnteringTrainCutsceneState");
+    // Switch to the cutscene scene; it will load LevelTwo when done.
+    Engine::SceneManager::load_scene("EnteringTrainCutsceneState");
   }
 
   // Explicitly named wrapper: portal switches into the EnteringTrainCutsceneState,

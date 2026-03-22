@@ -602,9 +602,12 @@ namespace Engine {
       current_level_path = "";  // No file path for new levels
 
       // Clear the world
-      ECS::for_each_entity([](ECS::Entity entity) {
+      // IMPORTANT: clear all ACTIVE entities (even ones with no layer).
+      // ECS::for_each_entity() iterates by layer sets and can miss unlayered
+      // entities, causing levels to accumulate.
+      for (auto entity : ECS::get_all_entities()) {
         entity.destroy();
-        });
+      }
       ECS::process_housekeeping();
 
       // Create the Level entity with Level component
@@ -725,9 +728,9 @@ namespace Engine {
           call_level_exit();
         }
 
-        ECS::for_each_entity([](ECS::Entity entity) {
+        for (auto entity : ECS::get_all_entities()) {
           entity.destroy();
-          });
+        }
         ECS::process_housekeeping();
 
         for (ECS::EntityID id : preloaded_snapshots[level_id]) {
@@ -820,9 +823,9 @@ namespace Engine {
           std::string new_active = level_order[new_index];
 
           // Destroy active entities first
-          ECS::for_each_entity([](ECS::Entity entity) {
+          for (auto entity : ECS::get_all_entities()) {
             entity.destroy();
-            });
+          }
           ECS::process_housekeeping();
 
           active_level_id = new_active;
@@ -842,9 +845,9 @@ namespace Engine {
         }
         else {
           // Closing last level
-          ECS::for_each_entity([](ECS::Entity entity) {
+          for (auto entity : ECS::get_all_entities()) {
             entity.destroy();
-            });
+          }
           ECS::process_housekeeping();
           active_level_id = "";
           current_level_path = "";
@@ -1089,9 +1092,11 @@ namespace Engine {
       active_level_id = "";
       current_level_path = "";
 
-      ECS::for_each_entity([](ECS::Entity entity) {
+      // Clear all ACTIVE entities (including unlayered). Deactivated entities
+      // are managed per-level via destroy_level_entities()/activate_level().
+      for (auto entity : ECS::get_all_entities()) {
         entity.destroy();
-        });
+      }
       ECS::process_housekeeping();
 
       Log::info("Cleared levels. Preserved {} preloaded levels.", open_levels.size());
@@ -1190,9 +1195,9 @@ namespace Engine {
       }
 
       if (clear_world) {
-        ECS::for_each_entity([](ECS::Entity entity) {
+        for (auto entity : ECS::get_all_entities()) {
           entity.destroy();
-          });
+        }
       }
 
       // Process housekeeping to ensure old entities (including tile colliders) are actually destroyed

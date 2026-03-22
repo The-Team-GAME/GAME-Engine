@@ -43,6 +43,7 @@
 #include "GameStates/VideoPlaybackState.h"
 #include "GameStates/OpeningCutsceneState.h"
 #include "GameStates/EnteringTrainCutsceneState.h"
+#include "GameStates/LevelTwoStartState.h"
 
 // Game systems
 #include "Systems/HealthSystem.h"
@@ -301,14 +302,6 @@ static void register_collision_callbacks()
       Log::info("[Portal] Collision callback fired: trigger={}, player={}", trigger_entity.get_id(), player_entity.get_id());
       LevelTransitionStateCallbacks::portal_entering_train_cutscene(trigger_entity, player_entity);
     });
-
-  // Register reverse order too (collision system may invoke callbacks with swapped entity order).
-  Engine::ECS::LayerRegistry::register_collision_callback("player", "scene_change_trigger",
-    [](Engine::ECS::Entity player_entity, Engine::ECS::Entity trigger_entity)
-    {
-      Log::info("[Portal] Collision callback fired (reverse): trigger={}, player={}", trigger_entity.get_id(), player_entity.get_id());
-      LevelTransitionStateCallbacks::portal_entering_train_cutscene(trigger_entity, player_entity);
-    });
 }
 
 static void unregister_collision_callbacks()
@@ -319,7 +312,6 @@ static void unregister_collision_callbacks()
   Engine::ECS::LayerRegistry::unregister_collision_callback("projectiles", "tilemap_foreground_mid");
   Engine::ECS::LayerRegistry::unregister_collision_callback("projectiles", "player");
   Engine::ECS::LayerRegistry::unregister_collision_callback("scene_change_trigger", "player");
-  Engine::ECS::LayerRegistry::unregister_collision_callback("player", "scene_change_trigger");
 }
 
 // =============================================================================
@@ -544,6 +536,7 @@ static void register_scenes()
   Engine::SceneManager::register_scene<VideoPlaybackState>("VideoPlaybackState");
   Engine::SceneManager::register_scene<OpeningCutsceneState>("OpeningCutsceneState");
   Engine::SceneManager::register_scene<EnteringTrainCutsceneState>("EnteringTrainCutsceneState");
+  Engine::SceneManager::register_scene<LevelTwoStartState>("LevelTwoStartState");
 }
 
 static void register_systems()

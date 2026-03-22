@@ -3,7 +3,7 @@
 // project: Monkey Stole My GPA
 //
 // brief:   Plays the "entering train" cutscene, then returns to the underlying
-//          scene (level is opened before the cutscene is pushed).
+//          scene and opens the next level when the cutscene finishes.
 //-----------------------------------------------------------------------------------
 #pragma once
 
@@ -15,6 +15,8 @@ private:
   Engine::Video::VideoPlayer player;
   std::string next_level_to_open;
   bool open_level_when_done = false;
+
+  double last_video_time_ = -1.0;
 
 public:
   bool blocks_lower_draw() const override { return true; }
