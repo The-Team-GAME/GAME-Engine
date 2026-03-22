@@ -49,6 +49,7 @@
 #include "Systems/HealthSystem.h"
 #include "Systems/EnemyHealthSystem.h"
 #include "Systems/CatMonkeySummonHealthBarSystem.h"
+#include "Systems/CatMonkeySummonWaveHealthBarsSystem.h"
 #include "Systems/HeartrateSystem.h"
 #include "Systems/DebugHitboxRenderSystem.h"
 #include "Systems/InteractableSystem.h"
@@ -554,6 +555,7 @@ static void register_systems()
   Engine::ECS::add_system<Engine::Systems::EnemyHealthBarRectSystem>();
   Engine::ECS::add_system<Engine::Systems::HeartHUDSpriteSystem>();
   Engine::ECS::add_system<Engine::Systems::CatMonkeySummonHealthBarSystem>();
+  Engine::ECS::add_system<Engine::Systems::CatMonkeySummonWaveHealthBarsSystem>();
 }
 
 static void unregister_systems()
@@ -566,6 +568,7 @@ static void unregister_systems()
   Engine::ECS::remove_system<Engine::Systems::EnemyHealthBarRectSystem>();
   Engine::ECS::remove_system<Engine::Systems::HeartHUDSpriteSystem>();
   Engine::ECS::remove_system<Engine::Systems::CatMonkeySummonHealthBarSystem>();
+  Engine::ECS::remove_system<Engine::Systems::CatMonkeySummonWaveHealthBarsSystem>();
 }
 
 // =============================================================================
@@ -624,6 +627,7 @@ extern "C" __declspec(dllexport) void UnregisterGameLogic()
   Engine::ECS::unregister_component<Components::SprayCanMonkey>();
   Engine::ECS::unregister_component<::Components::CatMonkeyBoss>();
   Engine::ECS::unregister_component<Components::CatMonkeySummonHealthBar>();
+  Engine::ECS::unregister_component<Components::CatMonkeySummonWaveHealthBars>();
   Engine::ECS::unregister_component<Components::Attack>();
   Engine::ECS::unregister_component<Components::PendingKnockback>();
   Engine::ECS::unregister_component<Components::EnemyHealth>();

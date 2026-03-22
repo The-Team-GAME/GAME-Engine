@@ -11,21 +11,28 @@
 #include "../Components/EnemyHealthComponent.h"
 #include "../Components/CatMonkeyBossComponent.h"
 #include "../Components/CatMonkeySummonHealthBarComponent.h"
+#include "../Components/CatMonkeySummonWaveHealthBarsComponent.h"
 
 namespace CatMonkeyStateCallbacks
 {
   namespace
   {
+    static constexpr int k_summon_state_count = 5;
+
     inline Engine::ECS::Entity spawn_enemy_from_prefab(const std::string& prefab_path, const Math::Vec2D& pos);
 
     struct BossRuntime
     {
       float last_summon_time = -9999.0f;
-      std::vector<Engine::ECS::EntityID> active_summons{};
-      int summon_pool_max_hp = 0;
+      std::array<std::vector<Engine::ECS::EntityID>, k_summon_state_count> wave_summons{};
+      std::array<int, k_summon_state_count> wave_pool_max_hp{};
+      std::array<bool, k_summon_state_count> wave_spawned{};
+      std::array<bool, k_summon_state_count> wave_cleared{};
+
       int next_summon_index = 0;
       bool summon_pending = false;
       int pending_summon_index = 0;
+      int active_wave_index = -1;
     };
 
     inline std::unordered_map<Engine::ECS::EntityID, BossRuntime>& runtimes()
@@ -78,20 +85,17 @@ namespace CatMonkeyStateCallbacks
 
     inline const std::vector<std::string>& summon_prefabs_for(Engine::ECS::Entity boss, int summon_index)
     {
-      static const std::vector<std::string> defaults_1 = { "prefabs/lazy_monkey.json" };
-      static const std::vector<std::string> defaults_2 = { "prefabs/spray can monkey.json" };
-      static const std::vector<std::string> defaults_3 = { "prefabs/turret_monkey.json" };
-
       const Components::CatMonkeyBoss* cfg = get_cfg(boss);
       if (cfg) {
         if (summon_index == 0 && !cfg->summon1_prefabs.empty()) return cfg->summon1_prefabs;
         if (summon_index == 1 && !cfg->summon2_prefabs.empty()) return cfg->summon2_prefabs;
         if (summon_index == 2 && !cfg->summon3_prefabs.empty()) return cfg->summon3_prefabs;
+        if (summon_index == 3 && !cfg->summon4_prefabs.empty()) return cfg->summon4_prefabs;
+        if (summon_index == 4 && !cfg->summon5_prefabs.empty()) return cfg->summon5_prefabs;
       }
 
-      if (summon_index == 1) return defaults_2;
-      if (summon_index == 2) return defaults_3;
-      return defaults_1;
+      static const std::vector<std::string> empty;
+      return empty;
     }
 
     inline const std::string& spawn_marker_prefix_for(Engine::ECS::Entity boss, int summon_index)
@@ -99,17 +103,40 @@ namespace CatMonkeyStateCallbacks
       static const std::string default_1 = "cat_monkey_spawn1";
       static const std::string default_2 = "cat_monkey_spawn2";
       static const std::string default_3 = "cat_monkey_spawn3";
+      static const std::string default_4 = "cat_monkey_spawn4";
+      static const std::string default_5 = "cat_monkey_spawn5";
 
       const Components::CatMonkeyBoss* cfg = get_cfg(boss);
       if (cfg) {
         if (summon_index == 0 && !cfg->summon1_spawn_marker_prefix.empty()) return cfg->summon1_spawn_marker_prefix;
         if (summon_index == 1 && !cfg->summon2_spawn_marker_prefix.empty()) return cfg->summon2_spawn_marker_prefix;
         if (summon_index == 2 && !cfg->summon3_spawn_marker_prefix.empty()) return cfg->summon3_spawn_marker_prefix;
+        if (summon_index == 3 && !cfg->summon4_spawn_marker_prefix.empty()) return cfg->summon4_spawn_marker_prefix;
+        if (summon_index == 4 && !cfg->summon5_spawn_marker_prefix.empty()) return cfg->summon5_spawn_marker_prefix;
       }
 
       if (summon_index == 1) return default_2;
       if (summon_index == 2) return default_3;
+      if (summon_index == 3) return default_4;
+      if (summon_index == 4) return default_5;
       return default_1;
+    }
+
+    inline const std::vector<Math::Vec2D>& spawn_offsets_for(Engine::ECS::Entity boss, int summon_index)
+    {
+      static const std::vector<Math::Vec2D> empty;
+
+      const Components::CatMonkeyBoss* cfg = get_cfg(boss);
+      if (!cfg) {
+        return empty;
+      }
+
+      if (summon_index == 0) return cfg->summon1_spawn_offsets;
+      if (summon_index == 1) return cfg->summon2_spawn_offsets;
+      if (summon_index == 2) return cfg->summon3_spawn_offsets;
+      if (summon_index == 3) return cfg->summon4_spawn_offsets;
+      if (summon_index == 4) return cfg->summon5_spawn_offsets;
+      return empty;
     }
 
     inline bool starts_with(const std::string& str, const std::string& prefix)
@@ -171,17 +198,16 @@ namespace CatMonkeyStateCallbacks
       }
     }
 
-    inline void process_tracked_minion_deaths(Engine::ECS::Entity boss_entity)
+    inline void process_tracked_minion_deaths(Engine::ECS::Entity boss_entity, std::vector<Engine::ECS::EntityID>& tracked_summons)
     {
-      BossRuntime& rt = runtime_for(boss_entity);
-      if (rt.active_summons.empty()) {
+      if (tracked_summons.empty()) {
         return;
       }
 
       std::vector<Engine::ECS::EntityID> still_alive;
-      still_alive.reserve(rt.active_summons.size());
+      still_alive.reserve(tracked_summons.size());
 
-      for (Engine::ECS::EntityID id : rt.active_summons)
+      for (Engine::ECS::EntityID id : tracked_summons)
       {
         Engine::ECS::Entity summoned(id);
 
@@ -207,18 +233,17 @@ namespace CatMonkeyStateCallbacks
         still_alive.push_back(id);
       }
 
-      rt.active_summons = std::move(still_alive);
+      tracked_summons = std::move(still_alive);
     }
 
-    inline int compute_summon_pool_current_hp(Engine::ECS::Entity boss_entity)
+    inline int compute_summon_pool_current_hp(const std::vector<Engine::ECS::EntityID>& tracked_summons)
     {
-      const BossRuntime& rt = runtime_for(boss_entity);
-      if (rt.active_summons.empty()) {
+      if (tracked_summons.empty()) {
         return 0;
       }
 
       int total = 0;
-      for (Engine::ECS::EntityID id : rt.active_summons) {
+      for (Engine::ECS::EntityID id : tracked_summons) {
         Engine::ECS::Entity summoned(id);
 
         if (!Engine::ECS::is_entity_active(summoned)) {
@@ -232,6 +257,90 @@ namespace CatMonkeyStateCallbacks
       return total;
     }
 
+    inline void ensure_wave_bars_component(Engine::ECS::Entity boss_entity)
+    {
+      if (boss_entity.get_component<Components::CatMonkeySummonWaveHealthBars>()) {
+        return;
+      }
+      boss_entity.add_component<Components::CatMonkeySummonWaveHealthBars>();
+    }
+
+    inline void mark_wave_cleared(Engine::ECS::Entity boss_entity, int wave_index)
+    {
+      if (wave_index < 0 || wave_index >= k_summon_state_count) {
+        return;
+      }
+
+      BossRuntime& rt = runtime_for(boss_entity);
+      if (!rt.wave_spawned[static_cast<size_t>(wave_index)] || rt.wave_cleared[static_cast<size_t>(wave_index)]) {
+        return;
+      }
+
+      rt.wave_cleared[static_cast<size_t>(wave_index)] = true;
+      rt.wave_summons[static_cast<size_t>(wave_index)].clear();
+
+      ensure_wave_bars_component(boss_entity);
+      if (auto* bars = boss_entity.get_component<Components::CatMonkeySummonWaveHealthBars>()) {
+        const float now = Engine::Time::get_time();
+        if (wave_index == 0) { bars->wave1_cleared = true; bars->wave1_cleared_time = now; }
+        if (wave_index == 1) { bars->wave2_cleared = true; bars->wave2_cleared_time = now; }
+        if (wave_index == 2) { bars->wave3_cleared = true; bars->wave3_cleared_time = now; }
+        if (wave_index == 3) { bars->wave4_cleared = true; bars->wave4_cleared_time = now; }
+        if (wave_index == 4) { bars->wave5_cleared = true; bars->wave5_cleared_time = now; }
+      }
+    }
+
+    inline void update_wave_healthbars_component(Engine::ECS::Entity boss_entity)
+    {
+      ensure_wave_bars_component(boss_entity);
+      auto* bars = boss_entity.get_component<Components::CatMonkeySummonWaveHealthBars>();
+      if (!bars) {
+        return;
+      }
+
+      // Hide if boss dead.
+      if (auto* boss_hp = boss_entity.get_component<Components::EnemyHealth>()) {
+        if (boss_hp->current_hp <= 0) {
+          bars->visible = false;
+          return;
+        }
+      }
+
+      bars->visible = true;
+
+      BossRuntime& rt = runtime_for(boss_entity);
+
+      auto set_wave = [&](int idx,
+        int& cur, int& mx,
+        bool& spawned, bool& cleared)
+      {
+        spawned = rt.wave_spawned[static_cast<size_t>(idx)];
+        cleared = rt.wave_cleared[static_cast<size_t>(idx)];
+        mx = std::max(0, rt.wave_pool_max_hp[static_cast<size_t>(idx)]);
+        if (!spawned) {
+          cur = 0;
+          mx = 0;
+          return;
+        }
+        if (cleared) {
+          cur = 0;
+          return;
+        }
+
+        auto& list = rt.wave_summons[static_cast<size_t>(idx)];
+        cur = compute_summon_pool_current_hp(list);
+        if (list.empty()) {
+          mark_wave_cleared(boss_entity, idx);
+        }
+      };
+
+      set_wave(0, bars->wave1_current_hp, bars->wave1_max_hp, bars->wave1_spawned, bars->wave1_cleared);
+      set_wave(1, bars->wave2_current_hp, bars->wave2_max_hp, bars->wave2_spawned, bars->wave2_cleared);
+      set_wave(2, bars->wave3_current_hp, bars->wave3_max_hp, bars->wave3_spawned, bars->wave3_cleared);
+      set_wave(3, bars->wave4_current_hp, bars->wave4_max_hp, bars->wave4_spawned, bars->wave4_cleared);
+      set_wave(4, bars->wave5_current_hp, bars->wave5_max_hp, bars->wave5_spawned, bars->wave5_cleared);
+    }
+
     inline void update_summon_healthbar_component(Engine::ECS::Entity boss_entity)
     {
       auto* bar = boss_entity.get_component<Components::CatMonkeySummonHealthBar>();
@@ -242,8 +351,6 @@ namespace CatMonkeyStateCallbacks
       if (!bar) {
         return;
       }
-
-      BossRuntime& rt = runtime_for(boss_entity);
 
       // Show the bar whenever the boss is alive (even if empty).
       if (auto* boss_hp = boss_entity.get_component<Components::EnemyHealth>()) {
@@ -257,12 +364,7 @@ namespace CatMonkeyStateCallbacks
 
       bar->visible = true;
 
-      // If we have an active wave, show its pool.
-      if (!rt.active_summons.empty() && rt.summon_pool_max_hp > 0) {
-        bar->total_max_hp = rt.summon_pool_max_hp;
-        bar->total_current_hp = compute_summon_pool_current_hp(boss_entity);
-        return;
-      }
+      // Legacy rectangle bar is no longer used for waves; keep it empty.
 
       // Otherwise, keep it visible but empty.
       bar->total_current_hp = 0;
@@ -320,28 +422,40 @@ namespace CatMonkeyStateCallbacks
 
       const auto& prefabs = summon_prefabs_for(entity, summon_index);
       if (prefabs.empty()) {
-        Log::warning("CatMonkey: summon prefabs list is empty; nothing to summon.");
+        Log::warning("CatMonkey: summon prefabs list is empty (configure Components::CatMonkeyBoss in JSON).");
         return;
       }
 
       std::vector<Math::Vec2D> spawn_positions = gather_spawn_positions_from_markers(spawn_marker_prefix_for(entity, summon_index));
       if (spawn_positions.empty()) {
+        const std::vector<Math::Vec2D>& offsets = spawn_offsets_for(entity, summon_index);
         if (auto* t = entity.get_component<Components::Transform2D>()) {
-          const float dx = 200.0f;
-          spawn_positions.push_back(t->position + Math::Vec2D(-dx, 0.0f));
-          spawn_positions.push_back(t->position + Math::Vec2D(dx, 0.0f));
+          if (!offsets.empty()) {
+            spawn_positions.reserve(offsets.size());
+            for (const Math::Vec2D& off : offsets) {
+              spawn_positions.push_back(t->position + off);
+            }
+          }
         }
       }
 
       if (spawn_positions.empty()) {
-        Log::warning("CatMonkey: no spawn positions available (markers missing and no Transform2D).");
+        Log::warning("CatMonkey: no spawn positions available (no markers found and no spawn offsets configured).");
         return;
       }
 
       BossRuntime& rt = runtime_for(entity);
-      rt.active_summons.clear();
-      rt.active_summons.reserve(static_cast<size_t>(minion_count));
-      rt.summon_pool_max_hp = 0;
+      if (summon_index < 0 || summon_index >= k_summon_state_count) {
+        return;
+      }
+
+      auto& summons = rt.wave_summons[static_cast<size_t>(summon_index)];
+      summons.clear();
+      summons.reserve(static_cast<size_t>(minion_count));
+      rt.wave_pool_max_hp[static_cast<size_t>(summon_index)] = 0;
+      rt.wave_spawned[static_cast<size_t>(summon_index)] = true;
+      rt.wave_cleared[static_cast<size_t>(summon_index)] = false;
+      rt.active_wave_index = summon_index;
 
       for (int i = 0; i < minion_count; ++i)
       {
@@ -350,15 +464,15 @@ namespace CatMonkeyStateCallbacks
 
         Engine::ECS::Entity summoned = spawn_enemy_from_prefab(prefab_path, spawn_pos);
         if (summoned.is_valid()) {
-          rt.active_summons.push_back(summoned.get_id());
+          summons.push_back(summoned.get_id());
 
           if (auto* mhp = summoned.get_component<Components::EnemyHealth>()) {
-            rt.summon_pool_max_hp += std::max(0, mhp->max_hp);
+            rt.wave_pool_max_hp[static_cast<size_t>(summon_index)] += std::max(0, mhp->max_hp);
           }
         }
       }
 
-      update_summon_healthbar_component(entity);
+      update_wave_healthbars_component(entity);
     }
 
     inline Engine::ECS::Entity spawn_enemy_from_prefab(const std::string& prefab_path, const Math::Vec2D& pos)
@@ -397,19 +511,27 @@ namespace CatMonkeyStateCallbacks
       return;
     }
 
-    // Tick minion linkage.
-    process_tracked_minion_deaths(entity);
-    update_summon_healthbar_component(entity);
-
+    // Tick minion linkage for the currently-active wave.
     BossRuntime& rt = runtime_for(entity);
+    if (rt.active_wave_index >= 0 && rt.active_wave_index < k_summon_state_count) {
+      auto& list = rt.wave_summons[static_cast<size_t>(rt.active_wave_index)];
+      process_tracked_minion_deaths(entity, list);
+      if (list.empty()) {
+        mark_wave_cleared(entity, rt.active_wave_index);
+        rt.active_wave_index = -1;
+      }
+    }
+    update_wave_healthbars_component(entity);
 
     // If no active summons remain, and cooldown elapsed, summon again.
     float now = Engine::Time::get_time();
     bool cooldown_ready = (now - rt.last_summon_time) >= summon_cooldown(entity);
-    if (rt.active_summons.empty() && cooldown_ready) {
-      const int idx = (rt.next_summon_index % 3 + 3) % 3;
+    if (rt.active_wave_index == -1 && cooldown_ready) {
+      const int idx = (rt.next_summon_index % k_summon_state_count + k_summon_state_count) % k_summon_state_count;
       if (idx == 1) sm->change_state("Summon2");
       else if (idx == 2) sm->change_state("Summon3");
+      else if (idx == 3) sm->change_state("Summon4");
+      else if (idx == 4) sm->change_state("Summon5");
       else sm->change_state("Summon1");
     }
   }
@@ -433,21 +555,25 @@ namespace CatMonkeyStateCallbacks
 
     BossRuntime& rt = runtime_for(entity);
     rt.last_summon_time = Engine::Time::get_time();
-    rt.next_summon_index = (rt.next_summon_index + 1) % 3;
+    rt.next_summon_index = (rt.next_summon_index + 1) % k_summon_state_count;
 
     // Mark wave spawn as pending; actual spawn happens after the animation finishes.
     rt.summon_pending = true;
     rt.pending_summon_index = summon_index;
-    rt.active_summons.clear();
-    rt.summon_pool_max_hp = 0;
+    if (summon_index >= 0 && summon_index < k_summon_state_count) {
+      rt.wave_summons[static_cast<size_t>(summon_index)].clear();
+      rt.wave_pool_max_hp[static_cast<size_t>(summon_index)] = 0;
+    }
 
     restart_entity_animation(entity);
-    update_summon_healthbar_component(entity);
+    update_wave_healthbars_component(entity);
   }
 
   inline void summon1_on_enter(Engine::ECS::Entity entity) { summon_impl_on_enter(entity, 0); }
   inline void summon2_on_enter(Engine::ECS::Entity entity) { summon_impl_on_enter(entity, 1); }
   inline void summon3_on_enter(Engine::ECS::Entity entity) { summon_impl_on_enter(entity, 2); }
+  inline void summon4_on_enter(Engine::ECS::Entity entity) { summon_impl_on_enter(entity, 3); }
+  inline void summon5_on_enter(Engine::ECS::Entity entity) { summon_impl_on_enter(entity, 4); }
 
   inline void summon_impl_on_update(Engine::ECS::Entity entity)
   {
@@ -462,7 +588,7 @@ namespace CatMonkeyStateCallbacks
     }
 
     BossRuntime& rt = runtime_for(entity);
-    update_summon_healthbar_component(entity);
+    update_wave_healthbars_component(entity);
 
     if (!rt.summon_pending) {
       // If something cleared the flag, just go back to Idle.
@@ -484,6 +610,8 @@ namespace CatMonkeyStateCallbacks
   inline void summon1_on_update(Engine::ECS::Entity entity) { summon_impl_on_update(entity); }
   inline void summon2_on_update(Engine::ECS::Entity entity) { summon_impl_on_update(entity); }
   inline void summon3_on_update(Engine::ECS::Entity entity) { summon_impl_on_update(entity); }
+  inline void summon4_on_update(Engine::ECS::Entity entity) { summon_impl_on_update(entity); }
+  inline void summon5_on_update(Engine::ECS::Entity entity) { summon_impl_on_update(entity); }
 
   // Backwards-compat: legacy "Summon" state redirects to Summon1.
   inline void summon_on_enter(Engine::ECS::Entity entity) { summon_impl_on_enter(entity, 0); }
@@ -509,6 +637,10 @@ namespace CatMonkeyStateCallbacks
       bar->visible = false;
       bar->total_current_hp = 0;
       bar->total_max_hp = 0;
+    }
+
+    if (auto* bars = entity.get_component<Components::CatMonkeySummonWaveHealthBars>()) {
+      bars->visible = false;
     }
   }
 
@@ -540,6 +672,10 @@ namespace {
   void Cat_monkey_summon2_update(Engine::ECS::Entity entity) { CatMonkeyStateCallbacks::summon2_on_update(entity); }
   void Cat_monkey_summon3_enter(Engine::ECS::Entity entity) { CatMonkeyStateCallbacks::summon3_on_enter(entity); }
   void Cat_monkey_summon3_update(Engine::ECS::Entity entity) { CatMonkeyStateCallbacks::summon3_on_update(entity); }
+  void Cat_monkey_summon4_enter(Engine::ECS::Entity entity) { CatMonkeyStateCallbacks::summon4_on_enter(entity); }
+  void Cat_monkey_summon4_update(Engine::ECS::Entity entity) { CatMonkeyStateCallbacks::summon4_on_update(entity); }
+  void Cat_monkey_summon5_enter(Engine::ECS::Entity entity) { CatMonkeyStateCallbacks::summon5_on_enter(entity); }
+  void Cat_monkey_summon5_update(Engine::ECS::Entity entity) { CatMonkeyStateCallbacks::summon5_on_update(entity); }
   void Cat_monkey_hit_enter(Engine::ECS::Entity entity) { CatMonkeyStateCallbacks::hit_on_enter(entity); }
   void Cat_monkey_death_enter(Engine::ECS::Entity entity) { CatMonkeyStateCallbacks::death_on_enter(entity); }
   void Cat_monkey_death_update(Engine::ECS::Entity entity) { CatMonkeyStateCallbacks::death_on_update(entity); }
@@ -555,6 +691,10 @@ REGISTER_FUNCTION(Cat_monkey_summon2_enter)
 REGISTER_FUNCTION(Cat_monkey_summon2_update)
 REGISTER_FUNCTION(Cat_monkey_summon3_enter)
 REGISTER_FUNCTION(Cat_monkey_summon3_update)
+REGISTER_FUNCTION(Cat_monkey_summon4_enter)
+REGISTER_FUNCTION(Cat_monkey_summon4_update)
+REGISTER_FUNCTION(Cat_monkey_summon5_enter)
+REGISTER_FUNCTION(Cat_monkey_summon5_update)
 REGISTER_FUNCTION(Cat_monkey_hit_enter)
 REGISTER_FUNCTION(Cat_monkey_death_enter)
 REGISTER_FUNCTION(Cat_monkey_death_update)
@@ -564,6 +704,8 @@ REGISTER_STATE_MACHINE_BLUEPRINT(CatMonkey, "Idle",
   STATE("Summon1", CatMonkeyStateCallbacks::summon1_on_enter, CatMonkeyStateCallbacks::summon1_on_update, NO_CALLBACK)
   STATE("Summon2", CatMonkeyStateCallbacks::summon2_on_enter, CatMonkeyStateCallbacks::summon2_on_update, NO_CALLBACK)
   STATE("Summon3", CatMonkeyStateCallbacks::summon3_on_enter, CatMonkeyStateCallbacks::summon3_on_update, NO_CALLBACK)
+  STATE("Summon4", CatMonkeyStateCallbacks::summon4_on_enter, CatMonkeyStateCallbacks::summon4_on_update, NO_CALLBACK)
+  STATE("Summon5", CatMonkeyStateCallbacks::summon5_on_enter, CatMonkeyStateCallbacks::summon5_on_update, NO_CALLBACK)
   STATE("Hit", CatMonkeyStateCallbacks::hit_on_enter, NO_CALLBACK, NO_CALLBACK)
   STATE("Death", CatMonkeyStateCallbacks::death_on_enter, CatMonkeyStateCallbacks::death_on_update, NO_CALLBACK)
 )
@@ -573,16 +715,14 @@ REGISTER_STATE_MACHINE_BLUEPRINT(CatMonkey, "Idle",
 void register_catmonkey_blueprint_runtime()
 {
   auto& registry = ::Engine::StateMachineBlueprintRegistry::instance();
-  if (registry.has_blueprint("CatMonkey")) {
-    return;
-  }
-
   ::Engine::StateMachineBlueprint bp;
   bp.initial_state = "Idle";
   STATE("Idle", CatMonkeyStateCallbacks::idle_on_enter, CatMonkeyStateCallbacks::idle_on_update, NO_CALLBACK)
   STATE("Summon1", CatMonkeyStateCallbacks::summon1_on_enter, CatMonkeyStateCallbacks::summon1_on_update, NO_CALLBACK)
   STATE("Summon2", CatMonkeyStateCallbacks::summon2_on_enter, CatMonkeyStateCallbacks::summon2_on_update, NO_CALLBACK)
   STATE("Summon3", CatMonkeyStateCallbacks::summon3_on_enter, CatMonkeyStateCallbacks::summon3_on_update, NO_CALLBACK)
+  STATE("Summon4", CatMonkeyStateCallbacks::summon4_on_enter, CatMonkeyStateCallbacks::summon4_on_update, NO_CALLBACK)
+  STATE("Summon5", CatMonkeyStateCallbacks::summon5_on_enter, CatMonkeyStateCallbacks::summon5_on_update, NO_CALLBACK)
   STATE("Hit", CatMonkeyStateCallbacks::hit_on_enter, NO_CALLBACK, NO_CALLBACK)
   STATE("Death", CatMonkeyStateCallbacks::death_on_enter, CatMonkeyStateCallbacks::death_on_update, NO_CALLBACK)
   registry.register_blueprint("CatMonkey", bp);
