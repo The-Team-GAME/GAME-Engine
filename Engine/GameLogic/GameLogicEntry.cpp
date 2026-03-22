@@ -63,6 +63,7 @@
 
 // Components (needed for collision callbacks)
 #include "Components/GameplayComponent.h"
+#include "Components/CatMonkeyBossComponent.h"
 #include "Components/EnemyHealthComponent.h"
 #include "Components/HeartrateComponent.h"
 #include "Components/HealthComponents.h"
@@ -72,6 +73,9 @@
 namespace {
   static constexpr const char* PLAYER_HEARTBEAT_EVENT = "event:/SFX/PlayerHeartBeat";
 }
+
+// Defined in States/CatMonkeyStateCallbacks.cpp
+void register_catmonkey_blueprint_runtime();
 
 // =============================================================================
 // Knockback Helper Function
@@ -570,6 +574,7 @@ extern "C" __declspec(dllexport) void RegisterGameLogic()
 
   register_collision_callbacks();
   register_function_callbacks();
+  register_catmonkey_blueprint_runtime();
   register_upgrade_applicators();
   register_scenes();
   register_systems();
@@ -614,6 +619,7 @@ extern "C" __declspec(dllexport) void UnregisterGameLogic()
   Engine::ECS::unregister_component<Components::TurretMonkey>();
   Engine::ECS::unregister_component<Components::SlingshotMonkey>();
   Engine::ECS::unregister_component<Components::SprayCanMonkey>();
+  Engine::ECS::unregister_component<::Components::CatMonkeyBoss>();
   Engine::ECS::unregister_component<Components::Attack>();
   Engine::ECS::unregister_component<Components::PendingKnockback>();
   Engine::ECS::unregister_component<Components::EnemyHealth>();
