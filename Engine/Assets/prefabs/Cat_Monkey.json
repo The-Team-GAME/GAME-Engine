@@ -43,42 +43,10 @@
                         0.20000000298023224
                     ],
                     "is_looping": true,
-                    "startTime": 846.38671875,
+                    "startTime": 1236.2493896484375,
                     "totalDuration": 2.200000286102295
                 },
                 "type": "Components::Animation"
-            },
-            {
-                "data": {
-                    "aabb": {
-                        "half_height": 38.50300598144531,
-                        "half_width": 32.65172576904297,
-                        "pos": {
-                            "x": 517.98291015625,
-                            "y": 346.12451171875
-                        }
-                    },
-                    "collided": false,
-                    "height": 77.00601196289063,
-                    "kinetic_friction": 0.800000011920929,
-                    "offset": {
-                        "x": 4.979158401489258,
-                        "y": 24.698989868164063
-                    },
-                    "polygon": {
-                        "position": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "rotation": 0.0,
-                        "vertices": []
-                    },
-                    "radius": 0.0,
-                    "resolve_collisions": false,
-                    "type": "AABB",
-                    "width": 65.30345153808594
-                },
-                "type": "Components::BoxCollider"
             },
             {
                 "data": {
@@ -101,8 +69,8 @@
             },
             {
                 "data": {
-                    "current_hp": 5,
-                    "max_hp": 5
+                    "current_hp": 6,
+                    "max_hp": 6
                 },
                 "type": "Components::EnemyHealth"
             },
@@ -156,24 +124,6 @@
                             }
                         },
                         {
-                            "first": "Hit",
-                            "second": {
-                                "animation": null,
-                                "audio": null,
-                                "name": "Hit",
-                                "on_enter_callback": {
-                                    "name": "CatMonkeyStateCallbacks::hit_on_enter"
-                                },
-                                "on_exit_callback": {
-                                    "name": ""
-                                },
-                                "on_update_callback": {
-                                    "name": ""
-                                },
-                                "property_animation": null
-                            }
-                        },
-                        {
                             "first": "Summon",
                             "second": {
                                 "animation": {
@@ -183,16 +133,19 @@
                                             4,
                                             5,
                                             6,
-                                            7
+                                            7,
+                                            8
                                         ],
                                         "before_times": [
                                             0.0,
                                             0.20000000298023224,
                                             0.4000000059604645,
                                             0.6000000238418579,
-                                            0.800000011920929
+                                            0.800000011920929,
+                                            1.0
                                         ],
                                         "durations": [
+                                            0.20000000298023224,
                                             0.20000000298023224,
                                             0.20000000298023224,
                                             0.20000000298023224,
@@ -200,8 +153,8 @@
                                             0.20000000298023224
                                         ],
                                         "is_looping": true,
-                                        "startTime": 846.38671875,
-                                        "totalDuration": 1.0
+                                        "startTime": 1243.8199462890625,
+                                        "totalDuration": 1.2000000476837158
                                     },
                                     "collider_data": null,
                                     "scale": {
@@ -664,6 +617,24 @@
                             }
                         },
                         {
+                            "first": "Hit",
+                            "second": {
+                                "animation": null,
+                                "audio": null,
+                                "name": "Hit",
+                                "on_enter_callback": {
+                                    "name": "CatMonkeyStateCallbacks::hit_on_enter"
+                                },
+                                "on_exit_callback": {
+                                    "name": ""
+                                },
+                                "on_update_callback": {
+                                    "name": ""
+                                },
+                                "property_animation": null
+                            }
+                        },
+                        {
                             "first": "Idle",
                             "second": {
                                 "animation": {
@@ -717,7 +688,7 @@
                                             0.20000000298023224
                                         ],
                                         "is_looping": true,
-                                        "startTime": 846.38671875,
+                                        "startTime": 1243.8199462890625,
                                         "totalDuration": 2.8000004291534424
                                     },
                                     "collider_data": null,
@@ -1192,7 +1163,7 @@
             },
             {
                 "data": {
-                    "drawIndex": 12,
+                    "drawIndex": 22,
                     "tex_coords_list": [
                         [
                             {
@@ -1633,7 +1604,7 @@
             {
                 "data": {
                     "position": {
-                        "x": 513.0037231445313,
+                        "x": 510.7281494140625,
                         "y": 321.425537109375
                     },
                     "rotation": 0.0,
