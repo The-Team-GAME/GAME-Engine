@@ -38,7 +38,7 @@ class GameplayState : public Engine::Scene
   // UI entity IDs
   Engine::ECS::EntityID pause_button_id = 0;
   Engine::ECS::EntityID tips_button_id = 0;
-  Engine::ECS::EntityID upgrade_btn_id_[4] = {0, 0, 0, 0};
+  Engine::ECS::EntityID upgrade_btn_id_[4] = { 0, 0, 0, 0 };
   int current_upgrade_threshold_ = 2;
   int current_kills_for_upgrade_ = 0;
   float upgrade_btn_anim_time_ = 0.0f;
@@ -141,15 +141,15 @@ public:
         .add_component<Components::RuntimeOnly>()
         .add_to_layer("main_menu_4");
       return e.get_id();
-    };
+      };
     upgrade_btn_id_[0] = make_upgrade_btn("images/Upgrades/skills_upgrade_2.png", 64, 11);
     upgrade_btn_id_[1] = make_upgrade_btn("images/Upgrades/skills_upgrade_3.png", 64, 12);
     upgrade_btn_id_[2] = make_upgrade_btn("images/Upgrades/skills_upgrade_4.png", 64, 13);
     upgrade_btn_id_[3] = make_upgrade_btn("images/Upgrades/skills_upgrade_5.png", 64, 14);
     Engine::UpgradeUIStateMachine::instance().set_upgrade_button(upgrade_btn_id_[0]);
-    Engine::UpgradeUIStateMachine::instance().set_picker_open_callback([](){
+    Engine::UpgradeUIStateMachine::instance().set_picker_open_callback([]() {
       Engine::SceneManager::push_scene("UpgradePickerState");
-    });
+      });
 
   };
 
@@ -166,7 +166,7 @@ public:
     // Pause button click detection (screen coords)
     if (pause_button_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(pause_button_id))) {
       auto* pause_transform = Engine::ECS::Entity(pause_button_id).get_component<Components::Transform2D>();
-      auto* pause_ui        = Engine::ECS::Entity(pause_button_id).get_component<Components::UI>();
+      auto* pause_ui = Engine::ECS::Entity(pause_button_id).get_component<Components::UI>();
       if (pause_transform && pause_ui) {
         auto screen_pos = Engine::Systems::compute_ui_position(*pause_ui, *pause_transform);
         float half_w = pause_transform->scale.x / 2.0f;
@@ -187,7 +187,7 @@ public:
     // Tips button click detection (screen coords)
     if (tips_button_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(tips_button_id))) {
       auto* tips_transform = Engine::ECS::Entity(tips_button_id).get_component<Components::Transform2D>();
-      auto* tips_ui        = Engine::ECS::Entity(tips_button_id).get_component<Components::UI>();
+      auto* tips_ui = Engine::ECS::Entity(tips_button_id).get_component<Components::UI>();
       if (tips_transform && tips_ui) {
         auto screen_pos = Engine::Systems::compute_ui_position(*tips_ui, *tips_transform);
         float half_w = tips_transform->scale.x / 2.0f;
@@ -246,7 +246,8 @@ public:
       upgrade_btn_anim_time_ += Engine::Time::get_unscaled_fixed_dt();
       int anim_frame = static_cast<int>(upgrade_btn_anim_time_ * anim_fps) % num_anim_frames;
       display_frame = num_fill_frames + anim_frame;
-    } else {
+    }
+    else {
       upgrade_btn_anim_time_ = 0.0f;
       display_frame = kills;
     }
@@ -263,13 +264,15 @@ public:
         if (i == threshold_idx) {
           if (col) col->a = 1.0f;
           if (atlas) atlas->drawIndex = display_frame;
-        } else {
+        }
+        else {
           if (col) col->a = 0.0f;
         }
       }
 
       Engine::UpgradeUIStateMachine::instance().set_upgrade_button(upgrade_btn_id_[threshold_idx]);
-    } else if (kills >= threshold) {
+    }
+    else if (kills >= threshold) {
       auto entity = Engine::ECS::Entity(upgrade_btn_id_[threshold_idx]);
       auto* atlas = entity.get_component<Components::TextureAtlas>();
       if (atlas) atlas->drawIndex = display_frame;
