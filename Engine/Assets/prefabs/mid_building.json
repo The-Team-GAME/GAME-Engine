@@ -1,0 +1,49 @@
+{
+    "data": {
+        "components": [
+            {
+                "data": {
+                    "child_ids": [
+                        4289
+                    ]
+                },
+                "type": "Components::Children"
+            },
+            {
+                "data": {
+                    "a": 0.8117647171020508,
+                    "b": 1.0,
+                    "g": 0.8352941274642944,
+                    "r": 0.8274509906768799
+                },
+                "type": "Components::Color"
+            },
+            {
+                "data": {
+                    "path": "images/Background/BuildingsCombined.png"
+                },
+                "type": "Components::Texture"
+            },
+            {
+                "data": {
+                    "position": {
+                        "x": 7523.8369140625,
+                        "y": 297.64599609375
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 11157.751953125,
+                        "y": 1068.01953125
+                    }
+                },
+                "type": "Components::Transform2D"
+            }
+        ],
+        "filepath": "prefabs/mid_building.json",
+        "layers": [
+            "background"
+        ],
+        "uuid": "1d822860-c3ec-4034f-9850-2e4c270bc1bf"
+    },
+    "dataType": "Prefab"
+}

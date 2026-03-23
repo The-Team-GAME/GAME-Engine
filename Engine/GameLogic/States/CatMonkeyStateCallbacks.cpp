@@ -9,6 +9,7 @@
 
 #include "pch.h"
 #include <algorithm>
+#include <limits>
 #include <queue>
 #include <random>
 
@@ -17,6 +18,7 @@
 #include "../Components/CatMonkeySummonHealthBarComponent.h"
 #include "../Components/CatMonkeySummonWaveHealthBarsComponent.h"
 #include "../../Engine/Reflection/ReflectionLibrary.h"
+#include "../../Engine/Graphics/Renderer.h"
 
 namespace CatMonkeyStateCallbacks
 {
@@ -27,12 +29,62 @@ namespace CatMonkeyStateCallbacks
     // Camera entity names used in LevelTwo.
     static constexpr const char* k_player_camera_name = "Player_Camera";
     static constexpr const char* k_cat_monkey_camera_name = "Cat_Monkey";
+    static constexpr const char* k_centered_camera_name = "Centered";
+
+    // Background layer entity names used in LevelTwo.
+    static constexpr const char* k_cityscape_layer_name = "cityscape";
+    static constexpr const char* k_minicity_layer_name = "minicity";
+    static constexpr const char* k_foreground_city_layer_name = "foreground_city";
+    static constexpr const char* k_background_city_layer_name = "background_city";
+
+    // Scroll speeds (world units / sec). Tuned for LevelTwo scale.
+    static constexpr float k_cityscape_speed = 200.0f;
+    static constexpr float k_minicity_speed = 200.0f;
+    static constexpr float k_foreground_city_speed = 180.0f;   // Slightly slower than cityscape
+    static constexpr float k_background_city_speed = 350.0f;   // Blows past faster than everything else
 
     // How long to keep the Cat_Monkey camera active after the summon animation
     // completes and enemies are spawned, so the player can see the wave appear.
     static constexpr float k_post_summon_camera_linger_sec = 1.0f;
 
+    // Summon5 cinematic: cut to Centered camera and zoom out to show the
+    // scrolling city layers (train background effect).
+    static constexpr float k_summon5_cinematic_duration_sec = 3.5f;
+    static constexpr float k_summon5_target_zoom = 0.65f; // smaller = more zoomed out
+
     inline Engine::ECS::Entity spawn_enemy_from_prefab(const std::string& prefab_path, const Math::Vec2D& pos);
+    inline Engine::ECS::Entity find_camera_entity_by_name(const char* name);
+
+    inline bool get_tilemap_world_bounds(Math::Vec2D& min, Math::Vec2D& max)
+    {
+      min = { std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
+      max = { std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest() };
+      bool found_any = false;
+
+      for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
+        auto* tilemap = entity.get_component<Components::TileMap>();
+        if (!tilemap || tilemap->is_empty()) {
+          continue;
+        }
+
+        int grid_min_x, grid_min_y, grid_max_x, grid_max_y;
+        tilemap->get_bounds(grid_min_x, grid_min_y, grid_max_x, grid_max_y);
+
+        const float min_world_x = grid_min_x * tilemap->tile_size.x + tilemap->grid_offset.x;
+        const float min_world_y = grid_min_y * tilemap->tile_size.y + tilemap->grid_offset.y;
+        const float max_world_x = (grid_max_x + 1) * tilemap->tile_size.x + tilemap->grid_offset.x;
+        const float max_world_y = (grid_max_y + 1) * tilemap->tile_size.y + tilemap->grid_offset.y;
+
+        if (min_world_x < min.x) min.x = min_world_x;
+        if (min_world_y < min.y) min.y = min_world_y;
+        if (max_world_x > max.x) max.x = max_world_x;
+        if (max_world_y > max.y) max.y = max_world_y;
+
+        found_any = true;
+      }
+
+      return found_any;
+    }
 
     struct BossRuntime
     {
@@ -65,7 +117,245 @@ namespace CatMonkeyStateCallbacks
       // Camera override during summoning.
       bool camera_override_active = false;
       float camera_override_until = 0.0f;
+
+      enum class CameraOverrideMode : uint8_t
+      {
+        CatMonkey,
+        Centered
+      };
+      CameraOverrideMode camera_override_mode = CameraOverrideMode::CatMonkey;
+
+      // Summon5 cinematic zoom (drives Centered camera Transform2D.scale.x).
+      bool summon5_cinematic_active = false;
+      float summon5_cinematic_start_time = 0.0f;
+      float summon5_cinematic_end_time = 0.0f;
+      float summon5_zoom_start = 1.0f;
+      Math::Vec2D summon5_pos_start{};
+      Math::Vec2D summon5_pos_target{};
+      float summon5_rot_start = 0.0f;
+      float summon5_rot_target = 0.0f;
+
+      // City background scroll (enabled when Summon5 is reached).
+      bool city_layers_hidden = false;
+      bool city_scroll_enabled = false;
+      bool city_scroll_initialized = false;
+      float cityscape_start_x = 0.0f;
+      float minicity_start_x = 0.0f;
+      float foreground_city_start_x = 0.0f;
+      float background_city_start_x = 0.0f;
+
+      // Debug (one-time logs; avoids per-frame spam).
+      bool debug_logged_summon5_enter = false;
+      bool debug_logged_city_init = false;
+      bool debug_logged_centered_camera_missing = false;
+      bool debug_logged_tilemap_bounds_missing = false;
     };
+
+    inline Engine::ECS::Entity find_entity_by_name_with_transform(const char* name)
+    {
+      Engine::ECS::Entity found;
+      if (!name || *name == '\0') {
+        return found;
+      }
+
+      Engine::ECS::for_each_entity_with<Components::Transform2D>(
+        [&](Engine::ECS::Entity e)
+        {
+          if (found.is_valid()) {
+            return;
+          }
+          if (e.get_name() == name) {
+            found = e;
+          }
+        });
+
+      return found;
+    }
+
+    inline void set_entity_alpha_if_present(Engine::ECS::Entity entity, float alpha)
+    {
+      if (auto* color = entity.get_component<Components::Color>()) {
+        color->a = std::clamp(alpha, 0.0f, 1.0f);
+      }
+    }
+
+    inline void detach_from_parent_if_present(Engine::ECS::Entity entity)
+    {
+      if (entity.is_valid() && entity.has_component<Components::Parent>()) {
+        entity.remove_component<Components::Parent>();
+      }
+    }
+
+    inline void ensure_city_layers_hidden(BossRuntime& rt)
+    {
+      if (rt.city_layers_hidden) {
+        return;
+      }
+
+      // Hide the city layers until Summon5 is reached.
+      set_entity_alpha_if_present(find_entity_by_name_with_transform(k_cityscape_layer_name), 0.0f);
+      set_entity_alpha_if_present(find_entity_by_name_with_transform(k_minicity_layer_name), 0.0f);
+      set_entity_alpha_if_present(find_entity_by_name_with_transform(k_foreground_city_layer_name), 0.0f);
+      set_entity_alpha_if_present(find_entity_by_name_with_transform(k_background_city_layer_name), 0.0f);
+      rt.city_layers_hidden = true;
+    }
+
+    inline void init_city_scroll_if_needed(BossRuntime& rt)
+    {
+      if (!rt.city_scroll_enabled || rt.city_scroll_initialized) {
+        return;
+      }
+
+      Math::Vec2D min_bounds, max_bounds;
+      if (!get_tilemap_world_bounds(min_bounds, max_bounds)) {
+        if (!rt.debug_logged_tilemap_bounds_missing) {
+          Log::warning("CatMonkey: city scroll enabled but no tilemap bounds were found (no TileMap entities?).");
+          rt.debug_logged_tilemap_bounds_missing = true;
+        }
+        return;
+      }
+
+      if (!rt.debug_logged_city_init) {
+        Log::info("CatMonkey: initializing Summon5 city scroll. Tilemap bounds min=({},{}), max=({},{}).", min_bounds.x, min_bounds.y, max_bounds.x, max_bounds.y);
+        rt.debug_logged_city_init = true;
+      }
+
+      auto init_layer = [&](const char* layer_name, float& out_start_x)
+      {
+        Engine::ECS::Entity e = find_entity_by_name_with_transform(layer_name);
+        if (!e.is_valid()) {
+          Log::warning("CatMonkey: city layer entity not found (missing Transform2D or name mismatch): '{}'", layer_name ? layer_name : "<null>");
+          return;
+        }
+
+        // Detach so each prefab/layer can move independently.
+        detach_from_parent_if_present(e);
+
+        // Make visible.
+        set_entity_alpha_if_present(e, 1.0f);
+
+        auto* t = e.get_component<Components::Transform2D>();
+        if (!t) {
+          return;
+        }
+
+        const float half_w = std::max(0.0f, t->scale.x) * 0.5f;
+        // Start just off the left edge so wide images don't instantly
+        // satisfy the "hit right edge" reset condition.
+        out_start_x = min_bounds.x - half_w;
+        t->position.x = out_start_x;
+
+        // Helpful one-time snapshot for debugging layer sizing/placement.
+        Log::info("CatMonkey: city layer '{}' init pos.x={} scale=({},{}).", layer_name, t->position.x, t->scale.x, t->scale.y);
+      };
+
+      init_layer(k_cityscape_layer_name, rt.cityscape_start_x);
+      init_layer(k_minicity_layer_name, rt.minicity_start_x);
+      init_layer(k_foreground_city_layer_name, rt.foreground_city_start_x);
+      init_layer(k_background_city_layer_name, rt.background_city_start_x);
+
+      rt.city_scroll_initialized = true;
+    }
+
+    inline void tick_city_scroll_if_enabled(BossRuntime& rt)
+    {
+      if (!rt.city_scroll_enabled) {
+        return;
+      }
+
+      init_city_scroll_if_needed(rt);
+      if (!rt.city_scroll_initialized) {
+        return;
+      }
+
+      Math::Vec2D min_bounds, max_bounds;
+      if (!get_tilemap_world_bounds(min_bounds, max_bounds)) {
+        return;
+      }
+
+      const float dt = Engine::Time::get_fixed_dt();
+      if (dt <= 0.0f) {
+        return;
+      }
+
+      auto tick_layer = [&](const char* layer_name, float speed, float start_x, bool reset_at_edge)
+      {
+        Engine::ECS::Entity e = find_entity_by_name_with_transform(layer_name);
+        if (!e.is_valid()) {
+          return;
+        }
+
+        auto* t = e.get_component<Components::Transform2D>();
+        if (!t) {
+          return;
+        }
+
+        t->position.x += speed * dt;
+
+        const float half_w = std::max(0.0f, t->scale.x) * 0.5f;
+        const float right_edge = t->position.x + half_w;
+        const float left_edge = t->position.x - half_w;
+
+        if (reset_at_edge) {
+          // First two images: reset when they hit the edge of the tilemap.
+          if (right_edge >= max_bounds.x) {
+            t->position.x = start_x;
+          }
+        }
+        else {
+          // Last two images: reset only once fully out of the tilemap.
+          if (left_edge >= max_bounds.x) {
+            t->position.x = start_x;
+          }
+        }
+      };
+
+      tick_layer(k_cityscape_layer_name, k_cityscape_speed, rt.cityscape_start_x, true);
+      tick_layer(k_minicity_layer_name, k_minicity_speed, rt.minicity_start_x, true);
+      tick_layer(k_foreground_city_layer_name, k_foreground_city_speed, rt.foreground_city_start_x, false);
+      tick_layer(k_background_city_layer_name, k_background_city_speed, rt.background_city_start_x, false);
+    }
+
+    inline void tick_summon5_cinematic_camera(BossRuntime& rt)
+    {
+      if (!rt.summon5_cinematic_active) {
+        return;
+      }
+
+      const float now = Engine::Time::get_time();
+      if (now >= rt.summon5_cinematic_end_time) {
+        rt.summon5_cinematic_active = false;
+        return;
+      }
+
+      Engine::ECS::Entity centered = find_camera_entity_by_name(k_centered_camera_name);
+      if (!centered.is_valid()) {
+        if (!rt.debug_logged_centered_camera_missing) {
+          Log::warning("CatMonkey: Summon5 cinematic active but camera entity '{}' not found.", k_centered_camera_name);
+          rt.debug_logged_centered_camera_missing = true;
+        }
+        return;
+      }
+
+      auto* t = centered.get_component<Components::Transform2D>();
+      if (!t) {
+        return;
+      }
+
+      const float dur = std::max(0.001f, rt.summon5_cinematic_end_time - rt.summon5_cinematic_start_time);
+      float u = (now - rt.summon5_cinematic_start_time) / dur;
+      u = std::clamp(u, 0.0f, 1.0f);
+      // Smoothstep easing.
+      u = u * u * (3.0f - 2.0f * u);
+
+      const float target_zoom = std::clamp(k_summon5_target_zoom, 0.1f, 10.0f);
+      const float z = rt.summon5_zoom_start + (target_zoom - rt.summon5_zoom_start) * u;
+
+      t->position = rt.summon5_pos_start + (rt.summon5_pos_target - rt.summon5_pos_start) * u;
+      t->rotation = rt.summon5_rot_start + (rt.summon5_rot_target - rt.summon5_rot_start) * u;
+      t->scale.x = z;
+      t->scale.y = z;
+    }
 
     struct SpawnSetEntry
     {
@@ -161,6 +451,14 @@ namespace CatMonkeyStateCallbacks
     inline void activate_cat_monkey_camera_if_present()
     {
       Engine::ECS::Entity cam = find_camera_entity_by_name(k_cat_monkey_camera_name);
+      if (cam.is_valid()) {
+        set_active_camera_entity(cam);
+      }
+    }
+
+    inline void activate_centered_camera_if_present()
+    {
+      Engine::ECS::Entity cam = find_camera_entity_by_name(k_centered_camera_name);
       if (cam.is_valid()) {
         set_active_camera_entity(cam);
       }
@@ -1064,6 +1362,10 @@ namespace CatMonkeyStateCallbacks
 
     // Ensure we don't instantly start summoning on level start.
     BossRuntime& rt = runtime_for(entity);
+
+    // Prep city layers (hide until Summon5 is reached).
+    ensure_city_layers_hidden(rt);
+
     if (!rt.summon_pacing_initialized) {
       rt.summon_pacing_initialized = true;
       rt.next_summon_allowed_time = Engine::Time::get_time() + summon_cooldown(entity);
@@ -1091,6 +1393,9 @@ namespace CatMonkeyStateCallbacks
 
     BossRuntime& rt = runtime_for(entity);
 
+    // If Summon5 has been reached, keep scrolling city layers even while idling.
+    tick_city_scroll_if_enabled(rt);
+
     // If we are in a post-summon camera override window, keep the Cat_Monkey camera active.
     // Once the timer elapses, restore the player camera.
     const float now = Engine::Time::get_time();
@@ -1103,11 +1408,19 @@ namespace CatMonkeyStateCallbacks
 
     if (rt.camera_override_active) {
       if (now < rt.camera_override_until) {
-        activate_cat_monkey_camera_if_present();
+        if (rt.camera_override_mode == BossRuntime::CameraOverrideMode::Centered) {
+          activate_centered_camera_if_present();
+          tick_summon5_cinematic_camera(rt);
+        }
+        else {
+          activate_cat_monkey_camera_if_present();
+        }
       }
       else {
+        // End of override window: restore the normal player camera.
         rt.camera_override_active = false;
         rt.camera_override_until = 0.0f;
+        rt.summon5_cinematic_active = false;
         activate_player_camera_if_present();
       }
     }
@@ -1115,7 +1428,6 @@ namespace CatMonkeyStateCallbacks
     // Summon5 staggered spawns continue while the wave is active.
     if (rt.active_wave_index == 4 && rt.summon5_timed_spawning) {
       if (!rt.summon5_pending_prefabs.empty() && !rt.summon5_spawn_positions.empty()) {
-        const float now = Engine::Time::get_time();
         if (now >= rt.summon5_next_spawn_time && rt.summon5_next_index < rt.summon5_pending_prefabs.size()) {
           auto& summons = rt.wave_summons[4];
           const size_t i = rt.summon5_next_index;
@@ -1155,7 +1467,6 @@ namespace CatMonkeyStateCallbacks
         }
 
         // Pull the next spawn earlier (never later) so the speed-up feels immediate.
-        const float now = Engine::Time::get_time();
         const float earliest_next = now + rt.summon5_current_spawn_interval_sec;
         if (rt.summon5_next_spawn_time > earliest_next) {
           rt.summon5_next_spawn_time = earliest_next;
@@ -1243,6 +1554,8 @@ namespace CatMonkeyStateCallbacks
     // Keep it active at least through the summon animation.
     rt.camera_override_active = true;
     rt.camera_override_until = std::numeric_limits<float>::infinity();
+    rt.camera_override_mode = BossRuntime::CameraOverrideMode::CatMonkey;
+    rt.summon5_cinematic_active = false;
     activate_cat_monkey_camera_if_present();
   }
 
@@ -1250,7 +1563,18 @@ namespace CatMonkeyStateCallbacks
   inline void summon2_on_enter(Engine::ECS::Entity entity) { summon_impl_on_enter(entity, 1); }
   inline void summon3_on_enter(Engine::ECS::Entity entity) { summon_impl_on_enter(entity, 2); }
   inline void summon4_on_enter(Engine::ECS::Entity entity) { summon_impl_on_enter(entity, 3); }
-  inline void summon5_on_enter(Engine::ECS::Entity entity) { summon_impl_on_enter(entity, 4); }
+  inline void summon5_on_enter(Engine::ECS::Entity entity)
+  {
+    summon_impl_on_enter(entity, 4);
+    BossRuntime& rt = runtime_for(entity);
+    rt.city_scroll_enabled = true;
+    // Note: initialization + visibility happens lazily on the next tick.
+
+    if (!rt.debug_logged_summon5_enter) {
+      Log::info("CatMonkey: entered Summon5 state. Enabling city scroll + Centered camera cinematic.");
+      rt.debug_logged_summon5_enter = true;
+    }
+  }
 
   inline void summon_impl_on_update(Engine::ECS::Entity entity)
   {
@@ -1270,6 +1594,9 @@ namespace CatMonkeyStateCallbacks
     }
 
     BossRuntime& rt = runtime_for(entity);
+
+    // If Summon5 has been reached, scroll the city layers during summon animations too.
+    tick_city_scroll_if_enabled(rt);
     update_wave_healthbars_component(entity);
 
     if (!rt.summon_pending) {
@@ -1287,13 +1614,58 @@ namespace CatMonkeyStateCallbacks
 
     // Enforce chill time before the next summon can begin.
     // (Cooldown starts after the summon animation finishes.)
-    {
-      const float now = Engine::Time::get_time();
-      rt.next_summon_allowed_time = now + summon_cooldown(entity);
+    const float now = Engine::Time::get_time();
+    rt.next_summon_allowed_time = now + summon_cooldown(entity);
 
-      // Camera: after the summon animation completes and enemies are spawned,
-      // linger briefly on the Cat_Monkey camera so the player can see the wave.
+    if (rt.pending_summon_index == 4)
+    {
+      // Summon5: switch to the Centered camera and slowly zoom out so the
+      // city layers are visible and feel like a train background passing by.
+      Engine::ECS::Entity centered = find_camera_entity_by_name(k_centered_camera_name);
+      Math::Vec2D target_pos{};
+      float target_rot = 0.0f;
+      if (centered.is_valid()) {
+        if (auto* t = centered.get_component<Components::Transform2D>()) {
+          target_pos = t->position;
+          target_rot = t->rotation;
+        }
+      }
+
+      const Engine::Graphics::Camera current = Engine::Graphics::get_camera();
+      if (centered.is_valid()) {
+        if (auto* t = centered.get_component<Components::Transform2D>()) {
+          // Start from the current render camera state to avoid a snap, then
+          // ease toward the authored Centered camera transform while zooming out.
+          t->position = current.position;
+          t->rotation = current.rotation;
+          t->scale.x = current.zoom;
+          t->scale.y = current.zoom;
+        }
+      }
+
       rt.camera_override_active = true;
+      rt.camera_override_mode = BossRuntime::CameraOverrideMode::Centered;
+      // Keep Centered camera strictly active after Summon5 (no snap back to player).
+      rt.camera_override_until = std::numeric_limits<float>::infinity();
+
+      rt.summon5_cinematic_active = true;
+      rt.summon5_cinematic_start_time = now;
+      rt.summon5_cinematic_end_time = now + k_summon5_cinematic_duration_sec;
+      rt.summon5_zoom_start = current.zoom;
+      rt.summon5_pos_start = current.position;
+      rt.summon5_rot_start = current.rotation;
+      rt.summon5_pos_target = target_pos;
+      rt.summon5_rot_target = target_rot;
+
+      activate_centered_camera_if_present();
+      tick_summon5_cinematic_camera(rt);
+    }
+    else
+    {
+      // Other summons: linger briefly on the Cat_Monkey camera so the player
+      // can see the wave appear.
+      rt.camera_override_active = true;
+      rt.camera_override_mode = BossRuntime::CameraOverrideMode::CatMonkey;
       rt.camera_override_until = now + k_post_summon_camera_linger_sec;
       activate_cat_monkey_camera_if_present();
     }

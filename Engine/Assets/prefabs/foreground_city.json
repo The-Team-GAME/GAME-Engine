@@ -1,0 +1,50 @@
+{
+    "data": {
+        "components": [
+            {
+                "data": {
+                    "child_ids": [
+                        4289
+                    ]
+                },
+                "type": "Components::Children"
+            },
+            {
+                "data": {
+                    "a": 1.0,
+                    "b": 0.737937331199646,
+                    "g": 0.737937331199646,
+                    "r": 0.906862735748291
+                },
+                "type": "Components::Color"
+            },
+            {
+                "data": {
+                    "path": "images/Background/MidBuildings.png"
+                },
+                "type": "Components::Texture"
+            },
+            {
+                "data": {
+                    "position": {
+                        "x": 7544.7255859375,
+                        "y": -1109.0797119140625
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 11180.091796875,
+                        "y": 3881.4716796875
+                    }
+                },
+                "type": "Components::Transform2D"
+            }
+        ],
+        "filepath": "prefabs/foreground_city.json",
+        "layers": [
+            "default",
+            "tilemap_background_near"
+        ],
+        "uuid": "9e0f4249-137b-40796-9c2e-079525131ade"
+    },
+    "dataType": "Prefab"
+}
