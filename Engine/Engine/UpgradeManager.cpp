@@ -81,11 +81,10 @@ namespace Engine
 
   int UpgradeManager::get_next_threshold() const
   {
-    auto& settings = FileIO::SettingsManager<FileIO::UpgradeSettings>::get();
-    return static_cast<int>(std::floor(
-      static_cast<float>(settings.base_point_threshold) *
-      std::pow(settings.threshold_scaling, static_cast<float>(picks_done_))
-    ));
+    if (picks_done_ == 0) return 2;
+    if (picks_done_ == 1) return 3;
+    if (picks_done_ == 2) return 4;
+    return 5;
   }
 
   int UpgradeManager::get_picks_done() const

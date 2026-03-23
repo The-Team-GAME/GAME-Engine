@@ -169,8 +169,8 @@ static void register_collision_callbacks()
         if (enemy_health->current_hp <= 0) {
           if (state_machine->get_current_state() != "Death") {
             state_machine->change_state("Death");
-            Engine::UpgradeManager::instance().add_points(50);
-            Log::info("Enemy killed! +50 upgrade points (total: {})", Engine::UpgradeManager::instance().get_points());
+            Engine::UpgradeManager::instance().add_points(1);
+            Log::info("Enemy killed! +1 upgrade point (total: {})", Engine::UpgradeManager::instance().get_points());
           }
         }
         else if (state_machine->get_current_state() != "Hit") {
