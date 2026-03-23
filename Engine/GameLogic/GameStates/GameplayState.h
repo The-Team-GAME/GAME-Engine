@@ -244,8 +244,13 @@ public:
     if (kills >= threshold) {
       float anim_fps = 10.0f;
       upgrade_btn_anim_time_ += Engine::Time::get_unscaled_fixed_dt();
-      int anim_frame = static_cast<int>(upgrade_btn_anim_time_ * anim_fps) % num_anim_frames;
-      display_frame = num_fill_frames + anim_frame;
+
+      // int anim_frame = static_cast<int>(upgrade_btn_anim_time_ * anim_fps) % num_anim_frames;
+      // display_frame = num_fill_frames + anim_frame;
+
+      // skip first frame of animation (the one with just the filled portion)
+      int anim_frame = static_cast<int>(upgrade_btn_anim_time_ * anim_fps) % (num_anim_frames - 1);
+      display_frame = num_fill_frames + 1 + anim_frame;
     }
     else {
       upgrade_btn_anim_time_ = 0.0f;
