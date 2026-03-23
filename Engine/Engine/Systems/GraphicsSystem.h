@@ -561,7 +561,10 @@ namespace Engine
 
         Log::info("camera shake accepted: trauma={}", trauma);
 
-        shake_trauma = std::min(1.0f, shake_trauma + trauma);
+        // Do not stack shakes from multiple simultaneous hits.
+        // We take the strongest requested shake instead of adding them up.
+        trauma = std::min(1.0f, trauma);
+        shake_trauma = std::max(shake_trauma, trauma);
       }
 
       static void unactivate_all_cameras() {

@@ -535,6 +535,7 @@ namespace PlayerStateCallbacks
   }
 
   inline void attack2_on_update(Engine::ECS::Entity entity) {
+    handle_cooldowns(entity);
     Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
     Components::Animation* animation = entity.get_component<Components::Animation>();
     assert(state_machine);
@@ -610,6 +611,7 @@ namespace PlayerStateCallbacks
   }
 
   inline void attack3_on_update(Engine::ECS::Entity entity) {
+    handle_cooldowns(entity);
     Components::Animation* animation = entity.get_component<Components::Animation>();
     assert(animation);
     if (animation->has_ended())
@@ -688,6 +690,7 @@ namespace PlayerStateCallbacks
 
   inline void uppercut_on_update(ECS::Entity entity)
   {
+    handle_cooldowns(entity);
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
 
@@ -724,6 +727,7 @@ namespace PlayerStateCallbacks
 
   inline void post_uppercut_on_update(ECS::Entity entity)
   {
+    handle_cooldowns(entity);
     Components::Animation* animation = entity.get_component<Components::Animation>();
     assert(animation);
     if (animation->has_ended())
@@ -760,6 +764,7 @@ namespace PlayerStateCallbacks
 
   inline void uppercut_falling_on_update(ECS::Entity entity)
   {
+    handle_cooldowns(entity);
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
     if (rigid->on_ground)
@@ -836,6 +841,7 @@ namespace PlayerStateCallbacks
 
   inline void pre_smash_on_update(ECS::Entity entity)
   {
+    handle_cooldowns(entity);
     Components::Animation* animation = entity.get_component<Components::Animation>();
     assert(animation);
     if (animation->has_ended())
@@ -868,6 +874,7 @@ namespace PlayerStateCallbacks
 
   inline void smash_on_update(ECS::Entity entity)
   {
+    handle_cooldowns(entity);
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
     if (rigid->on_ground)
@@ -911,6 +918,7 @@ namespace PlayerStateCallbacks
 
   inline void post_smash_on_update(ECS::Entity entity)
   {
+    handle_cooldowns(entity);
     Components::Animation* animation = entity.get_component<Components::Animation>();
     if (animation && animation->has_ended())
     {
