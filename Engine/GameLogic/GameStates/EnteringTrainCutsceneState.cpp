@@ -62,7 +62,7 @@ void EnteringTrainCutsceneState::init()
     // We switched into this cutscene via load_scene(), so there may be no
     // underlying gameplay scene to return to. Fall back to loading GameplayState.
     if (open_level_when_done && !next_level_to_open.empty()) {
-      GameplayState::set_pending_level_to_open(next_level_to_open);
+      Engine::LevelManager::set_pending_level_to_open(next_level_to_open);
     }
     Engine::SceneManager::load_scene("GameplayState");
     return;
@@ -87,7 +87,7 @@ void EnteringTrainCutsceneState::update()
     // Reload GameplayState and request the next level via its pending-level mechanism.
     // (SceneManager::load_scene clears LevelManager in GAME_BUILD.)
     if (open_level_when_done && !next_level_to_open.empty()) {
-      GameplayState::set_pending_level_to_open(next_level_to_open);
+      Engine::LevelManager::set_pending_level_to_open(next_level_to_open);
     }
     Engine::SceneManager::load_scene("GameplayState");
   };

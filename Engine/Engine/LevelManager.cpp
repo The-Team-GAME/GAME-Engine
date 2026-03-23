@@ -231,6 +231,10 @@ namespace {
 namespace Engine {
   namespace LevelManager {
 
+    namespace {
+      std::string g_pending_level_to_open;
+    }
+
     // Forward declarations
     void build_preloaded_snapshot(LevelState& state);
 
@@ -1105,6 +1109,19 @@ namespace Engine {
     void set_current_level_path(const std::string& path)
     {
       current_level_path = path;
+    }
+
+    void set_pending_level_to_open(const std::string& level_path)
+    {
+      g_pending_level_to_open = level_path;
+      Log::info("[LevelManager] Pending level set: {}", g_pending_level_to_open.empty() ? std::string("<empty>") : g_pending_level_to_open);
+    }
+
+    std::string consume_pending_level_to_open()
+    {
+      std::string out = std::move(g_pending_level_to_open);
+      g_pending_level_to_open.clear();
+      return out;
     }
 
     EntityList capture_world_entities()

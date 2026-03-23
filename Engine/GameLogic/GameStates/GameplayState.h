@@ -31,7 +31,7 @@
 
 class GameplayState : public Engine::Scene
 {
-  inline static std::string pending_level_to_open_{};
+  static constexpr const char* DEFAULT_LEVEL_PATH = "levels/LevelOneTestingExtra.json";
 
   static constexpr const char* GAMEPLAY_BGM_EVENT = "event:/BGM/LevelBGM";
   static constexpr const char* GAMEPLAY_BATTLECRY_EVENT = "event:/SFX/PlayerStartCry";
@@ -72,16 +72,18 @@ class GameplayState : public Engine::Scene
   }
 
 public:
-  static void set_pending_level_to_open(const std::string& level_path)
-  {
-    pending_level_to_open_ = level_path;
-  }
-
   void load() {
     current_upgrade_threshold_ = 2;
     current_kills_for_upgrade_ = 0;
     upgrade_btn_anim_time_ = 0.0f;
-    Engine::Resources::open_level("levels/LevelOneTestingExtra.json");
+    // If another state (e.g. cutscenes / portals) requested a specific level,
+    // honor it here. Otherwise, fall back to the default gameplay level.
+    const std::string pending = Engine::LevelManager::consume_pending_level_to_open();
+    const std::string level_to_open = pending.empty() ? DEFAULT_LEVEL_PATH : pending;
+    Log::info("[GameplayState] Opening level: {} (pending was: {})",
+      level_to_open,
+      pending.empty() ? std::string("<empty>") : pending);
+    Engine::Resources::open_level(level_to_open);
 
 
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();

@@ -33,7 +33,8 @@ void LevelTwoStartState::update()
 
   // Note: SceneManager::load_scene clears LevelManager in GAME_BUILD, so we must
   // request LevelTwo via GameplayState's pending-level mechanism.
-  GameplayState::set_pending_level_to_open(LEVEL_TWO_PATH);
+  Log::info("[LevelTwoStartState] Requesting LevelTwo via pending-level: {}", LEVEL_TWO_PATH);
+  Engine::LevelManager::set_pending_level_to_open(LEVEL_TWO_PATH);
   Engine::SceneManager::load_scene("GameplayState");
 }
 
