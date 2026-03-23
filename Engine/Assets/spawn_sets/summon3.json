@@ -1,0 +1,75 @@
+{
+    "data": {
+        "entities": [
+            {
+                "id": 1802,
+                "name": "slingshot_monkey",
+                "prefab": "prefabs/slingshot_monkey.json",
+                "prefab_id": "ba9299e0-0686-4084b-bb12-eef3031c8254",
+                "transform": {
+                    "position": {
+                        "x": 1015.4743041992188,
+                        "y": 364.6189880371094
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 250.0,
+                        "y": 250.0
+                    }
+                }
+            },
+            {
+                "id": 1803,
+                "name": "slingshot_monkey",
+                "prefab": "prefabs/slingshot_monkey.json",
+                "prefab_id": "ba9299e0-0686-4084b-bb12-eef3031c8254",
+                "transform": {
+                    "position": {
+                        "x": 773.3279418945313,
+                        "y": 360.41986083984375
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 250.0,
+                        "y": 250.0
+                    }
+                }
+            },
+            {
+                "id": 1804,
+                "name": "slingshot_monkey",
+                "prefab": "prefabs/slingshot_monkey.json",
+                "prefab_id": "ba9299e0-0686-4084b-bb12-eef3031c8254",
+                "transform": {
+                    "position": {
+                        "x": 244.24557495117188,
+                        "y": 357.62054443359375
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 250.0,
+                        "y": 250.0
+                    }
+                }
+            },
+            {
+                "id": 1805,
+                "name": "slingshot_monkey",
+                "prefab": "prefabs/slingshot_monkey.json",
+                "prefab_id": "ba9299e0-0686-4084b-bb12-eef3031c8254",
+                "transform": {
+                    "position": {
+                        "x": 31.492889404296875,
+                        "y": 357.6205139160156
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 250.0,
+                        "y": 250.0
+                    }
+                }
+            }
+        ]
+    },
+    "dataType": "EntitySelection"
+}

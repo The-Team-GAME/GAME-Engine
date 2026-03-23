@@ -13,8 +13,26 @@ namespace Components {
   struct CatMonkeyBoss
   {
     int minions_per_summon = 6;
+    // Optional per-wave overrides (0 = use minions_per_summon)
+    int summon1_minions = 0;
+    int summon2_minions = 0;
+    int summon3_minions = 0;
+    int summon4_minions = 0;
+    int summon5_minions = 0;
+
     float summon_cooldown = 6.0f;
+    // Summon5 special behavior: spawn one minion every N seconds.
+    float summon5_spawn_interval_sec = 3.0f;
     int damage_per_minion_death = 1;
+
+    // Optional per-wave spawn set JSON exported from the editor (Selection Export).
+    // When set, CatMonkeyStateCallbacks will spawn exactly what is listed in the file
+    // (prefab path + position), and will ignore marker/offset-based placement.
+    std::string summon1_spawn_set_json{};
+    std::string summon2_spawn_set_json{};
+    std::string summon3_spawn_set_json{};
+    std::string summon4_spawn_set_json{};
+    std::string summon5_spawn_set_json{};
 
     // Optional list of enemy prefab paths to summon for each summon state.
     // If empty, CatMonkeyStateCallbacks will use its built-in defaults.
@@ -43,7 +61,10 @@ namespace Components {
 } // namespace Components
 
 REGISTER_COMPONENT(Components::CatMonkeyBoss,
-  minions_per_summon, summon_cooldown, damage_per_minion_death,
+  minions_per_summon,
+  summon1_minions, summon2_minions, summon3_minions, summon4_minions, summon5_minions,
+  summon_cooldown, summon5_spawn_interval_sec, damage_per_minion_death,
+  summon1_spawn_set_json, summon2_spawn_set_json, summon3_spawn_set_json, summon4_spawn_set_json, summon5_spawn_set_json,
   summon1_prefabs, summon2_prefabs, summon3_prefabs, summon4_prefabs, summon5_prefabs,
   summon1_spawn_marker_prefix, summon2_spawn_marker_prefix, summon3_spawn_marker_prefix, summon4_spawn_marker_prefix, summon5_spawn_marker_prefix,
   summon1_spawn_offsets, summon2_spawn_offsets, summon3_spawn_offsets, summon4_spawn_offsets, summon5_spawn_offsets)

@@ -58,6 +58,7 @@ namespace Engine::Systems
 
   private:
     static constexpr int kAtlasFrameCount = 11;
+    static constexpr int kBlankAtlasIndex = 5; // Matches Enemy_HealthBar.json "Blank".
 
     static std::array<Math::Vec2D, 4> tex_coords_for_index(int atlas_index)
     {
@@ -107,20 +108,15 @@ namespace Engine::Systems
       bool cleared,
       float cleared_time)
     {
-      if (!spawned) {
-        return;
-      }
-
       int atlas_index = 0;
       if (cleared) {
         const float dt = Engine::Time::get_time() - cleared_time;
-        if (death_anim_done(dt)) {
-          return;
-        }
-        atlas_index = death_frame_index(dt);
+        atlas_index = death_anim_done(dt) ? kBlankAtlasIndex : death_frame_index(dt);
       }
       else {
-        atlas_index = hp_frame_index(current_hp, max_hp);
+        // Boss wave bars should all start at state "1" (full) until they are
+        // actually spawned and begin taking damage.
+        atlas_index = spawned ? hp_frame_index(current_hp, max_hp) : 0;
       }
 
       Engine::Graphics::draw_subtexture_ui(tex, tex_coords_for_index(atlas_index), pos, size, 0.0f, color);

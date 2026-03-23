@@ -8,10 +8,15 @@
 //-----------------------------------------------------------------------------------
 
 #include "pch.h"
+#include <algorithm>
+#include <queue>
+#include <random>
+
 #include "../Components/EnemyHealthComponent.h"
 #include "../Components/CatMonkeyBossComponent.h"
 #include "../Components/CatMonkeySummonHealthBarComponent.h"
 #include "../Components/CatMonkeySummonWaveHealthBarsComponent.h"
+#include "../../Engine/Reflection/ReflectionLibrary.h"
 
 namespace CatMonkeyStateCallbacks
 {
@@ -33,6 +38,19 @@ namespace CatMonkeyStateCallbacks
       bool summon_pending = false;
       int pending_summon_index = 0;
       int active_wave_index = -1;
+
+      // Special handling for Summon5: spawn from the ceiling slowly.
+      bool summon5_timed_spawning = false;
+      std::vector<std::string> summon5_pending_prefabs{};
+      std::vector<Math::Vec2D> summon5_spawn_positions{};
+      size_t summon5_next_index = 0;
+      float summon5_next_spawn_time = 0.0f;
+    };
+
+    struct SpawnSetEntry
+    {
+      std::string prefab_path;
+      Math::Vec2D world_pos;
     };
 
     inline std::unordered_map<Engine::ECS::EntityID, BossRuntime>& runtimes()
@@ -57,6 +75,317 @@ namespace CatMonkeyStateCallbacks
     inline const Components::CatMonkeyBoss* get_cfg(Engine::ECS::Entity boss)
     {
       return boss.get_component<Components::CatMonkeyBoss>();
+    }
+
+    inline int minions_per_summon_for(Engine::ECS::Entity boss, int summon_index)
+    {
+      const Components::CatMonkeyBoss* cfg = get_cfg(boss);
+      if (!cfg) {
+        return 0;
+      }
+
+      int per_wave = 0;
+      if (summon_index == 0) per_wave = cfg->summon1_minions;
+      else if (summon_index == 1) per_wave = cfg->summon2_minions;
+      else if (summon_index == 2) per_wave = cfg->summon3_minions;
+      else if (summon_index == 3) per_wave = cfg->summon4_minions;
+      else if (summon_index == 4) per_wave = cfg->summon5_minions;
+
+      if (per_wave > 0) {
+        return per_wave;
+      }
+
+      return cfg->minions_per_summon;
+    }
+
+    inline float summon5_spawn_interval(Engine::ECS::Entity boss)
+    {
+      const Components::CatMonkeyBoss* cfg = get_cfg(boss);
+      if (!cfg) {
+        return 3.0f;
+      }
+      return std::max(0.1f, cfg->summon5_spawn_interval_sec);
+    }
+
+    inline const std::string& spawn_set_json_for(Engine::ECS::Entity boss, int summon_index)
+    {
+      static const std::string empty;
+      static const std::string default_1 = "spawn_sets/summon1.json";
+      static const std::string default_2 = "spawn_sets/summon2.json";
+      static const std::string default_3 = "spawn_sets/summon3.json";
+      static const std::string default_4 = "spawn_sets/summon4.json";
+      static const std::string default_5 = "spawn_sets/summon5.json";
+
+      const Components::CatMonkeyBoss* cfg = get_cfg(boss);
+      if (cfg) {
+        const std::string* configured = nullptr;
+        if (summon_index == 0) configured = &cfg->summon1_spawn_set_json;
+        else if (summon_index == 1) configured = &cfg->summon2_spawn_set_json;
+        else if (summon_index == 2) configured = &cfg->summon3_spawn_set_json;
+        else if (summon_index == 3) configured = &cfg->summon4_spawn_set_json;
+        else if (summon_index == 4) configured = &cfg->summon5_spawn_set_json;
+
+        if (configured && !configured->empty()) {
+          return *configured;
+        }
+      }
+
+      // Backwards-compat/default behavior: if the tuning fields aren't present in JSON
+      // (e.g. prefab saved before the editor shows them), fall back to the standard
+      // spawn_sets paths so Cat Monkey still uses the selection-export workflow.
+      if (summon_index == 1) return default_2;
+      if (summon_index == 2) return default_3;
+      if (summon_index == 3) return default_4;
+      if (summon_index == 4) return default_5;
+      if (summon_index == 0) return default_1;
+      return empty;
+    }
+
+    inline std::vector<SpawnSetEntry> load_spawn_set_entries(Engine::ECS::Entity boss, int summon_index)
+    {
+      std::vector<SpawnSetEntry> out;
+
+      const std::string& rel_path = spawn_set_json_for(boss, summon_index);
+      if (rel_path.empty()) {
+        return out;
+      }
+
+      auto read_file_to_string = [](const std::string& path) -> std::optional<std::string>
+      {
+        std::ifstream file(path, std::ios::in | std::ios::binary);
+        if (!file.is_open()) {
+          return std::nullopt;
+        }
+        std::ostringstream ss;
+        ss << file.rdbuf();
+        return ss.str();
+      };
+
+      const std::string full_path = (std::filesystem::path(Engine::Resources::resource_path) / rel_path).string();
+      if (!std::filesystem::exists(full_path)) {
+        Log::warning("CatMonkey: spawn set json does not exist: {} (full: {})", rel_path, full_path);
+        return out;
+      }
+      auto json_opt = read_file_to_string(full_path);
+      if (!json_opt.has_value()) {
+        Log::warning("CatMonkey: failed to read spawn set json file: {}", rel_path);
+        return out;
+      }
+
+      auto gv_opt = ReflectionLibrary::generic_value_from_json(json_opt.value());
+      if (!gv_opt.has_value() || !gv_opt->isObject()) {
+        Log::warning("CatMonkey: invalid spawn set json (parse/object): {}", rel_path);
+        return out;
+      }
+
+      const auto& root = gv_opt.value();
+      if (!root.has("data") || !root["data"].isObject()) {
+        Log::warning("CatMonkey: invalid spawn set json (missing data): {}", rel_path);
+        return out;
+      }
+
+      const auto& data = root["data"];
+      if (!data.has("entities") || !data["entities"].isArray()) {
+        Log::warning("CatMonkey: invalid spawn set json (missing entities[]): {}", rel_path);
+        return out;
+      }
+
+      const auto& entities = data["entities"].getArray();
+      out.reserve(entities.size());
+      for (const auto& e : entities)
+      {
+        if (!e.isObject()) {
+          continue;
+        }
+
+        if (!e.has("prefab") || !e["prefab"].isString()) {
+          continue;
+        }
+        const std::string prefab = e["prefab"].getString();
+        if (prefab.empty()) {
+          continue;
+        }
+
+        Math::Vec2D pos{ 0.0f, 0.0f };
+        if (e.has("transform") && e["transform"].isObject())
+        {
+          const auto& tr = e["transform"];
+          if (tr.has("position") && tr["position"].isObject())
+          {
+            const auto& p = tr["position"];
+            if (p.has("x")) {
+              if (p["x"].isDouble()) pos.x = static_cast<float>(p["x"].getDouble());
+              else if (p["x"].isInt()) pos.x = static_cast<float>(p["x"].getInt());
+            }
+            if (p.has("y")) {
+              if (p["y"].isDouble()) pos.y = static_cast<float>(p["y"].getDouble());
+              else if (p["y"].isInt()) pos.y = static_cast<float>(p["y"].getInt());
+            }
+          }
+        }
+
+        out.push_back({ prefab, pos });
+      }
+
+      if (out.empty()) {
+        Log::warning("CatMonkey: spawn set json parsed 0 entries: {}", rel_path);
+      }
+      else {
+        Log::info("CatMonkey: spawn set json loaded {} entries: {}", out.size(), rel_path);
+      }
+      return out;
+    }
+
+    inline bool summon5_has_more_to_spawn(const BossRuntime& rt)
+    {
+      if (rt.summon5_timed_spawning) {
+        return true;
+      }
+      return rt.summon5_next_index < rt.summon5_pending_prefabs.size();
+    }
+
+    inline Math::Vec2D summon5_spawn_pos_at(const BossRuntime& rt, size_t index)
+    {
+      if (rt.summon5_spawn_positions.empty()) {
+        return { 0.0f, 0.0f };
+      }
+      if (rt.summon5_spawn_positions.size() == rt.summon5_pending_prefabs.size() && index < rt.summon5_spawn_positions.size()) {
+        return rt.summon5_spawn_positions[index];
+      }
+      return rt.summon5_spawn_positions[index % rt.summon5_spawn_positions.size()];
+    }
+
+    struct Summon5SpawnItem
+    {
+      std::string prefab;
+      Math::Vec2D pos{ 0.0f, 0.0f };
+      bool has_pos = false;
+    };
+
+    inline uint32_t summon5_shuffle_seed(Engine::ECS::Entity boss)
+    {
+      // Seed per run, per boss instance; deterministic seeding isn't required for Summon5.
+      const uint64_t id = static_cast<uint64_t>(boss.get_id());
+      const uint64_t t = static_cast<uint64_t>(Engine::Time::get_time() * 1000.0f);
+      return static_cast<uint32_t>((id ^ (t + 0x9E3779B97F4A7C15ull)) & 0xFFFFFFFFu);
+    }
+
+    inline std::vector<Summon5SpawnItem> interleave_items_by_prefab(std::vector<Summon5SpawnItem> items, std::mt19937& rng)
+    {
+      if (items.size() <= 2) {
+        std::shuffle(items.begin(), items.end(), rng);
+        return items;
+      }
+
+      std::unordered_map<std::string, std::vector<Summon5SpawnItem>> buckets;
+      buckets.reserve(items.size());
+      for (auto& it : items) {
+        buckets[it.prefab].push_back(std::move(it));
+      }
+
+      for (auto& [_, bucket] : buckets) {
+        std::shuffle(bucket.begin(), bucket.end(), rng);
+      }
+
+      struct Node
+      {
+        size_t remaining = 0;
+        uint32_t tie = 0;
+        std::string key;
+      };
+
+      auto cmp = [](const Node& a, const Node& b)
+      {
+        if (a.remaining != b.remaining) return a.remaining < b.remaining; // max-heap by remaining
+        return a.tie < b.tie; // random-ish tiebreaker
+      };
+
+      std::priority_queue<Node, std::vector<Node>, decltype(cmp)> pq(cmp);
+      pq = decltype(pq)(cmp);
+
+      for (const auto& [key, bucket] : buckets) {
+        pq.push(Node{ bucket.size(), rng(), key });
+      }
+
+      std::vector<Summon5SpawnItem> out;
+      out.reserve(items.size());
+      std::string last_key;
+
+      while (!pq.empty())
+      {
+        Node first = pq.top();
+        pq.pop();
+
+        if (!last_key.empty() && first.key == last_key && !pq.empty())
+        {
+          Node second = pq.top();
+          pq.pop();
+
+          auto& b2 = buckets[second.key];
+          out.push_back(std::move(b2.back()));
+          b2.pop_back();
+          last_key = second.key;
+
+          if (!b2.empty()) {
+            pq.push(Node{ b2.size(), rng(), second.key });
+          }
+          // Put the first choice back unchanged.
+          pq.push(Node{ buckets[first.key].size(), rng(), first.key });
+        }
+        else
+        {
+          auto& b1 = buckets[first.key];
+          out.push_back(std::move(b1.back()));
+          b1.pop_back();
+          last_key = first.key;
+
+          if (!b1.empty()) {
+            pq.push(Node{ b1.size(), rng(), first.key });
+          }
+        }
+      }
+
+      return out;
+    }
+
+    inline void randomize_summon5_spawn_order(
+      Engine::ECS::Entity boss,
+      std::vector<std::string>& prefabs,
+      std::vector<Math::Vec2D>* positions)
+    {
+      if (prefabs.size() <= 1) {
+        return;
+      }
+
+      const bool lockstep = (positions != nullptr) && (positions->size() == prefabs.size());
+
+      std::mt19937 rng(summon5_shuffle_seed(boss));
+
+      std::vector<Summon5SpawnItem> items;
+      items.reserve(prefabs.size());
+
+      if (lockstep)
+      {
+        for (size_t i = 0; i < prefabs.size(); ++i) {
+          items.push_back(Summon5SpawnItem{ prefabs[i], (*positions)[i], true });
+        }
+      }
+      else
+      {
+        for (const auto& p : prefabs) {
+          items.push_back(Summon5SpawnItem{ p, { 0.0f, 0.0f }, false });
+        }
+      }
+
+      // Interleave by prefab key to reduce long streaks (e.g. slingshot -> slingshot -> slingshot).
+      items = interleave_items_by_prefab(std::move(items), rng);
+
+      for (size_t i = 0; i < items.size(); ++i) {
+        prefabs[i] = std::move(items[i].prefab);
+        if (lockstep) {
+          (*positions)[i] = items[i].pos;
+        }
+      }
     }
 
     inline int minions_per_summon(Engine::ECS::Entity boss)
@@ -152,9 +481,9 @@ namespace CatMonkeyStateCallbacks
 
     inline std::vector<Math::Vec2D> gather_spawn_positions_from_markers(const std::string& marker_prefix)
     {
-      std::vector<Math::Vec2D> positions;
+      std::vector<std::pair<std::string, Math::Vec2D>> named;
       if (marker_prefix.empty()) {
-        return positions;
+        return {};
       }
 
       Engine::ECS::for_each_entity_with<Components::Transform2D>(
@@ -170,32 +499,27 @@ namespace CatMonkeyStateCallbacks
             return;
           }
 
-          positions.push_back(t->position);
+          named.emplace_back(name, t->position);
         });
 
+      std::sort(named.begin(), named.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
+
+      std::vector<Math::Vec2D> positions;
+      positions.reserve(named.size());
+      for (auto& it : named) {
+        positions.push_back(it.second);
+      }
       return positions;
     }
 
     inline void apply_boss_damage_from_minion_death(Engine::ECS::Entity boss_entity, int damage)
     {
-      if (damage <= 0) {
-        return;
-      }
-
-      auto* boss_hp = boss_entity.get_component<Components::EnemyHealth>();
-      auto* boss_sm = boss_entity.get_component<Components::StateMachine>();
-
-      if (!boss_hp) {
-        return;
-      }
-
-      boss_hp->take_damage(damage);
-
-      if (boss_hp->current_hp <= 0 && boss_sm) {
-        if (boss_sm->get_current_state() != "Death") {
-          boss_sm->change_state("Death");
-        }
-      }
+      // IMPORTANT:
+      // Cat Monkey's 5 bottom healthbars represent summon-wave progress.
+      // Minion deaths should NOT reduce the boss' own EnemyHealth, otherwise
+      // the boss can enter Death as soon as the first wave clears.
+      (void)boss_entity;
+      (void)damage;
     }
 
     inline void process_tracked_minion_deaths(Engine::ECS::Entity boss_entity, std::vector<Engine::ECS::EntityID>& tracked_summons)
@@ -329,8 +653,17 @@ namespace CatMonkeyStateCallbacks
 
         auto& list = rt.wave_summons[static_cast<size_t>(idx)];
         cur = compute_summon_pool_current_hp(list);
+
         if (list.empty()) {
-          mark_wave_cleared(boss_entity, idx);
+          if (idx == 4) {
+            // Summon5 can have timed spawns; don't clear until all planned spawns are done.
+            if (!summon5_has_more_to_spawn(rt)) {
+              mark_wave_cleared(boss_entity, idx);
+            }
+          }
+          else {
+            mark_wave_cleared(boss_entity, idx);
+          }
         }
       };
 
@@ -415,33 +748,59 @@ namespace CatMonkeyStateCallbacks
         return;
       }
 
-      const int minion_count = minions_per_summon(entity);
-      if (minion_count <= 0) {
+      const std::string& spawn_set_path = spawn_set_json_for(entity, summon_index);
+      if (spawn_set_path.empty()) {
+        Log::warning("CatMonkey: Summon{} spawn_set_json is empty; using legacy spawn markers/offsets.", summon_index + 1);
+      }
+      else {
+        Log::info("CatMonkey: Summon{} spawn_set_json='{}'", summon_index + 1, spawn_set_path);
+      }
+
+      // If a spawn-set JSON file is configured, it overrides the legacy spawn logic.
+      const std::vector<SpawnSetEntry> spawn_set = load_spawn_set_entries(entity, summon_index);
+      if (!spawn_set_path.empty() && spawn_set.empty()) {
+        // Force visibility of misconfiguration: don't silently fall back.
+        Log::warning("CatMonkey: Summon{} spawn-set configured but produced 0 spawns; NOT falling back to legacy.", summon_index + 1);
         return;
       }
 
-      const auto& prefabs = summon_prefabs_for(entity, summon_index);
-      if (prefabs.empty()) {
-        Log::warning("CatMonkey: summon prefabs list is empty (configure Components::CatMonkeyBoss in JSON).");
-        return;
-      }
+      int minion_count = 0;
+      const std::vector<std::string>* prefabs_ptr = nullptr;
+      std::vector<Math::Vec2D> spawn_positions;
 
-      std::vector<Math::Vec2D> spawn_positions = gather_spawn_positions_from_markers(spawn_marker_prefix_for(entity, summon_index));
-      if (spawn_positions.empty()) {
-        const std::vector<Math::Vec2D>& offsets = spawn_offsets_for(entity, summon_index);
-        if (auto* t = entity.get_component<Components::Transform2D>()) {
-          if (!offsets.empty()) {
-            spawn_positions.reserve(offsets.size());
-            for (const Math::Vec2D& off : offsets) {
-              spawn_positions.push_back(t->position + off);
+      if (!spawn_set.empty()) {
+        minion_count = static_cast<int>(spawn_set.size());
+      }
+      else {
+        minion_count = minions_per_summon_for(entity, summon_index);
+        if (minion_count <= 0) {
+          return;
+        }
+
+        const auto& prefabs = summon_prefabs_for(entity, summon_index);
+        if (prefabs.empty()) {
+          Log::warning("CatMonkey: summon prefabs list is empty (configure Components::CatMonkeyBoss in JSON).");
+          return;
+        }
+        prefabs_ptr = &prefabs;
+
+        spawn_positions = gather_spawn_positions_from_markers(spawn_marker_prefix_for(entity, summon_index));
+        if (spawn_positions.empty()) {
+          const std::vector<Math::Vec2D>& offsets = spawn_offsets_for(entity, summon_index);
+          if (auto* t = entity.get_component<Components::Transform2D>()) {
+            if (!offsets.empty()) {
+              spawn_positions.reserve(offsets.size());
+              for (const Math::Vec2D& off : offsets) {
+                spawn_positions.push_back(t->position + off);
+              }
             }
           }
         }
-      }
 
-      if (spawn_positions.empty()) {
-        Log::warning("CatMonkey: no spawn positions available (no markers found and no spawn offsets configured).");
-        return;
+        if (spawn_positions.empty()) {
+          Log::warning("CatMonkey: no spawn positions available (no markers found and no spawn offsets configured). (You can also configure summonX_spawn_set_json to use editor-exported spawn sets.)");
+          return;
+        }
       }
 
       BossRuntime& rt = runtime_for(entity);
@@ -457,18 +816,104 @@ namespace CatMonkeyStateCallbacks
       rt.wave_cleared[static_cast<size_t>(summon_index)] = false;
       rt.active_wave_index = summon_index;
 
-      for (int i = 0; i < minion_count; ++i)
-      {
-        const std::string& prefab_path = prefabs[static_cast<size_t>(i) % prefabs.size()];
-        const Math::Vec2D& spawn_pos = spawn_positions[static_cast<size_t>(i) % spawn_positions.size()];
+      // Reset Summon5 timed spawn bookkeeping each time we spawn a wave.
+      rt.summon5_timed_spawning = false;
+      rt.summon5_pending_prefabs.clear();
+      rt.summon5_spawn_positions.clear();
+      rt.summon5_next_index = 0;
+      rt.summon5_next_spawn_time = 0.0f;
 
+      // Spawn-set JSON path: spawn exactly what was exported.
+      if (!spawn_set.empty())
+      {
+        if (summon_index == 4)
+        {
+          rt.summon5_pending_prefabs.reserve(spawn_set.size());
+          rt.summon5_spawn_positions.reserve(spawn_set.size());
+          for (const auto& it : spawn_set) {
+            rt.summon5_pending_prefabs.push_back(it.prefab_path);
+            rt.summon5_spawn_positions.push_back(it.world_pos);
+          }
+
+          // Summon5: randomize spawn ORDER so enemy types don't clump.
+          randomize_summon5_spawn_order(entity, rt.summon5_pending_prefabs, &rt.summon5_spawn_positions);
+
+          if (!rt.summon5_pending_prefabs.empty()) {
+            // Spawn first immediately, then tick the rest.
+            const std::string& prefab_path = rt.summon5_pending_prefabs[0];
+            const Math::Vec2D spawn_pos = summon5_spawn_pos_at(rt, 0);
+            Engine::ECS::Entity summoned = spawn_enemy_from_prefab(prefab_path, spawn_pos);
+            if (summoned.is_valid()) {
+              summons.push_back(summoned.get_id());
+              if (auto* mhp = summoned.get_component<Components::EnemyHealth>()) {
+                rt.wave_pool_max_hp[4] += std::max(0, mhp->max_hp);
+              }
+            }
+
+            rt.summon5_next_index = 1;
+            rt.summon5_next_spawn_time = Engine::Time::get_time() + summon5_spawn_interval(entity);
+            rt.summon5_timed_spawning = (rt.summon5_next_index < rt.summon5_pending_prefabs.size());
+          }
+        }
+        else
+        {
+          for (size_t i = 0; i < spawn_set.size(); ++i)
+          {
+            const auto& it = spawn_set[i];
+            Engine::ECS::Entity summoned = spawn_enemy_from_prefab(it.prefab_path, it.world_pos);
+            if (summoned.is_valid()) {
+              summons.push_back(summoned.get_id());
+              if (auto* mhp = summoned.get_component<Components::EnemyHealth>()) {
+                rt.wave_pool_max_hp[static_cast<size_t>(summon_index)] += std::max(0, mhp->max_hp);
+              }
+            }
+          }
+        }
+
+        update_wave_healthbars_component(entity);
+        return;
+      }
+
+      auto spawn_one_from_list = [&](const std::string& prefab_path, int i, const std::vector<Math::Vec2D>& positions)
+      {
+        const Math::Vec2D& spawn_pos = positions[static_cast<size_t>(i) % positions.size()];
         Engine::ECS::Entity summoned = spawn_enemy_from_prefab(prefab_path, spawn_pos);
         if (summoned.is_valid()) {
           summons.push_back(summoned.get_id());
-
           if (auto* mhp = summoned.get_component<Components::EnemyHealth>()) {
             rt.wave_pool_max_hp[static_cast<size_t>(summon_index)] += std::max(0, mhp->max_hp);
           }
+        }
+      };
+
+      if (summon_index == 4) {
+        // Summon5 legacy path: cycle prefab list and marker/offset positions.
+        rt.summon5_timed_spawning = true;
+        rt.summon5_pending_prefabs.reserve(static_cast<size_t>(minion_count));
+        rt.summon5_spawn_positions = spawn_positions;
+        rt.summon5_next_index = 0;
+        rt.summon5_next_spawn_time = Engine::Time::get_time();
+
+        const auto& prefabs = *prefabs_ptr;
+        for (int i = 0; i < minion_count; ++i) {
+          rt.summon5_pending_prefabs.push_back(prefabs[static_cast<size_t>(i) % prefabs.size()]);
+        }
+
+        // Summon5: randomize spawn ORDER so enemy types don't clump.
+        randomize_summon5_spawn_order(entity, rt.summon5_pending_prefabs, nullptr);
+
+        if (!rt.summon5_pending_prefabs.empty() && !rt.summon5_spawn_positions.empty()) {
+          spawn_one_from_list(rt.summon5_pending_prefabs[0], 0, rt.summon5_spawn_positions);
+          rt.summon5_next_index = 1;
+          rt.summon5_next_spawn_time = Engine::Time::get_time() + summon5_spawn_interval(entity);
+        }
+      }
+      else {
+        for (int i = 0; i < minion_count; ++i)
+        {
+          const auto& prefabs = *prefabs_ptr;
+          const std::string& prefab_path = prefabs[static_cast<size_t>(i) % prefabs.size()];
+          spawn_one_from_list(prefab_path, i, spawn_positions);
         }
       }
 
@@ -513,12 +958,51 @@ namespace CatMonkeyStateCallbacks
 
     // Tick minion linkage for the currently-active wave.
     BossRuntime& rt = runtime_for(entity);
+
+    // Summon5 staggered spawns continue while the wave is active.
+    if (rt.active_wave_index == 4 && rt.summon5_timed_spawning) {
+      if (!rt.summon5_pending_prefabs.empty() && !rt.summon5_spawn_positions.empty()) {
+        const float now = Engine::Time::get_time();
+        if (now >= rt.summon5_next_spawn_time && rt.summon5_next_index < rt.summon5_pending_prefabs.size()) {
+          auto& summons = rt.wave_summons[4];
+          const size_t i = rt.summon5_next_index;
+          const std::string& prefab_path = rt.summon5_pending_prefabs[i];
+          const Math::Vec2D spawn_pos = summon5_spawn_pos_at(rt, i);
+          Engine::ECS::Entity summoned = spawn_enemy_from_prefab(prefab_path, spawn_pos);
+          if (summoned.is_valid()) {
+            summons.push_back(summoned.get_id());
+            if (auto* mhp = summoned.get_component<Components::EnemyHealth>()) {
+              rt.wave_pool_max_hp[4] += std::max(0, mhp->max_hp);
+            }
+          }
+
+          rt.summon5_next_index++;
+          rt.summon5_next_spawn_time = now + summon5_spawn_interval(entity);
+          if (rt.summon5_next_index >= rt.summon5_pending_prefabs.size()) {
+            rt.summon5_timed_spawning = false;
+          }
+        }
+      }
+      else {
+        rt.summon5_timed_spawning = false;
+      }
+    }
+
     if (rt.active_wave_index >= 0 && rt.active_wave_index < k_summon_state_count) {
       auto& list = rt.wave_summons[static_cast<size_t>(rt.active_wave_index)];
       process_tracked_minion_deaths(entity, list);
       if (list.empty()) {
-        mark_wave_cleared(entity, rt.active_wave_index);
-        rt.active_wave_index = -1;
+        if (rt.active_wave_index == 4) {
+          // Don't clear Summon5 until all planned spawns have been spawned.
+          if (!summon5_has_more_to_spawn(rt)) {
+            mark_wave_cleared(entity, rt.active_wave_index);
+            rt.active_wave_index = -1;
+          }
+        }
+        else {
+          mark_wave_cleared(entity, rt.active_wave_index);
+          rt.active_wave_index = -1;
+        }
       }
     }
     update_wave_healthbars_component(entity);

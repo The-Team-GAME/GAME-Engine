@@ -1,0 +1,347 @@
+{
+    "data": {
+        "entities": [
+            {
+                "id": 1815,
+                "name": "lazy_monkey",
+                "prefab": "prefabs/lazy_monkey.json",
+                "prefab_id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                "transform": {
+                    "position": {
+                        "x": 154.01177978515625,
+                        "y": 371.5468444824219
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 128.0,
+                        "y": 128.0
+                    }
+                }
+            },
+            {
+                "id": 1816,
+                "name": "lazy_monkey",
+                "prefab": "prefabs/lazy_monkey.json",
+                "prefab_id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                "transform": {
+                    "position": {
+                        "x": 782.1947021484375,
+                        "y": 219.94403076171875
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 128.0,
+                        "y": 128.0
+                    }
+                }
+            },
+            {
+                "id": 1822,
+                "name": "lazy_monkey",
+                "prefab": "prefabs/lazy_monkey.json",
+                "prefab_id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                "transform": {
+                    "position": {
+                        "x": 258.28863525390625,
+                        "y": 389.7958068847656
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 128.0,
+                        "y": 128.0
+                    }
+                }
+            },
+            {
+                "id": 1823,
+                "name": "lazy_monkey",
+                "prefab": "prefabs/lazy_monkey.json",
+                "prefab_id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                "transform": {
+                    "position": {
+                        "x": 977.1015014648438,
+                        "y": 237.24026489257813
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 128.0,
+                        "y": 128.0
+                    }
+                }
+            },
+            {
+                "id": 1825,
+                "name": "lazy_monkey",
+                "prefab": "prefabs/lazy_monkey.json",
+                "prefab_id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                "transform": {
+                    "position": {
+                        "x": 190.8702392578125,
+                        "y": 509.5859680175781
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 128.0,
+                        "y": 128.0
+                    }
+                }
+            },
+            {
+                "id": 1826,
+                "name": "lazy_monkey",
+                "prefab": "prefabs/lazy_monkey.json",
+                "prefab_id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                "transform": {
+                    "position": {
+                        "x": 279.2414245605469,
+                        "y": 614.509521484375
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 128.0,
+                        "y": 128.0
+                    }
+                }
+            },
+            {
+                "id": 1827,
+                "name": "lazy_monkey",
+                "prefab": "prefabs/lazy_monkey.json",
+                "prefab_id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                "transform": {
+                    "position": {
+                        "x": 811.4656372070313,
+                        "y": 628.4260864257813
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 128.0,
+                        "y": 128.0
+                    }
+                }
+            },
+            {
+                "id": 1828,
+                "name": "lazy_monkey",
+                "prefab": "prefabs/lazy_monkey.json",
+                "prefab_id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                "transform": {
+                    "position": {
+                        "x": 1023.0552368164063,
+                        "y": 636.18798828125
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 128.0,
+                        "y": 128.0
+                    }
+                }
+            },
+            {
+                "id": 1834,
+                "name": "lazy_monkey",
+                "prefab": "prefabs/lazy_monkey.json",
+                "prefab_id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                "transform": {
+                    "position": {
+                        "x": 31.889068603515625,
+                        "y": 443.21722412109375
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 128.0,
+                        "y": 128.0
+                    }
+                }
+            },
+            {
+                "id": 1820,
+                "name": "slingshot_monkey",
+                "prefab": "prefabs/slingshot_monkey.json",
+                "prefab_id": "ba9299e0-0686-4084b-bb12-eef3031c8254",
+                "transform": {
+                    "position": {
+                        "x": 365.914794921875,
+                        "y": 235.5633544921875
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 250.0,
+                        "y": 250.0
+                    }
+                }
+            },
+            {
+                "id": 1824,
+                "name": "slingshot_monkey",
+                "prefab": "prefabs/slingshot_monkey.json",
+                "prefab_id": "ba9299e0-0686-4084b-bb12-eef3031c8254",
+                "transform": {
+                    "position": {
+                        "x": 782.8720092773438,
+                        "y": 355.48675537109375
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 250.0,
+                        "y": 250.0
+                    }
+                }
+            },
+            {
+                "id": 1833,
+                "name": "slingshot_monkey",
+                "prefab": "prefabs/slingshot_monkey.json",
+                "prefab_id": "ba9299e0-0686-4084b-bb12-eef3031c8254",
+                "transform": {
+                    "position": {
+                        "x": 5.877960205078125,
+                        "y": 227.89840698242188
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 250.0,
+                        "y": 250.0
+                    }
+                }
+            },
+            {
+                "id": 1818,
+                "name": "spray can monkey",
+                "prefab": "prefabs/spray can monkey.json",
+                "prefab_id": "89422b47-e4df-40afa-bf83-340b457c61f8",
+                "transform": {
+                    "position": {
+                        "x": 615.109375,
+                        "y": 256.10882568359375
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 160.0,
+                        "y": 160.0
+                    }
+                }
+            },
+            {
+                "id": 1821,
+                "name": "spray can monkey",
+                "prefab": "prefabs/spray can monkey.json",
+                "prefab_id": "89422b47-e4df-40afa-bf83-340b457c61f8",
+                "transform": {
+                    "position": {
+                        "x": 39.41743469238281,
+                        "y": 619.8818359375
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 160.0,
+                        "y": 160.0
+                    }
+                }
+            },
+            {
+                "id": 1829,
+                "name": "spray can monkey",
+                "prefab": "prefabs/spray can monkey.json",
+                "prefab_id": "89422b47-e4df-40afa-bf83-340b457c61f8",
+                "transform": {
+                    "position": {
+                        "x": 721.358642578125,
+                        "y": 569.7664794921875
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 160.0,
+                        "y": 160.0
+                    }
+                }
+            },
+            {
+                "id": 1830,
+                "name": "spray can monkey",
+                "prefab": "prefabs/spray can monkey.json",
+                "prefab_id": "89422b47-e4df-40afa-bf83-340b457c61f8",
+                "transform": {
+                    "position": {
+                        "x": 1011.6939086914063,
+                        "y": 403.40338134765625
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 160.0,
+                        "y": 160.0
+                    }
+                }
+            },
+            {
+                "id": 1817,
+                "name": "turret_monkey_ground",
+                "prefab": "prefabs/turret_monkey_ground.json",
+                "prefab_id": "63da3f35-239e-40cb4-b604-07c7c83031c3",
+                "transform": {
+                    "position": {
+                        "x": 202.18453979492188,
+                        "y": 247.4940185546875
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 135.0,
+                        "y": 135.0
+                    }
+                }
+            },
+            {
+                "id": 1819,
+                "name": "turret_monkey_ground",
+                "prefab": "prefabs/turret_monkey_ground.json",
+                "prefab_id": "63da3f35-239e-40cb4-b604-07c7c83031c3",
+                "transform": {
+                    "position": {
+                        "x": 902.845458984375,
+                        "y": 541.04541015625
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 135.0,
+                        "y": 135.0
+                    }
+                }
+            },
+            {
+                "id": 1831,
+                "name": "turret_monkey_ground",
+                "prefab": "prefabs/turret_monkey_ground.json",
+                "prefab_id": "63da3f35-239e-40cb4-b604-07c7c83031c3",
+                "transform": {
+                    "position": {
+                        "x": 654.500732421875,
+                        "y": 412.6740417480469
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 135.0,
+                        "y": 135.0
+                    }
+                }
+            },
+            {
+                "id": 1832,
+                "name": "turret_monkey_ground",
+                "prefab": "prefabs/turret_monkey_ground.json",
+                "prefab_id": "63da3f35-239e-40cb4-b604-07c7c83031c3",
+                "transform": {
+                    "position": {
+                        "x": 317.6907043457031,
+                        "y": 501.0602722167969
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 135.0,
+                        "y": 135.0
+                    }
+                }
+            }
+        ]
+    },
+    "dataType": "EntitySelection"
+}

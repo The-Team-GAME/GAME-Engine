@@ -1,6 +1,6 @@
 {
     "bgm_volume": 1.0,
-    "fullscreen": true,
+    "fullscreen": false,
     "sfx_volume": 1.0,
-    "vsync": false
+    "vsync": true
 }
