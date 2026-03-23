@@ -69,6 +69,9 @@ class GameplayState : public Engine::Scene
 
 public:
   void load() {
+    current_upgrade_threshold_ = 2;
+    current_kills_for_upgrade_ = 0;
+    upgrade_btn_anim_time_ = 0.0f;
     Engine::Resources::open_level("levels/LevelOneTestingExtra.json");
 
 
@@ -130,7 +133,7 @@ public:
     // All created at once; visibility toggled in update_upgrade_button()
     auto make_upgrade_btn = [&](const char* img_path, int frame_w, int num_frames) -> Engine::ECS::EntityID {
       auto e = Engine::ECS::create_entity()
-        .add_component<Components::Transform2D>(128.0f, -128.0f, 0.0f, 128.0f, 128.0f)
+        .add_component<Components::Transform2D>(128.0f, -128.0f, 0.0f, 64.0f * 4.0f, 64.0f * 4.0f)
         .add_component<Components::Texture>(Engine::Resources::load_texture(img_path))
         .add_component<Components::TextureAtlas>(frame_w, frame_w, 1, num_frames, num_frames)
         .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.0f)  // start hidden
