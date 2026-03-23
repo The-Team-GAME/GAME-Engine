@@ -33,9 +33,16 @@ namespace CatMonkeyStateCallbacks
 
     // Background layer entity names used in LevelTwo.
     static constexpr const char* k_cityscape_layer_name = "cityscape";
-    static constexpr const char* k_minicity_layer_name = "minicity";
+    static constexpr const char* k_mid_building_layer_name = "mid_building";
+    static constexpr const char* k_minicity_layer_name = "minicity"; // legacy name fallback
     static constexpr const char* k_foreground_city_layer_name = "foreground_city";
     static constexpr const char* k_background_city_layer_name = "background_city";
+
+    // Prefab paths (these layers are prefabs, not necessarily placed in the level).
+    static constexpr const char* k_cityscape_prefab_path = "prefabs/cityscape.json";
+    static constexpr const char* k_mid_building_prefab_path = "prefabs/mid_building.json";
+    static constexpr const char* k_foreground_city_prefab_path = "prefabs/foreground_city.json";
+    static constexpr const char* k_background_city_prefab_path = "prefabs/background_city.json";
 
     // Scroll speeds (world units / sec). Tuned for LevelTwo scale.
     static constexpr float k_cityscape_speed = 200.0f;
@@ -52,39 +59,13 @@ namespace CatMonkeyStateCallbacks
     static constexpr float k_summon5_cinematic_duration_sec = 3.5f;
     static constexpr float k_summon5_target_zoom = 0.65f; // smaller = more zoomed out
 
+    // Summon5: quick shake on Cat_Monkey camera while it's zoomed in.
+    static constexpr int k_summon5_shake_count = 8;
+    static constexpr float k_summon5_shake_interval_sec = 0.05f;
+    static constexpr float k_summon5_shake_amplitude = 12.0f;
+
     inline Engine::ECS::Entity spawn_enemy_from_prefab(const std::string& prefab_path, const Math::Vec2D& pos);
     inline Engine::ECS::Entity find_camera_entity_by_name(const char* name);
-
-    inline bool get_tilemap_world_bounds(Math::Vec2D& min, Math::Vec2D& max)
-    {
-      min = { std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
-      max = { std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest() };
-      bool found_any = false;
-
-      for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
-        auto* tilemap = entity.get_component<Components::TileMap>();
-        if (!tilemap || tilemap->is_empty()) {
-          continue;
-        }
-
-        int grid_min_x, grid_min_y, grid_max_x, grid_max_y;
-        tilemap->get_bounds(grid_min_x, grid_min_y, grid_max_x, grid_max_y);
-
-        const float min_world_x = grid_min_x * tilemap->tile_size.x + tilemap->grid_offset.x;
-        const float min_world_y = grid_min_y * tilemap->tile_size.y + tilemap->grid_offset.y;
-        const float max_world_x = (grid_max_x + 1) * tilemap->tile_size.x + tilemap->grid_offset.x;
-        const float max_world_y = (grid_max_y + 1) * tilemap->tile_size.y + tilemap->grid_offset.y;
-
-        if (min_world_x < min.x) min.x = min_world_x;
-        if (min_world_y < min.y) min.y = min_world_y;
-        if (max_world_x > max.x) max.x = max_world_x;
-        if (max_world_y > max.y) max.y = max_world_y;
-
-        found_any = true;
-      }
-
-      return found_any;
-    }
 
     struct BossRuntime
     {
@@ -135,20 +116,22 @@ namespace CatMonkeyStateCallbacks
       float summon5_rot_start = 0.0f;
       float summon5_rot_target = 0.0f;
 
+      // Summon5: quick shake on the Cat_Monkey camera during summon animation.
+      bool summon5_shake_active = false;
+      int summon5_shakes_done = 0;
+      float summon5_next_shake_time = 0.0f;
+      Math::Vec2D summon5_cat_cam_base_pos{};
+      float summon5_cat_cam_base_rot = 0.0f;
+
       // City background scroll (enabled when Summon5 is reached).
       bool city_layers_hidden = false;
       bool city_scroll_enabled = false;
       bool city_scroll_initialized = false;
-      float cityscape_start_x = 0.0f;
-      float minicity_start_x = 0.0f;
-      float foreground_city_start_x = 0.0f;
-      float background_city_start_x = 0.0f;
 
       // Debug (one-time logs; avoids per-frame spam).
       bool debug_logged_summon5_enter = false;
       bool debug_logged_city_init = false;
       bool debug_logged_centered_camera_missing = false;
-      bool debug_logged_tilemap_bounds_missing = false;
     };
 
     inline Engine::ECS::Entity find_entity_by_name_with_transform(const char* name)
@@ -170,6 +153,30 @@ namespace CatMonkeyStateCallbacks
         });
 
       return found;
+    }
+
+    inline Engine::ECS::Entity spawn_prefab_as_named_entity(const char* prefab_path, const char* entity_name)
+    {
+      if (!prefab_path || !*prefab_path) {
+        return Engine::ECS::Entity{};
+      }
+
+      Engine::ECS::Prefab prefab = Engine::Resources::load_prefab(prefab_path);
+      if (!prefab.is_valid()) {
+        Log::warning("CatMonkey: failed to load prefab '{}' (layer '{}').", prefab_path, entity_name ? entity_name : "<unnamed>");
+        return Engine::ECS::Entity{};
+      }
+
+      Engine::ECS::Entity e = Engine::ECS::instantiate_prefab(prefab);
+      if (!e.is_valid()) {
+        Log::warning("CatMonkey: failed to instantiate prefab '{}' (layer '{}').", prefab_path, entity_name ? entity_name : "<unnamed>");
+        return Engine::ECS::Entity{};
+      }
+
+      if (entity_name && *entity_name) {
+        Engine::ECS::set_entity_name(e, entity_name);
+      }
+      return e;
     }
 
     inline void set_entity_alpha_if_present(Engine::ECS::Entity entity, float alpha)
@@ -194,65 +201,65 @@ namespace CatMonkeyStateCallbacks
 
       // Hide the city layers until Summon5 is reached.
       set_entity_alpha_if_present(find_entity_by_name_with_transform(k_cityscape_layer_name), 0.0f);
+      set_entity_alpha_if_present(find_entity_by_name_with_transform(k_mid_building_layer_name), 0.0f);
       set_entity_alpha_if_present(find_entity_by_name_with_transform(k_minicity_layer_name), 0.0f);
       set_entity_alpha_if_present(find_entity_by_name_with_transform(k_foreground_city_layer_name), 0.0f);
       set_entity_alpha_if_present(find_entity_by_name_with_transform(k_background_city_layer_name), 0.0f);
       rt.city_layers_hidden = true;
     }
 
-    inline void init_city_scroll_if_needed(BossRuntime& rt)
-    {
-      if (!rt.city_scroll_enabled || rt.city_scroll_initialized) {
-        return;
-      }
+    // Seamless tiling: always keep two instances of each layer, offset for looping.
+    struct LayerPair {
+      Engine::ECS::Entity a, b;
+      float width;
+      const char* name;
+    };
 
-      Math::Vec2D min_bounds, max_bounds;
-      if (!get_tilemap_world_bounds(min_bounds, max_bounds)) {
-        if (!rt.debug_logged_tilemap_bounds_missing) {
-          Log::warning("CatMonkey: city scroll enabled but no tilemap bounds were found (no TileMap entities?).");
-          rt.debug_logged_tilemap_bounds_missing = true;
-        }
-        return;
+    inline Engine::ECS::Entity ensure_layer(const char* prefab_path, const char* entity_name, int index) {
+      std::string name = entity_name;
+      if (index > 0) name += "_copy";
+      Engine::ECS::Entity e = find_entity_by_name_with_transform(name.c_str());
+      if (!e.is_valid()) {
+        e = spawn_prefab_as_named_entity(prefab_path, name.c_str());
       }
+      return e;
+    }
+
+    inline void init_city_scroll_if_needed(BossRuntime& rt) {
+      if (!rt.city_scroll_enabled || rt.city_scroll_initialized) return;
+
+      const Engine::Graphics::CameraBounds bounds = Engine::Graphics::get_camera_bounds();
+      const float cam_left = bounds.min_x;
+      const float cam_center_y = 0.5f * (bounds.min_y + bounds.max_y);
 
       if (!rt.debug_logged_city_init) {
-        Log::info("CatMonkey: initializing Summon5 city scroll. Tilemap bounds min=({},{}), max=({},{}).", min_bounds.x, min_bounds.y, max_bounds.x, max_bounds.y);
+        Log::info("CatMonkey: initializing Summon5 city scroll. Camera bounds min_x={}, max_x={}", cam_left, bounds.max_x);
         rt.debug_logged_city_init = true;
       }
 
-      auto init_layer = [&](const char* layer_name, float& out_start_x)
-      {
-        Engine::ECS::Entity e = find_entity_by_name_with_transform(layer_name);
-        if (!e.is_valid()) {
-          Log::warning("CatMonkey: city layer entity not found (missing Transform2D or name mismatch): '{}'", layer_name ? layer_name : "<null>");
-          return;
+      auto setup_pair = [&](const char* prefab_path, const char* base_name) -> LayerPair {
+        Engine::ECS::Entity a = ensure_layer(prefab_path, base_name, 0);
+        Engine::ECS::Entity b = ensure_layer(prefab_path, base_name, 1);
+        float width = 0.0f;
+        for (Engine::ECS::Entity e : {a, b}) {
+          detach_from_parent_if_present(e);
+          set_entity_alpha_if_present(e, 1.0f);
+          auto* t = e.get_component<Components::Transform2D>();
+          if (t) {
+            t->position.y = cam_center_y;
+            width = std::max(width, t->scale.x); // Use the largest width
+          }
         }
-
-        // Detach so each prefab/layer can move independently.
-        detach_from_parent_if_present(e);
-
-        // Make visible.
-        set_entity_alpha_if_present(e, 1.0f);
-
-        auto* t = e.get_component<Components::Transform2D>();
-        if (!t) {
-          return;
-        }
-
-        const float half_w = std::max(0.0f, t->scale.x) * 0.5f;
-        // Start just off the left edge so wide images don't instantly
-        // satisfy the "hit right edge" reset condition.
-        out_start_x = min_bounds.x - half_w;
-        t->position.x = out_start_x;
-
-        // Helpful one-time snapshot for debugging layer sizing/placement.
-        Log::info("CatMonkey: city layer '{}' init pos.x={} scale=({},{}).", layer_name, t->position.x, t->scale.x, t->scale.y);
+        // Place a just off left, b just after a
+        if (auto* ta = a.get_component<Components::Transform2D>()) ta->position.x = cam_left - 0.5f * ta->scale.x;
+        if (auto* tb = b.get_component<Components::Transform2D>()) tb->position.x = cam_left - 0.5f * tb->scale.x + width;
+        return {a, b, width, base_name};
       };
 
-      init_layer(k_cityscape_layer_name, rt.cityscape_start_x);
-      init_layer(k_minicity_layer_name, rt.minicity_start_x);
-      init_layer(k_foreground_city_layer_name, rt.foreground_city_start_x);
-      init_layer(k_background_city_layer_name, rt.background_city_start_x);
+      setup_pair(k_cityscape_prefab_path, k_cityscape_layer_name);
+      setup_pair(k_mid_building_prefab_path, k_mid_building_layer_name);
+      setup_pair(k_foreground_city_prefab_path, k_foreground_city_layer_name);
+      setup_pair(k_background_city_prefab_path, k_background_city_layer_name);
 
       rt.city_scroll_initialized = true;
     }
@@ -268,52 +275,103 @@ namespace CatMonkeyStateCallbacks
         return;
       }
 
-      Math::Vec2D min_bounds, max_bounds;
-      if (!get_tilemap_world_bounds(min_bounds, max_bounds)) {
-        return;
-      }
+      const Engine::Graphics::CameraBounds bounds = Engine::Graphics::get_camera_bounds();
+      const float cam_left = bounds.min_x;
+      const float cam_right = bounds.max_x;
 
       const float dt = Engine::Time::get_fixed_dt();
       if (dt <= 0.0f) {
         return;
       }
 
-      auto tick_layer = [&](const char* layer_name, float speed, float start_x, bool reset_at_edge)
-      {
-        Engine::ECS::Entity e = find_entity_by_name_with_transform(layer_name);
-        if (!e.is_valid()) {
-          return;
+      auto tick_pair = [&](const char* prefab_path, const char* base_name, float speed) {
+        Engine::ECS::Entity a = find_entity_by_name_with_transform(base_name);
+        Engine::ECS::Entity b = find_entity_by_name_with_transform((std::string(base_name) + "_copy").c_str());
+        if (!a.is_valid() || !b.is_valid()) return;
+        auto* ta = a.get_component<Components::Transform2D>();
+        auto* tb = b.get_component<Components::Transform2D>();
+        if (!ta || !tb) return;
+        float width = std::max(ta->scale.x, tb->scale.x);
+        ta->position.x += speed * dt;
+        tb->position.x += speed * dt;
+        float cam_left = bounds.min_x, cam_right = bounds.max_x;
+        // If a is fully past right, move it after b
+        if (ta->position.x - 0.5f * ta->scale.x >= cam_right) {
+          ta->position.x = tb->position.x + width;
         }
-
-        auto* t = e.get_component<Components::Transform2D>();
-        if (!t) {
-          return;
-        }
-
-        t->position.x += speed * dt;
-
-        const float half_w = std::max(0.0f, t->scale.x) * 0.5f;
-        const float right_edge = t->position.x + half_w;
-        const float left_edge = t->position.x - half_w;
-
-        if (reset_at_edge) {
-          // First two images: reset when they hit the edge of the tilemap.
-          if (right_edge >= max_bounds.x) {
-            t->position.x = start_x;
-          }
-        }
-        else {
-          // Last two images: reset only once fully out of the tilemap.
-          if (left_edge >= max_bounds.x) {
-            t->position.x = start_x;
-          }
+        // If b is fully past right, move it after a
+        if (tb->position.x - 0.5f * tb->scale.x >= cam_right) {
+          tb->position.x = ta->position.x + width;
         }
       };
 
-      tick_layer(k_cityscape_layer_name, k_cityscape_speed, rt.cityscape_start_x, true);
-      tick_layer(k_minicity_layer_name, k_minicity_speed, rt.minicity_start_x, true);
-      tick_layer(k_foreground_city_layer_name, k_foreground_city_speed, rt.foreground_city_start_x, false);
-      tick_layer(k_background_city_layer_name, k_background_city_speed, rt.background_city_start_x, false);
+      tick_pair(k_cityscape_prefab_path, k_cityscape_layer_name, k_cityscape_speed);
+      tick_pair(k_mid_building_prefab_path, k_mid_building_layer_name, k_minicity_speed);
+      tick_pair(k_foreground_city_prefab_path, k_foreground_city_layer_name, k_foreground_city_speed);
+      tick_pair(k_background_city_prefab_path, k_background_city_layer_name, k_background_city_speed);
+    }
+
+    inline void start_summon5_cat_camera_shake(BossRuntime& rt)
+    {
+      Engine::ECS::Entity cam = find_camera_entity_by_name(k_cat_monkey_camera_name);
+      if (!cam.is_valid()) {
+        rt.summon5_shake_active = false;
+        return;
+      }
+
+      auto* t = cam.get_component<Components::Transform2D>();
+      if (!t) {
+        rt.summon5_shake_active = false;
+        return;
+      }
+
+      rt.summon5_shake_active = true;
+      rt.summon5_shakes_done = 0;
+      rt.summon5_next_shake_time = Engine::Time::get_time();
+      rt.summon5_cat_cam_base_pos = t->position;
+      rt.summon5_cat_cam_base_rot = t->rotation;
+    }
+
+    inline void tick_summon5_cat_camera_shake(BossRuntime& rt)
+    {
+      if (!rt.summon5_shake_active) {
+        return;
+      }
+
+      Engine::ECS::Entity cam = find_camera_entity_by_name(k_cat_monkey_camera_name);
+      if (!cam.is_valid()) {
+        rt.summon5_shake_active = false;
+        return;
+      }
+
+      auto* t = cam.get_component<Components::Transform2D>();
+      if (!t) {
+        rt.summon5_shake_active = false;
+        return;
+      }
+
+      const float now = Engine::Time::get_time();
+      if (now < rt.summon5_next_shake_time) {
+        return;
+      }
+
+      if (rt.summon5_shakes_done >= k_summon5_shake_count) {
+        t->position = rt.summon5_cat_cam_base_pos;
+        t->rotation = rt.summon5_cat_cam_base_rot;
+        rt.summon5_shake_active = false;
+        return;
+      }
+
+      Math::Vec2D offset{};
+      const int phase = rt.summon5_shakes_done % 4;
+      if (phase == 0) offset = { k_summon5_shake_amplitude, 0.0f };
+      else if (phase == 1) offset = { -k_summon5_shake_amplitude, 0.0f };
+      else if (phase == 2) offset = { 0.0f, k_summon5_shake_amplitude };
+      else offset = { 0.0f, -k_summon5_shake_amplitude };
+
+      t->position = rt.summon5_cat_cam_base_pos + offset;
+      rt.summon5_shakes_done++;
+      rt.summon5_next_shake_time = now + k_summon5_shake_interval_sec;
     }
 
     inline void tick_summon5_cinematic_camera(BossRuntime& rt)
@@ -1570,6 +1628,9 @@ namespace CatMonkeyStateCallbacks
     rt.city_scroll_enabled = true;
     // Note: initialization + visibility happens lazily on the next tick.
 
+    // Summon5: while zoomed in on Cat_Monkey camera, do a quick 8-hit shake.
+    start_summon5_cat_camera_shake(rt);
+
     if (!rt.debug_logged_summon5_enter) {
       Log::info("CatMonkey: entered Summon5 state. Enabling city scroll + Centered camera cinematic.");
       rt.debug_logged_summon5_enter = true;
@@ -1606,7 +1667,22 @@ namespace CatMonkeyStateCallbacks
     }
 
     if (!has_animation_finished(entity)) {
+      if (rt.pending_summon_index == 4 && rt.camera_override_mode == BossRuntime::CameraOverrideMode::CatMonkey) {
+        tick_summon5_cat_camera_shake(rt);
+      }
       return;
+    }
+
+    // Animation finished: stop shaking and restore the Cat_Monkey camera.
+    if (rt.pending_summon_index == 4) {
+      rt.summon5_shake_active = false;
+      Engine::ECS::Entity cam = find_camera_entity_by_name(k_cat_monkey_camera_name);
+      if (cam.is_valid()) {
+        if (auto* t = cam.get_component<Components::Transform2D>()) {
+          t->position = rt.summon5_cat_cam_base_pos;
+          t->rotation = rt.summon5_cat_cam_base_rot;
+        }
+      }
     }
 
     spawn_wave_for_summon_index(entity, rt.pending_summon_index);
