@@ -21,16 +21,10 @@ void LevelTwoStartState::load()
 
 void LevelTwoStartState::init()
 {
-  started_ = false;
 }
 
 void LevelTwoStartState::update()
 {
-  if (started_)
-    return;
-
-  started_ = true;
-
   // Note: SceneManager::load_scene clears LevelManager in GAME_BUILD, so we must
   // request LevelTwo via GameplayState's pending-level mechanism.
   Log::info("[LevelTwoStartState] Requesting LevelTwo via pending-level: {}", LEVEL_TWO_PATH);

@@ -52,13 +52,14 @@
                         0.20000000298023224
                     ],
                     "is_looping": true,
-                    "startTime": 100.72713470458984,
+                    "startTime": 145.3900604248047,
                     "totalDuration": 2.8000004291534424
                 },
                 "type": "Components::Animation"
             },
             {
                 "data": {
+                    "ai_disabled": false,
                     "damage_per_minion_death": 1,
                     "minions_per_summon": 6,
                     "summon1_minions": 0,
@@ -70,6 +71,7 @@
                     ],
                     "summon1_spawn_marker_prefix": "cat_monkey_spawn1",
                     "summon1_spawn_offsets": [],
+                    "summon1_spawn_set_json": "",
                     "summon2_minions": 0,
                     "summon2_prefabs": [
                         "prefabs/spray can monkey.json",
@@ -78,6 +80,7 @@
                     ],
                     "summon2_spawn_marker_prefix": "cat_monkey_spawn2",
                     "summon2_spawn_offsets": [],
+                    "summon2_spawn_set_json": "",
                     "summon3_minions": 0,
                     "summon3_prefabs": [
                         "prefabs/slingshot_monkey.json",
@@ -87,6 +90,7 @@
                     ],
                     "summon3_spawn_marker_prefix": "cat_monkey_spawn3",
                     "summon3_spawn_offsets": [],
+                    "summon3_spawn_set_json": "",
                     "summon4_minions": 0,
                     "summon4_prefabs": [
                         "prefabs/turret_monkey.json",
@@ -96,6 +100,7 @@
                     ],
                     "summon4_spawn_marker_prefix": "cat_monkey_spawn4",
                     "summon4_spawn_offsets": [],
+                    "summon4_spawn_set_json": "",
                     "summon5_minions": 0,
                     "summon5_prefabs": [
                         "prefabs/turret_monkey.json",
@@ -106,7 +111,8 @@
                     "summon5_spawn_interval_sec": 3.0,
                     "summon5_spawn_marker_prefix": "cat_monkey_spawn5",
                     "summon5_spawn_offsets": [],
-                    "summon_cooldown": 6.0
+                    "summon5_spawn_set_json": "",
+                    "summon_cooldown": 2.0
                 },
                 "type": "Components::CatMonkeyBoss"
             },
@@ -490,7 +496,7 @@
                                             0.019999999552965164
                                         ],
                                         "is_looping": false,
-                                        "startTime": 153.18321228027344,
+                                        "startTime": 146.4734344482422,
                                         "totalDuration": 1.7599989175796509
                                     },
                                     "collider_data": null,
@@ -1070,7 +1076,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 153.18321228027344,
+                                        "startTime": 146.4734344482422,
                                         "totalDuration": 2.319999933242798
                                     },
                                     "collider_data": null,
@@ -1635,7 +1641,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": false,
-                                        "startTime": 153.18321228027344,
+                                        "startTime": 146.4734344482422,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": null,
@@ -2152,7 +2158,7 @@
                                             0.20000000298023224
                                         ],
                                         "is_looping": true,
-                                        "startTime": 153.18321228027344,
+                                        "startTime": 146.4734344482422,
                                         "totalDuration": 2.8000004291534424
                                     },
                                     "collider_data": null,
@@ -2642,7 +2648,7 @@
                                             0.20000000298023224
                                         ],
                                         "is_looping": false,
-                                        "startTime": 153.18321228027344,
+                                        "startTime": 146.4734344482422,
                                         "totalDuration": 1.0
                                     },
                                     "collider_data": null,
@@ -3132,7 +3138,7 @@
                                             0.20000000298023224
                                         ],
                                         "is_looping": false,
-                                        "startTime": 153.18321228027344,
+                                        "startTime": 146.4734344482422,
                                         "totalDuration": 1.0
                                     },
                                     "collider_data": null,

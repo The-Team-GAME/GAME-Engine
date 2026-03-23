@@ -11,9 +11,6 @@
 
 class LevelTwoStartState : public Engine::Scene
 {
-private:
-  bool started_ = false;
-
 public:
   bool blocks_lower_draw() const override { return true; }
 

@@ -12,6 +12,10 @@ namespace Components {
 
   struct CatMonkeyBoss
   {
+    // Debug/dev toggle: when true, the boss state machine will enter the "Null"
+    // state and do nothing (no summoning/attacks). Useful while editing levels.
+    bool ai_disabled = false;
+
     int minions_per_summon = 6;
     // Optional per-wave overrides (0 = use minions_per_summon)
     int summon1_minions = 0;
@@ -61,6 +65,7 @@ namespace Components {
 } // namespace Components
 
 REGISTER_COMPONENT(Components::CatMonkeyBoss,
+  ai_disabled,
   minions_per_summon,
   summon1_minions, summon2_minions, summon3_minions, summon4_minions, summon5_minions,
   summon_cooldown, summon5_spawn_interval_sec, damage_per_minion_death,

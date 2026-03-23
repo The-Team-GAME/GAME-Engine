@@ -742,6 +742,22 @@ namespace Engine {
         }
         preloaded_snapshots.erase(level_id);
 
+        // After reactivating entities from the snapshot, rebuild tile collision entities
+        // and world bounds. This matches the normal level-switch path and prevents
+        // "blank" reloads where TilemapManager state wasn't rebuilt.
+        for (auto& entity : ECS::get_entities_with<Components::TileMap>()) {
+          auto layers = entity.get_layers();
+          for (ECS::LayerID layer_id = 0; layer_id < ECS::MAX_LAYERS; ++layer_id) {
+            if (layers.test(layer_id)) {
+              std::string layer_name = ECS::get_layer_name(layer_id);
+              if (!layer_name.empty()) {
+                TilemapManager::rebuild_tilemap_for_layer(layer_name);
+              }
+            }
+          }
+        }
+        TilemapManager::broadcast_world_bounds();
+
         current_level_path = level_id;
         call_level_init();
 

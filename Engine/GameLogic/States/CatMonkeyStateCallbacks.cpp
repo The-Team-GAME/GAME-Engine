@@ -24,6 +24,14 @@ namespace CatMonkeyStateCallbacks
   {
     static constexpr int k_summon_state_count = 5;
 
+    // Camera entity names used in LevelTwo.
+    static constexpr const char* k_player_camera_name = "Player_Camera";
+    static constexpr const char* k_cat_monkey_camera_name = "Cat_Monkey";
+
+    // How long to keep the Cat_Monkey camera active after the summon animation
+    // completes and enemies are spawned, so the player can see the wave appear.
+    static constexpr float k_post_summon_camera_linger_sec = 1.0f;
+
     inline Engine::ECS::Entity spawn_enemy_from_prefab(const std::string& prefab_path, const Math::Vec2D& pos);
 
     struct BossRuntime
@@ -45,6 +53,18 @@ namespace CatMonkeyStateCallbacks
       std::vector<Math::Vec2D> summon5_spawn_positions{};
       size_t summon5_next_index = 0;
       float summon5_next_spawn_time = 0.0f;
+
+      // Summon5 spawn rate ramping: starts slow and speeds up on kills.
+      float summon5_current_spawn_interval_sec = 5.0f;
+
+      // Summon pacing: enforce a chill period before the first summon and
+      // between successive summons.
+      bool summon_pacing_initialized = false;
+      float next_summon_allowed_time = 0.0f;
+
+      // Camera override during summoning.
+      bool camera_override_active = false;
+      float camera_override_until = 0.0f;
     };
 
     struct SpawnSetEntry
@@ -69,12 +89,81 @@ namespace CatMonkeyStateCallbacks
       runtimes().erase(boss.get_id());
     }
 
+    inline bool all_waves_cleared(const BossRuntime& rt)
+    {
+      return std::all_of(rt.wave_cleared.begin(), rt.wave_cleared.end(), [](bool v) { return v; });
+    }
+
     // ------------------------------------------------------------------------
     // Config (kept in code for now)
     // ------------------------------------------------------------------------
     inline const Components::CatMonkeyBoss* get_cfg(Engine::ECS::Entity boss)
     {
       return boss.get_component<Components::CatMonkeyBoss>();
+    }
+
+    inline bool is_ai_disabled(Engine::ECS::Entity boss)
+    {
+      if (const Components::CatMonkeyBoss* cfg = get_cfg(boss)) {
+        return cfg->ai_disabled;
+      }
+      return false;
+    }
+
+    inline Engine::ECS::Entity find_camera_entity_by_name(const char* name)
+    {
+      Engine::ECS::Entity found;
+      if (!name || *name == '\0') {
+        return found;
+      }
+
+      Engine::ECS::for_each_entity_with<Components::Camera>(
+        [&](Engine::ECS::Entity e)
+        {
+          if (found.is_valid()) {
+            return;
+          }
+          if (e.get_name() == name) {
+            found = e;
+          }
+        });
+
+      return found;
+    }
+
+    inline void set_active_camera_entity(Engine::ECS::Entity camera_entity)
+    {
+      if (!camera_entity.is_valid()) {
+        return;
+      }
+
+      Engine::ECS::for_each_entity_with<Components::Camera>(
+        [&](Engine::ECS::Entity e)
+        {
+          if (auto* cam = e.get_component<Components::Camera>()) {
+            cam->is_active = false;
+          }
+        });
+
+      if (auto* cam = camera_entity.get_component<Components::Camera>()) {
+        cam->is_active = true;
+      }
+    }
+
+    inline void activate_player_camera_if_present()
+    {
+      Engine::ECS::Entity cam = find_camera_entity_by_name(k_player_camera_name);
+      if (cam.is_valid()) {
+        set_active_camera_entity(cam);
+      }
+    }
+
+    inline void activate_cat_monkey_camera_if_present()
+    {
+      Engine::ECS::Entity cam = find_camera_entity_by_name(k_cat_monkey_camera_name);
+      if (cam.is_valid()) {
+        set_active_camera_entity(cam);
+      }
     }
 
     inline int minions_per_summon_for(Engine::ECS::Entity boss, int summon_index)
@@ -401,7 +490,7 @@ namespace CatMonkeyStateCallbacks
       if (auto* cfg = get_cfg(boss)) {
         return cfg->summon_cooldown;
       }
-      return 6.0f;
+      return 2.0f;
     }
 
     inline int damage_per_minion_death(Engine::ECS::Entity boss)
@@ -522,14 +611,16 @@ namespace CatMonkeyStateCallbacks
       (void)damage;
     }
 
-    inline void process_tracked_minion_deaths(Engine::ECS::Entity boss_entity, std::vector<Engine::ECS::EntityID>& tracked_summons)
+    inline int process_tracked_minion_deaths(Engine::ECS::Entity boss_entity, std::vector<Engine::ECS::EntityID>& tracked_summons)
     {
       if (tracked_summons.empty()) {
-        return;
+        return 0;
       }
 
       std::vector<Engine::ECS::EntityID> still_alive;
       still_alive.reserve(tracked_summons.size());
+
+      int death_count = 0;
 
       for (Engine::ECS::EntityID id : tracked_summons)
       {
@@ -543,6 +634,7 @@ namespace CatMonkeyStateCallbacks
           }
 
           apply_boss_damage_from_minion_death(boss_entity, damage_per_minion_death(boss_entity));
+          death_count++;
           continue;
         }
 
@@ -550,6 +642,7 @@ namespace CatMonkeyStateCallbacks
         if (auto* hp = summoned.get_component<Components::EnemyHealth>()) {
           if (hp->current_hp <= 0) {
             apply_boss_damage_from_minion_death(boss_entity, damage_per_minion_death(boss_entity));
+            death_count++;
             continue;
           }
         }
@@ -558,6 +651,7 @@ namespace CatMonkeyStateCallbacks
       }
 
       tracked_summons = std::move(still_alive);
+      return death_count;
     }
 
     inline int compute_summon_pool_current_hp(const std::vector<Engine::ECS::EntityID>& tracked_summons)
@@ -822,6 +916,7 @@ namespace CatMonkeyStateCallbacks
       rt.summon5_spawn_positions.clear();
       rt.summon5_next_index = 0;
       rt.summon5_next_spawn_time = 0.0f;
+      rt.summon5_current_spawn_interval_sec = 5.0f;
 
       // Spawn-set JSON path: spawn exactly what was exported.
       if (!spawn_set.empty())
@@ -851,7 +946,7 @@ namespace CatMonkeyStateCallbacks
             }
 
             rt.summon5_next_index = 1;
-            rt.summon5_next_spawn_time = Engine::Time::get_time() + summon5_spawn_interval(entity);
+            rt.summon5_next_spawn_time = Engine::Time::get_time() + rt.summon5_current_spawn_interval_sec;
             rt.summon5_timed_spawning = (rt.summon5_next_index < rt.summon5_pending_prefabs.size());
           }
         }
@@ -905,7 +1000,7 @@ namespace CatMonkeyStateCallbacks
         if (!rt.summon5_pending_prefabs.empty() && !rt.summon5_spawn_positions.empty()) {
           spawn_one_from_list(rt.summon5_pending_prefabs[0], 0, rt.summon5_spawn_positions);
           rt.summon5_next_index = 1;
-          rt.summon5_next_spawn_time = Engine::Time::get_time() + summon5_spawn_interval(entity);
+          rt.summon5_next_spawn_time = Engine::Time::get_time() + rt.summon5_current_spawn_interval_sec;
         }
       }
       else {
@@ -934,12 +1029,45 @@ namespace CatMonkeyStateCallbacks
   }
 
   // ========================================================================
+  // Null State Callbacks (do nothing)
+  // ========================================================================
+
+  inline void null_on_enter([[maybe_unused]] Engine::ECS::Entity entity)
+  {
+    // Dev-safe: if we were in the middle of a summon camera override,
+    // restore the normal player camera.
+    if (entity.is_valid()) {
+      BossRuntime& rt = runtime_for(entity);
+      rt.camera_override_active = false;
+      rt.camera_override_until = 0.0f;
+    }
+    activate_player_camera_if_present();
+  }
+
+  inline void null_on_update([[maybe_unused]] Engine::ECS::Entity entity)
+  {
+    // Intentionally empty.
+  }
+
+  // ========================================================================
   // Idle State Callbacks
   // ========================================================================
 
   inline void idle_on_enter([[maybe_unused]] Engine::ECS::Entity entity)
   {
-    // Intentionally empty.
+    // If the dev toggle is enabled, keep the boss inert.
+    if (is_ai_disabled(entity)) {
+      if (auto* sm = entity.get_component<Components::StateMachine>()) {
+        sm->change_state("Null");
+      }
+    }
+
+    // Ensure we don't instantly start summoning on level start.
+    BossRuntime& rt = runtime_for(entity);
+    if (!rt.summon_pacing_initialized) {
+      rt.summon_pacing_initialized = true;
+      rt.next_summon_allowed_time = Engine::Time::get_time() + summon_cooldown(entity);
+    }
   }
 
   inline void idle_on_update(Engine::ECS::Entity entity)
@@ -951,13 +1079,38 @@ namespace CatMonkeyStateCallbacks
       return;
     }
 
+    if (is_ai_disabled(entity)) {
+      sm->change_state("Null");
+      return;
+    }
+
     // Boss already dead.
     if (hp->current_hp <= 0) {
       return;
     }
 
-    // Tick minion linkage for the currently-active wave.
     BossRuntime& rt = runtime_for(entity);
+
+    // If we are in a post-summon camera override window, keep the Cat_Monkey camera active.
+    // Once the timer elapses, restore the player camera.
+    const float now = Engine::Time::get_time();
+
+    // Summon pacing init (covers cases where runtime is created from idle_on_update first).
+    if (!rt.summon_pacing_initialized) {
+      rt.summon_pacing_initialized = true;
+      rt.next_summon_allowed_time = now + summon_cooldown(entity);
+    }
+
+    if (rt.camera_override_active) {
+      if (now < rt.camera_override_until) {
+        activate_cat_monkey_camera_if_present();
+      }
+      else {
+        rt.camera_override_active = false;
+        rt.camera_override_until = 0.0f;
+        activate_player_camera_if_present();
+      }
+    }
 
     // Summon5 staggered spawns continue while the wave is active.
     if (rt.active_wave_index == 4 && rt.summon5_timed_spawning) {
@@ -977,7 +1130,7 @@ namespace CatMonkeyStateCallbacks
           }
 
           rt.summon5_next_index++;
-          rt.summon5_next_spawn_time = now + summon5_spawn_interval(entity);
+          rt.summon5_next_spawn_time = now + rt.summon5_current_spawn_interval_sec;
           if (rt.summon5_next_index >= rt.summon5_pending_prefabs.size()) {
             rt.summon5_timed_spawning = false;
           }
@@ -990,26 +1143,55 @@ namespace CatMonkeyStateCallbacks
 
     if (rt.active_wave_index >= 0 && rt.active_wave_index < k_summon_state_count) {
       auto& list = rt.wave_summons[static_cast<size_t>(rt.active_wave_index)];
-      process_tracked_minion_deaths(entity, list);
+      const int deaths = process_tracked_minion_deaths(entity, list);
+
+      // Summon5: ramp spawn speed up after each kill.
+      if (rt.active_wave_index == 4 && deaths > 0 && summon5_has_more_to_spawn(rt)) {
+        // Start at 5s, reduce 10% per kill until reaching 1s.
+        static constexpr float k_min_interval = 1.0f;
+        static constexpr float k_per_kill_multiplier = 0.9f;
+        for (int i = 0; i < deaths; ++i) {
+          rt.summon5_current_spawn_interval_sec = std::max(k_min_interval, rt.summon5_current_spawn_interval_sec * k_per_kill_multiplier);
+        }
+
+        // Pull the next spawn earlier (never later) so the speed-up feels immediate.
+        const float now = Engine::Time::get_time();
+        const float earliest_next = now + rt.summon5_current_spawn_interval_sec;
+        if (rt.summon5_next_spawn_time > earliest_next) {
+          rt.summon5_next_spawn_time = earliest_next;
+        }
+      }
+
       if (list.empty()) {
         if (rt.active_wave_index == 4) {
           // Don't clear Summon5 until all planned spawns have been spawned.
           if (!summon5_has_more_to_spawn(rt)) {
             mark_wave_cleared(entity, rt.active_wave_index);
             rt.active_wave_index = -1;
+
+            // Add a chill window after the set is fully cleared.
+            rt.next_summon_allowed_time = std::max(rt.next_summon_allowed_time, now + summon_cooldown(entity));
           }
         }
         else {
           mark_wave_cleared(entity, rt.active_wave_index);
           rt.active_wave_index = -1;
+
+          // Add a chill window after the set is cleared.
+          rt.next_summon_allowed_time = std::max(rt.next_summon_allowed_time, now + summon_cooldown(entity));
         }
       }
     }
     update_wave_healthbars_component(entity);
 
     // If no active summons remain, and cooldown elapsed, summon again.
-    float now = Engine::Time::get_time();
-    bool cooldown_ready = (now - rt.last_summon_time) >= summon_cooldown(entity);
+    // Placeholder end-state behavior: once all 5 summon waves have been cleared,
+    // the boss should stop cycling Summon1..Summon5 and simply idle.
+    if (all_waves_cleared(rt)) {
+      return;
+    }
+
+    bool cooldown_ready = now >= rt.next_summon_allowed_time;
     if (rt.active_wave_index == -1 && cooldown_ready) {
       const int idx = (rt.next_summon_index % k_summon_state_count + k_summon_state_count) % k_summon_state_count;
       if (idx == 1) sm->change_state("Summon2");
@@ -1033,6 +1215,11 @@ namespace CatMonkeyStateCallbacks
       return;
     }
 
+    if (is_ai_disabled(entity)) {
+      sm->change_state("Null");
+      return;
+    }
+
     if (hp->current_hp <= 0) {
       return;
     }
@@ -1051,6 +1238,12 @@ namespace CatMonkeyStateCallbacks
 
     restart_entity_animation(entity);
     update_wave_healthbars_component(entity);
+
+    // Camera: swap immediately to the Cat_Monkey camera when summoning starts.
+    // Keep it active at least through the summon animation.
+    rt.camera_override_active = true;
+    rt.camera_override_until = std::numeric_limits<float>::infinity();
+    activate_cat_monkey_camera_if_present();
   }
 
   inline void summon1_on_enter(Engine::ECS::Entity entity) { summon_impl_on_enter(entity, 0); }
@@ -1064,6 +1257,11 @@ namespace CatMonkeyStateCallbacks
     auto* sm = entity.get_component<Components::StateMachine>();
     auto* hp = entity.get_component<Components::EnemyHealth>();
     if (!sm || !hp) {
+      return;
+    }
+
+    if (is_ai_disabled(entity)) {
+      sm->change_state("Null");
       return;
     }
 
@@ -1086,6 +1284,19 @@ namespace CatMonkeyStateCallbacks
 
     spawn_wave_for_summon_index(entity, rt.pending_summon_index);
     rt.summon_pending = false;
+
+    // Enforce chill time before the next summon can begin.
+    // (Cooldown starts after the summon animation finishes.)
+    {
+      const float now = Engine::Time::get_time();
+      rt.next_summon_allowed_time = now + summon_cooldown(entity);
+
+      // Camera: after the summon animation completes and enemies are spawned,
+      // linger briefly on the Cat_Monkey camera so the player can see the wave.
+      rt.camera_override_active = true;
+      rt.camera_override_until = now + k_post_summon_camera_linger_sec;
+      activate_cat_monkey_camera_if_present();
+    }
 
     // Go back to idle to wait for the wave to be cleared.
     sm->change_state("Idle");
@@ -1126,6 +1337,9 @@ namespace CatMonkeyStateCallbacks
     if (auto* bars = entity.get_component<Components::CatMonkeySummonWaveHealthBars>()) {
       bars->visible = false;
     }
+
+    // Restore player camera if this boss was holding an override.
+    activate_player_camera_if_present();
   }
 
   inline void death_on_update(Engine::ECS::Entity entity)
@@ -1148,6 +1362,8 @@ namespace CatMonkeyStateCallbacks
 namespace {
   void Cat_monkey_idle_enter(Engine::ECS::Entity entity) { CatMonkeyStateCallbacks::idle_on_enter(entity); }
   void Cat_monkey_idle_update(Engine::ECS::Entity entity) { CatMonkeyStateCallbacks::idle_on_update(entity); }
+  void Cat_monkey_null_enter(Engine::ECS::Entity entity) { CatMonkeyStateCallbacks::null_on_enter(entity); }
+  void Cat_monkey_null_update(Engine::ECS::Entity entity) { CatMonkeyStateCallbacks::null_on_update(entity); }
   void Cat_monkey_summon_enter(Engine::ECS::Entity entity) { CatMonkeyStateCallbacks::summon_on_enter(entity); }
   void Cat_monkey_summon_update(Engine::ECS::Entity entity) { CatMonkeyStateCallbacks::summon_on_update(entity); }
   void Cat_monkey_summon1_enter(Engine::ECS::Entity entity) { CatMonkeyStateCallbacks::summon1_on_enter(entity); }
@@ -1167,6 +1383,8 @@ namespace {
 
 REGISTER_FUNCTION(Cat_monkey_idle_enter)
 REGISTER_FUNCTION(Cat_monkey_idle_update)
+REGISTER_FUNCTION(Cat_monkey_null_enter)
+REGISTER_FUNCTION(Cat_monkey_null_update)
 REGISTER_FUNCTION(Cat_monkey_summon_enter)
 REGISTER_FUNCTION(Cat_monkey_summon_update)
 REGISTER_FUNCTION(Cat_monkey_summon1_enter)
@@ -1184,6 +1402,7 @@ REGISTER_FUNCTION(Cat_monkey_death_enter)
 REGISTER_FUNCTION(Cat_monkey_death_update)
 
 REGISTER_STATE_MACHINE_BLUEPRINT(CatMonkey, "Idle",
+  STATE("Null", CatMonkeyStateCallbacks::null_on_enter, CatMonkeyStateCallbacks::null_on_update, NO_CALLBACK)
   STATE("Idle", CatMonkeyStateCallbacks::idle_on_enter, CatMonkeyStateCallbacks::idle_on_update, NO_CALLBACK)
   STATE("Summon1", CatMonkeyStateCallbacks::summon1_on_enter, CatMonkeyStateCallbacks::summon1_on_update, NO_CALLBACK)
   STATE("Summon2", CatMonkeyStateCallbacks::summon2_on_enter, CatMonkeyStateCallbacks::summon2_on_update, NO_CALLBACK)
@@ -1201,6 +1420,7 @@ void register_catmonkey_blueprint_runtime()
   auto& registry = ::Engine::StateMachineBlueprintRegistry::instance();
   ::Engine::StateMachineBlueprint bp;
   bp.initial_state = "Idle";
+  STATE("Null", CatMonkeyStateCallbacks::null_on_enter, CatMonkeyStateCallbacks::null_on_update, NO_CALLBACK)
   STATE("Idle", CatMonkeyStateCallbacks::idle_on_enter, CatMonkeyStateCallbacks::idle_on_update, NO_CALLBACK)
   STATE("Summon1", CatMonkeyStateCallbacks::summon1_on_enter, CatMonkeyStateCallbacks::summon1_on_update, NO_CALLBACK)
   STATE("Summon2", CatMonkeyStateCallbacks::summon2_on_enter, CatMonkeyStateCallbacks::summon2_on_update, NO_CALLBACK)
