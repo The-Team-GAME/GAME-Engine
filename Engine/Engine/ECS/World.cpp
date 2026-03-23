@@ -15,6 +15,7 @@
 //-----------------------------------------------------------------------------------
 #include "World.h"
 #include "WorldData.h"
+#include "../Random.h"
 #include "../Perf.h"
 #include <unordered_set>
 
@@ -130,6 +131,7 @@ namespace Engine {
         containers.entity_layers.resize(id + 1);
       containers.entity_layers[id] = LayerSignature{};
       containers.entity_names[id] = "Entity " + std::to_string(id);
+      containers.entity_uuids[id] = Random::generate_uuid();
 
       // Add entity to default layer
       containers.entity_layers[id].set(DEFAULT_LAYER);
@@ -155,6 +157,7 @@ namespace Engine {
         containers.entity_layers.resize(id + 1);
       containers.entity_layers[id] = LayerSignature{};
       containers.entity_names[id] = "Entity " + std::to_string(id);
+      containers.entity_uuids[id] = Random::generate_uuid();
 
       // Add entity to default layer
       containers.entity_layers[id].set(DEFAULT_LAYER);
@@ -619,6 +622,7 @@ namespace Engine {
           if (entityId < containers.entity_layers.size())
             containers.entity_layers[entityId].reset();
           containers.entity_names.erase(entityId);
+          containers.entity_uuids.erase(entityId);
           containers.prefab_instances.erase(entityId); // Clean up prefab instance data
 
           for (auto& system : Internal::get_systems())

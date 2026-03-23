@@ -114,8 +114,14 @@ namespace Engine {
       }
 
       ReflectionLibrary::GenericValue result;
-      // Store the original entity ID for remapping on load
-      result["id"] = static_cast<int>(entity.get_id());
+
+      // Serialize stable UUID for merge consistency
+      auto& containers = Internal::get_containers();
+      EntityID entity_id = entity.get_id();
+      auto uuid_it = containers.entity_uuids.find(entity_id);
+      if (uuid_it != containers.entity_uuids.end()) {
+        result["uuid"] = uuid_it->second;
+      }
 
       // Serialize entity name
       const std::string& name = get_entity_name(entity);
@@ -131,8 +137,6 @@ namespace Engine {
       );
 
       // Serialize prefab instance data if this is a prefab instance
-      auto& containers = Internal::get_containers();
-      EntityID entity_id = entity.get_id();
       auto prefab_it = containers.prefab_instances.find(entity_id);
       if (prefab_it != containers.prefab_instances.end()) {
         const auto& instance_data = prefab_it->second;
@@ -173,12 +177,21 @@ namespace Engine {
       Entity entity = ECS::create_entity();
       EntityID entity_id = entity.get_id();
 
+      auto& containers = Internal::get_containers();
+
+      // Deserialize stable UUID if present (for merge consistency)
+      if (value.has("uuid") && value["uuid"].isString()) {
+        containers.entity_uuids[entity_id] = value["uuid"].getString();
+        Log::info("Loaded entity UUID: {} -> {}", entity_id, value["uuid"].getString());
+      } else {
+        Log::info("No UUID in JSON for entity {}, keeping generated: {}",
+          entity_id, containers.entity_uuids[entity_id]);
+      }
+
       // Deserialize entity name if present
       if (value.has("name") && value["name"].isString()) {
         set_entity_name(entity, value["name"].getString());
       }
-
-      auto& containers = Internal::get_containers();
 
       // Deserialize layers using helper function
       LayerSignature layers = Serialization::deserialize_layers(value);

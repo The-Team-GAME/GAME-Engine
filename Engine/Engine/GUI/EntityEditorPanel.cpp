@@ -853,6 +853,15 @@ void EntityEditorPanel()
       ImGui::Text("Editing: %s (ID: %d)", ename.empty() ? "Entity" : ename.c_str(), selected_entity_id);
     }
 
+    // Show entity UUID
+    {
+      auto& containers = Engine::ECS::Internal::get_containers();
+      auto uuid_it = containers.entity_uuids.find(entity.get_id());
+      if (uuid_it != containers.entity_uuids.end()) {
+        ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "UUID: %s", uuid_it->second.c_str());
+      }
+    }
+
     // Prefab instance info
     if (Engine::ECS::is_prefab_instance(entity)) {
       std::string prefab_path = Engine::ECS::get_prefab_path(entity);

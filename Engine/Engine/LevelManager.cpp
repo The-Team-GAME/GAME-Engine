@@ -1102,14 +1102,14 @@ namespace Engine {
 
         ReflectionLibrary::GenericValue entity_value = ECS::entity_to_generic_value(entity);
         entities.push_back(std::move(entity_value));
-        });
+      });
 
-      // Sort entities by ID for deterministic JSON output
+      // Sort entities by UUID for deterministic JSON output
       std::sort(entities.begin(), entities.end(),
         [](const ReflectionLibrary::GenericValue& a, const ReflectionLibrary::GenericValue& b) {
-          int64_t id_a = a.has("id") ? a["id"].getInt() : 0;
-          int64_t id_b = b.has("id") ? b["id"].getInt() : 0;
-          return id_a < id_b;
+          std::string uuid_a = a.has("uuid") && a["uuid"].isString() ? a["uuid"].getString() : "";
+          std::string uuid_b = b.has("uuid") && b["uuid"].isString() ? b["uuid"].getString() : "";
+          return uuid_a < uuid_b;
         });
 
       return entities;

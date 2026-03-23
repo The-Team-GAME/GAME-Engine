@@ -55,6 +55,7 @@ namespace Engine {
         std::vector<LayerID> entity_highest_layer; // Cached highest layer per entity (indexed by EntityID)
         std::vector<LayerSignature> entity_layers;  // Indexed by EntityID — O(1) direct access
         std::unordered_map<EntityID, std::string> entity_names;
+        std::unordered_map<EntityID, std::string> entity_uuids;
         std::unordered_map<EntityID, PrefabInstanceData> prefab_instances;
         std::array<std::unique_ptr<IComponentArray>, MAX_COMPONENTS> component_arrays{};
         std::vector<std::pair<EntityID, ComponentTypeID>> components_to_remove;
