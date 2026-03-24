@@ -72,7 +72,7 @@ public:
     current_upgrade_threshold_ = 2;
     current_kills_for_upgrade_ = 0;
     upgrade_btn_anim_time_ = 0.0f;
-    Engine::Resources::open_level("levels/LevelOneTestingExtra.json");
+    //Engine::Resources::open_level("levels/LevelOneTestingExtra.json");
     Engine::LevelManager::open_level("levels/LevelOneTestingExtra.json");
 
 
