@@ -12,6 +12,7 @@
 #pragma once
 
 #include <vector>
+#include <functional>
 #include "EngineExport.h"
 #include "ECS/Types.h"
 
@@ -54,6 +55,10 @@ namespace Engine
     // Tell the FSM which entity is the upgrade button (call after button creation).
     ENGINE_API void set_upgrade_button(ECS::EntityID id);
 
+    // Register a callback invoked when PickerOpen is entered (use to push_scene).
+    // Pass an empty function to clear.
+    ENGINE_API void set_picker_open_callback(std::function<void()> cb);
+
   private:
     UpgradeUIStateMachine() = default;
 
@@ -73,6 +78,8 @@ namespace Engine
 
     UpgradeFlowState state_ = UpgradeFlowState::Idle;
 
+    std::function<void()> picker_open_cb_;
+
     // Upgrade button entity (created externally, FSM controls its alpha)
     ECS::EntityID upgrade_btn_id_ = 0;
 
@@ -91,6 +98,11 @@ namespace Engine
     float card_base_sx_[2] = {};
     float card_base_sy_[2] = {};
     float picker_open_time_ = 0.0f;
+
+    // Intro animation from top for cards on picker open
+    bool  card_intro_active_ = false;
+    float card_intro_time_ = 0.0f;
+
     int   hovered_card_ = -1;
     float hover_lerp_[2] = {};
     float card_tilt_[2] = {};   // current Z-rotation (degrees) for tilt effects
@@ -102,6 +114,9 @@ namespace Engine
     bool  arc_active_ = false;
     float arc_time_ = 0.0f;
     int   arc_card_ = -1;         // which card (0 or 1) is flying
+
+    void handle_card_selection(int slot);
+    void refresh_card_entity_batch();
     float arc_start_x_ = 0.0f, arc_start_y_ = 0.0f;
     float arc_end_x_ = 0.0f, arc_end_y_ = 0.0f;
     float arc_start_sx_ = 0.0f, arc_start_sy_ = 0.0f;

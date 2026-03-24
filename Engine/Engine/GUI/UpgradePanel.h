@@ -858,6 +858,15 @@ inline void UpgradePanel()
         ImGui::Unindent();
       }
 
+      ImGui::Checkbox("Card Intro", &anim.enable_card_intro);
+      if (anim.enable_card_intro)
+      {
+        ImGui::Indent();
+        ImGui::DragFloat("Intro Duration", &anim.intro_duration, 0.01f, 0.01f, 3.0f);
+        ImGui::DragFloat("Intro Offset", &anim.intro_start_offset, 5.0f, 0.0f, 800.0f, "%.1f px");
+        ImGui::Unindent();
+      }
+
       ImGui::Checkbox("Idle Float", &anim.enable_idle_float);
       if (anim.enable_idle_float)
       {

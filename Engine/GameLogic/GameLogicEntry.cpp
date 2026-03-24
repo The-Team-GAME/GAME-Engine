@@ -33,6 +33,9 @@
 #include "GameStates/DistortionEffectState.h"
 #include "GameStates/BehaviourState.h"
 #include "GameStates/GameplayState.h"
+#include "GameStates/TipsBookState.h"
+#include "GameStates/OldManDialogueState.h"
+#include "GameStates/UpgradePickerState.h"
 #include "GameStates/PauseState.h"
 #include "GameStates/VictoryState.h"
 #include "GameStates/OptionsState.h"
@@ -154,8 +157,8 @@ static void register_collision_callbacks()
         if (enemy_health->current_hp <= 0) {
           if (state_machine->get_current_state() != "Death") {
             state_machine->change_state("Death");
-            Engine::UpgradeManager::instance().add_points(50);
-            Log::info("Enemy killed! +50 upgrade points (total: {})", Engine::UpgradeManager::instance().get_points());
+            Engine::UpgradeManager::instance().add_points(1);
+            Log::info("Enemy killed! +1 upgrade point (total: {})", Engine::UpgradeManager::instance().get_points());
           }
         }
         else if (state_machine->get_current_state() != "Hit") {
@@ -507,6 +510,9 @@ static void register_scenes()
   Engine::SceneManager::register_scene<PhysicsTestState>("PhysicsTestState");
   Engine::SceneManager::register_scene<DistortionEffectState>("DistortionEffectState");
   Engine::SceneManager::register_scene<BehaviourState>("BehaviourState");
+  Engine::SceneManager::register_scene<TipsBookState>("TipsBookState");
+  Engine::SceneManager::register_scene<OldManDialogueState>("OldManDialogueState");
+  Engine::SceneManager::register_scene<UpgradePickerState>("UpgradePickerState");
   Engine::SceneManager::register_scene<PauseState>("PauseState");
   Engine::SceneManager::register_scene<VictoryState>("VictoryState");
   Engine::SceneManager::register_scene<OptionsState>("OptionsState");
