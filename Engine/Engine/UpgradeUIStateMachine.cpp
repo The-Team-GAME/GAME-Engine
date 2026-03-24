@@ -339,7 +339,7 @@ namespace Engine
     float scale_y[2] = { card_base_sy_[0], card_base_sy_[1] };
 
     // Entry animation: cards slide down from above and bounce into place
-    if (card_intro_active_)
+    if (card_intro_active_ && cfg.enable_card_intro)
     {
       const float intro_duration = cfg.intro_duration;
       const float intro_start_offset = cfg.intro_start_offset;
@@ -357,6 +357,18 @@ namespace Engine
 
       if (t >= 1.0f)
         card_intro_active_ = false;
+    }
+    else if (card_intro_active_ && !cfg.enable_card_intro)
+    {
+      // Directly skip intro if support is disabled.
+      card_intro_active_ = false;
+      for (int i = 0; i < 2; ++i)
+      {
+        if (card_ids[i] == 0) continue;
+        auto* t = ECS::Entity(card_ids[i]).get_component<Components::Transform2D>();
+        if (t)
+          t->position.y = card_base_y_[i];
+      }
     }
 
     // ---- Mini-card idle wave + smash ripple (applied every frame) ----
@@ -902,26 +914,11 @@ namespace Engine
     }
   }
 
-  void UpgradeUIStateMachine::handle_card_selection(int slot)
-  {
-    if (slot < 0 || slot > 1) return;
-
-    auto& mgr = UpgradeManager::instance();
-    mgr.pick_card(slot);
-
-    if (mgr.can_upgrade() && mgr.roll_cards())
-    {
-      refresh_card_entity_batch();
-      return;
-    }
-
-    transition_to(UpgradeFlowState::Idle);
-  }
-
   void UpgradeUIStateMachine::refresh_card_entity_batch()
   {
     auto& mgr = UpgradeManager::instance();
     auto& settings = FileIO::SettingsManager<FileIO::UpgradeSettings>::get();
+    auto& cfg = FileIO::SettingsManager<FileIO::CardAnimSettings>::get_mutable();
 
     picker_open_time_ = 0.0f;
     card_intro_active_ = true;
@@ -951,7 +948,7 @@ namespace Engine
       if (t)
       {
         t->position.x = card_base_x_[i];
-        t->position.y = card_base_y_[i];
+        t->position.y = card_base_y_[i] - cfg.intro_start_offset;
         t->scale.x = card_base_sx_[i];
         t->scale.y = card_base_sy_[i];
         t->rotation = 0.0f;
@@ -973,6 +970,22 @@ namespace Engine
       else if (atlas)
         atlas->drawIndex = 0;
     }
+  }
+
+  void UpgradeUIStateMachine::handle_card_selection(int slot)
+  {
+    if (slot < 0 || slot > 1) return;
+
+    auto& mgr = UpgradeManager::instance();
+    mgr.pick_card(slot);
+
+    if (mgr.can_upgrade() && mgr.roll_cards())
+    {
+      refresh_card_entity_batch();
+      return;
+    }
+
+    transition_to(UpgradeFlowState::Idle);
   }
 
   // ---- Picker entity management ----
@@ -1182,6 +1195,20 @@ namespace Engine
     card_intro_active_ = true;
     card_intro_time_ = 0.0f;
     hovered_card_ = -1;
+
+    // Place cards at intro start position to avoid a one-frame snap to final.
+    //auto& cfg = FileIO::SettingsManager<FileIO::CardAnimSettings>::get_mutable();
+    float start_offset = cfg.intro_start_offset;
+    if (card0_id_ != 0)
+    {
+      if (auto* t = ECS::Entity(card0_id_).get_component<Components::Transform2D>())
+        t->position.y = card_base_y_[0] - start_offset;
+    }
+    if (card1_id_ != 0)
+    {
+      if (auto* t = ECS::Entity(card1_id_).get_component<Components::Transform2D>())
+        t->position.y = card_base_y_[1] - start_offset;
+    }
     hover_lerp_[0] = 0.0f;
     hover_lerp_[1] = 0.0f;
     card_tilt_[0] = 0.0f;

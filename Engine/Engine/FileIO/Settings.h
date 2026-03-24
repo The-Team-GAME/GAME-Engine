@@ -162,6 +162,7 @@ namespace Engine
       bool enable_selection_stamp = true;
       bool enable_hover_tilt = true;
       bool enable_idle_tilt = true;
+      bool enable_card_intro = true;
       bool enable_card_arc = true;
       bool enable_burst_particles = true;
 
@@ -262,7 +263,7 @@ REFLECT_FIELDS(Engine::FileIO::UpgradeDefinition, id, display_name, rarity, stat
 REFLECT_FIELDS(Engine::FileIO::UpgradeSettings, base_point_threshold, threshold_scaling, rarities, upgrades)
 REFLECT_FIELDS(Engine::FileIO::CardAnimSettings,
   enable_flip_reveal, enable_idle_float, enable_hover_lift, enable_selection_stamp,
-  enable_hover_tilt, enable_idle_tilt, enable_card_arc, enable_burst_particles,
+  enable_hover_tilt, enable_idle_tilt, enable_card_intro, enable_card_arc, enable_burst_particles,
   flip_duration, flip_stagger,
   intro_duration, intro_start_offset,
   float_amplitude, float_speed, float_phase_offset,

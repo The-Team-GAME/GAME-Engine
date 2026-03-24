@@ -5,6 +5,7 @@
     "card_stack_offset": 8.0,
     "enable_burst_particles": true,
     "enable_card_arc": true,
+    "enable_card_intro": false,
     "enable_card_stack": true,
     "enable_flip_reveal": true,
     "enable_hover_lift": true,
