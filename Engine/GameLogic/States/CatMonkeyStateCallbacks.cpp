@@ -1475,11 +1475,47 @@ namespace CatMonkeyStateCallbacks
         }
       }
       else {
-        // End of override window: restore the normal player camera.
-        rt.camera_override_active = false;
-        rt.camera_override_until = 0.0f;
-        rt.summon5_cinematic_active = false;
-        activate_player_camera_if_present();
+        // End of Cat_Monkey camera linger: switch to Centered camera and start cinematic zoom out.
+        if (rt.camera_override_mode == BossRuntime::CameraOverrideMode::CatMonkey && rt.summon5_cinematic_active) {
+          // Switch to Centered camera
+          Engine::ECS::Entity centered = find_camera_entity_by_name(k_centered_camera_name);
+          Math::Vec2D target_pos{};
+          float target_rot = 0.0f;
+          if (centered.is_valid()) {
+            if (auto* t = centered.get_component<Components::Transform2D>()) {
+              target_pos = t->position;
+              target_rot = t->rotation;
+            }
+          }
+          const Engine::Graphics::Camera current = Engine::Graphics::get_camera();
+          if (centered.is_valid()) {
+            if (auto* t = centered.get_component<Components::Transform2D>()) {
+              t->position = current.position;
+              t->rotation = current.rotation;
+              t->scale.x = current.zoom;
+              t->scale.y = current.zoom;
+            }
+          }
+          rt.camera_override_active = true;
+          rt.camera_override_mode = BossRuntime::CameraOverrideMode::Centered;
+          rt.camera_override_until = std::numeric_limits<float>::infinity();
+          rt.summon5_cinematic_start_time = now;
+          rt.summon5_cinematic_end_time = now + k_summon5_cinematic_duration_sec;
+          rt.summon5_zoom_start = current.zoom;
+          rt.summon5_pos_start = current.position;
+          rt.summon5_rot_start = current.rotation;
+          rt.summon5_pos_target = target_pos;
+          rt.summon5_rot_target = target_rot;
+          activate_centered_camera_if_present();
+          tick_summon5_cinematic_camera(rt);
+        } else {
+          // End of Centered camera cinematic: keep Centered camera active, do not return to player camera.
+          rt.camera_override_active = true;
+          rt.camera_override_mode = BossRuntime::CameraOverrideMode::Centered;
+          rt.camera_override_until = std::numeric_limits<float>::infinity();
+          rt.summon5_cinematic_active = false;
+          activate_centered_camera_if_present();
+        }
       }
     }
 
@@ -1693,58 +1729,19 @@ namespace CatMonkeyStateCallbacks
     const float now = Engine::Time::get_time();
     rt.next_summon_allowed_time = now + summon_cooldown(entity);
 
-    if (rt.pending_summon_index == 4)
-    {
-      // Summon5: switch to the Centered camera and slowly zoom out so the
-      // city layers are visible and feel like a train background passing by.
-      Engine::ECS::Entity centered = find_camera_entity_by_name(k_centered_camera_name);
-      Math::Vec2D target_pos{};
-      float target_rot = 0.0f;
-      if (centered.is_valid()) {
-        if (auto* t = centered.get_component<Components::Transform2D>()) {
-          target_pos = t->position;
-          target_rot = t->rotation;
-        }
-      }
+    // For all summons: linger briefly on the Cat_Monkey camera, then switch to Centered camera and zoom out.
+    // Step 1: Linger on Cat_Monkey camera
+    rt.camera_override_active = true;
+    rt.camera_override_mode = BossRuntime::CameraOverrideMode::CatMonkey;
+    rt.camera_override_until = now + k_post_summon_camera_linger_sec;
+    activate_cat_monkey_camera_if_present();
 
-      const Engine::Graphics::Camera current = Engine::Graphics::get_camera();
-      if (centered.is_valid()) {
-        if (auto* t = centered.get_component<Components::Transform2D>()) {
-          // Start from the current render camera state to avoid a snap, then
-          // ease toward the authored Centered camera transform while zooming out.
-          t->position = current.position;
-          t->rotation = current.rotation;
-          t->scale.x = current.zoom;
-          t->scale.y = current.zoom;
-        }
-      }
-
-      rt.camera_override_active = true;
-      rt.camera_override_mode = BossRuntime::CameraOverrideMode::Centered;
-      // Keep Centered camera strictly active after Summon5 (no snap back to player).
-      rt.camera_override_until = std::numeric_limits<float>::infinity();
-
-      rt.summon5_cinematic_active = true;
-      rt.summon5_cinematic_start_time = now;
-      rt.summon5_cinematic_end_time = now + k_summon5_cinematic_duration_sec;
-      rt.summon5_zoom_start = current.zoom;
-      rt.summon5_pos_start = current.position;
-      rt.summon5_rot_start = current.rotation;
-      rt.summon5_pos_target = target_pos;
-      rt.summon5_rot_target = target_rot;
-
-      activate_centered_camera_if_present();
-      tick_summon5_cinematic_camera(rt);
-    }
-    else
-    {
-      // Other summons: linger briefly on the Cat_Monkey camera so the player
-      // can see the wave appear.
-      rt.camera_override_active = true;
-      rt.camera_override_mode = BossRuntime::CameraOverrideMode::CatMonkey;
-      rt.camera_override_until = now + k_post_summon_camera_linger_sec;
-      activate_cat_monkey_camera_if_present();
-    }
+    // Step 2: After linger, switch to Centered camera and zoom out (schedule this by setting a flag)
+    // We'll use summon5_cinematic_active for all summons now
+    rt.summon5_cinematic_active = true;
+    rt.summon5_cinematic_start_time = now + k_post_summon_camera_linger_sec;
+    rt.summon5_cinematic_end_time = rt.summon5_cinematic_start_time + k_summon5_cinematic_duration_sec;
+    // The actual camera switch and zoom will be handled in the idle_on_update logic when the linger is over.
 
     // Go back to idle to wait for the wave to be cleared.
     sm->change_state("Idle");
