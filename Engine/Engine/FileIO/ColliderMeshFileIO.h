@@ -2,7 +2,10 @@
 // file:    ColliderMeshFileIO.h
 // project: Monkey Stole My GPA
 //
-// author:  Antigravity
+// author:  Chew Shee Yang (70%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   This file declares functions for serializing and deserializing collider
 //          mesh data (polygon vertices) to/from JSON format. Enables saving and

@@ -2,7 +2,10 @@
 // file:    ColliderMeshFileIO.cpp
 // project: Monkey Stole My GPA
 //
-// author:  Antigravity
+// author:  Chew Shee Yang (70%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   This file implements serialization and deserialization functions for
 //          collider mesh data. Provides JSON-based save/load functionality for
