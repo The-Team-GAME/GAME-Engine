@@ -341,8 +341,8 @@ namespace Engine
     // Entry animation: cards slide down from above and bounce into place
     if (card_intro_active_)
     {
-      const float intro_duration = 0.40f;  // slower and smoother
-      const float intro_start_offset = 900.0f; // larger drop distance
+      const float intro_duration = cfg.intro_duration;
+      const float intro_start_offset = cfg.intro_start_offset;
       card_intro_time_ += Time::get_unscaled_fixed_dt();
 
       float t = std::min(card_intro_time_ / intro_duration, 1.0f);

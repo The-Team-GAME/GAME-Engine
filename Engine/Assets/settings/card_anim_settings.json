@@ -28,6 +28,8 @@
     "idle_tilt_lerp_speed": 6.0,
     "idle_tilt_phase": 1.2000000476837158,
     "idle_tilt_speed": 0.30000001192092896,
+    "intro_duration": 0.4000000059604645,
+    "intro_start_offset": 800.0,
     "linger_duration": 1.0,
     "max_tilt_deg": 3.0,
     "mini_hover_lift": -8.0,
