@@ -375,13 +375,14 @@ namespace Engine
             Engine::ECS::Entity pasted = Engine::ECS::instantiate_prefab(entity_clipboard.value());
             Engine::ECS::EntityID pasted_id = pasted.get_id();
             Engine::ECS::Prefab pasted_prefab = entity_clipboard.value();
+            std::string pasted_uuid = Engine::ECS::get_entity_uuid(pasted);
 
             Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(pasted_id);
 
             Engine::UndoManager::record(
               // Do: Recreate the pasted entity
-              [pasted_id, pasted_prefab]() {
-                Engine::ECS::instantiate_prefab_with_id(pasted_prefab, pasted_id);
+              [pasted_id, pasted_prefab, pasted_uuid]() {
+                Engine::ECS::instantiate_prefab_with_id(pasted_prefab, pasted_id, pasted_uuid);
                 Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(pasted_id);
                 Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
               },

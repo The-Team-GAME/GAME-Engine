@@ -301,11 +301,12 @@ void PrefabEditorPanel()
 
         // Record undo for prefab instantiation
         Engine::ECS::EntityID entity_id = newEntity.get_id();
+        std::string entity_uuid = Engine::ECS::get_entity_uuid(newEntity);
         Engine::ECS::Prefab captured_prefab = prefab;
         Engine::UndoManager::record(
           // Do: Recreate the entity from prefab
-          [entity_id, captured_prefab, prefab_name]() {
-            auto entity = Engine::ECS::instantiate_prefab_with_id(captured_prefab, entity_id);
+          [entity_id, captured_prefab, prefab_name, entity_uuid]() {
+            auto entity = Engine::ECS::instantiate_prefab_with_id(captured_prefab, entity_id, entity_uuid);
             Engine::ECS::set_entity_name(entity, prefab_name);
             Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(entity_id);
             Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));

@@ -348,13 +348,13 @@ namespace Engine {
       return entity;
     }
 
-    Entity instantiate_prefab_with_id(const Prefab& prefab, EntityID entity_id) {
+    Entity instantiate_prefab_with_id(const Prefab& prefab, EntityID entity_id, const std::string& uuid) {
       if (!prefab.is_valid()) {
         return Entity(INVALID_ENTITY);
       }
 
-      // Create entity with specific ID
-      Entity entity = create_entity_with_id(entity_id);
+      // Create entity with specific ID, restoring the original UUID if provided
+      Entity entity = create_entity_with_id(entity_id, uuid);
 
       auto& containers = Internal::get_containers();
       auto prefab_impl = prefab.get_impl();

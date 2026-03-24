@@ -141,7 +141,7 @@ namespace Engine {
       return Entity(id);
     }
 
-    Entity create_entity_with_id(EntityID id)
+    Entity create_entity_with_id(EntityID id, const std::string& uuid)
     {
       auto& containers = Internal::get_containers();
 
@@ -158,7 +158,7 @@ namespace Engine {
         containers.entity_layers.resize(id + 1);
       containers.entity_layers[id] = LayerSignature{};
       containers.entity_names[id] = "Entity " + std::to_string(id);
-      containers.entity_uuids[id] = Random::generate_uuid();
+      containers.entity_uuids[id] = uuid.empty() ? Random::generate_uuid() : uuid;
       containers.uuid_to_entity_id[containers.entity_uuids[id]] = id;
 
       // Add entity to default layer

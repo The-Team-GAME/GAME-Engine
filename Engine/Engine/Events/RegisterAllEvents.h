@@ -330,6 +330,7 @@ namespace Engine {
             // Capture entity state before deletion
             Engine::ECS::Prefab entity_prefab = Engine::ECS::entity_to_prefab(entity);
             Engine::ECS::EntityID entity_id = event.entity_id;
+            std::string entity_uuid = Engine::ECS::get_entity_uuid(entity);
 
             Engine::UndoManager::record(
               // Do: Delete the entity
@@ -337,9 +338,9 @@ namespace Engine {
                 Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(entity_id, false);
                 Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
               },
-              // Undo: Recreate the entity from prefab with the same ID
-              [entity_prefab, entity_id]() {
-                Engine::ECS::Entity restored = Engine::ECS::instantiate_prefab_with_id(entity_prefab, entity_id);
+              // Undo: Recreate the entity from prefab with the same ID and UUID
+              [entity_prefab, entity_id, entity_uuid]() {
+                Engine::ECS::Entity restored = Engine::ECS::instantiate_prefab_with_id(entity_prefab, entity_id, entity_uuid);
                 // Send selection event to select the restored entity
                 Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(restored.get_id());
                 Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));

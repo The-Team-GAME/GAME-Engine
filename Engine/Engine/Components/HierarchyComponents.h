@@ -7,10 +7,12 @@
 //
 // email:   chew.s@digipen.edu
 //
-// brief:   ECS component definitions for entity hierarchy system (not yet implemented).
-//          Defines Parent, Children, Root, and Sibling components for future
-//          implementation of parent-child relationships between entities.
-//          Will enable scene graph functionality and hierarchical transformations.
+// brief:   ECS component definitions for the entity hierarchy system.
+//          Defines Parent, Children, and Root components for parent-child
+//          relationships between entities (scene graph / hierarchical transforms).
+//          Parent::parent_id and Children::child_ids hold runtime EntityIDs;
+//          entity_to_generic_value() serializes them as stable UUID strings
+//          (parent_uuid / child_uuids) so they survive level reload ID remapping.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
@@ -23,7 +25,7 @@
 namespace Components
 {
   struct Parent {
-    Engine::ECS::EntityID parent_id;  // Stored as ID for proper serialization
+    Engine::ECS::EntityID parent_id;  // Runtime ID; serialized as parent_uuid string
     Math::Vec2D local_offset;
     Math::Vec2D prev_parent_pos; // Track parent's previous position for delta calculation
     bool offset_initialized = false; // If false, HierarchySystem will auto-calculate on first update
@@ -42,7 +44,7 @@ namespace Components
   };
 
   struct Children {
-    std::vector<Engine::ECS::EntityID> child_ids;  // Stored as IDs for proper serialization
+    std::vector<Engine::ECS::EntityID> child_ids;  // Runtime IDs; serialized as child_uuids array
   };
 
   struct Root {}; // Mark root entities (no parent)

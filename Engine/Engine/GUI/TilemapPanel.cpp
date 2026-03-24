@@ -1297,13 +1297,14 @@ namespace TilemapPanel {
 
         if (ImGui::Button("Yes, Clear All", ImVec2(120, 0))) {
           // Capture all entities before deletion for undo
-          std::vector<std::pair<Engine::ECS::EntityID, Engine::ECS::Prefab>> deleted_entities;
+          struct DeletedEntity { Engine::ECS::EntityID id; Engine::ECS::Prefab prefab; std::string uuid; };
+          std::vector<DeletedEntity> deleted_entities;
 
           // Capture TileCollider entities
           auto all_entities = Engine::ECS::get_all_entities();
           for (auto& entity : all_entities) {
             if (entity.has_components<Components::TileCollider>()) {
-              deleted_entities.push_back({ entity.get_id(), Engine::ECS::entity_to_prefab(entity) });
+              deleted_entities.push_back({ entity.get_id(), Engine::ECS::entity_to_prefab(entity), Engine::ECS::get_entity_uuid(entity) });
             }
           }
 
@@ -1311,14 +1312,14 @@ namespace TilemapPanel {
           for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
             // Avoid duplicates (in case entity has both TileCollider and TileMap)
             bool already_captured = false;
-            for (const auto& [id, prefab] : deleted_entities) {
+            for (const auto& [id, prefab, uuid] : deleted_entities) {
               if (id == entity.get_id()) {
                 already_captured = true;
                 break;
               }
             }
             if (!already_captured) {
-              deleted_entities.push_back({ entity.get_id(), Engine::ECS::entity_to_prefab(entity) });
+              deleted_entities.push_back({ entity.get_id(), Engine::ECS::entity_to_prefab(entity), Engine::ECS::get_entity_uuid(entity) });
             }
           }
 
@@ -1326,7 +1327,7 @@ namespace TilemapPanel {
           Engine::UndoManager::execute(
             // Do: Delete all entities
             [deleted_entities]() {
-              for (const auto& [entity_id, prefab] : deleted_entities) {
+              for (const auto& [entity_id, prefab, uuid] : deleted_entities) {
                 auto entity = Engine::ECS::get_entity(entity_id);
                 if (entity.is_valid()) {
                   entity.destroy();
@@ -1336,8 +1337,8 @@ namespace TilemapPanel {
             },
             // Undo: Restore all entities from prefabs
             [deleted_entities]() {
-              for (const auto& [entity_id, prefab] : deleted_entities) {
-                Engine::ECS::instantiate_prefab_with_id(prefab, entity_id);
+              for (const auto& [entity_id, prefab, uuid] : deleted_entities) {
+                Engine::ECS::instantiate_prefab_with_id(prefab, entity_id, uuid);
               }
               Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
             }

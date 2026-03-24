@@ -94,12 +94,15 @@ namespace Engine {
     during undo operations to preserve entity ID references.
 
     Parameters:
-    id - The specific entity ID to use.
+    id   - The specific entity ID to use.
+    uuid - Optional UUID to restore. If empty, a new UUID is generated.
+           Pass the original UUID when undoing a deletion so cross-entity
+           UUID references (parent_uuid / child_uuids) remain valid.
 
     Where to call it:
     When restoring a deleted entity during undo operations.
     ==================================================================================*/
-    ENGINE_API Entity create_entity_with_id(EntityID id);
+    ENGINE_API Entity create_entity_with_id(EntityID id, const std::string& uuid = "");
 
     /*=================================================================================
     Function Brief:

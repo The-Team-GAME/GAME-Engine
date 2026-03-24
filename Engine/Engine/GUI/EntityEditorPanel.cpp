@@ -207,9 +207,10 @@ namespace {
         // Record undo for clone
         Engine::ECS::EntityID cloned_id = cloned.get_id();
         Engine::ECS::Prefab cloned_prefab = Engine::ECS::entity_to_prefab(cloned);
+        std::string cloned_uuid = Engine::ECS::get_entity_uuid(cloned);
         Engine::UndoManager::record(
-          [cloned_id, cloned_prefab]() {
-            Engine::ECS::instantiate_prefab_with_id(cloned_prefab, cloned_id);
+          [cloned_id, cloned_prefab, cloned_uuid]() {
+            Engine::ECS::instantiate_prefab_with_id(cloned_prefab, cloned_id, cloned_uuid);
             Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(cloned_id);
             Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
           },
@@ -422,10 +423,11 @@ namespace {
         // Record undo for clone
         Engine::ECS::EntityID cloned_id = cloned.get_id();
         Engine::ECS::Prefab cloned_prefab = Engine::ECS::entity_to_prefab(cloned);
+        std::string cloned_uuid = Engine::ECS::get_entity_uuid(cloned);
         Engine::UndoManager::record(
           // Do: Recreate the cloned entity
-          [cloned_id, cloned_prefab]() {
-            Engine::ECS::instantiate_prefab_with_id(cloned_prefab, cloned_id);
+          [cloned_id, cloned_prefab, cloned_uuid]() {
+            Engine::ECS::instantiate_prefab_with_id(cloned_prefab, cloned_id, cloned_uuid);
             Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(cloned_id);
             Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
           },
@@ -577,7 +579,7 @@ void EntityEditorPanel()
       selected_entity_id = -1;
 
       // Collect all pasted entity IDs and their prefabs for a single undo entry
-      struct PasteEntry { Engine::ECS::EntityID id; Engine::ECS::Prefab prefab; };
+      struct PasteEntry { Engine::ECS::EntityID id; Engine::ECS::Prefab prefab; std::string uuid; };
       std::vector<PasteEntry> paste_entries;
 
       for (auto& prefab : entity_clipboard) {
@@ -586,7 +588,7 @@ void EntityEditorPanel()
           Engine::ECS::EntityID pasted_id = pasted.get_id();
           selected_entity_ids.insert(pasted_id);
           selected_entity_id = static_cast<s32>(pasted_id);
-          paste_entries.push_back({ pasted_id, prefab });
+          paste_entries.push_back({ pasted_id, prefab, Engine::ECS::get_entity_uuid(pasted) });
         }
       }
 
@@ -595,7 +597,7 @@ void EntityEditorPanel()
         Engine::UndoManager::record(
           [paste_entries]() { // redo: re-create all pasted entities
             for (auto& pe : paste_entries) {
-              Engine::ECS::instantiate_prefab_with_id(pe.prefab, pe.id);
+              Engine::ECS::instantiate_prefab_with_id(pe.prefab, pe.id, pe.uuid);
             }
             if (!paste_entries.empty())
               Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(paste_entries.back().id);
@@ -790,10 +792,11 @@ void EntityEditorPanel()
 
       // Record undo for entity creation
       Engine::ECS::EntityID entity_id = newEntity.get_id();
+      std::string entity_uuid = Engine::ECS::get_entity_uuid(newEntity);
       Engine::UndoManager::record(
         // Do: Recreate the entity
-        [entity_id]() {
-          Engine::ECS::create_entity_with_id(entity_id);
+        [entity_id, entity_uuid]() {
+          Engine::ECS::create_entity_with_id(entity_id, entity_uuid);
           Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(entity_id);
           Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
         },
@@ -1142,10 +1145,11 @@ void EntityEditorPanel()
       // Record undo for clone
       Engine::ECS::EntityID cloned_id = clonedEntity.get_id();
       Engine::ECS::Prefab cloned_prefab = Engine::ECS::entity_to_prefab(clonedEntity);
+      std::string cloned_uuid = Engine::ECS::get_entity_uuid(clonedEntity);
       Engine::UndoManager::record(
         // Do: Recreate the cloned entity
-        [cloned_id, cloned_prefab]() {
-          Engine::ECS::instantiate_prefab_with_id(cloned_prefab, cloned_id);
+        [cloned_id, cloned_prefab, cloned_uuid]() {
+          Engine::ECS::instantiate_prefab_with_id(cloned_prefab, cloned_id, cloned_uuid);
           Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(cloned_id);
           Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
         },

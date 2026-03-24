@@ -596,13 +596,16 @@ namespace Engine {
     Used for restoring deleted entities during undo operations.
 
     Parameters:
-    prefab - The prefab handle to instantiate.
-    entity_id - The specific entity ID to use.
+    prefab     - The prefab handle to instantiate.
+    entity_id  - The specific entity ID to use.
+    uuid       - Optional UUID to restore. If empty, a new UUID is generated.
+                 Pass the original UUID when undoing a deletion so cross-entity
+                 UUID references (parent_uuid / child_uuids) remain valid.
 
     Where to call it:
     When restoring a deleted entity during undo operations to preserve entity ID references.
     ==================================================================================*/
-    ENGINE_API Entity instantiate_prefab_with_id(const Prefab& prefab, EntityID entity_id);
+    ENGINE_API Entity instantiate_prefab_with_id(const Prefab& prefab, EntityID entity_id, const std::string& uuid = "");
 
     /*=================================================================================
     Function Brief:
