@@ -1102,7 +1102,7 @@ namespace Engine {
 
         ReflectionLibrary::GenericValue entity_value = ECS::entity_to_generic_value(entity);
         entities.push_back(std::move(entity_value));
-      });
+        });
 
       // Sort entities by UUID for deterministic JSON output
       std::sort(entities.begin(), entities.end(),
@@ -1183,8 +1183,9 @@ namespace Engine {
       // before creating new ones. This prevents tile colliders from previous levels from persisting.
       ECS::process_housekeeping();
 
-      // Build old ID -> new ID remap table as we create entities
-      std::unordered_map<ECS::EntityID, ECS::EntityID> id_remap;
+      // Track new entity IDs alongside their source serialized data for hierarchy fixup.
+      // Using UUID as the stable cross-reference — numeric IDs are never serialized.
+      std::vector<std::pair<ECS::EntityID, const ReflectionLibrary::GenericValue*>> created_entities;
 
       for (const auto& entity_value : entities) {
         // Skip tile collision entities - they are temporary and rebuilt by TilemapManager
@@ -1193,39 +1194,58 @@ namespace Engine {
           continue;
         }
 
-        // Get the original ID if it exists
-        ECS::EntityID old_id = ECS::INVALID_ENTITY;
-        if (entity_value.has("id") && entity_value["id"].isInt()) {
-          old_id = static_cast<ECS::EntityID>(entity_value["id"].getInt());
-        }
-
         ECS::Entity new_entity = ECS::create_entity_from_generic_value(entity_value);
 
-        // Store the mapping from old ID to new ID
-        if (old_id != ECS::INVALID_ENTITY && new_entity.is_valid()) {
-          id_remap[old_id] = new_entity.get_id();
+        if (new_entity.is_valid()) {
+          created_entities.emplace_back(new_entity.get_id(), &entity_value);
         }
       }
 
-      // Fix up Parent references using the remap table
-      for (auto& entity : ECS::get_entities_with<Components::Parent>()) {
-        auto* parent_comp = entity.get_component<Components::Parent>();
-        if (parent_comp && parent_comp->parent_id != ECS::INVALID_ENTITY) {
-          auto it = id_remap.find(parent_comp->parent_id);
-          if (it != id_remap.end()) {
-            parent_comp->parent_id = it->second;
+      // Fix up Parent and Children hierarchy references via UUID lookup.
+      // entity_to_generic_value serializes parent_uuid / child_uuids (stable string IDs);
+      // here we translate them back to the new runtime EntityIDs.
+      for (const auto& [new_id, entity_value_ptr] : created_entities) {
+        if (!entity_value_ptr->has("components") || !(*entity_value_ptr)["components"].isArray()) continue;
+
+        for (const auto& comp_entry : (*entity_value_ptr)["components"].getArray()) {
+          if (!comp_entry.isObject()) continue;
+          const auto& comp_obj = comp_entry.getObject();
+
+          auto type_it = comp_obj.find("type");
+          auto data_it = comp_obj.find("data");
+          if (type_it == comp_obj.end() || data_it == comp_obj.end()) continue;
+
+          const std::string& comp_type = type_it->second.getString();
+          const auto& data = data_it->second;
+          if (!data.isObject()) continue;
+          const auto& data_obj = data.getObject();
+
+          if (comp_type == "Components::Parent") {
+            auto uuid_it = data_obj.find("parent_uuid");
+            if (uuid_it != data_obj.end() && uuid_it->second.isString()) {
+              ECS::Entity parent = ECS::find_entity_by_uuid(uuid_it->second.getString());
+              if (parent.is_valid()) {
+                auto* parent_comp = ECS::Entity(new_id).get_component<Components::Parent>();
+                if (parent_comp) {
+                  parent_comp->parent_id = parent.get_id();
+                }
+              }
+            }
           }
-        }
-      }
-
-      // Fix up Children references using the remap table
-      for (auto& entity : ECS::get_entities_with<Components::Children>()) {
-        auto* children_comp = entity.get_component<Components::Children>();
-        if (children_comp) {
-          for (auto& child_id : children_comp->child_ids) {
-            auto it = id_remap.find(child_id);
-            if (it != id_remap.end()) {
-              child_id = it->second;
+          else if (comp_type == "Components::Children") {
+            auto uuids_it = data_obj.find("child_uuids");
+            if (uuids_it != data_obj.end() && uuids_it->second.isArray()) {
+              auto* children_comp = ECS::Entity(new_id).get_component<Components::Children>();
+              if (children_comp) {
+                children_comp->child_ids.clear();
+                for (const auto& uuid_val : uuids_it->second.getArray()) {
+                  if (!uuid_val.isString()) continue;
+                  ECS::Entity child = ECS::find_entity_by_uuid(uuid_val.getString());
+                  if (child.is_valid()) {
+                    children_comp->child_ids.push_back(child.get_id());
+                  }
+                }
+              }
             }
           }
         }

@@ -136,6 +136,55 @@ namespace Engine {
         entity.get_id()
       );
 
+      // Post-process component data: replace numeric entity ID references in hierarchy
+      // components with stable UUID strings so serialized files are ID-independent.
+      if (result.has("components") && result["components"].isArray()) {
+        for (auto& comp_entry : result.getObject()["components"].getArray()) {
+          if (!comp_entry.isObject()) continue;
+          auto& comp_obj = comp_entry.getObject();
+
+          auto type_it = comp_obj.find("type");
+          auto data_it = comp_obj.find("data");
+          if (type_it == comp_obj.end() || data_it == comp_obj.end()) continue;
+
+          const std::string& comp_type = type_it->second.getString();
+          auto& data = data_it->second;
+          if (!data.isObject()) continue;
+          auto& data_obj = data.getObject();
+
+          if (comp_type == "Components::Parent") {
+            auto parent_id_it = data_obj.find("parent_id");
+            if (parent_id_it != data_obj.end() && parent_id_it->second.isInt()) {
+              ECS::EntityID parent_id = static_cast<ECS::EntityID>(parent_id_it->second.getInt());
+              if (parent_id != ECS::INVALID_ENTITY) {
+                auto pid_uuid_it = containers.entity_uuids.find(parent_id);
+                if (pid_uuid_it != containers.entity_uuids.end()) {
+                  data_obj["parent_uuid"] = pid_uuid_it->second;
+                }
+              }
+              data_obj.erase("parent_id");
+            }
+          }
+          else if (comp_type == "Components::Children") {
+            auto child_ids_it = data_obj.find("child_ids");
+            if (child_ids_it != data_obj.end() && child_ids_it->second.isArray()) {
+              ReflectionLibrary::GenericValue child_uuids_val = ReflectionLibrary::Array();
+              for (const auto& child_val : child_ids_it->second.getArray()) {
+                if (!child_val.isInt()) continue;
+                ECS::EntityID child_id = static_cast<ECS::EntityID>(child_val.getInt());
+                if (child_id == ECS::INVALID_ENTITY) continue;
+                auto cid_uuid_it = containers.entity_uuids.find(child_id);
+                if (cid_uuid_it != containers.entity_uuids.end()) {
+                  child_uuids_val.push_back(cid_uuid_it->second);
+                }
+              }
+              data_obj["child_uuids"] = child_uuids_val;
+              data_obj.erase("child_ids");
+            }
+          }
+        }
+      }
+
       // Serialize prefab instance data if this is a prefab instance
       auto prefab_it = containers.prefab_instances.find(entity_id);
       if (prefab_it != containers.prefab_instances.end()) {
@@ -179,11 +228,17 @@ namespace Engine {
 
       auto& containers = Internal::get_containers();
 
-      // Deserialize stable UUID if present (for merge consistency)
+      // Deserialize stable UUID if present (for merge consistency).
+      // create_entity() already generated a temp UUID and registered it in uuid_to_entity_id;
+      // remove that temp entry before overwriting with the persisted UUID.
       if (value.has("uuid") && value["uuid"].isString()) {
+        const std::string& temp_uuid = containers.entity_uuids[entity_id];
+        containers.uuid_to_entity_id.erase(temp_uuid);
         containers.entity_uuids[entity_id] = value["uuid"].getString();
+        containers.uuid_to_entity_id[value["uuid"].getString()] = entity_id;
         Log::info("Loaded entity UUID: {} -> {}", entity_id, value["uuid"].getString());
-      } else {
+      }
+      else {
         Log::info("No UUID in JSON for entity {}, keeping generated: {}",
           entity_id, containers.entity_uuids[entity_id]);
       }

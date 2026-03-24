@@ -132,6 +132,7 @@ namespace Engine {
       containers.entity_layers[id] = LayerSignature{};
       containers.entity_names[id] = "Entity " + std::to_string(id);
       containers.entity_uuids[id] = Random::generate_uuid();
+      containers.uuid_to_entity_id[containers.entity_uuids[id]] = id;
 
       // Add entity to default layer
       containers.entity_layers[id].set(DEFAULT_LAYER);
@@ -158,6 +159,7 @@ namespace Engine {
       containers.entity_layers[id] = LayerSignature{};
       containers.entity_names[id] = "Entity " + std::to_string(id);
       containers.entity_uuids[id] = Random::generate_uuid();
+      containers.uuid_to_entity_id[containers.entity_uuids[id]] = id;
 
       // Add entity to default layer
       containers.entity_layers[id].set(DEFAULT_LAYER);
@@ -273,6 +275,8 @@ namespace Engine {
         for (auto& arr : world->component_arrays)
           arr.reset();
         world->entity_names.clear();
+        world->entity_uuids.clear();
+        world->uuid_to_entity_id.clear();
         world->prefab_instances.clear();
         world->entity_signatures.clear();
         world->entity_layers.clear();
@@ -468,6 +472,7 @@ namespace Engine {
     }
 
     static const std::string empty_name = "";
+    static const std::string empty_uuid = "";
 
     const std::string& get_entity_name(const Entity entity)
     {
@@ -478,6 +483,27 @@ namespace Engine {
         return it->second;
       }
       return empty_name;
+    }
+
+    const std::string& get_entity_uuid(const Entity entity)
+    {
+      auto& containers = Internal::get_containers();
+      EntityID id = entity.get_id();
+      auto it = containers.entity_uuids.find(id);
+      if (it != containers.entity_uuids.end()) {
+        return it->second;
+      }
+      return empty_uuid;
+    }
+
+    Entity find_entity_by_uuid(const std::string& uuid)
+    {
+      auto& containers = Internal::get_containers();
+      auto it = containers.uuid_to_entity_id.find(uuid);
+      if (it != containers.uuid_to_entity_id.end()) {
+        return Entity(it->second);
+      }
+      return Entity(INVALID_ENTITY);
     }
 
     void update()
@@ -622,7 +648,13 @@ namespace Engine {
           if (entityId < containers.entity_layers.size())
             containers.entity_layers[entityId].reset();
           containers.entity_names.erase(entityId);
-          containers.entity_uuids.erase(entityId);
+          {
+            auto uuid_it = containers.entity_uuids.find(entityId);
+            if (uuid_it != containers.entity_uuids.end()) {
+              containers.uuid_to_entity_id.erase(uuid_it->second);
+              containers.entity_uuids.erase(uuid_it);
+            }
+          }
           containers.prefab_instances.erase(entityId); // Clean up prefab instance data
 
           for (auto& system : Internal::get_systems())

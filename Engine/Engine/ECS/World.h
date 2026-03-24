@@ -262,6 +262,17 @@ namespace Engine {
     ==================================================================================*/
     ENGINE_API const std::string& get_entity_name(const Entity entity);
 
+    /* =================== //
+    // Entity UUID         //
+    // =================== */
+
+    // Returns the UUID string for the given entity. Returns empty string if entity is invalid.
+    ENGINE_API const std::string& get_entity_uuid(const Entity entity);
+
+    // Looks up an entity by its UUID. Returns an invalid entity if not found.
+    // O(1) lookup via the uuid_to_entity_id reverse map.
+    ENGINE_API Entity find_entity_by_uuid(const std::string& uuid);
+
     /* ====================== //
     // Component management   //
     // ====================== */
