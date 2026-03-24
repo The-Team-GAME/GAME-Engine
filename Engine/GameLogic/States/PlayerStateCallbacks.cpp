@@ -27,6 +27,7 @@ namespace {
   f32 terminal_vel_placeholder;
   // This bool default_states is for when we want the player still be able to give inputs (and possibly exit the state) but still keep the animation of the state
   bool default_state = false;
+  bool on_ground_last_frame = true;
 }
 namespace PlayerStateCallbacks
 {
@@ -149,22 +150,6 @@ namespace PlayerStateCallbacks
       }
 
       player_rigid->force.x = player_comp->walk_speed * flip->value.x;
-      // This part to deal with walking on slopes (WIP)
-      //if (player_rigid->on_ground)
-      //{
-      //  // we need to check if the direction vector of the slope is the same as the flip value
-      //  Vec2D direction = player_rigid->last_surface_dir_vector;
-      //  if (dot_product(direction, Vec2D(flip->value.x, 0.f)) < 0)
-      //  {
-      //    direction *= -1;
-      //  }
-      //  std::cout << direction << std::endl;
-      //  player_rigid->force = direction * player_comp->walk_speed;
-      //}
-      //else
-      //{
-      //  player_rigid->force.x = player_comp->walk_speed * flip->value.x;
-      //}
 
       if (!default_state)
       {

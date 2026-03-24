@@ -77,13 +77,16 @@ void apply_knockback_from_player(ECS::Entity entity)
   ECS::Entity player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
   Components::Transform2D* player_xform = player_entity.get_component<Components::Transform2D>();
   Components::Player* player_comp = player_entity.get_component<Components::Player>();
-  assert(player_xform && player_comp);
+  Components::Flip* player_flip = player_entity.get_component<Components::Flip>();
+  assert(player_xform && player_comp && player_flip);
+
   Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
   Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
   assert(xform && rigid);
+
   // First we check which direction to apply knockback for the enemy
   // If the player is to the right we want the knockback to be to the left
-  player_comp->knockback_value.x = player_xform->position.x > xform->position.x ?
+  player_comp->knockback_value.x = player_xform->position.x - player_flip->value.x * (player_xform->scale.x / 2.f)> xform->position.x ?
     -player_comp->knockback_value.x : player_comp->knockback_value.x;
 
   // Doing the flip here so on editor side we dont need to deal with negative values
