@@ -42,6 +42,7 @@ namespace Components
     bool is_static = false;  // If true, not affected by physics forces
     bool on_ground = false;
     bool is_jumping = false;
+    f32 air_time = 0.f;
 
     f32 static_friction_coefficient = 1.f; // not used, maybe ever
     f32 kinetic_coefficient = 0.9995f;
@@ -72,4 +73,4 @@ namespace Components
 
 
 
-REGISTER_COMPONENT(Components::RigidBody, mass, acceleration, velocity, x_terminal_velocity, y_terminal_velocity, use_gravity, apply_force, gravity, is_static, on_ground, is_jumping)
+REGISTER_COMPONENT(Components::RigidBody, mass, acceleration, velocity, air_time, x_terminal_velocity, y_terminal_velocity, use_gravity, apply_force, gravity, is_static, on_ground, is_jumping)

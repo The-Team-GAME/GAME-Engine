@@ -103,7 +103,7 @@ namespace PlayerStateCallbacks
     if (Engine::Input::is_pressed(Engine::KeyCode::L)
       && player_comp->smash.ready())
     {
-      if (player_rigid->on_ground)
+      if (player_rigid->on_ground || player_rigid->air_time < player_comp->coyote_jump_buffer)
       {
         state_machine->change_state("Leap");
       }
@@ -130,7 +130,7 @@ namespace PlayerStateCallbacks
     }
 
     if (Input::is_held(KeyCode::Space)
-      && player_rigid->on_ground
+      && (player_rigid->on_ground || player_rigid->air_time < player_comp->coyote_jump_buffer)
       && !player_rigid->is_jumping)
     {
       state_machine->change_state("Jumping");

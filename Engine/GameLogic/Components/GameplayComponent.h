@@ -79,6 +79,7 @@ namespace Components
     // These values are loaded from file
     f32 walk_speed = 300'000.f;
     f32 jump_force = -30'000'000.f;
+    f32 coyote_jump_buffer = 0.3f;
     Vec2D knockback_value;
     Vec2D knockback_recieved{ 100'000.f, 50'000.f };
     bool damage_immune = false;
