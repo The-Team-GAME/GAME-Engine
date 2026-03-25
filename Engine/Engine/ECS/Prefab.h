@@ -707,6 +707,23 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
+    Binds an existing entity to a prefab by replacing its components/layers with
+    the prefab contents and registering prefab-instance metadata.
+
+    Parameters:
+    entity - The entity to replace in place.
+    prefab - The prefab to bind the entity to.
+
+    Returns:
+    True if binding succeeded, false if either input was invalid.
+
+    Where to call it:
+    In editor tooling when converting an arbitrary entity into a prefab instance.
+    ==================================================================================*/
+    ENGINE_API bool bind_entity_to_prefab(Entity entity, const Prefab& prefab);
+
+    /*=================================================================================
+    Function Brief:
     Gets the prefab path for a prefab instance entity.
 
     Parameters:

@@ -170,9 +170,12 @@
     <ClCompile Include="GameStates\BasicState.cpp" />
     <ClCompile Include="GameStates\OpeningCutsceneState.cpp" />
     <ClCompile Include="GameStates\OptionsState.cpp" />
+    <ClCompile Include="GameStates\OldManDialogueState.cpp" />
     <ClCompile Include="GameStates\VideoPlaybackState.cpp" />
     <ClCompile Include="GameStates\PauseState.cpp" />
     <ClCompile Include="GameStates\StressTestState.cpp" />
+    <ClCompile Include="GameStates\TipsBookState.cpp" />
+    <ClCompile Include="GameStates\UpgradePickerState.cpp" />
     <ClCompile Include="GameStates\VictoryState.cpp" />
     <ClCompile Include="States\CheckpointCallbacks.cpp" />
     <ClCompile Include="States\EmptyStateCallbacks.cpp" />
@@ -209,6 +212,7 @@
     <ClInclude Include="GameStates\LevelTestState.h" />
     <ClInclude Include="GameStates\LuaState.h" />
     <ClInclude Include="GameStates\MainMenuState.h" />
+    <ClInclude Include="GameStates\OldManDialogueState.h" />
     <ClInclude Include="GameStates\OptionsState.h" />
     <ClInclude Include="GameStates\PauseState.h" />
     <ClInclude Include="GameStates\PhysicsTestState.h" />
@@ -216,6 +220,8 @@
     <ClInclude Include="GameStates\StressTestState.h" />
     <ClInclude Include="GameStates\TimelineState.h" />
     <ClInclude Include="GameStates\TurretMonkeyTestState.h" />
+    <ClInclude Include="GameStates\TipsBookState.h" />
+    <ClInclude Include="GameStates\UpgradePickerState.h" />
     <ClInclude Include="GameStates\VictoryState.h" />
     <ClInclude Include="InteractableCallbacks\OldMan.h" />
     <ClInclude Include="States\PlayerStateCallbacks.h" />

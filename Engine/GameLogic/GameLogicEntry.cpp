@@ -34,6 +34,9 @@
 #include "GameStates/LuaState.h"
 #include "GameStates/BehaviourState.h"
 #include "GameStates/GameplayState.h"
+#include "GameStates/TipsBookState.h"
+#include "GameStates/OldManDialogueState.h"
+#include "GameStates/UpgradePickerState.h"
 #include "GameStates/PauseState.h"
 #include "GameStates/VictoryState.h"
 #include "GameStates/OptionsState.h"
@@ -74,13 +77,16 @@ void apply_knockback_from_player(ECS::Entity entity)
   ECS::Entity player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
   Components::Transform2D* player_xform = player_entity.get_component<Components::Transform2D>();
   Components::Player* player_comp = player_entity.get_component<Components::Player>();
-  assert(player_xform && player_comp);
+  Components::Flip* player_flip = player_entity.get_component<Components::Flip>();
+  assert(player_xform && player_comp && player_flip);
+
   Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
   Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
   assert(xform && rigid);
+
   // First we check which direction to apply knockback for the enemy
   // If the player is to the right we want the knockback to be to the left
-  player_comp->knockback_value.x = player_xform->position.x > xform->position.x ?
+  player_comp->knockback_value.x = player_xform->position.x - player_flip->value.x * (player_xform->scale.x / 2.f)> xform->position.x ?
     -player_comp->knockback_value.x : player_comp->knockback_value.x;
 
   // Doing the flip here so on editor side we dont need to deal with negative values
@@ -155,8 +161,8 @@ static void register_collision_callbacks()
         if (enemy_health->current_hp <= 0) {
           if (state_machine->get_current_state() != "Death") {
             state_machine->change_state("Death");
-            Engine::UpgradeManager::instance().add_points(50);
-            Log::info("Enemy killed! +50 upgrade points (total: {})", Engine::UpgradeManager::instance().get_points());
+            Engine::UpgradeManager::instance().add_points(1);
+            Log::info("Enemy killed! +1 upgrade point (total: {})", Engine::UpgradeManager::instance().get_points());
           }
         }
         else if (state_machine->get_current_state() != "Hit") {
@@ -509,6 +515,9 @@ static void register_scenes()
   Engine::SceneManager::register_scene<DistortionEffectState>("DistortionEffectState");
   Engine::SceneManager::register_scene<LuaState>("LuaState");
   Engine::SceneManager::register_scene<BehaviourState>("BehaviourState");
+  Engine::SceneManager::register_scene<TipsBookState>("TipsBookState");
+  Engine::SceneManager::register_scene<OldManDialogueState>("OldManDialogueState");
+  Engine::SceneManager::register_scene<UpgradePickerState>("UpgradePickerState");
   Engine::SceneManager::register_scene<PauseState>("PauseState");
   Engine::SceneManager::register_scene<VictoryState>("VictoryState");
   Engine::SceneManager::register_scene<OptionsState>("OptionsState");

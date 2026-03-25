@@ -139,6 +139,9 @@ namespace Engine {
 
         ReflectionLibrary::GenericValue prefab_ref = ReflectionLibrary::Object();
         prefab_ref["id"] = instance_data.prefab_id;
+        if (!instance_data.prefab_filepath.empty()) {
+          prefab_ref["filepath"] = instance_data.prefab_filepath;
+        }
 
         // Serialize field overrides using component type names (not numeric IDs)
         // Type names are stable across builds; numeric IDs are runtime-generated and unstable.
@@ -218,6 +221,9 @@ namespace Engine {
         Internal::PrefabInstanceData instance_data;
         if (prefab_ref.has("id") && prefab_ref["id"].isString()) {
           instance_data.prefab_id = prefab_ref["id"].getString();
+        }
+        if (prefab_ref.has("filepath") && prefab_ref["filepath"].isString()) {
+          instance_data.prefab_filepath = prefab_ref["filepath"].getString();
         }
 
         // Deserialize field overrides

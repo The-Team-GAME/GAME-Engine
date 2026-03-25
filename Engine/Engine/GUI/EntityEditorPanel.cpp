@@ -63,6 +63,7 @@ namespace {
   };
 
   EntityViewMode current_view_mode = EntityViewMode::Hierarchy;
+  std::string pending_prefab_bind_path;
 
   // Event listener to sync selection from other sources (like Gizmo system)
   void init_selection_listener() {
@@ -552,6 +553,8 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
 void EntityEditorPanel()
 {
   static char entitySearchBuffer[256] = "";
+  static std::string picked_prefab_path;
+  static bool picked_is_new = false;
 
   // Initialize event listener on first call
   init_selection_listener();
@@ -872,6 +875,7 @@ void EntityEditorPanel()
             auto inst_it = containers.prefab_instances.find(entity.get_id());
             if (inst_it != containers.prefab_instances.end()) {
               inst_it->second.prefab_id = preserved_uuid;
+              inst_it->second.prefab_filepath = prefab_path;
             }
 
             if (Engine::FileIO::serialize_prefab_to_json_file(full_path, updated_prefab)) {
@@ -900,6 +904,32 @@ void EntityEditorPanel()
           ImGui::SetTooltip("Detach this entity from its source prefab.\nThe entity keeps its data but will no longer receive prefab updates.");
         }
       }
+    }
+
+    ImGui::SameLine();
+    if (ImGui::SmallButton("Bind to Prefab")) {
+      ImGui::OpenPopup("BindPrefabPicker");
+    }
+    if (ImGui::IsItemHovered()) {
+      ImGui::SetTooltip("Replace this entity with the selected prefab and bind it to that source.");
+    }
+
+    if (ResourcePicker::prefab_picker_popup("BindPrefabPicker", picked_prefab_path, picked_is_new)) {
+      if (!picked_is_new) {
+        pending_prefab_bind_path = picked_prefab_path;
+      }
+    }
+
+    if (!pending_prefab_bind_path.empty()) {
+      Engine::ECS::Prefab prefab_to_bind = Engine::Resources::load_prefab(pending_prefab_bind_path, true, true);
+      if (prefab_to_bind.is_valid() && Engine::ECS::bind_entity_to_prefab(entity, prefab_to_bind)) {
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+        Log::info("Bound entity {} to prefab {}", entity.get_id(), pending_prefab_bind_path);
+      }
+      else {
+        Log::error("Failed to bind entity {} to prefab {}", entity.get_id(), pending_prefab_bind_path);
+      }
+      pending_prefab_bind_path.clear();
     }
 
     ImGui::Separator();
@@ -1129,13 +1159,17 @@ void EntityEditorPanel()
 
     // Prefab picker popup
     {
-      static std::string picked_prefab_path;
-      static bool picked_is_new;
       if (ResourcePicker::prefab_picker_popup("SaveAsPrefabPicker", picked_prefab_path, picked_is_new)) {
         if (picked_is_new) {
           // --- Create new prefab from entity ---
           auto prefab = Engine::ECS::entity_to_prefab(entity);
           prefab.get_impl()->set_prefab_filepath(picked_prefab_path);
+
+          auto& containers = Engine::ECS::Internal::get_containers();
+          auto inst_it = containers.prefab_instances.find(entity.get_id());
+          if (inst_it != containers.prefab_instances.end()) {
+            inst_it->second.prefab_filepath = picked_prefab_path;
+          }
 
           std::string full_path = Engine::Path(Engine::Resources::resource_path).join(picked_prefab_path).to_string();
 
@@ -1167,6 +1201,7 @@ void EntityEditorPanel()
             auto inst_it = containers.prefab_instances.find(entity.get_id());
             if (inst_it != containers.prefab_instances.end()) {
               inst_it->second.prefab_id = preserved_uuid;
+              inst_it->second.prefab_filepath = picked_prefab_path;
             }
 
             if (Engine::FileIO::serialize_prefab_to_json_file(full_path, updated_prefab)) {

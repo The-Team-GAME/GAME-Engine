@@ -27,6 +27,7 @@ namespace {
   f32 terminal_vel_placeholder;
   // This bool default_states is for when we want the player still be able to give inputs (and possibly exit the state) but still keep the animation of the state
   bool default_state = false;
+  bool on_ground_last_frame = true;
 }
 namespace PlayerStateCallbacks
 {
@@ -102,7 +103,7 @@ namespace PlayerStateCallbacks
     if (Engine::Input::is_pressed(Engine::KeyCode::L)
       && player_comp->smash.ready())
     {
-      if (player_rigid->on_ground)
+      if (player_rigid->on_ground || player_rigid->air_time < player_comp->coyote_jump_buffer)
       {
         state_machine->change_state("Leap");
       }
@@ -129,7 +130,7 @@ namespace PlayerStateCallbacks
     }
 
     if (Input::is_held(KeyCode::Space)
-      && player_rigid->on_ground
+      && (player_rigid->on_ground || player_rigid->air_time < player_comp->coyote_jump_buffer)
       && !player_rigid->is_jumping)
     {
       state_machine->change_state("Jumping");
@@ -149,22 +150,6 @@ namespace PlayerStateCallbacks
       }
 
       player_rigid->force.x = player_comp->walk_speed * flip->value.x;
-      // This part to deal with walking on slopes (WIP)
-      //if (player_rigid->on_ground)
-      //{
-      //  // we need to check if the direction vector of the slope is the same as the flip value
-      //  Vec2D direction = player_rigid->last_surface_dir_vector;
-      //  if (dot_product(direction, Vec2D(flip->value.x, 0.f)) < 0)
-      //  {
-      //    direction *= -1;
-      //  }
-      //  std::cout << direction << std::endl;
-      //  player_rigid->force = direction * player_comp->walk_speed;
-      //}
-      //else
-      //{
-      //  player_rigid->force.x = player_comp->walk_speed * flip->value.x;
-      //}
 
       if (!default_state)
       {
@@ -477,7 +462,7 @@ namespace PlayerStateCallbacks
     assert(flip);
 
     player_comp->knockback_value = player_comp->attack1_data.knockback;
-    rigid->velocity.x = flip->value.x * player_comp->dash.speed;
+    rigid->velocity.x = flip->value.x * player_comp->attack1.speed;
     //=========================================================================//
     ECS::Entity hitbox = create_hitbox(entity, player_comp->attack1_data);
 
@@ -524,7 +509,7 @@ namespace PlayerStateCallbacks
     assert(flip);
 
     player_comp->knockback_value = player_comp->attack2_data.knockback;
-    rigid->velocity.x = flip->value.x * player_comp->dash.speed;
+    rigid->velocity.x = flip->value.x * player_comp->attack2.speed;
     //=========================================================================//
     ECS::Entity hitbox = create_hitbox(entity, player_comp->attack2_data);
 
