@@ -30,7 +30,7 @@ namespace CatMonkeyStateCallbacks
     static constexpr const char* k_centered_camera_name = "Centered";
 
     static constexpr float k_post_summon_camera_linger_sec = 1.0f;
-    static constexpr float k_summon5_cinematic_duration_sec = 3.5f;
+    static constexpr float k_summon5_cinematic_duration_sec = 6.0f;
     static constexpr float k_summon5_target_zoom = 0.65f;
     static constexpr int k_summon5_shake_count = 8;
     static constexpr float k_summon5_shake_interval_sec = 0.05f;
@@ -104,6 +104,17 @@ namespace CatMonkeyStateCallbacks
     Math::Vec2D post_spawn_pos_target{};
     float post_spawn_rot_start = 0.0f;
     float post_spawn_rot_target = 0.0f;
+
+    // Summon5: begin a slow pan-out on the Cat_Monkey camera during the linger,
+    // then cut to Centered and continue the pan-out without a zoom jump.
+    bool summon5_cat_post_zoom_active = false;
+    float summon5_cat_post_zoom_start_time = 0.0f;
+    float summon5_cat_post_zoom_end_time = 0.0f;
+    float summon5_cat_post_zoom_start = 1.0f;
+    float summon5_cat_post_zoom_target = 1.0f;
+
+    bool centered_cut_override_zoom = false;
+    float centered_cut_zoom = 1.0f;
 
     // Summon5: quick shake on the Cat_Monkey camera during summon animation.
     bool summon5_shake_active = false;

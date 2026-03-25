@@ -373,11 +373,6 @@ namespace CatMonkeyStateCallbacks
     if (rt.pending_summon_immediate_zoom) return;
 
     const float now = Engine::Time::get_time();
-    if (now >= rt.post_spawn_cinematic_end_time) {
-      rt.post_spawn_cinematic_active = false;
-      return;
-    }
-
     Engine::ECS::Entity centered = find_camera_entity_by_name(k_centered_camera_name);
     if (!centered.is_valid()) {
       if (!rt.debug_logged_centered_camera_missing) {
@@ -389,6 +384,18 @@ namespace CatMonkeyStateCallbacks
 
     auto* t = centered.get_component<Components::Transform2D>();
     if (!t) return;
+
+    // If we've passed the end, snap to the final state once and stop.
+    if (now >= rt.post_spawn_cinematic_end_time) {
+      const float target_zoom = std::clamp(rt.post_spawn_zoom_target, 0.1f, 10.0f);
+      if (!centered.has_component<Components::Parent>()) {
+        t->position = rt.post_spawn_pos_target;
+        t->rotation = rt.post_spawn_rot_target;
+      }
+      t->scale = { target_zoom, target_zoom };
+      rt.post_spawn_cinematic_active = false;
+      return;
+    }
 
     const float dur = std::max(0.001f, rt.post_spawn_cinematic_end_time - rt.post_spawn_cinematic_start_time);
     float u = std::clamp((now - rt.post_spawn_cinematic_start_time) / dur, 0.0f, 1.0f);

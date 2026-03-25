@@ -247,6 +247,7 @@ namespace CatMonkeyStateCallbacks
       BossRuntime& rt = runtime_for(entity);
       rt.camera_override_active = false;
       rt.camera_override_until = 0.0f;
+      rt.centered_cut_override_zoom = false;
       restore_centered_camera_parent(rt);
     }
     activate_player_camera_if_present();
@@ -332,6 +333,20 @@ namespace CatMonkeyStateCallbacks
         // Cut back from CatMonkey -> Centered.
         ensure_centered_camera_baseline(rt);
         apply_centered_camera_baseline(rt);
+
+        // Summon5: avoid an abrupt zoom jump when switching cameras by overriding
+        // the Centered camera's zoom to match the Cat_Monkey camera at the cut.
+        if (rt.centered_cut_override_zoom) {
+          Engine::ECS::Entity centered = find_camera_entity_by_name(k_centered_camera_name);
+          if (centered.is_valid()) {
+            if (auto* t = centered.get_component<Components::Transform2D>()) {
+              const float z = std::clamp(rt.centered_cut_zoom, 0.1f, 10.0f);
+              t->scale = { z, z };
+            }
+          }
+          rt.centered_cut_override_zoom = false; // one-shot
+        }
+
         rt.camera_override_active = true;
         rt.camera_override_mode = BossRuntime::CameraOverrideMode::Centered;
         rt.camera_override_until = std::numeric_limits<float>::infinity();
@@ -465,6 +480,25 @@ namespace CatMonkeyStateCallbacks
       rt.post_spawn_zoom_target = std::clamp(rt.post_spawn_zoom_start * 0.90f, 0.1f, 10.0f);
     } else {
       // Summon5: longer smoother cinematic toward the Summon5 target zoom.
+      // Start the Centered camera at the current Cat_Monkey zoom so the cut doesn't
+      // cause an instant zoom-out.
+      float cat_zoom = rt.post_spawn_zoom_start;
+      Engine::ECS::Entity cat_cam = find_camera_entity_by_name(k_cat_monkey_camera_name);
+      if (cat_cam.is_valid()) {
+        if (auto* ct = cat_cam.get_component<Components::Transform2D>()) {
+          cat_zoom = ct->scale.x;
+        }
+      }
+      cat_zoom = std::clamp(cat_zoom, 0.1f, 10.0f);
+      rt.centered_cut_override_zoom = true;
+      rt.centered_cut_zoom = cat_zoom;
+      rt.post_spawn_zoom_start = cat_zoom;
+      if (centered.is_valid()) {
+        if (auto* t = centered.get_component<Components::Transform2D>()) {
+          t->scale = { cat_zoom, cat_zoom };
+        }
+      }
+
       rt.post_spawn_cinematic_end_time = rt.post_spawn_cinematic_start_time + k_summon5_cinematic_duration_sec;
       rt.post_spawn_zoom_target = k_summon5_target_zoom;
     }
