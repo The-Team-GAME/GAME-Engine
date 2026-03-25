@@ -13,9 +13,13 @@
 
 #include "pch.h"
 #include "../Components/GameplayComponent.h"
+#include "./Components/HealthComponents.h"
 
 namespace CheckpointCallbacks
 {
+
+  constexpr float CHECKPOINT_HEAL_PER_SEC = 1.0f; // 1 HP per second
+  float checkpoint_heal_carry = 0.0f;
 
   inline void spawn_checkpoint_prompt(Engine::ECS::Entity checkpoint)
   {
@@ -54,13 +58,36 @@ namespace CheckpointCallbacks
   }
 
   void checkpoint_on_update([[maybe_unused]] Engine::ECS::Entity checkpoint,
-    [[maybe_unused]] Engine::ECS::Entity player_entity)
+    Engine::ECS::Entity player_entity)
   {
+    auto* health = player_entity.get_component<Components::Health>();
+    if (!health) return;
+
+    if (health->value >= health->max)
+    {
+      checkpoint_heal_carry = 0.0f;
+      return;
+    }
+
+    checkpoint_heal_carry += CHECKPOINT_HEAL_PER_SEC * Engine::Time::get_fixed_dt();
+
+    while (checkpoint_heal_carry >= 1.0f)
+    {
+      health->heal(1);
+      checkpoint_heal_carry -= 1.0f;
+
+      if (health->value >= health->max)
+      {
+        checkpoint_heal_carry = 0.0f;
+        break;
+      }
+    }
   }
 
   void checkpoint_on_exit([[maybe_unused]] Engine::ECS::Entity checkpoint,
     [[maybe_unused]] Engine::ECS::Entity player_entity)
   {
+    checkpoint_heal_carry = 0.0f;
   }
 }
 
