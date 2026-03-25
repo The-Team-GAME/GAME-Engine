@@ -462,7 +462,7 @@ namespace PlayerStateCallbacks
     assert(flip);
 
     player_comp->knockback_value = player_comp->attack1_data.knockback;
-    rigid->velocity.x = flip->value.x * player_comp->dash.speed;
+    rigid->velocity.x = flip->value.x * player_comp->attack1.speed;
     //=========================================================================//
     ECS::Entity hitbox = create_hitbox(entity, player_comp->attack1_data);
 
@@ -509,7 +509,7 @@ namespace PlayerStateCallbacks
     assert(flip);
 
     player_comp->knockback_value = player_comp->attack2_data.knockback;
-    rigid->velocity.x = flip->value.x * player_comp->dash.speed;
+    rigid->velocity.x = flip->value.x * player_comp->attack2.speed;
     //=========================================================================//
     ECS::Entity hitbox = create_hitbox(entity, player_comp->attack2_data);
 
