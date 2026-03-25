@@ -71,7 +71,7 @@
                     ],
                     "summon1_spawn_marker_prefix": "cat_monkey_spawn1",
                     "summon1_spawn_offsets": [],
-                    "summon1_spawn_set_json": "",
+                    "summon1_spawn_set_json": "spawn_sets/summon1.json",
                     "summon2_minions": 0,
                     "summon2_prefabs": [
                         "prefabs/spray can monkey.json",
@@ -80,7 +80,7 @@
                     ],
                     "summon2_spawn_marker_prefix": "cat_monkey_spawn2",
                     "summon2_spawn_offsets": [],
-                    "summon2_spawn_set_json": "",
+                    "summon2_spawn_set_json": "spawn_sets/summon2.json",
                     "summon3_minions": 0,
                     "summon3_prefabs": [
                         "prefabs/slingshot_monkey.json",
@@ -90,7 +90,7 @@
                     ],
                     "summon3_spawn_marker_prefix": "cat_monkey_spawn3",
                     "summon3_spawn_offsets": [],
-                    "summon3_spawn_set_json": "",
+                    "summon3_spawn_set_json": "spawn_sets/summon3.json",
                     "summon4_minions": 0,
                     "summon4_prefabs": [
                         "prefabs/turret_monkey.json",
@@ -100,7 +100,7 @@
                     ],
                     "summon4_spawn_marker_prefix": "cat_monkey_spawn4",
                     "summon4_spawn_offsets": [],
-                    "summon4_spawn_set_json": "",
+                    "summon4_spawn_set_json": "spawn_sets/summon4.json",
                     "summon5_minions": 0,
                     "summon5_prefabs": [
                         "prefabs/turret_monkey.json",
@@ -111,7 +111,7 @@
                     "summon5_spawn_interval_sec": 3.0,
                     "summon5_spawn_marker_prefix": "cat_monkey_spawn5",
                     "summon5_spawn_offsets": [],
-                    "summon5_spawn_set_json": "",
+                    "summon5_spawn_set_json": "spawn_sets/summon5.json",
                     "summon_cooldown": 2.0
                 },
                 "type": "Components::CatMonkeyBoss"

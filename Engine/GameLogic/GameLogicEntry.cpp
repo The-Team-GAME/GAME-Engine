@@ -77,7 +77,9 @@ namespace {
 }
 
 // Defined in States/CatMonkeyStateCallbacks.cpp
-void register_catmonkey_blueprint_runtime();
+namespace CatMonkeyStateCallbacks {
+  void register_catmonkey_blueprint_runtime();
+}
 
 // =============================================================================
 // Knockback Helper Function
@@ -580,7 +582,7 @@ extern "C" __declspec(dllexport) void RegisterGameLogic()
 
   register_collision_callbacks();
   register_function_callbacks();
-  register_catmonkey_blueprint_runtime();
+  CatMonkeyStateCallbacks::register_catmonkey_blueprint_runtime();
   register_upgrade_applicators();
   register_scenes();
   register_systems();
