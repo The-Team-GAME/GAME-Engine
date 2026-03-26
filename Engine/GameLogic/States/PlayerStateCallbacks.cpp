@@ -244,7 +244,6 @@ namespace PlayerStateCallbacks
   inline void idle_on_update(Engine::ECS::Entity entity) {
     handle_cooldowns(entity);
     take_input(entity);
-    std::cout << "why are we here\n";
   }
 #pragma endregion
 
@@ -564,7 +563,7 @@ namespace PlayerStateCallbacks
         return;
       }
     }
-    if (animation->get_current_frame_index() >= 5) { // Allow combo after frame 3
+    if (animation->get_current_frame_index() >= 5) { // Allow combo after frame 5
       if (Input::is_held(KeyCode::D) || Input::is_held(KeyCode::A))
       {// Change state to idle here because it will transition to walking within 1 frame and its better to do the math there
         state_machine->change_state("Idle");
@@ -651,7 +650,7 @@ namespace PlayerStateCallbacks
       sm->change_state("Idle");
     }
     // Animation Cancelling
-    if (animation->get_current_frame_index() >= 4) { // Allow combo after frame 3
+    if (animation->get_current_frame_index() >= 4) { // Allow combo after frame 4
       if (Input::is_held(KeyCode::D) || Input::is_held(KeyCode::A))
       {// Change state to idle here because it will transition to walking within 1 frame and its better to do the math there
         sm->change_state("Idle");
