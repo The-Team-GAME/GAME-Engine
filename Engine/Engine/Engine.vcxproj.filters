@@ -83,6 +83,7 @@
     <ClCompile Include="GUI\DiceMiniGamePanel.cpp" />
     <ClCompile Include="UpgradeUIStateMachine.cpp" />
     <ClCompile Include="GUI\ManualColliderPanel.cpp" />
+    <ClCompile Include="GUI\BuildSizeAnalyzerPanel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Audio\AudioSystem.h" />
@@ -214,6 +215,7 @@
     <ClInclude Include="GUI\DiceMiniGamePanel.h" />
     <ClInclude Include="UpgradeUIStateMachine.h" />
     <ClInclude Include="GUI\ManualColliderPanel.h" />
+    <ClInclude Include="GUI\BuildSizeAnalyzerPanel.h" />
     <ClInclude Include="GUI\LogConsolePanel.h" />
     <ClInclude Include="GUI\ConfigurationPanel.h" />
   </ItemGroup>
