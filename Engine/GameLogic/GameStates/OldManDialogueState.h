@@ -15,6 +15,21 @@ class OldManDialogueState : public Engine::Scene
 {
 public:
   inline static bool is_open = false;
+  inline static bool open_tips_request = false;
+  inline static bool suppress_oldman_reopen_once = false;
+  inline static float block_oldman_reopen_until_unscaled = 0.0f;
+
+  static bool consume_open_tips_request() {
+    bool requested = open_tips_request;
+    open_tips_request = false;
+    return requested;
+  }
+
+  static bool consume_suppress_oldman_reopen_once() {
+    bool requested = suppress_oldman_reopen_once;
+    suppress_oldman_reopen_once = false;
+    return requested;
+  }
 
   void load()   override;
   void init()   override;
@@ -33,6 +48,7 @@ private:
 
   Engine::Graphics::Font dialogue_font_;
   Engine::Graphics::Font continue_font_;
-
-  bool any_input_pressed() const;
+  float close_enable_time_unscaled_ = 0.0f;
+  bool e_close_armed_ = false;
+  bool request_tips_on_close_ = false;
 };

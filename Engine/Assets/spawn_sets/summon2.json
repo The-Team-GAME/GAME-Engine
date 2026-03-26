@@ -1,0 +1,58 @@
+{
+    "data": {
+        "entities": [
+            {
+                "id": 1801,
+                "name": "slingshot_monkey",
+                "prefab": "prefabs/slingshot_monkey.json",
+                "prefab_id": "ba9299e0-0686-4084b-bb12-eef3031c8254",
+                "transform": {
+                    "position": {
+                        "x": 517.1849975585938,
+                        "y": 265.24102783203125
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 250.0,
+                        "y": 250.0
+                    }
+                }
+            },
+            {
+                "id": 1799,
+                "name": "spray can monkey",
+                "prefab": "prefabs/spray can monkey.json",
+                "prefab_id": "89422b47-e4df-40afa-bf83-340b457c61f8",
+                "transform": {
+                    "position": {
+                        "x": 903.4991455078125,
+                        "y": 398.2115173339844
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 160.0,
+                        "y": 160.0
+                    }
+                }
+            },
+            {
+                "id": 1800,
+                "name": "spray can monkey",
+                "prefab": "prefabs/spray can monkey.json",
+                "prefab_id": "89422b47-e4df-40afa-bf83-340b457c61f8",
+                "transform": {
+                    "position": {
+                        "x": 132.27044677734375,
+                        "y": 399.6112060546875
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 160.0,
+                        "y": 160.0
+                    }
+                }
+            }
+        ]
+    },
+    "dataType": "EntitySelection"
+}

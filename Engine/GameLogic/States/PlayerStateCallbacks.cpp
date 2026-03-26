@@ -21,6 +21,7 @@
 #include "../Components/HeartrateComponent.h"
 #include "../Components/HealthComponents.h"
 #include "../../Engine/UpgradeManager.h"
+#include "../../Engine/LevelManager.h"
 
 using namespace Engine;
 namespace {
@@ -548,7 +549,7 @@ namespace PlayerStateCallbacks
 
   inline void attack2_on_update(Engine::ECS::Entity entity) {
     handle_cooldowns(entity);
-
+    
     Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
     Components::Animation* animation = entity.get_component<Components::Animation>();
     assert(state_machine);
@@ -641,6 +642,7 @@ namespace PlayerStateCallbacks
   }
 
   inline void attack3_on_update(Engine::ECS::Entity entity) {
+    handle_cooldowns(entity);
     Components::Animation* animation = entity.get_component<Components::Animation>();
     assert(animation);
     Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
@@ -732,6 +734,7 @@ namespace PlayerStateCallbacks
 
   inline void uppercut_on_update(ECS::Entity entity)
   {
+    handle_cooldowns(entity);
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
 
@@ -768,6 +771,7 @@ namespace PlayerStateCallbacks
 
   inline void post_uppercut_on_update(ECS::Entity entity)
   {
+    handle_cooldowns(entity);
     Components::Animation* animation = entity.get_component<Components::Animation>();
     assert(animation);
     if (animation->has_ended())
@@ -804,6 +808,7 @@ namespace PlayerStateCallbacks
 
   inline void uppercut_falling_on_update(ECS::Entity entity)
   {
+    handle_cooldowns(entity);
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
     if (rigid->on_ground)
@@ -880,6 +885,7 @@ namespace PlayerStateCallbacks
 
   inline void pre_smash_on_update(ECS::Entity entity)
   {
+    handle_cooldowns(entity);
     Components::Animation* animation = entity.get_component<Components::Animation>();
     assert(animation);
     if (animation->has_ended())
@@ -912,6 +918,7 @@ namespace PlayerStateCallbacks
 
   inline void smash_on_update(ECS::Entity entity)
   {
+    handle_cooldowns(entity);
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
     if (rigid->on_ground)
@@ -955,6 +962,7 @@ namespace PlayerStateCallbacks
 
   inline void post_smash_on_update(ECS::Entity entity)
   {
+    handle_cooldowns(entity);
     Components::Animation* animation = entity.get_component<Components::Animation>();
     if (animation && animation->has_ended())
     {
@@ -1012,10 +1020,31 @@ namespace PlayerStateCallbacks
     //SceneManager::load_scene(scene);
 
     auto* player = entity.get_component<Components::Player>();
+    if (!player) return;
 
+    // If no checkpoint is set, restart the whole level.
+    // Using SceneManager::load_scene here can clear the world without re-opening
+    // the active level in GAME_BUILD, resulting in a blank map.
     if (!player->has_checkpoint) {
-      std::string scene = SceneManager::get_current_scene_name();
-      SceneManager::load_scene(scene);
+      const std::string& level_id = Engine::LevelManager::get_active_level_id();
+      if (!level_id.empty()) {
+        Log::info("Player: Restarting level after death (level_id={})", level_id);
+        Engine::LevelManager::reload_level(level_id);
+      }
+      else {
+        // Fallback: try to reload by current level path if an ID isn't available.
+        const std::string& level_path = Engine::LevelManager::get_current_level_path();
+        if (!level_path.empty()) {
+          Log::info("Player: Restarting level after death (level_path={})", level_path);
+          Engine::Resources::open_level(level_path);
+        }
+        else {
+          Log::warning("Player: Could not restart level after death (no active level id/path)");
+        }
+      }
+
+      // Important: don't touch components after initiating a level reload.
+      return;
     }
 
     auto* transform = entity.get_component<Components::Transform2D>();
@@ -1023,7 +1052,7 @@ namespace PlayerStateCallbacks
     auto* health = entity.get_component<Components::Health>();
     auto* state_machine = entity.get_component<Components::StateMachine>();
 
-    if (!player || !transform || !rigidbody || !health || !state_machine) return;
+    if (!transform || !rigidbody || !health || !state_machine) return;
 
     if (player->has_checkpoint)
       transform->position = player->respawn_point;

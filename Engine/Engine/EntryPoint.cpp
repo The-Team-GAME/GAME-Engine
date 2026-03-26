@@ -61,6 +61,7 @@ void RunGame()
   Engine::ECS::register_layer("main_menu_6");
   Engine::ECS::register_layer("upgrade_ui_bg"); // Upgrade picker: dimmer overlay
   Engine::ECS::register_layer("upgrade_ui_fg"); // Upgrade picker: cards, panels, particles
+  Engine::ECS::register_layer("scene_change_trigger"); // Invisible portal volumes (player-triggered level transitions)
 #ifndef GAME_BUILD
   Engine::ECS::register_layer("debug");
 #endif

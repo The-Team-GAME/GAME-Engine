@@ -27,6 +27,7 @@
 #include "../InputManager.h"
 #include "../FunctionRegistry.h"
 #include "../Time.h"
+#include "../Graphics/Renderer.h"
 #include <unordered_set>
 
 namespace Engine
@@ -99,7 +100,11 @@ namespace Engine
             }
           }
 
-          if (Engine::Input::is_pressed(KeyCode::MouseLeft)) {
+          const bool mouse_clicked = entity.has_component<Components::UI>()
+            ? Engine::Input::is_pressed_raw(KeyCode::MouseLeft)
+            : Engine::Input::is_pressed(KeyCode::MouseLeft);
+
+          if (mouse_clicked) {
             // Call on_click if function is set
             if (!clickable->on_click.empty()) {
               Engine::AudioSystem::playEvent(UI_BUTTON_CLICK_EVENT);
@@ -140,12 +145,19 @@ namespace Engine
           flipped_offset.y *= flip->value.y;
         }
 
+        Vec2D collider_pos = transform.position + flipped_offset;
+        if (auto* ui = entity.get_component<Components::UI>()) {
+          auto vres = Engine::Graphics::get_virtual_resolution();
+          collider_pos.x += ui->anchor.x * vres.x;
+          collider_pos.y += ui->anchor.y * vres.y;
+        }
+
         if (collider.type == Components::ColliderType::AABB) {
-          collider.aabb.pos = transform.position + flipped_offset;
+          collider.aabb.pos = collider_pos;
         }
         else if (collider.type == Components::ColliderType::OBB ||
           collider.type == Components::ColliderType::POLYGON) {
-          collider.polygon.position = transform.position + flipped_offset;
+          collider.polygon.position = collider_pos;
           collider.polygon.rotation = transform.rotation;
         }
       }
