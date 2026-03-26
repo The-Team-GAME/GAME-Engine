@@ -1,0 +1,109 @@
+{
+    "data": {
+        "entities": [
+            {
+                "id": 1795,
+                "name": "lazy_monkey",
+                "prefab": "prefabs/lazy_monkey.json",
+                "prefab_id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                "transform": {
+                    "position": {
+                        "x": 240.04666137695313,
+                        "y": 508.786865234375
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 128.0,
+                        "y": 128.0
+                    }
+                }
+            },
+            {
+                "id": 1796,
+                "name": "lazy_monkey",
+                "prefab": "prefabs/lazy_monkey.json",
+                "prefab_id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                "transform": {
+                    "position": {
+                        "x": 27.293975830078125,
+                        "y": 511.5863037109375
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 128.0,
+                        "y": 128.0
+                    }
+                }
+            },
+            {
+                "id": 1797,
+                "name": "lazy_monkey",
+                "prefab": "prefabs/lazy_monkey.json",
+                "prefab_id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                "transform": {
+                    "position": {
+                        "x": 791.524169921875,
+                        "y": 511.5863037109375
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 128.0,
+                        "y": 128.0
+                    }
+                }
+            },
+            {
+                "id": 1798,
+                "name": "lazy_monkey",
+                "prefab": "prefabs/lazy_monkey.json",
+                "prefab_id": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da",
+                "transform": {
+                    "position": {
+                        "x": 995.878662109375,
+                        "y": 508.78704833984375
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 128.0,
+                        "y": 128.0
+                    }
+                }
+            },
+            {
+                "id": 1793,
+                "name": "turret_monkey",
+                "prefab": "prefabs/turret_monkey.json",
+                "prefab_id": "cee72f1e-c172-40178-b24f-c0660cf7bfdd",
+                "transform": {
+                    "position": {
+                        "x": 122.47280883789063,
+                        "y": 315.6298828125
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 200.0,
+                        "y": 135.0
+                    }
+                }
+            },
+            {
+                "id": 1794,
+                "name": "turret_monkey",
+                "prefab": "prefabs/turret_monkey.json",
+                "prefab_id": "cee72f1e-c172-40178-b24f-c0660cf7bfdd",
+                "transform": {
+                    "position": {
+                        "x": 906.298583984375,
+                        "y": 317.02960205078125
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 200.0,
+                        "y": 135.0
+                    }
+                }
+            }
+        ]
+    },
+    "dataType": "EntitySelection"
+}
