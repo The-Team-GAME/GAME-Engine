@@ -132,6 +132,17 @@ namespace Engine {
     ENGINE_API void clear_all(bool preserve_preloaded_levels = true);
 
     // ============================================================================
+    // Pending Level Request (for scene transitions)
+    // ============================================================================
+
+    // Request that the next GameplayState load opens this level.
+    // This survives SceneManager::load_scene() clearing level state.
+    ENGINE_API void set_pending_level_to_open(const std::string& level_path);
+
+    // Returns the pending level path (if any) and clears it.
+    ENGINE_API std::string consume_pending_level_to_open();
+
+    // ============================================================================
     // Entity Serialization Utilities
     // ============================================================================
 

@@ -1,0 +1,92 @@
+{
+    "data": {
+        "components": [
+            {
+                "data": {
+                    "aabb": {
+                        "half_height": 0.0,
+                        "half_width": 0.0,
+                        "pos": {
+                            "x": 14614.53515625,
+                            "y": 603.3277587890625
+                        }
+                    },
+                    "collided": false,
+                    "height": 180.0,
+                    "kinetic_friction": 1.0,
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "polygon": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "rotation": 0.0,
+                        "vertices": []
+                    },
+                    "radius": 0.0,
+                    "resolve_collisions": false,
+                    "type": "AABB",
+                    "width": 110.0
+                },
+                "type": "Components::BoxCollider"
+            },
+            {
+                "data": {
+                    "a": 1.0,
+                    "b": 0.10236448794603348,
+                    "g": 0.6960784196853638,
+                    "r": 0.29444846510887146
+                },
+                "type": "Components::Color"
+            },
+            {
+                "data": {
+                    "acceleration": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "apply_force": false,
+                    "gravity": {
+                        "x": 0.0,
+                        "y": 1000.0
+                    },
+                    "is_jumping": false,
+                    "is_static": true,
+                    "mass": 1.0,
+                    "on_ground": false,
+                    "use_gravity": true,
+                    "velocity": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "x_terminal_velocity": 500.0,
+                    "y_terminal_velocity": 1000.0
+                },
+                "type": "Components::RigidBody"
+            },
+            {
+                "data": {
+                    "position": {
+                        "x": 14614.53515625,
+                        "y": 603.3277587890625
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 110.0,
+                        "y": 180.0
+                    }
+                },
+                "type": "Components::Transform2D"
+            }
+        ],
+        "filepath": "prefabs/Level_2_Portal.json",
+        "layers": [
+            "scene_change_trigger"
+        ],
+        "uuid": "66699b22-118e-4050f-ac3b-14eeeca04480"
+    },
+    "dataType": "Prefab"
+}
