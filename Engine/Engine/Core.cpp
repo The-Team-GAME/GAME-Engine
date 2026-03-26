@@ -423,12 +423,7 @@ namespace Engine
         if (!Engine::Time::get_paused() || single_step_requested)
         {
           Engine::SceneManager::update(); // LEgacy: Scene update
-          // If the active scene is a fullscreen blocker (e.g. cutscene),
-          // do not run gameplay/world systems underneath it.
-          if (!(Engine::SceneManager::current_scene && Engine::SceneManager::current_scene->blocks_lower_draw()))
-          {
-            Engine::ECS::update_game();
-          }
+          Engine::ECS::update_game();
         }
 
         // 2. Editor systems always run (gizmo, camera control, etc.)
@@ -476,12 +471,7 @@ namespace Engine
       Engine::Graphics::clear_screen({ 0.0f, 0.0f, 0.0f, 1.0f });
 
       Engine::SceneManager::draw();
-      // If the active scene is a fullscreen blocker (e.g. cutscene),
-      // do not draw world/entities underneath it.
-      if (!(Engine::SceneManager::current_scene && Engine::SceneManager::current_scene->blocks_lower_draw()))
-      {
-        Engine::ECS::draw();
-      }
+      Engine::ECS::draw();
 
       // Flush batches before applying post-processing
       Engine::Graphics::end_batch();

@@ -231,10 +231,6 @@ namespace {
 namespace Engine {
   namespace LevelManager {
 
-    namespace {
-      std::string g_pending_level_to_open;
-    }
-
     // Forward declarations
     void build_preloaded_snapshot(LevelState& state);
 
@@ -606,12 +602,9 @@ namespace Engine {
       current_level_path = "";  // No file path for new levels
 
       // Clear the world
-      // IMPORTANT: clear all ACTIVE entities (even ones with no layer).
-      // ECS::for_each_entity() iterates by layer sets and can miss unlayered
-      // entities, causing levels to accumulate.
-      for (auto entity : ECS::get_all_entities()) {
+      ECS::for_each_entity([](ECS::Entity entity) {
         entity.destroy();
-      }
+        });
       ECS::process_housekeeping();
 
       // Create the Level entity with Level component
@@ -663,22 +656,6 @@ namespace Engine {
         instantiate_entities(entities, true);
         state.cached_entities = entities;
       }
-
-      // Ensure tile collision entities and collision world bounds are correct after a fast switch.
-      // The cold-load path handles this inside instantiate_entities().
-      for (auto& entity : ECS::get_entities_with<Components::TileMap>()) {
-        auto layers = entity.get_layers();
-        for (ECS::LayerID layer_id = 0; layer_id < ECS::MAX_LAYERS; ++layer_id) {
-          if (layers.test(layer_id)) {
-            std::string layer_name = ECS::get_layer_name(layer_id);
-            if (!layer_name.empty()) {
-              TilemapManager::rebuild_tilemap_for_layer(layer_name);
-            }
-          }
-        }
-      }
-
-      TilemapManager::broadcast_world_bounds();
 
       Log::info("Switched to level: {}", level_id);
 
@@ -732,31 +709,15 @@ namespace Engine {
           call_level_exit();
         }
 
-        for (auto entity : ECS::get_all_entities()) {
+        ECS::for_each_entity([](ECS::Entity entity) {
           entity.destroy();
-        }
+          });
         ECS::process_housekeeping();
 
         for (ECS::EntityID id : preloaded_snapshots[level_id]) {
           ECS::activate_entity(id);
         }
         preloaded_snapshots.erase(level_id);
-
-        // After reactivating entities from the snapshot, rebuild tile collision entities
-        // and world bounds. This matches the normal level-switch path and prevents
-        // "blank" reloads where TilemapManager state wasn't rebuilt.
-        for (auto& entity : ECS::get_entities_with<Components::TileMap>()) {
-          auto layers = entity.get_layers();
-          for (ECS::LayerID layer_id = 0; layer_id < ECS::MAX_LAYERS; ++layer_id) {
-            if (layers.test(layer_id)) {
-              std::string layer_name = ECS::get_layer_name(layer_id);
-              if (!layer_name.empty()) {
-                TilemapManager::rebuild_tilemap_for_layer(layer_name);
-              }
-            }
-          }
-        }
-        TilemapManager::broadcast_world_bounds();
 
         current_level_path = level_id;
         call_level_init();
@@ -843,9 +804,9 @@ namespace Engine {
           std::string new_active = level_order[new_index];
 
           // Destroy active entities first
-          for (auto entity : ECS::get_all_entities()) {
+          ECS::for_each_entity([](ECS::Entity entity) {
             entity.destroy();
-          }
+            });
           ECS::process_housekeeping();
 
           active_level_id = new_active;
@@ -865,9 +826,9 @@ namespace Engine {
         }
         else {
           // Closing last level
-          for (auto entity : ECS::get_all_entities()) {
+          ECS::for_each_entity([](ECS::Entity entity) {
             entity.destroy();
-          }
+            });
           ECS::process_housekeeping();
           active_level_id = "";
           current_level_path = "";
@@ -1112,11 +1073,9 @@ namespace Engine {
       active_level_id = "";
       current_level_path = "";
 
-      // Clear all ACTIVE entities (including unlayered). Deactivated entities
-      // are managed per-level via destroy_level_entities()/activate_level().
-      for (auto entity : ECS::get_all_entities()) {
+      ECS::for_each_entity([](ECS::Entity entity) {
         entity.destroy();
-      }
+        });
       ECS::process_housekeeping();
 
       Log::info("Cleared levels. Preserved {} preloaded levels.", open_levels.size());
@@ -1125,19 +1084,6 @@ namespace Engine {
     void set_current_level_path(const std::string& path)
     {
       current_level_path = path;
-    }
-
-    void set_pending_level_to_open(const std::string& level_path)
-    {
-      g_pending_level_to_open = level_path;
-      Log::info("[LevelManager] Pending level set: {}", g_pending_level_to_open.empty() ? std::string("<empty>") : g_pending_level_to_open);
-    }
-
-    std::string consume_pending_level_to_open()
-    {
-      std::string out = std::move(g_pending_level_to_open);
-      g_pending_level_to_open.clear();
-      return out;
     }
 
     EntityList capture_world_entities()
@@ -1228,9 +1174,9 @@ namespace Engine {
       }
 
       if (clear_world) {
-        for (auto entity : ECS::get_all_entities()) {
+        ECS::for_each_entity([](ECS::Entity entity) {
           entity.destroy();
-        }
+          });
       }
 
       // Process housekeeping to ensure old entities (including tile colliders) are actually destroyed

@@ -561,9 +561,7 @@ namespace Engine
 
         Log::info("camera shake accepted: trauma={}", trauma);
 
-
-        trauma = std::min(1.0f, trauma);
-        shake_trauma = std::max(shake_trauma, trauma);
+        shake_trauma = std::min(0.3f, shake_trauma + trauma);
       }
 
       static void unactivate_all_cameras() {

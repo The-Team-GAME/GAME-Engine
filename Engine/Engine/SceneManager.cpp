@@ -28,11 +28,6 @@
 
 namespace Engine
 {
-  bool Scene::blocks_lower_draw() const
-  {
-    return false;
-  }
-
   namespace Systems {
     void add_camera_shake(f32 trauma) {
       CameraSystem::add_shake(trauma);
@@ -157,22 +152,8 @@ namespace Engine
     }
 
     void draw() {
-      if (scene_stack.empty())
-        return;
-
-      size_t start_index = 0;
-      for (size_t i = scene_stack.size(); i-- > 0;)
-      {
-        if (scene_stack[i] && scene_stack[i]->blocks_lower_draw())
-        {
-          start_index = i;
-          break;
-        }
-      }
-
-      for (size_t i = start_index; i < scene_stack.size(); ++i)
-      {
-        scene_stack[i]->draw();
+      for (auto& scene : scene_stack) {
+        scene->draw();
       }
     }
 
