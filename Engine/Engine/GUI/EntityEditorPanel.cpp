@@ -19,6 +19,7 @@
 #include "widgets/ReflectionFieldWidgets.h"
 #include "../FileIO/PrefabsFileIO.h"
 #include "../FileIO/LevelFileIO.h"
+#include "../FileIO/Helpers.h"
 #include "../Path.h"
 #include "../Resources.h"
 #include <filesystem>
@@ -45,6 +46,11 @@ namespace {
   std::unordered_set<Engine::ECS::EntityID> selected_entity_ids; // multi-selection set
   std::vector<Engine::ECS::Prefab> entity_clipboard; // copy/paste clipboard
   bool selection_initialized = false;
+
+  // Selection export state (multi-entity)
+  char selection_export_path_buf[256] = "spawn_sets/entity_selection.json";
+  std::string selection_export_status;
+  float selection_export_status_time = 0.0f;
 
   // Shift+Click range select state
   Engine::ECS::EntityID last_clicked_entity_id = Engine::ECS::INVALID_ENTITY;
@@ -1233,6 +1239,128 @@ void EntityEditorPanel()
     {
       ImGui::Text("Entity JSON copied to clipboard!");
       ImGui::EndPopup();
+    }
+
+    ImGui::Separator();
+
+    if (ImGui::CollapsingHeader("Selection Export", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+      const size_t selection_count = selected_entity_ids.size();
+      ImGui::Text("Selected entities: %zu", selection_count);
+
+      ImGui::Text("Output file path (relative to resources):");
+      ImGui::InputText("##SelectionExportPath", selection_export_path_buf, sizeof(selection_export_path_buf));
+
+      if (ImGui::Button("Save Selection to JSON", ImVec2(-1, 0)))
+      {
+        if (selection_count == 0)
+        {
+          selection_export_status = "Error: No entities selected";
+          selection_export_status_time = 3.0f;
+        }
+        else
+        {
+          std::string rel_path = std::string(selection_export_path_buf);
+          if (rel_path.empty())
+          {
+            selection_export_status = "Error: Output path cannot be empty";
+            selection_export_status_time = 3.0f;
+          }
+          else
+          {
+            if (rel_path.find(".json") == std::string::npos)
+            {
+              rel_path += ".json";
+            }
+
+            // Deterministic ordering: sort by entity name then ID
+            std::vector<Engine::ECS::EntityID> ids;
+            ids.reserve(selection_count);
+            for (Engine::ECS::EntityID id : selected_entity_ids)
+            {
+              ids.push_back(id);
+            }
+            std::sort(ids.begin(), ids.end(), [](Engine::ECS::EntityID a, Engine::ECS::EntityID b) {
+              Engine::ECS::Entity ea = Engine::ECS::get_entity(a);
+              Engine::ECS::Entity eb = Engine::ECS::get_entity(b);
+              const std::string& na = ea.is_valid() ? Engine::ECS::get_entity_name(ea) : std::string();
+              const std::string& nb = eb.is_valid() ? Engine::ECS::get_entity_name(eb) : std::string();
+              if (na != nb) return na < nb;
+              return a < b;
+            });
+
+            ReflectionLibrary::GenericValue root = ReflectionLibrary::Object();
+            root["dataType"] = "EntitySelection";
+            root["data"]["entities"] = ReflectionLibrary::Array();
+
+            auto& containers = Engine::ECS::Internal::get_containers();
+
+            for (Engine::ECS::EntityID id : ids)
+            {
+              Engine::ECS::Entity e = Engine::ECS::get_entity(id);
+              if (!e.is_valid())
+              {
+                continue;
+              }
+
+              ReflectionLibrary::GenericValue entry = ReflectionLibrary::Object();
+              entry["id"] = static_cast<int>(id);
+
+              const std::string& name = Engine::ECS::get_entity_name(e);
+              if (!name.empty())
+              {
+                entry["name"] = name;
+              }
+
+              if (e.has_component<Components::Transform2D>())
+              {
+                const auto* t = e.get_component<Components::Transform2D>();
+                entry["transform"]["position"]["x"] = t->position.x;
+                entry["transform"]["position"]["y"] = t->position.y;
+                entry["transform"]["rotation"] = t->rotation;
+                entry["transform"]["scale"]["x"] = t->scale.x;
+                entry["transform"]["scale"]["y"] = t->scale.y;
+              }
+
+              // If this is a prefab instance, store prefab filepath for spawn tooling
+              auto prefab_it = containers.prefab_instances.find(id);
+              if (prefab_it != containers.prefab_instances.end())
+              {
+                const auto& instance_data = prefab_it->second;
+                if (!instance_data.prefab_filepath.empty())
+                {
+                  entry["prefab"] = instance_data.prefab_filepath;
+                }
+                entry["prefab_id"] = instance_data.prefab_id;
+              }
+
+              root["data"]["entities"].push_back(entry);
+            }
+
+            const std::string json = ReflectionLibrary::generic_value_to_json(root, true);
+            const std::string full_path = Engine::Path(Engine::Resources::resource_path).join(rel_path).to_string();
+            if (Engine::FileIO::write_string_to_file(full_path, json))
+            {
+              selection_export_status = "Saved selection to " + rel_path;
+              selection_export_status_time = 3.0f;
+              Log::info("Entity selection saved: {} ({} entities)", rel_path, selection_count);
+            }
+            else
+            {
+              selection_export_status = "Error: Failed to write file";
+              selection_export_status_time = 3.0f;
+              Log::error("Failed to save entity selection: {}", rel_path);
+            }
+          }
+        }
+      }
+
+      if (selection_export_status_time > 0.0f)
+      {
+        ImGui::Separator();
+        ImGui::TextWrapped("%s", selection_export_status.c_str());
+        selection_export_status_time -= ImGui::GetIO().DeltaTime;
+      }
     }
   }
   else

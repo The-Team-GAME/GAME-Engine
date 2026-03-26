@@ -19,6 +19,7 @@
 #include "../Perf.h"
 #include "../FileIO/Settings.h"
 #include "../Graphics/Renderer.h" // for picturing the quad tree
+#include <limits>
 
 using namespace Engine;
 using namespace Systems;
@@ -53,6 +54,12 @@ void col2D::update()
 {
   Engine::Perf::start("Collision Update");
 
+  if (!spatial_tree_sat)
+  {
+    Engine::Perf::stop("Collision Update");
+    return;
+  }
+
   // reset the tree from last frame
   spatial_tree_sat->clear();
 
@@ -61,6 +68,13 @@ void col2D::update()
   {
     ECS::Entity entity(entity_id);
     update_entity(entity);
+
+    // Defensive: entity lists can momentarily contain stale/mismatched entities during level switches.
+    if (entity.get_component<Components::BoxCollider>() == nullptr)
+    {
+      continue;
+    }
+
     spatial_tree_sat->insert(entity);
   }
 
@@ -69,6 +83,11 @@ void col2D::update()
     ECS::Entity entity(entity_id);
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
+
+    if (rigid == nullptr || box == nullptr)
+    {
+      continue;
+    }
 
     // Reset rigid->on_ground here
     rigid->on_ground = false;
@@ -92,6 +111,10 @@ void col2D::update()
       // Skip self-collision
       if (entity == other) { continue; }
       Components::BoxCollider* other_box = other.get_component<Components::BoxCollider>();
+      if (other_box == nullptr)
+      {
+        continue;
+      }
       // Get other entity's layers
       ECS::LayerSignature other_layers = other.get_layers();
       // Check if these entities' layers should collide using the global collision matrix
@@ -118,6 +141,10 @@ void col2D::update()
       {
         Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
         Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
+        if (xform == nullptr)
+        {
+          continue;
+        }
         // we add the MTV here because it is not the penetration vector but rather how far the object needs to be pushed out to resolve the collision
         // Basically we snapping the object out of the collided surface
         if (collision.get_penetration() > 0.5f)
@@ -171,7 +198,8 @@ void col2D::update()
           tangent = dot_product(rigid->velocity, tangent) < 0 ? -tangent : tangent;
 
           // This is how much friction can be generated in this frame
-          f32 friction_experienced = normal_magnitude * (rigid->kinetic_coefficient * other_rigid->kinetic_coefficient) * 2.f;
+          f32 other_kinetic = other_rigid ? other_rigid->kinetic_coefficient : 1.0f;
+          f32 friction_experienced = normal_magnitude * (rigid->kinetic_coefficient * other_kinetic) * 2.f;
 
           /*====================================================================================
           / Calculating the friction force needed to immediately stop the entity in this frame /
@@ -229,6 +257,11 @@ void col2D::update_entity(Engine::ECS::Entity entity)
 {
   Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
   Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
+
+  if (xform == nullptr || box == nullptr)
+  {
+    return;
+  }
   
   // Calculate flipped offset
   Vec2D flipped_offset = box->offset;
@@ -263,6 +296,13 @@ AABB col2D::get_entity_aabb(ECS::Entity entity)
 {
   Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
 
+  if (box == nullptr)
+  {
+    // Sentinel AABB far outside typical world bounds so quadtree insertion/range checks ignore it.
+    constexpr f32 kHuge = std::numeric_limits<f32>::max() / 4.0f;
+    return AABB(Vec2D(kHuge, kHuge), 0.0f, 0.0f);
+  }
+
   if (box->type == Components::ColliderType::AABB)
   {
     // Direct AABB access
@@ -272,6 +312,11 @@ AABB col2D::get_entity_aabb(ECS::Entity entity)
   // Since we dont know if the shape is rotated, we need to compute all the vertices anyways
 
   std::vector<Vec2D> xformed_vertices = box->polygon.get_transformed_vertices();
+  if (xformed_vertices.empty())
+  {
+    constexpr f32 kHuge = std::numeric_limits<f32>::max() / 4.0f;
+    return AABB(Vec2D(kHuge, kHuge), 0.0f, 0.0f);
+  }
 
   Vec2D min = xformed_vertices[0];
   Vec2D max = xformed_vertices[0];

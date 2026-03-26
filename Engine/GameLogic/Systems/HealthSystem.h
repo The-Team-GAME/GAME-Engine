@@ -23,6 +23,8 @@
 
 #include "pch.h"
 
+#include "../Components/CatMonkeyBossComponent.h"
+
 #include "../Components/HealthComponents.h"
 
 #include "../Components/EnemyHealthComponent.h"
@@ -424,6 +426,13 @@ namespace Engine {
         auto* tr = e.get_component<Transform2D>();
         auto* bar = e.get_component<EnemyHealthBarRect>();
         if (!hp || !tr || !bar) return;
+
+        // Cat Monkey uses the 5 large bottom-screen wave healthbars.
+        // Suppress the overhead enemy bar entirely.
+        if (e.has_component<Components::CatMonkeyBoss>()) {
+          destroy_rect(*bar);
+          return;
+        }
 
         // Don't recreate a destroyed bar for a dead enemy.
         if (hp->is_dead() && !bar->initialized) return;

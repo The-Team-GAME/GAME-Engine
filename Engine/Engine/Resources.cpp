@@ -703,6 +703,19 @@ void Engine::Resources::cache_prefab(const std::string& filepath, const Engine::
 
 Engine::EntityList Engine::Resources::load_level(const std::string& filepath, bool append_resource_path, bool persist)
 {
+  // Be resilient to callers passing an absolute path while also requesting
+  // append_resource_path=true. If the input is already absolute (or already
+  // under the resources root), treat it as a full path.
+  const std::string normalized_resource_root = Path(resource_path).normalize().ensure_trailing_separator().to_string();
+  const std::string normalized_input = Path(filepath).normalize().to_string();
+  const bool input_is_absolute = Path(filepath).is_absolute();
+  const bool input_is_under_resources = !normalized_resource_root.empty() &&
+    normalized_input.rfind(normalized_resource_root, 0) == 0;
+
+  if (append_resource_path && (input_is_absolute || input_is_under_resources)) {
+    append_resource_path = false;
+  }
+
   // Construct full path using Path class
   std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
 
@@ -710,11 +723,21 @@ Engine::EntityList Engine::Resources::load_level(const std::string& filepath, bo
   std::string actual_filepath = filepath;
   if (!append_resource_path)
   {
-    std::string copied_path = Engine::Resources::copy_to_resources(filepath, "levels");
-    if (!copied_path.empty())
+    // If the input path is already under the resources root, don't copy it.
+    // This prevents accidentally copying (or failing to copy) a resources path
+    // and then caching an empty deserialization result.
+    const std::string normalized_full_path = Path(full_path).normalize().to_string();
+    const bool full_path_under_resources = !normalized_resource_root.empty() &&
+      normalized_full_path.rfind(normalized_resource_root, 0) == 0;
+
+    if (!full_path_under_resources)
     {
-      actual_filepath = copied_path;
-      full_path = Engine::Path(resource_path).join(actual_filepath);
+      std::string copied_path = Engine::Resources::copy_to_resources(filepath, "levels");
+      if (!copied_path.empty())
+      {
+        actual_filepath = copied_path;
+        full_path = Engine::Path(resource_path).join(actual_filepath);
+      }
     }
   }
 
@@ -811,6 +834,18 @@ void Engine::Resources::cache_level(const std::string& filepath, const Engine::E
 
 bool Engine::Resources::open_level(const std::string& filepath, bool append_resource_path)
 {
+  // Same robustness as load_level(): allow callers to pass an absolute path
+  // without accidentally double-prefixing the resources root.
+  const std::string normalized_resource_root = Path(resource_path).normalize().ensure_trailing_separator().to_string();
+  const std::string normalized_input = Path(filepath).normalize().to_string();
+  const bool input_is_absolute = Path(filepath).is_absolute();
+  const bool input_is_under_resources = !normalized_resource_root.empty() &&
+    normalized_input.rfind(normalized_resource_root, 0) == 0;
+
+  if (append_resource_path && (input_is_absolute || input_is_under_resources)) {
+    append_resource_path = false;
+  }
+
 #ifndef GAME_BUILD
   // In editor mode, use the tab manager for level opening
   return LevelTabManager::open_tab(filepath, append_resource_path);
