@@ -85,7 +85,7 @@
         ],
         "filepath": "prefabs/Level_2_Portal.json",
         "layers": [
-            "enemy"
+            "scene_change_trigger"
         ],
         "uuid": "66699b22-118e-4050f-ac3b-14eeeca04480"
     },

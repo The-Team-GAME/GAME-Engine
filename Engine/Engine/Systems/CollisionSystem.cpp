@@ -60,6 +60,16 @@ void col2D::update()
   for (ECS::EntityID entity_id : entities)
   {
     ECS::Entity entity(entity_id);
+    Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
+
+    // Entity membership can become stale across runtime edits/spawns.
+    // Skip entries that no longer satisfy this system's component set.
+    if (!xform || !rigid || !box) {
+      continue;
+    }
+
     update_entity(entity);
     spatial_tree_sat->insert(entity);
   }
@@ -69,6 +79,10 @@ void col2D::update()
     ECS::Entity entity(entity_id);
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
+
+    if (!rigid || !box) {
+      continue;
+    }
 
     // Reset rigid->on_ground here
     rigid->on_ground = false;
@@ -231,6 +245,10 @@ void col2D::update_entity(Engine::ECS::Entity entity)
 {
   Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
   Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
+
+  if (!xform || !box) {
+    return;
+  }
 
   // Calculate flipped offset
   Vec2D flipped_offset = box->offset;
