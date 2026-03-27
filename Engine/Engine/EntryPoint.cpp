@@ -51,6 +51,7 @@ void RunGame()
   Engine::ECS::register_layer("enemy");
   Engine::ECS::register_layer("player_trail");
   Engine::ECS::register_layer("player");
+  Engine::ECS::register_layer("scene_change_trigger");
   Engine::ECS::register_layer("effect");
   Engine::ECS::register_layer("main_menu_0");
   Engine::ECS::register_layer("main_menu_1");

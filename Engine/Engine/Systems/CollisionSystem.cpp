@@ -241,6 +241,15 @@ void col2D::update_entity(Engine::ECS::Entity entity)
 
   if (box->type == Components::ColliderType::AABB)
   {
+    // Keep AABB half-extents consistent with collider width/height.
+    // Some prefabs/levels serialize half_width/half_height as 0 but do have width/height.
+    if (box->width > 0.0f) {
+      box->aabb.half_width = box->width * 0.5f;
+    }
+    if (box->height > 0.0f) {
+      box->aabb.half_height = box->height * 0.5f;
+    }
+
     box->aabb.pos = xform->position + flipped_offset;
   }
   else if (box->type == Components::ColliderType::OBB ||

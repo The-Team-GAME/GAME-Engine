@@ -48,6 +48,7 @@
                         "x": 0.0,
                         "y": 0.0
                     },
+                    "air_time": 0.0,
                     "apply_force": false,
                     "gravity": {
                         "x": 0.0,
@@ -84,7 +85,7 @@
         ],
         "filepath": "prefabs/Level_2_Portal.json",
         "layers": [
-            "scene_change_trigger"
+            "enemy"
         ],
         "uuid": "66699b22-118e-4050f-ac3b-14eeeca04480"
     },

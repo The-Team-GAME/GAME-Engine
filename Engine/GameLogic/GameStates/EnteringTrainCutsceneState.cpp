@@ -14,7 +14,7 @@
 
 namespace {
   static constexpr const char* CUTSCENE_MPG = "videos/Cutscene_Entering_Train.mpg";
-  static constexpr const char* CUTSCENE_MP4 = "videos/Cutscene_Entering_Train.mp4";
+  //static constexpr const char* CUTSCENE_MP4 = "videos/Cutscene_Entering_Train.mp4";
   static constexpr const char* LEVEL_TWO_PATH = "levels/LevelTwo.json";
 }
 
@@ -45,12 +45,9 @@ void EnteringTrainCutsceneState::init()
   if (player.open(CUTSCENE_MPG)) {
     loaded = true;
   }
-  else if (player.open(CUTSCENE_MP4)) {
-    loaded = true;
-  }
 
   if (!loaded) {
-    Log::error("[EnteringTrainCutsceneState] Failed to load cutscene: {} (or fallback {})", CUTSCENE_MPG, CUTSCENE_MP4);
+    Log::error("[EnteringTrainCutsceneState] Failed to load cutscene: {}", CUTSCENE_MPG);
     Log::error("[EnteringTrainCutsceneState] If using .mp4, convert to .mpg with: ./convert_videos.ps1 (ffmpeg required)");
 
     Engine::EventManager::send_event<Engine::Events::ToastEvent>(
@@ -59,12 +56,7 @@ void EnteringTrainCutsceneState::init()
       5.0f
     );
 
-    // We switched into this cutscene via load_scene(), so there may be no
-    // underlying gameplay scene to return to. Fall back to loading GameplayState.
-    if (open_level_when_done && !next_level_to_open.empty()) {
-      Engine::LevelManager::set_pending_level_to_open(next_level_to_open);
-    }
-    Engine::SceneManager::load_scene("GameplayState");
+    Engine::SceneManager::load_scene("LevelTwoGameplayState");
     return;
   }
 
@@ -83,13 +75,7 @@ void EnteringTrainCutsceneState::update()
 {
   auto finish_cutscene = [this]() {
     player.stop();
-
-    // Reload GameplayState and request the next level via its pending-level mechanism.
-    // (SceneManager::load_scene clears LevelManager in GAME_BUILD.)
-    if (open_level_when_done && !next_level_to_open.empty()) {
-      Engine::LevelManager::set_pending_level_to_open(next_level_to_open);
-    }
-    Engine::SceneManager::load_scene("GameplayState");
+    Engine::SceneManager::load_scene("LevelTwoGameplayState");
   };
 
   // Allow skipping the cutscene with Escape or Space

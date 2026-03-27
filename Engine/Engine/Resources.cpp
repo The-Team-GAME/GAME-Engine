@@ -729,6 +729,14 @@ Engine::EntityList Engine::Resources::load_level(const std::string& filepath, bo
   // Deserialize level
   Engine::EntityList entities = Engine::FileIO::deserialize_level_from_json_file(full_path);
 
+  // Treat empty loads as failures (missing file / invalid JSON). Don't cache them.
+  // Levels in this project are expected to contain at least a Level entity.
+  if (entities.empty())
+  {
+    Log::warning("Failed to load level (0 entities): {}", full_path);
+    return entities;
+  }
+
   // Cache the level
   level_cache[full_path] = entities;
   if (persist)

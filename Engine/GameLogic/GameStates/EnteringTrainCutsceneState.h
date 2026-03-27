@@ -19,7 +19,6 @@ private:
   double last_video_time_ = -1.0;
 
 public:
-  bool blocks_lower_draw() const override { return true; }
 
   void set_next_level_to_open(const std::string& level_path);
 

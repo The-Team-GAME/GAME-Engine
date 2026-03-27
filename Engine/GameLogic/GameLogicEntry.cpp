@@ -34,6 +34,7 @@
 #include "GameStates/LuaState.h"
 #include "GameStates/BehaviourState.h"
 #include "GameStates/GameplayState.h"
+#include "GameStates/LevelTwoGameplayState.h"
 #include "GameStates/TipsBookState.h"
 #include "GameStates/OldManDialogueState.h"
 #include "GameStates/UpgradePickerState.h"
@@ -43,7 +44,6 @@
 #include "GameStates/VideoPlaybackState.h"
 #include "GameStates/OpeningCutsceneState.h"
 #include "GameStates/EnteringTrainCutsceneState.h"
-#include "GameStates/LevelTwoStartState.h"
 
 // Game systems
 #include "Systems/HealthSystem.h"
@@ -313,6 +313,15 @@ static void register_collision_callbacks()
       Log::info("[Portal] Collision callback fired: trigger={}, player={}", trigger_entity.get_id(), player_entity.get_id());
       LevelTransitionStateCallbacks::portal_entering_train_cutscene(trigger_entity, player_entity);
     });
+
+  // Also register the reverse order so callback firing doesn't depend on the
+  // CollisionSystem invoking callbacks as (trigger, player) vs (player, trigger).
+  Engine::ECS::LayerRegistry::register_collision_callback("player", "scene_change_trigger",
+    [](Engine::ECS::Entity player_entity, Engine::ECS::Entity trigger_entity)
+    {
+      Log::info("[Portal] Collision callback fired (reversed): trigger={}, player={}", trigger_entity.get_id(), player_entity.get_id());
+      LevelTransitionStateCallbacks::portal_entering_train_cutscene(trigger_entity, player_entity);
+    });
 }
 
 static void unregister_collision_callbacks()
@@ -323,6 +332,7 @@ static void unregister_collision_callbacks()
   Engine::ECS::LayerRegistry::unregister_collision_callback("projectiles", "tilemap_foreground_mid");
   Engine::ECS::LayerRegistry::unregister_collision_callback("projectiles", "player");
   Engine::ECS::LayerRegistry::unregister_collision_callback("scene_change_trigger", "player");
+  Engine::ECS::LayerRegistry::unregister_collision_callback("player", "scene_change_trigger");
 }
 
 // =============================================================================
@@ -531,6 +541,7 @@ static void register_scenes()
   Engine::SceneManager::register_scene<EmptyState>("EmptyState");
   Engine::SceneManager::register_scene<MainMenuState>("MainMenuState");
   Engine::SceneManager::register_scene<GameplayState>("GameplayState");
+  Engine::SceneManager::register_scene<LevelTwoGameplayState>("LevelTwoGameplayState");
   Engine::SceneManager::register_scene<Rubric2500ParticlesState>("Rubric2500ParticlesState");
   Engine::SceneManager::register_scene<StressTestState>("StressTestState");
   Engine::SceneManager::register_scene<BasicState>("BasicState");
@@ -547,7 +558,6 @@ static void register_scenes()
   Engine::SceneManager::register_scene<VideoPlaybackState>("VideoPlaybackState");
   Engine::SceneManager::register_scene<OpeningCutsceneState>("OpeningCutsceneState");
   Engine::SceneManager::register_scene<EnteringTrainCutsceneState>("EnteringTrainCutsceneState");
-  Engine::SceneManager::register_scene<LevelTwoStartState>("LevelTwoStartState");
 }
 
 static void register_systems()
