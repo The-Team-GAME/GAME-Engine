@@ -12,8 +12,17 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
+#include "../Components/GameplayComponent.h"
 namespace PlayerStateCallbacks
 {
+	// Ensure that the abilities on cooldown will come off cooldown once the timer is over
+	void handle_cooldowns(ECS::Entity entity);
+	
+	// Handleing of the input that the player gives
+	void take_input(ECS::Entity entity); 
+	// attack and movement input called in take_input
+	bool take_attack_input(ECS::Entity entity);
+	bool take_movement_input(ECS::Entity entity);
 	// Prevents the player from moving through keyboard inputs when we dont want them to
 	void player_input_lock();
 	void player_input_unlock();

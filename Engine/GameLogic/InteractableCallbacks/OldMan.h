@@ -8,10 +8,14 @@
 #include "../../Engine/Time.h"
 #include "../../Engine/Systems/GraphicsSystem.h"
 #include "../GameStates/OldManDialogueState.h"
+#include "../GameStates/TipsBookState.h"
 
 namespace OldManCallbacks
 {
   inline bool e_key_was_down = false;  // Track previous E key state for edge detection
+  inline bool suppress_open_until_e_release = false;
+  inline float block_open_until_unscaled_time = 0.0f;
+  static constexpr float REOPEN_COOLDOWN_SECONDS = 0.35f;
 
   // Press E prompt entity shown above the oldman while in proximity
   inline Engine::ECS::EntityID press_e_prompt_id = 0;
@@ -50,6 +54,7 @@ namespace OldManCallbacks
   }
 
   void spawn_dialogue(Engine::ECS::Entity) {
+    if (TipsBookState::is_open || Engine::SceneManager::get_current_scene_name() == "TipsBookState") return;
     if (OldManDialogueState::is_open) return;
 
     // Hide the press E prompt while dialogue is up
@@ -57,7 +62,7 @@ namespace OldManCallbacks
 
     Engine::SceneManager::push_scene("OldManDialogueState");
 
-    Log::info("Old man dialogue spawned!");
+    Log::info("[OldManFlow] Pushed OldManDialogueState");
   }
 
   void destroy_dialogue() {
@@ -69,15 +74,44 @@ namespace OldManCallbacks
   }
 
   void old_man_on_enter(Engine::ECS::Entity oldman_entity, Engine::ECS::Entity player_entity) {
-    Log::info("Player {} entered interaction range", player_entity.get_id());
+    Log::info("[OldManFlow] Player {} entered interaction range", player_entity.get_id());
     spawn_press_e_prompt(oldman_entity);
   }
 
   void old_man_on_update(Engine::ECS::Entity oldman_entity, Engine::ECS::Entity player_entity) {
+    if (TipsBookState::is_open || Engine::SceneManager::get_current_scene_name() == "TipsBookState") {
+      e_key_was_down = Engine::Input::is_held_raw(Engine::KeyCode::E);
+      return;
+    }
+
+    if (auto* color = oldman_entity.get_component<Components::Color>()) {
+      color->a = 1.0f;
+    }
+    if (!oldman_entity.has_component<Components::Texture>()) {
+      oldman_entity.add_component<Components::Texture>(Engine::Resources::load_texture("images/OldManJorkin_Jorkin_Spritesheet.png"));
+    }
+    oldman_entity.add_to_layer("player");
+
+    if (Engine::Time::get_unscaled_time() < OldManDialogueState::block_oldman_reopen_until_unscaled) {
+      e_key_was_down = Engine::Input::is_held_raw(Engine::KeyCode::E);
+      return;
+    }
+
+    if (OldManDialogueState::consume_suppress_oldman_reopen_once()) {
+      suppress_open_until_e_release = true;
+      e_key_was_down = true;
+      block_open_until_unscaled_time = Engine::Time::get_unscaled_time() + REOPEN_COOLDOWN_SECONDS;
+    }
+
     if (OldManDialogueState::is_open) {
       destroy_press_e_prompt();
-      e_key_was_down = Engine::Input::is_held(Engine::KeyCode::E);
+      e_key_was_down = Engine::Input::is_held_raw(Engine::KeyCode::E);
       return;
+    }
+
+    // If prompt was removed while dialogue was open, restore it while player stays in range.
+    if (press_e_prompt_id == 0 || !Engine::ECS::is_entity_active(Engine::ECS::Entity(press_e_prompt_id))) {
+      spawn_press_e_prompt(oldman_entity);
     }
 
     // Fade in the press E prompt using unscaled dt (works even when time scale is near-zero)
@@ -98,11 +132,25 @@ namespace OldManCallbacks
       }
     }
 
-    // Manual edge detection for E key (since time scale affects is_pressed behavior)
-    bool e_key_down = Engine::Input::is_held(Engine::KeyCode::E);
+    bool e_key_down = Engine::Input::is_held_raw(Engine::KeyCode::E);
+    bool e_key_pressed = Engine::Input::is_pressed_raw(Engine::KeyCode::E) || Engine::Input::is_pressed(Engine::KeyCode::E);
 
-    // Only trigger on the rising edge (key just went from up to down)
-    if (e_key_down && !e_key_was_down) {
+    if (suppress_open_until_e_release) {
+      if (!e_key_down) {
+        suppress_open_until_e_release = false;
+      }
+      e_key_was_down = e_key_down;
+      return;
+    }
+
+    if (Engine::Time::get_unscaled_time() < block_open_until_unscaled_time) {
+      e_key_was_down = e_key_down;
+      return;
+    }
+
+    // Trigger only on explicit key press event once cooldown/suppression is clear.
+    if (e_key_pressed && !OldManDialogueState::is_open) {
+      Log::info("[OldManFlow] E pressed near old man -> spawn dialogue");
       spawn_dialogue(player_entity);
     }
 
@@ -110,9 +158,8 @@ namespace OldManCallbacks
   }
 
   void old_man_on_exit(Engine::ECS::Entity interactable, Engine::ECS::Entity player_entity) {
-    Log::info("Player {} exited interaction range of entity {}", player_entity.get_id(), interactable.get_id());
+    Log::info("[OldManFlow] Player {} exited interaction range of entity {}", player_entity.get_id(), interactable.get_id());
     destroy_press_e_prompt();
-    destroy_dialogue();
   }
 } // namespace OldManCallbacks
 

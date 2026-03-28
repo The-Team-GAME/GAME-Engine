@@ -16,6 +16,7 @@
 #include "pch.h"
 #include "../Components/EnemyHealthComponent.h"
 #include "../Components/HealthComponents.h"
+#include "../Components/CatMonkeyBossComponent.h"
 
 namespace Engine {
   namespace Systems
@@ -30,7 +31,10 @@ namespace Engine {
         auto* enemy_health = entity.get_component<Components::EnemyHealth>();
         if (!enemy_health) return;
 
-        if (!entity.has_component<Components::EnemyHealthBarRect>()) {
+        // Most enemies get a small overhead HP bar. Cat Monkey uses the
+        // 5 large bottom-screen wave bars instead, so suppress the overhead bar.
+        if (!entity.has_component<Components::EnemyHealthBarRect>()
+          && !entity.has_component<Components::CatMonkeyBoss>()) {
           entity.add_component<Components::EnemyHealthBarRect>();
         }
 

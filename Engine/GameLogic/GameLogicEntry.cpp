@@ -42,10 +42,14 @@
 #include "GameStates/OptionsState.h"
 #include "GameStates/VideoPlaybackState.h"
 #include "GameStates/OpeningCutsceneState.h"
+#include "GameStates/EnteringTrainCutsceneState.h"
+#include "GameStates/LevelTwoStartState.h"
 
 // Game systems
 #include "Systems/HealthSystem.h"
 #include "Systems/EnemyHealthSystem.h"
+#include "Systems/CatMonkeySummonHealthBarSystem.h"
+#include "Systems/CatMonkeySummonWaveHealthBarsSystem.h"
 #include "Systems/HeartrateSystem.h"
 #include "Systems/DebugHitboxRenderSystem.h"
 #include "Systems/InteractableSystem.h"
@@ -53,11 +57,15 @@
 // Interactable callbacks
 #include "InteractableCallbacks/OldMan.h"
 
+// Level transition trigger callbacks
+#include "States/LevelTransitionStateCallbacks.h"
+
 // Upgrade system
 #include "../Engine/UpgradeManager.h"
 
 // Components (needed for collision callbacks)
 #include "Components/GameplayComponent.h"
+#include "Components/CatMonkeyBossComponent.h"
 #include "Components/EnemyHealthComponent.h"
 #include "Components/HeartrateComponent.h"
 #include "Components/HealthComponents.h"
@@ -66,6 +74,11 @@
 
 namespace {
   static constexpr const char* PLAYER_HEARTBEAT_EVENT = "event:/SFX/PlayerHeartBeat";
+}
+
+// Defined in States/CatMonkeyStateCallbacks.cpp
+namespace CatMonkeyStateCallbacks {
+  void register_catmonkey_blueprint_runtime();
 }
 
 // =============================================================================
@@ -291,6 +304,15 @@ static void register_collision_callbacks()
       Log::info("Projectile hit player, destroying");
       projectile_entity.destroy();
     });
+
+  // Portal volumes: player collides with a scene_change_trigger to transition levels.
+  Engine::ECS::LayerRegistry::enable_layer_collision("scene_change_trigger", "player");
+  Engine::ECS::LayerRegistry::register_collision_callback("scene_change_trigger", "player",
+    [](Engine::ECS::Entity trigger_entity, Engine::ECS::Entity player_entity)
+    {
+      Log::info("[Portal] Collision callback fired: trigger={}, player={}", trigger_entity.get_id(), player_entity.get_id());
+      LevelTransitionStateCallbacks::portal_entering_train_cutscene(trigger_entity, player_entity);
+    });
 }
 
 static void unregister_collision_callbacks()
@@ -300,6 +322,7 @@ static void unregister_collision_callbacks()
   Engine::ECS::LayerRegistry::unregister_collision_callback("damage_player", "player");
   Engine::ECS::LayerRegistry::unregister_collision_callback("projectiles", "tilemap_foreground_mid");
   Engine::ECS::LayerRegistry::unregister_collision_callback("projectiles", "player");
+  Engine::ECS::LayerRegistry::unregister_collision_callback("scene_change_trigger", "player");
 }
 
 // =============================================================================
@@ -523,6 +546,8 @@ static void register_scenes()
   Engine::SceneManager::register_scene<OptionsState>("OptionsState");
   Engine::SceneManager::register_scene<VideoPlaybackState>("VideoPlaybackState");
   Engine::SceneManager::register_scene<OpeningCutsceneState>("OpeningCutsceneState");
+  Engine::SceneManager::register_scene<EnteringTrainCutsceneState>("EnteringTrainCutsceneState");
+  Engine::SceneManager::register_scene<LevelTwoStartState>("LevelTwoStartState");
 }
 
 static void register_systems()
@@ -534,6 +559,8 @@ static void register_systems()
   Engine::ECS::add_system<Engine::Systems::DebugHitboxRenderSystem>();
   Engine::ECS::add_system<Engine::Systems::EnemyHealthBarRectSystem>();
   Engine::ECS::add_system<Engine::Systems::HeartHUDSpriteSystem>();
+  Engine::ECS::add_system<Engine::Systems::CatMonkeySummonHealthBarSystem>();
+  Engine::ECS::add_system<Engine::Systems::CatMonkeySummonWaveHealthBarsSystem>();
 }
 
 static void unregister_systems()
@@ -545,6 +572,8 @@ static void unregister_systems()
   Engine::ECS::remove_system<Engine::Systems::DebugHitboxRenderSystem>();
   Engine::ECS::remove_system<Engine::Systems::EnemyHealthBarRectSystem>();
   Engine::ECS::remove_system<Engine::Systems::HeartHUDSpriteSystem>();
+  Engine::ECS::remove_system<Engine::Systems::CatMonkeySummonHealthBarSystem>();
+  Engine::ECS::remove_system<Engine::Systems::CatMonkeySummonWaveHealthBarsSystem>();
 }
 
 // =============================================================================
@@ -556,6 +585,7 @@ extern "C" __declspec(dllexport) void RegisterGameLogic()
 
   register_collision_callbacks();
   register_function_callbacks();
+  CatMonkeyStateCallbacks::register_catmonkey_blueprint_runtime();
   register_upgrade_applicators();
   register_scenes();
   register_systems();
@@ -600,6 +630,9 @@ extern "C" __declspec(dllexport) void UnregisterGameLogic()
   Engine::ECS::unregister_component<Components::TurretMonkey>();
   Engine::ECS::unregister_component<Components::SlingshotMonkey>();
   Engine::ECS::unregister_component<Components::SprayCanMonkey>();
+  Engine::ECS::unregister_component<::Components::CatMonkeyBoss>();
+  Engine::ECS::unregister_component<Components::CatMonkeySummonHealthBar>();
+  Engine::ECS::unregister_component<Components::CatMonkeySummonWaveHealthBars>();
   Engine::ECS::unregister_component<Components::Attack>();
   Engine::ECS::unregister_component<Components::PendingKnockback>();
   Engine::ECS::unregister_component<Components::EnemyHealth>();

@@ -35,7 +35,7 @@ namespace Engine {
         component_storage[type_id] = std::make_unique<ComponentArray<T>>();
       }
 
-      // Add component using a dummy entity ID (0)
+      //  using a dummy entity ID (0)
       auto* array = static_cast<ComponentArray<T>*>(component_storage[type_id].get());
       array->add_component(0, T(std::forward<Args>(args)...));
 
