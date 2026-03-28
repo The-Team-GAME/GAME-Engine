@@ -845,9 +845,14 @@ inline void UpgradePanel()
 
     // ---- Card Animation Effects ----
     ImGui::Spacing();
+
     if (ImGui::CollapsingHeader("Card Animation Effects"))
     {
       auto& anim = SettingsManager<CardAnimSettings>::get_mutable();
+
+      ImGui::Indent();
+      ImGui::DragFloat("Card Anim FPS", &anim.card_anim_fps, 1.0f, 1.0f, 120.0f, "%.0f");
+      ImGui::Unindent();
 
       ImGui::Checkbox("Flip Reveal", &anim.enable_flip_reveal);
       if (anim.enable_flip_reveal)
@@ -877,7 +882,6 @@ inline void UpgradePanel()
         ImGui::Unindent();
       }
 
-      ImGui::DragFloat("Card Anim FPS", &anim.card_anim_fps, 1.0f, 1.0f, 120.0f, "%.0f");
 
       ImGui::Checkbox("Hover Lift", &anim.enable_hover_lift);
       if (anim.enable_hover_lift)
