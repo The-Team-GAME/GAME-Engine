@@ -180,6 +180,9 @@ namespace Engine
       float float_speed = 0.2f;
       float float_phase_offset = 0.5f;
 
+      // Card animation speed (FPS) in UpgradePicker
+      float card_anim_fps = 24.0f;
+
       // Hover Lift
       float hover_lift_y = -15.0f;
       float hover_scale_boost = 1.05f;

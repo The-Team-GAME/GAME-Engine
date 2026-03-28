@@ -335,7 +335,8 @@ namespace Engine
 
     // Manually drive card sprite animation using unscaled time (AnimationUpdateSystem
     // uses scaled time which is near-frozen while the picker is open)
-    constexpr float card_fps = 12.0f;
+    float card_fps = cfg.card_anim_fps;
+    if (card_fps <= 0.0f) card_fps = 1.0f;
     for (int i = 0; i < 2; ++i)
     {
       if (card_ids[i] == 0 || card_frames_[i] <= 1) continue;
