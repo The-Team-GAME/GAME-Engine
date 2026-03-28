@@ -21,6 +21,7 @@
 #include "FileIO/SettingsManager.h"
 #include "Easing.h"
 #include "Graphics/Renderer.h"
+#include <glm/glm.hpp>
 #include <cmath>
 #include <random>
 
@@ -245,6 +246,35 @@ namespace Engine
       if (arc_active_ || pre_shift_time_ >= 0.0f || smash_time_ >= 0.0f || linger_time_ >= 0.0f) break;
 
       glm::vec2 mouse = Input::get_mouse_position();
+
+      // Keyboard navigation: A/D to select, Space to confirm
+      if (Input::is_pressed(KeyCode::A) || Input::is_pressed(KeyCode::Left))
+        keyboard_selected_card_ = 0;
+      if (Input::is_pressed(KeyCode::D) || Input::is_pressed(KeyCode::Right))
+        keyboard_selected_card_ = 1;
+      // Mouse movement clears keyboard selection so mouse takes over again
+      if (mouse.x != last_mouse_x_ || mouse.y != last_mouse_y_)
+        keyboard_selected_card_ = -1;
+      last_mouse_x_ = mouse.x;
+      last_mouse_y_ = mouse.y;
+      if (Input::is_pressed(KeyCode::Space) && keyboard_selected_card_ >= 0)
+      {
+        int slot = keyboard_selected_card_;
+        keyboard_selected_card_ = -1;
+        if (cfg.enable_selection_stamp)
+        {
+          stamp_card_ = slot; stamp_time_ = 0.0f;
+        }
+        else if (cfg.enable_card_arc)
+        {
+          start_arc(slot);
+        }
+        else
+        {
+          handle_card_selection(slot);
+        }
+        break;
+      }
 
       // Hit-test card 0
       if (card0_id_ != 0 && ECS::is_entity_active(ECS::Entity(card0_id_)))
@@ -541,6 +571,9 @@ namespace Engine
           hovered_card_ = i;
         }
       }
+      // Keyboard selection overrides mouse hover
+      if (keyboard_selected_card_ >= 0)
+        hovered_card_ = keyboard_selected_card_;
 
       for (int i = 0; i < 2; ++i)
       {
@@ -931,6 +964,7 @@ namespace Engine
     stamp_time_ = -1.0f;
     stamp_card_ = -1;
     hovered_card_ = -1;
+    keyboard_selected_card_ = -1;
     hover_lerp_[0] = 0.0f;
     hover_lerp_[1] = 0.0f;
     card_tilt_[0] = 0.0f;
@@ -1206,8 +1240,7 @@ namespace Engine
     card_intro_active_ = true;
     card_intro_time_ = 0.0f;
     hovered_card_ = -1;
-
-    // Place cards at intro start position to avoid a one-frame snap to final.
+    keyboard_selected_card_ = -1;
     //auto& cfg = FileIO::SettingsManager<FileIO::CardAnimSettings>::get_mutable();
     float start_offset = cfg.intro_start_offset;
     if (card0_id_ != 0)
