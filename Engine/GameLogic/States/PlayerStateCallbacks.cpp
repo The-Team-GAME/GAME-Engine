@@ -284,7 +284,7 @@ namespace PlayerStateCallbacks
     assert(rigid);
     assert(player_comp);
     rigid->is_jumping = true;
-    rigid->on_ground = false;
+    rigid->on_ground = false; // by right dont need this but im scared to remove it kekw
 
     rigid->velocity.zero();
     rigid->force.zero();
@@ -297,10 +297,11 @@ namespace PlayerStateCallbacks
   {
     handle_cooldowns(entity);
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(rigid);
 
     // we check for rigid->on_ground here because on the first few frames there is still a chance that the player will be counted as on gound
-    if (rigid->on_ground)// && rigid->velocity.y >= 0.0f)
+    if (!rigid->on_ground && rigid->velocity.y > 0.f)// && rigid->velocity.y >= 0.0f)
     {
       Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
       assert(sm);
