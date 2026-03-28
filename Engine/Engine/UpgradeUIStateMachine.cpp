@@ -794,13 +794,6 @@ namespace Engine
 
         // Convert the flying card into a mini-card so it joins the wave
         {
-          //constexpr float ss_scale = 2.0f;
-          constexpr int   ss_card_w = 128;
-          constexpr int   ss_card_h = 224;
-          constexpr int   ss_rows = 1;
-          constexpr int   ss_cols = 8;
-          constexpr int   ss_total = 6;
-
           auto& mgr_ref = UpgradeManager::instance();
           auto& settings_ref = FileIO::SettingsManager<FileIO::UpgradeSettings>::get();
           int rolled_idx = mgr_ref.get_rolled_card(arc_card_);
@@ -819,16 +812,16 @@ namespace Engine
           // Spawn a mini-card at the landing spot
           if (rolled_idx >= 0 && rolled_idx < static_cast<int>(settings_ref.upgrades.size()))
           {
-            auto spritesheet = Resources::load_texture("images/Upgrades/Cards_Spritesheet.png");
+            const auto& arc_upg = settings_ref.upgrades[rolled_idx];
             auto mc = ECS::create_entity()
               .add_component<Components::Transform2D>(arc_end_x_, arc_end_y_, 0.0f, arc_end_sx_, arc_end_sy_)
-              .add_component<Components::Texture>(spritesheet)
-              .add_component<Components::TextureAtlas>(ss_card_w, ss_card_h, ss_rows, ss_cols, ss_total)
+              .add_component<Components::Texture>(Resources::load_texture(arc_upg.card_image))
+              .add_component<Components::TextureAtlas>(128, 256, 1, arc_upg.card_frames, arc_upg.card_frames)
               .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
               .add_component<Components::UI>()
               .add_to_layer("upgrade_ui_fg");
             if (auto* atlas = ECS::Entity(mc.get_id()).get_component<Components::TextureAtlas>())
-              atlas->drawIndex = settings_ref.upgrades[rolled_idx].card_index;
+              atlas->drawIndex = 0;
 
             mini_card_ids_.push_back(mc.get_id());
             mini_card_row_.push_back(arc_target_row_);
@@ -964,11 +957,17 @@ namespace Engine
       }
 
       int rolled_idx = mgr.get_rolled_card(i);
-      auto* atlas = ECS::Entity(card_id).get_component<Components::TextureAtlas>();
-      if (atlas && rolled_idx >= 0 && rolled_idx < static_cast<int>(settings.upgrades.size()))
-        atlas->drawIndex = settings.upgrades[rolled_idx].card_index;
-      else if (atlas)
-        atlas->drawIndex = 0;
+      if (rolled_idx >= 0 && rolled_idx < static_cast<int>(settings.upgrades.size()))
+      {
+        const auto& upg = settings.upgrades[rolled_idx];
+        if (auto* tex = ECS::Entity(card_id).get_component<Components::Texture>())
+          *tex = Resources::load_texture(upg.card_image);
+        if (auto* atlas = ECS::Entity(card_id).get_component<Components::TextureAtlas>())
+          *atlas = Components::TextureAtlas(128, 256, 1, upg.card_frames, upg.card_frames);
+        ECS::Entity(card_id).add_component<Components::Animation>(static_cast<size_t>(upg.card_frames), 0.1f);
+        if (auto* atlas = ECS::Entity(card_id).get_component<Components::TextureAtlas>())
+          atlas->drawIndex = 0;
+      }
     }
   }
 
@@ -998,15 +997,10 @@ namespace Engine
 
     auto rect = Resources::get_rect_texture();
 
-    // ---- Spritesheet (Cards_Spritesheet.png: 1024 x 224) ----
-    constexpr int   ss_img_w = 1024;  // full image width  in pixels
-    constexpr int   ss_img_h = 224;   // full image height in pixels
-    constexpr int   ss_cols = 8;     // number of columns in the sheet
-    constexpr int   ss_rows = 1;     // number of rows    in the sheet
-    constexpr int   ss_total = 6;     // number of cards in use (last 2 ignored for now)
-    constexpr int   ss_card_w = ss_img_w / ss_cols;  // 128 — one frame width
-    constexpr int   ss_card_h = ss_img_h / ss_rows;  // 224 — one frame height
-    constexpr float ss_scale = 2.0f;                // display scale multiplier
+    // ---- Per-card textures (128 x 256 per frame; animated cards have 24 frames = 3072 px wide) ----
+    constexpr int   card_w = 128;        // frame width in pixels
+    constexpr int   card_h = 256;        // frame height in pixels
+    constexpr float card_scale = 2.0f;   // display scale multiplier
 
     // ---- Panel (UpgradeMenu.png: 192 x 256) ----
     constexpr float panel_img_w = 192.0f;
@@ -1014,7 +1008,6 @@ namespace Engine
     constexpr float panel_scale = 2.0f;  // display scale multiplier
     // -----------------------------------------------------------------------
 
-    auto spritesheet = Resources::load_texture("images/Upgrades/Cards_Spritesheet.png");
     auto panel_tex = Resources::load_texture("images/Upgrades/UpgradeMenu.png");
 
     // Dimmer — full-screen dark overlay
@@ -1027,8 +1020,8 @@ namespace Engine
     dimmer_id_ = dimmer.get_id();
 
     // Layout sizing — derived from image sizes and scale factors above
-    constexpr float card_display_w = static_cast<float>(ss_card_w) * ss_scale;
-    constexpr float card_display_h = static_cast<float>(ss_card_h) * ss_scale;
+    constexpr float card_display_w = static_cast<float>(card_w) * card_scale;
+    constexpr float card_display_h = static_cast<float>(card_h) * card_scale;
     constexpr float panel_display_w = panel_img_w * panel_scale;
     constexpr float panel_display_h = panel_img_h * panel_scale;
     constexpr float gap = 10.0f;
@@ -1133,15 +1126,16 @@ namespace Engine
         }
         float y = panel_top + row_y[cat];
 
+        auto card_tex = Resources::load_texture(upg.card_image);
         auto mc = ECS::create_entity()
           .add_component<Components::Transform2D>(x, y, 0.0f, mini_w, mini_h)
-          .add_component<Components::Texture>(spritesheet)
-          .add_component<Components::TextureAtlas>(ss_card_w, ss_card_h, ss_rows, ss_cols, ss_total)
+          .add_component<Components::Texture>(card_tex)
+          .add_component<Components::TextureAtlas>(card_w, card_h, 1, upg.card_frames, upg.card_frames)
           .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
           .add_component<Components::UI>()
           .add_to_layer("upgrade_ui_fg");
         if (auto* atlas = ECS::Entity(mc.get_id()).get_component<Components::TextureAtlas>())
-          atlas->drawIndex = upg.card_index;
+          atlas->drawIndex = 0;
         mini_card_ids_.push_back(mc.get_id());
         mini_card_row_.push_back(cat);
         mini_card_base_x_.push_back(x);
@@ -1155,34 +1149,40 @@ namespace Engine
 
     // Card 0 — center
     int idx0 = mgr.get_rolled_card(0);
-    int draw0 = (idx0 >= 0 && idx0 < static_cast<int>(settings.upgrades.size()))
-      ? settings.upgrades[idx0].card_index : 0;
+    const auto* upg0 = (idx0 >= 0 && idx0 < static_cast<int>(settings.upgrades.size()))
+      ? &settings.upgrades[idx0] : nullptr;
+    auto c0tex = Resources::load_texture(upg0 ? upg0->card_image : "images/Upgrades/Card_Basic_Dmg.png");
+    int c0frames = upg0 ? upg0->card_frames : 1;
 
     auto c0 = ECS::create_entity()
       .add_component<Components::Transform2D>(card0_cx, center_y, 0.0f, card_display_w, card_display_h)
-      .add_component<Components::Texture>(spritesheet)
-      .add_component<Components::TextureAtlas>(ss_card_w, ss_card_h, ss_rows, ss_cols, ss_total)
+      .add_component<Components::Texture>(c0tex)
+      .add_component<Components::TextureAtlas>(card_w, card_h, 1, c0frames, c0frames)
+      .add_component<Components::Animation>(static_cast<size_t>(c0frames), 0.1f)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()
       .add_to_layer("upgrade_ui_fg");
     if (auto* atlas = ECS::Entity(c0.get_id()).get_component<Components::TextureAtlas>())
-      atlas->drawIndex = draw0;
+      atlas->drawIndex = 0;
     card0_id_ = c0.get_id();
 
     // Card 1 — right
     int idx1 = mgr.get_rolled_card(1);
-    int draw1 = (idx1 >= 0 && idx1 < static_cast<int>(settings.upgrades.size()))
-      ? settings.upgrades[idx1].card_index : 0;
+    const auto* upg1 = (idx1 >= 0 && idx1 < static_cast<int>(settings.upgrades.size()))
+      ? &settings.upgrades[idx1] : nullptr;
+    auto c1tex = Resources::load_texture(upg1 ? upg1->card_image : "images/Upgrades/Card_Basic_Dmg.png");
+    int c1frames = upg1 ? upg1->card_frames : 1;
 
     auto c1 = ECS::create_entity()
       .add_component<Components::Transform2D>(card1_cx, center_y, 0.0f, card_display_w, card_display_h)
-      .add_component<Components::Texture>(spritesheet)
-      .add_component<Components::TextureAtlas>(ss_card_w, ss_card_h, ss_rows, ss_cols, ss_total)
+      .add_component<Components::Texture>(c1tex)
+      .add_component<Components::TextureAtlas>(card_w, card_h, 1, c1frames, c1frames)
+      .add_component<Components::Animation>(static_cast<size_t>(c1frames), 0.1f)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()
       .add_to_layer("upgrade_ui_fg");
     if (auto* atlas = ECS::Entity(c1.get_id()).get_component<Components::TextureAtlas>())
-      atlas->drawIndex = draw1;
+      atlas->drawIndex = 0;
     card1_id_ = c1.get_id();
 
     // ---- Store base values and reset animation state ----
