@@ -333,6 +333,16 @@ namespace Engine
 
     ECS::EntityID card_ids[2] = { card0_id_, card1_id_ };
 
+    // Manually drive card sprite animation using unscaled time (AnimationUpdateSystem
+    // uses scaled time which is near-frozen while the picker is open)
+    constexpr float card_fps = 12.0f;
+    for (int i = 0; i < 2; ++i)
+    {
+      if (card_ids[i] == 0 || card_frames_[i] <= 1) continue;
+      if (auto* atlas = ECS::Entity(card_ids[i]).get_component<Components::TextureAtlas>())
+        atlas->drawIndex = static_cast<int>(picker_open_time_ * card_fps) % card_frames_[i];
+    }
+
     // Start from base values each frame; effects accumulate offsets
     float pos_y[2] = { card_base_y_[0], card_base_y_[1] };
     float scale_x[2] = { card_base_sx_[0], card_base_sx_[1] };
@@ -964,7 +974,7 @@ namespace Engine
           *tex = Resources::load_texture(upg.card_image);
         if (auto* atlas = ECS::Entity(card_id).get_component<Components::TextureAtlas>())
           *atlas = Components::TextureAtlas(128, 256, 1, upg.card_frames, upg.card_frames);
-        ECS::Entity(card_id).add_component<Components::Animation>(static_cast<size_t>(upg.card_frames), 0.1f);
+        card_frames_[i] = upg.card_frames;
         if (auto* atlas = ECS::Entity(card_id).get_component<Components::TextureAtlas>())
           atlas->drawIndex = 0;
       }
@@ -1153,12 +1163,12 @@ namespace Engine
       ? &settings.upgrades[idx0] : nullptr;
     auto c0tex = Resources::load_texture(upg0 ? upg0->card_image : "images/Upgrades/Card_Basic_Dmg.png");
     int c0frames = upg0 ? upg0->card_frames : 1;
+    card_frames_[0] = c0frames;
 
     auto c0 = ECS::create_entity()
       .add_component<Components::Transform2D>(card0_cx, center_y, 0.0f, card_display_w, card_display_h)
       .add_component<Components::Texture>(c0tex)
       .add_component<Components::TextureAtlas>(card_w, card_h, 1, c0frames, c0frames)
-      .add_component<Components::Animation>(static_cast<size_t>(c0frames), 0.1f)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()
       .add_to_layer("upgrade_ui_fg");
@@ -1172,12 +1182,12 @@ namespace Engine
       ? &settings.upgrades[idx1] : nullptr;
     auto c1tex = Resources::load_texture(upg1 ? upg1->card_image : "images/Upgrades/Card_Basic_Dmg.png");
     int c1frames = upg1 ? upg1->card_frames : 1;
+    card_frames_[1] = c1frames;
 
     auto c1 = ECS::create_entity()
       .add_component<Components::Transform2D>(card1_cx, center_y, 0.0f, card_display_w, card_display_h)
       .add_component<Components::Texture>(c1tex)
       .add_component<Components::TextureAtlas>(card_w, card_h, 1, c1frames, c1frames)
-      .add_component<Components::Animation>(static_cast<size_t>(c1frames), 0.1f)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()
       .add_to_layer("upgrade_ui_fg");
