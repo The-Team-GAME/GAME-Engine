@@ -45,8 +45,9 @@ private:
   // Dialogue sprite dimensions (all slides are 1536x576)
   static constexpr float SLIDE_W = 1536.0f;
   static constexpr float SLIDE_H = 576.0f;
-  static constexpr float SLIDE_X = SCREEN_CENTER_X;                    // horizontally centred
-  static constexpr float SLIDE_Y = 900.0f - SLIDE_H * 0.5f;           // anchored to bottom
+  static constexpr float SLIDE_SCALE = 0.85f; // use smaller scale to avoid oversized dialogue
+  static constexpr float SLIDE_X = SCREEN_CENTER_X;                                           // horizontally centred
+  static constexpr float SLIDE_Y = 900.0f - (SLIDE_H * SLIDE_SCALE) * 0.5f;                  // anchored to bottom
   static constexpr int   SLIDE_COUNT = 6;
 
   static constexpr const char* SLIDE_PATHS[SLIDE_COUNT] = {

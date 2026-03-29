@@ -20,7 +20,7 @@ void OldManDialogueState::load()
   request_tips_on_close_ = false;
 
   dialogue_sprite_id_ = Engine::ECS::create_entity()
-    .add_component<Components::Transform2D>(SLIDE_X, SLIDE_Y, 0.0f, SLIDE_W, SLIDE_H)
+    .add_component<Components::Transform2D>(SLIDE_X, SLIDE_Y, 0.0f, SLIDE_W * SLIDE_SCALE, SLIDE_H * SLIDE_SCALE)
     .add_component<Components::Texture>(Engine::Resources::load_texture(SLIDE_PATHS[0]))
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
     .add_component<Components::UI>()
