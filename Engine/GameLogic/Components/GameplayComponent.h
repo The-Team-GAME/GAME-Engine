@@ -110,6 +110,11 @@ namespace Components
 
   };
 
+  struct Checkpoint
+  {
+    bool claimed = false;
+  };
+
   struct Enemy
   {
   };
@@ -310,3 +315,4 @@ REGISTER_COMPONENT(Components::SlingshotMonkey, chase_speed, dash_speed, dash_co
 REGISTER_COMPONENT(Components::SprayCanMonkey, chase_speed, attack_cooldown, last_attack_time, attack_windup, detection_range, chase_range, attack_range, spray_duration, spray_range, spray_width, knockback, damage, cloud_spawn_time, cloud_initial_vx)
 REGISTER_COMPONENT(Components::Attack, damage, knockback, play_punch_hit_sfx, is_continuous, damage_interval, impact_vfx_texture)
 REGISTER_COMPONENT(Components::PendingKnockback, knockback)
+REGISTER_COMPONENT(Components::Checkpoint, claimed)

@@ -3,6 +3,41 @@
         "components": [
             {
                 "data": {
+                    "atlas_indices": [
+                        0,
+                        1,
+                        2,
+                        3,
+                        4
+                    ],
+                    "before_times": [
+                        0.0,
+                        0.10000000149011612,
+                        0.20000000298023224,
+                        0.30000001192092896,
+                        0.4000000059604645
+                    ],
+                    "durations": [
+                        0.10000000149011612,
+                        0.10000000149011612,
+                        0.10000000149011612,
+                        0.10000000149011612,
+                        0.10000000149011612
+                    ],
+                    "is_looping": true,
+                    "startTime": 135.87574768066406,
+                    "totalDuration": 0.5
+                },
+                "type": "Components::Animation"
+            },
+            {
+                "data": {
+                    "claimed": false
+                },
+                "type": "Components::Checkpoint"
+            },
+            {
+                "data": {
                     "a": 1.0,
                     "b": 1.0,
                     "g": 1.0,
@@ -12,18 +47,18 @@
             },
             {
                 "data": {
-                    "local_offset": {
-                        "x": -1003.7039794921875,
-                        "y": 1021.9208984375
+                    "on_enter": {
+                        "name": "CheckpointCallbacks::checkpoint_on_enter"
                     },
-                    "offset_initialized": true,
-                    "parent_id": 18,
-                    "prev_parent_pos": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
+                    "on_exit": {
+                        "name": "CheckpointCallbacks::checkpoint_on_exit"
+                    },
+                    "on_update": {
+                        "name": "CheckpointCallbacks::checkpoint_on_update"
+                    },
+                    "radius": 100.0
                 },
-                "type": "Components::Parent"
+                "type": "Components::Interactable"
             },
             {
                 "data": {
@@ -33,7 +68,7 @@
             },
             {
                 "data": {
-                    "drawIndex": 1,
+                    "drawIndex": 3,
                     "tex_coords_list": [
                         [
                             {
@@ -131,38 +166,9 @@
             },
             {
                 "data": {
-                    "atlas_indices": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4
-                    ],
-                    "before_times": [
-                        0.0,
-                        0.10000000149011612,
-                        0.20000000298023224,
-                        0.30000001192092896,
-                        0.4000000059604645
-                    ],
-                    "durations": [
-                        0.10000000149011612,
-                        0.10000000149011612,
-                        0.10000000149011612,
-                        0.10000000149011612,
-                        0.10000000149011612
-                    ],
-                    "is_looping": true,
-                    "startTime": 540.7186889648438,
-                    "totalDuration": 0.5
-                },
-                "type": "Components::Animation"
-            },
-            {
-                "data": {
                     "position": {
-                        "x": -1003.7039794921875,
-                        "y": 1021.9208984375
+                        "x": 6179.50927734375,
+                        "y": 2048.67236328125
                     },
                     "rotation": 0.0,
                     "scale": {
@@ -171,21 +177,6 @@
                     }
                 },
                 "type": "Components::Transform2D"
-            },
-            {
-                "data": {
-                    "on_enter": {
-                        "name": "CheckpointCallbacks::checkpoint_on_enter"
-                    },
-                    "on_exit": {
-                        "name": "CheckpointCallbacks::checkpoint_on_exit"
-                    },
-                    "on_update": {
-                        "name": "CheckpointCallbacks::checkpoint_on_update"
-                    },
-                    "radius": 100.0
-                },
-                "type": "Components::Interactable"
             }
         ],
         "filepath": "prefabs/Checkpoint.json",
