@@ -1,3 +1,17 @@
+//-----------------------------------------------------------------------------------
+// file:    CatMonkeyTunnelLogic.h
+// project: Monkey Stole My GPA
+//
+// author:  Ryan Ang An Kiat (100%)
+//          Primary author
+//
+// email:   a.ryanankiat@digipen.edu
+//
+// brief:   This file loops the tunnel image across the screen during the Cat Monkey boss fight. It defines functions to tick the tunnel's position each frame, find the tunnel entity by name, ensure it's being tracked in the boss runtime, and destroy it when needed.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
+
 #pragma once
 
 #include "pch.h"
