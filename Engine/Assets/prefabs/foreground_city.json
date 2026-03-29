@@ -69,8 +69,7 @@
         ],
         "filepath": "prefabs/foreground_city.json",
         "layers": [
-            "default",
-            "tilemap_background_near"
+            "default"
         ],
         "uuid": "9e0f4249-137b-40796-9c2e-079525131ade"
     },

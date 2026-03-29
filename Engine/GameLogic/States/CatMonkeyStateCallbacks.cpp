@@ -15,6 +15,7 @@
 #include "CatMonkeyStateCallbacks.h"
 #include "CatMonkeyBossRuntime.h"
 #include "CatMonkeyTunnelLogic.h"
+#include "CatMonkeyTrainTracksLogic.h"
 #include "../Components/EnemyHealthComponent.h"
 #include "../Components/CatMonkeyBossComponent.h"
 #include "../Components/CatMonkeySummonWaveHealthBarsComponent.h"
@@ -288,6 +289,7 @@ namespace CatMonkeyStateCallbacks
     BossRuntime& rt = runtime_for(entity);
     tick_city_scroll_if_enabled(rt);
     tick_tunnel_if_active(rt);
+    tick_train_tracks_if_active(rt);
     // Summon5 timed spawning: continue spawning queued minions over time.
     if (rt.active_wave_index == 4 && rt.summon5_timed_spawning) {
       const float now_spawn = Engine::Time::get_time();
@@ -413,6 +415,7 @@ namespace CatMonkeyStateCallbacks
 
     tick_city_scroll_if_enabled(rt);
     tick_tunnel_if_active(rt);
+    tick_train_tracks_if_active(rt);
 
     if (!has_animation_finished(entity)) {
       if (rt.pending_summon_index == 4 && rt.camera_override_mode == BossRuntime::CameraOverrideMode::CatMonkey) {
@@ -573,7 +576,6 @@ namespace CatMonkeyStateCallbacks
       BossRuntime& rt = runtime_for(entity);
       restore_centered_camera_parent(rt);
     }
-    clear_runtime_for(entity);
     if (auto* bar = entity.get_component<Components::CatMonkeySummonHealthBar>()) {
       bar->visible = false;
     }
@@ -584,9 +586,18 @@ namespace CatMonkeyStateCallbacks
   }
 
   void death_on_update(Engine::ECS::Entity entity) {
+    if (entity.is_valid()) {
+      BossRuntime& rt = runtime_for(entity);
+      tick_city_scroll_if_enabled(rt);
+      tick_tunnel_if_active(rt);
+      tick_train_tracks_if_active(rt);
+    }
+
     if (auto* anim = entity.get_component<Components::Animation>()) {
       if (!anim->has_ended()) return;
     }
+
+    clear_runtime_for(entity);
     Engine::ECS::destroy_entity(entity);
   }
 

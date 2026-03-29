@@ -22,18 +22,14 @@ namespace CatMonkeyStateCallbacks
 
     // City layer names/prefabs (extracted from original)
     static constexpr const char* k_cityscape_layer_name = "cityscape";
-    static constexpr const char* k_mid_building_layer_name = "mid_building";
-    static constexpr const char* k_minicity_layer_name = "minicity";
     static constexpr const char* k_foreground_city_layer_name = "foreground_city";
     static constexpr const char* k_background_city_layer_name = "background_city";
 
     static constexpr const char* k_cityscape_prefab_path = "prefabs/cityscape.json";
-    static constexpr const char* k_mid_building_prefab_path = "prefabs/mid_building.json";
     static constexpr const char* k_foreground_city_prefab_path = "prefabs/foreground_city.json";
     static constexpr const char* k_background_city_prefab_path = "prefabs/background_city.json";
 
     static constexpr float k_cityscape_speed = 200.0f;
-    static constexpr float k_minicity_speed = 200.0f;
     static constexpr float k_foreground_city_speed = 180.0f;
     static constexpr float k_background_city_speed = 350.0f;
 
@@ -214,8 +210,6 @@ namespace CatMonkeyStateCallbacks
     }
 
     set_entity_alpha_if_present(find_entity_by_name_with_transform(k_cityscape_layer_name), 0.0f);
-    set_entity_alpha_if_present(find_entity_by_name_with_transform(k_mid_building_layer_name), 0.0f);
-    set_entity_alpha_if_present(find_entity_by_name_with_transform(k_minicity_layer_name), 0.0f);
     set_entity_alpha_if_present(find_entity_by_name_with_transform(k_foreground_city_layer_name), 0.0f);
     set_entity_alpha_if_present(find_entity_by_name_with_transform(k_background_city_layer_name), 0.0f);
     rt.city_layers_hidden = true;
@@ -295,8 +289,7 @@ namespace CatMonkeyStateCallbacks
       }
     };
 
-    setup_single(k_cityscape_prefab_path, k_cityscape_layer_name, 2000.0f, 300.0f);
-    setup_single(k_mid_building_prefab_path, k_mid_building_layer_name, 2000.0f, 300.0f);
+    setup_single(k_cityscape_prefab_path, k_cityscape_layer_name, 6000.0f, 300.0f);
     setup_single(k_foreground_city_prefab_path, k_foreground_city_layer_name, 4500.0f, 25.0f);
     setup_single(k_background_city_prefab_path, k_background_city_layer_name, 4500.0f, 0.0f);
 
@@ -337,8 +330,7 @@ namespace CatMonkeyStateCallbacks
       }
     };
 
-    tick_single(k_cityscape_layer_name, k_cityscape_speed, -1000.0f, 2000.0f);
-    tick_single(k_mid_building_layer_name, k_minicity_speed, -1000.0f, 2000.0f);
+    tick_single(k_cityscape_layer_name, k_cityscape_speed, -5000.0f, 6000.0f);
     tick_single(k_foreground_city_layer_name, k_foreground_city_speed, -3500.0f, 4500.0f);
     tick_single(k_background_city_layer_name, k_background_city_speed, -2500.0f, 4500.0f);
   }

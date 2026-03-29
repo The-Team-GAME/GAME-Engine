@@ -55,6 +55,10 @@ namespace CatMonkeyStateCallbacks
     Engine::ECS::EntityID tunnel_entity_id = Engine::ECS::INVALID_ENTITY;
     bool tunnel_destroyed = false;
 
+    // Train tracks entity loops throughout the whole duration
+    Engine::ECS::EntityID train_tracks_entity_id = Engine::ECS::INVALID_ENTITY;
+    bool train_tracks_destroyed = false;
+
     // Special handling for Summon5: spawn from the ceiling slowly.
     bool summon5_timed_spawning = false;
     std::vector<std::string> summon5_pending_prefabs{};

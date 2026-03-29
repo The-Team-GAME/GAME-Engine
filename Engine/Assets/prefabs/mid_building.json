@@ -48,7 +48,7 @@
             },
             {
                 "data": {
-                    "path": "images/Background/BuildingsCombined.png"
+                    "path": "images/Stage2/stage2_tracks1.png"
                 },
                 "type": "Components::Texture"
             },
@@ -56,7 +56,7 @@
                 "data": {
                     "position": {
                         "x": -1000.0,
-                        "y": 800.0
+                        "y": 1000.0
                     },
                     "rotation": 0.0,
                     "scale": {
