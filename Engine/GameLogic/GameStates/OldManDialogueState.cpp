@@ -25,7 +25,7 @@ void OldManDialogueState::load()
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
     .add_component<Components::UI>()
     .add_component<Components::RuntimeOnly>()
-    .add_to_layer("main_menu_5")
+    .add_to_layer("overlay_items_1")
     .get_id();
 
   // Freeze world updates while dialogue scene is on top; dialogue uses raw/unscaled input.

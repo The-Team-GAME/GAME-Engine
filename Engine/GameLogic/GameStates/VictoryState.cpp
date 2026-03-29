@@ -24,7 +24,7 @@ void VictoryState::load()
   float cam_y = camera.position.y + 450.0f;
 
   // Create black semi-transparent background covering whole screen
-  background_id = Engine::UI::create_screen_dimmer(0.5f, "main_menu_4");
+  background_id = Engine::UI::create_screen_dimmer(0.5f);
 
   // Create victory screen sprite
   auto victory_screen = Engine::ECS::create_entity()
@@ -32,7 +32,7 @@ void VictoryState::load()
     .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/In-Game Pause/PrimitiveWin/VictoryScreen.png"))
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
     .add_component<Components::UI>()
-    .add_to_layer("main_menu_5");
+    .add_to_layer("overlay_items_1");
   victory_screen_id = victory_screen.get_id();
 
   Engine::Time::set_time_scale(0.0001f); // can't set to 0 or input will not work

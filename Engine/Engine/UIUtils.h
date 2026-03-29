@@ -22,7 +22,7 @@ namespace Engine::UI
   /// @param runtime_only Whether to tag the entity as RuntimeOnly (not serialised).
   inline Engine::ECS::EntityID create_screen_dimmer(
     float alpha = 0.5f,
-    const std::string& layer = "main_menu_4",
+    const std::string& layer = "overlay_bg",
     bool runtime_only = false)
   {
     Math::Vec2D vres = Engine::Graphics::get_virtual_resolution();
