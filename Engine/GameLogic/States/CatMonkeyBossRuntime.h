@@ -51,6 +51,10 @@ namespace CatMonkeyStateCallbacks
     bool pending_summon_immediate_zoom = false;
     int active_wave_index = -1;
 
+    // Tunnel entity for summon 1-4
+    Engine::ECS::EntityID tunnel_entity_id = Engine::ECS::INVALID_ENTITY;
+    bool tunnel_destroyed = false;
+
     // Special handling for Summon5: spawn from the ceiling slowly.
     bool summon5_timed_spawning = false;
     std::vector<std::string> summon5_pending_prefabs{};

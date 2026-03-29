@@ -14,6 +14,7 @@
 #include "pch.h"
 #include "CatMonkeyStateCallbacks.h"
 #include "CatMonkeyBossRuntime.h"
+#include "CatMonkeyTunnelLogic.h"
 #include "../Components/EnemyHealthComponent.h"
 #include "../Components/CatMonkeyBossComponent.h"
 #include "../Components/CatMonkeySummonWaveHealthBarsComponent.h"
@@ -286,7 +287,7 @@ namespace CatMonkeyStateCallbacks
 
     BossRuntime& rt = runtime_for(entity);
     tick_city_scroll_if_enabled(rt);
-
+    tick_tunnel_if_active(rt);
     // Summon5 timed spawning: continue spawning queued minions over time.
     if (rt.active_wave_index == 4 && rt.summon5_timed_spawning) {
       const float now_spawn = Engine::Time::get_time();
@@ -411,12 +412,7 @@ namespace CatMonkeyStateCallbacks
     BossRuntime& rt = runtime_for(entity);
 
     tick_city_scroll_if_enabled(rt);
-    update_wave_healthbars_component(entity);
-
-    if (!rt.summon_pending) {
-      sm->change_state("Idle");
-      return;
-    }
+    tick_tunnel_if_active(rt);
 
     if (!has_animation_finished(entity)) {
       if (rt.pending_summon_index == 4 && rt.camera_override_mode == BossRuntime::CameraOverrideMode::CatMonkey) {
@@ -524,6 +520,8 @@ namespace CatMonkeyStateCallbacks
   void summon5_on_enter(Engine::ECS::Entity entity) {
     summon_impl_on_enter(entity, 4);
     BossRuntime& rt = runtime_for(entity);
+    rt.tunnel_destroyed = true;
+    destroy_tunnel(rt);
     rt.city_scroll_enabled = true;
     start_summon5_cat_camera_shake(rt);
   }

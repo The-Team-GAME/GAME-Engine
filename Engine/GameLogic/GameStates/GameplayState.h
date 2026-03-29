@@ -2,9 +2,10 @@
 // file:    GameplayState.h
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (70%)
-//          Ryan Ang An Kiat (30%)
+// author:  Chew Shee Yang (90%)
 //          Primary author
+//          Ryan Ang An Kiat (10%)
+//          Secondary author
 //
 // email:   chew.s@digipen.edu
 //

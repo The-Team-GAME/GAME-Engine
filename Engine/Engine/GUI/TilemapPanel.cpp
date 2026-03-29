@@ -40,6 +40,10 @@
 #include "../Logger.h"
 #include "../Time.h"
 #include "ResourcePicker.h"
+#include <stb_image.h>
+#include <stb_image_write.h>
+#include <filesystem>
+#include <algorithm>
 
 namespace TilemapPanel {
   // Internal state
@@ -910,11 +914,109 @@ namespace TilemapPanel {
           std::string current_path = preview_texture.texture_handle ? preview_texture.texture_handle->path : "";
           ImGui::Text("Selected: %s", current_path.empty() ? "(none)" : current_path.c_str());
 
-          if (ImGui::Button("Select Texture...", ImVec2(-1, 0))) {
-            ImGui::OpenPopup("Atlas Texture Picker");
+          if (is_animated_atlas) {
+            if (ImGui::Button("Select Texture...", ImVec2(ImGui::GetContentRegionAvail().x / 2 - 5, 0))) {
+              ImGui::OpenPopup("Atlas Texture Picker");
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Multiple Frames...", ImVec2(-1, 0))) {
+              ImGui::OpenPopup("Multi Atlas Texture Picker");
+            }
+          } else {
+            if (ImGui::Button("Select Texture...", ImVec2(-1, 0))) {
+              ImGui::OpenPopup("Atlas Texture Picker");
+            }
           }
 
-          // Handle texture picker popup
+          // Handle multi texture picker popup
+          std::vector<std::string> selected_paths;
+          if (ResourcePicker::texture_picker_popup_multi("Multi Atlas Texture Picker", selected_paths)) {
+            if (!selected_paths.empty() && selected_paths.size() > 1) { // Process if we have multiple
+              std::vector<std::string> sorted_paths = selected_paths;
+              std::sort(sorted_paths.begin(), sorted_paths.end()); // Keep frame sequence
+
+              std::vector<unsigned char*> images_data;
+              int max_w = 0, max_h = 0, channels = 4;
+              bool success = true;
+              
+              for (const auto& path : sorted_paths) {
+                int w, h, c;
+                unsigned char* data = stbi_load(path.c_str(), &w, &h, &c, 4);
+                if (data) {
+                  images_data.push_back(data);
+                  if (w > max_w) max_w = w;
+                  if (max_h == 0) max_h = h; // Assume height uniformity or take first
+                } else {
+                  Log::error("Failed to load multi-sequence frame: {}", path);
+                  success = false;
+                  break;
+                }
+              }
+
+              if (success && !images_data.empty()) {
+                int out_w = max_w * static_cast<int>(images_data.size());
+                int out_h = max_h;
+                unsigned char* out_data = new unsigned char[out_w * out_h * 4];
+                memset(out_data, 0, out_w * out_h * 4);
+
+                for (size_t i = 0; i < images_data.size(); ++i) {
+                  for (int y = 0; y < out_h; ++y) {
+                    for (int x = 0; x < max_w; ++x) {
+                      int in_idx = (y * max_w + x) * 4;
+                      int out_idx = (y * out_w + (static_cast<int>(i) * max_w + x)) * 4;
+                      out_data[out_idx]   = images_data[i][in_idx];
+                      out_data[out_idx+1] = images_data[i][in_idx+1];
+                      out_data[out_idx+2] = images_data[i][in_idx+2];
+                      out_data[out_idx+3] = images_data[i][in_idx+3];
+                    }
+                  }
+                  stbi_image_free(images_data[i]);
+                }
+
+                // Save stitched image
+                std::filesystem::path first_p(sorted_paths[0]);
+                std::string out_filename = first_p.stem().string() + "_multi_anim.png";
+                std::string out_dir = first_p.parent_path().string();
+                std::string full_out_path = out_dir + "/" + out_filename;
+
+                stbi_write_png(full_out_path.c_str(), out_w, out_h, 4, out_data, out_w * 4);
+                delete[] out_data;
+                
+                Log::info("Saved multi-frame generated atlas to: {}", full_out_path);
+
+                // Load the new texture
+                auto tex = Engine::Resources::load_texture(Engine::Resources::get_relative_path(full_out_path));
+                if (tex) {
+                  preview_texture = Components::Texture(tex);
+                  
+                  anim_sheet_cols = static_cast<int>(images_data.size());
+                  anim_sheet_rows = 1;
+                  
+                  if (anim_sheet_cols < 1) anim_sheet_cols = 1;
+
+                  anim_frame_cols = static_cast<int>(images_data.size());
+                  anim_frame_rows = 1;
+                  
+                  regenerate_animated_atlas();
+                }
+              } else {
+                for (auto* data : images_data) stbi_image_free(data);
+              }
+            } else if (selected_paths.size() == 1) { // Single selection via multi-picker
+              auto tex = Engine::Resources::load_texture(Engine::Resources::get_relative_path(selected_paths[0]));
+              if (tex) {
+                preview_texture = Components::Texture(tex);
+                anim_sheet_cols = preview_texture.texture_handle->width / 32;
+                anim_sheet_rows = preview_texture.texture_handle->height / 32;
+                if (anim_sheet_cols < 1) anim_sheet_cols = 1;
+                if (anim_sheet_rows < 1) anim_sheet_rows = 1;
+                anim_frame_cols = 1; anim_frame_rows = 1;
+                regenerate_animated_atlas();
+              }
+            }
+          }
+
+          // Handle single texture picker popup
           std::string selected_path;
           if (ResourcePicker::texture_picker_popup("Atlas Texture Picker", selected_path, current_path)) {
             // Load the selected texture
