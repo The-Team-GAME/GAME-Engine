@@ -32,10 +32,6 @@ namespace Engine
   public:
     virtual ~Scene() = default;
 
-    // If true, SceneManager will not draw any scenes below this one in the stack.
-    // Useful for full-screen opaque overlays like cutscenes.
-    virtual bool blocks_lower_draw() const;
-
     /**
      * @brief Loads resources and entities for the scene.
      */

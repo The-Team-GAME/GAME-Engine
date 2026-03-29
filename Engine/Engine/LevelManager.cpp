@@ -39,6 +39,11 @@ namespace {
   std::mutex preload_mutex;
   std::unordered_map<std::string, Engine::EntityList> preload_results;
 
+
+  // (Stored as a filepath relative to Resources::resource_path when append_resource_path=true.)
+  std::string pending_start_level_path;
+  bool pending_start_level_append_resource_path = true;
+
   // Global preloaded snapshot map: level_path → deactivated entity IDs (pristine state)
   std::unordered_map<std::string, std::vector<Engine::ECS::EntityID>> preloaded_snapshots;
 
@@ -230,10 +235,6 @@ namespace {
 
 namespace Engine {
   namespace LevelManager {
-
-    namespace {
-      std::string g_pending_level_to_open;
-    }
 
     // Forward declarations
     void build_preloaded_snapshot(LevelState& state);
@@ -480,14 +481,36 @@ namespace Engine {
         return full_path;
       }
 
+      // Fail-fast: missing file (game-mode path, resource-relative)
+      // For append_resource_path=false we may be importing/copying into resources,
+      // so don't pre-check existence here.
+      if (append_resource_path && !std::filesystem::exists(full_path)) {
+        Log::warning("[LevelManager] Failed to open level (file not found): {}", full_path);
+        EventManager::send_event<Events::ToastEvent>(
+          "Level not found: " + Path(full_path).get_filename(),
+          Events::ToastType::Warning,
+          4.0f
+        );
+        return "";
+      }
+
+      // Load the level from disk first; avoid calling on_exit/cache if the load fails.
+      EntityList entities = Resources::load_level(filepath, append_resource_path, false);
+      if (entities.empty()) {
+        Log::warning("[LevelManager] Failed to open level (0 entities): {}", full_path);
+        EventManager::send_event<Events::ToastEvent>(
+          "Failed to load level: " + Path(full_path).get_filename(),
+          Events::ToastType::Warning,
+          4.0f
+        );
+        return "";
+      }
+
       // Call on_exit for current level before switching
       if (!active_level_id.empty() && is_level_open(active_level_id)) {
         call_level_exit();
         cache_active_level();
       }
-
-      // Load the level from disk
-      EntityList entities = Resources::load_level(filepath, append_resource_path, false);
 
       // Single-world approach
       LevelState new_state;
@@ -606,12 +629,9 @@ namespace Engine {
       current_level_path = "";  // No file path for new levels
 
       // Clear the world
-      // IMPORTANT: clear all ACTIVE entities (even ones with no layer).
-      // ECS::for_each_entity() iterates by layer sets and can miss unlayered
-      // entities, causing levels to accumulate.
-      for (auto entity : ECS::get_all_entities()) {
+      ECS::for_each_entity([](ECS::Entity entity) {
         entity.destroy();
-      }
+        });
       ECS::process_housekeeping();
 
       // Create the Level entity with Level component
@@ -663,22 +683,6 @@ namespace Engine {
         instantiate_entities(entities, true);
         state.cached_entities = entities;
       }
-
-      // Ensure tile collision entities and collision world bounds are correct after a fast switch.
-      // The cold-load path handles this inside instantiate_entities().
-      for (auto& entity : ECS::get_entities_with<Components::TileMap>()) {
-        auto layers = entity.get_layers();
-        for (ECS::LayerID layer_id = 0; layer_id < ECS::MAX_LAYERS; ++layer_id) {
-          if (layers.test(layer_id)) {
-            std::string layer_name = ECS::get_layer_name(layer_id);
-            if (!layer_name.empty()) {
-              TilemapManager::rebuild_tilemap_for_layer(layer_name);
-            }
-          }
-        }
-      }
-
-      TilemapManager::broadcast_world_bounds();
 
       Log::info("Switched to level: {}", level_id);
 
@@ -732,31 +736,15 @@ namespace Engine {
           call_level_exit();
         }
 
-        for (auto entity : ECS::get_all_entities()) {
+        ECS::for_each_entity([](ECS::Entity entity) {
           entity.destroy();
-        }
+          });
         ECS::process_housekeeping();
 
         for (ECS::EntityID id : preloaded_snapshots[level_id]) {
           ECS::activate_entity(id);
         }
         preloaded_snapshots.erase(level_id);
-
-        // After reactivating entities from the snapshot, rebuild tile collision entities
-        // and world bounds. This matches the normal level-switch path and prevents
-        // "blank" reloads where TilemapManager state wasn't rebuilt.
-        for (auto& entity : ECS::get_entities_with<Components::TileMap>()) {
-          auto layers = entity.get_layers();
-          for (ECS::LayerID layer_id = 0; layer_id < ECS::MAX_LAYERS; ++layer_id) {
-            if (layers.test(layer_id)) {
-              std::string layer_name = ECS::get_layer_name(layer_id);
-              if (!layer_name.empty()) {
-                TilemapManager::rebuild_tilemap_for_layer(layer_name);
-              }
-            }
-          }
-        }
-        TilemapManager::broadcast_world_bounds();
 
         current_level_path = level_id;
         call_level_init();
@@ -843,9 +831,9 @@ namespace Engine {
           std::string new_active = level_order[new_index];
 
           // Destroy active entities first
-          for (auto entity : ECS::get_all_entities()) {
+          ECS::for_each_entity([](ECS::Entity entity) {
             entity.destroy();
-          }
+            });
           ECS::process_housekeeping();
 
           active_level_id = new_active;
@@ -865,9 +853,9 @@ namespace Engine {
         }
         else {
           // Closing last level
-          for (auto entity : ECS::get_all_entities()) {
+          ECS::for_each_entity([](ECS::Entity entity) {
             entity.destroy();
-          }
+            });
           ECS::process_housekeeping();
           active_level_id = "";
           current_level_path = "";
@@ -1112,11 +1100,9 @@ namespace Engine {
       active_level_id = "";
       current_level_path = "";
 
-      // Clear all ACTIVE entities (including unlayered). Deactivated entities
-      // are managed per-level via destroy_level_entities()/activate_level().
-      for (auto entity : ECS::get_all_entities()) {
+      ECS::for_each_entity([](ECS::Entity entity) {
         entity.destroy();
-      }
+        });
       ECS::process_housekeeping();
 
       Log::info("Cleared levels. Preserved {} preloaded levels.", open_levels.size());
@@ -1127,17 +1113,23 @@ namespace Engine {
       current_level_path = path;
     }
 
-    void set_pending_level_to_open(const std::string& level_path)
+    void set_pending_start_level(const std::string& filepath, bool append_resource_path)
     {
-      g_pending_level_to_open = level_path;
-      Log::info("[LevelManager] Pending level set: {}", g_pending_level_to_open.empty() ? std::string("<empty>") : g_pending_level_to_open);
+      pending_start_level_path = filepath;
+      pending_start_level_append_resource_path = append_resource_path;
+      Log::info("[LevelManager] Pending start level set: {} (append_resource_path={})", filepath, append_resource_path);
     }
 
-    std::string consume_pending_level_to_open()
+    std::string consume_pending_start_level(bool* out_append_resource_path)
     {
-      std::string out = std::move(g_pending_level_to_open);
-      g_pending_level_to_open.clear();
-      return out;
+      if (out_append_resource_path) {
+        *out_append_resource_path = pending_start_level_append_resource_path;
+      }
+
+      std::string result = pending_start_level_path;
+      pending_start_level_path.clear();
+      pending_start_level_append_resource_path = true;
+      return result;
     }
 
     EntityList capture_world_entities()
@@ -1228,9 +1220,9 @@ namespace Engine {
       }
 
       if (clear_world) {
-        for (auto entity : ECS::get_all_entities()) {
+        ECS::for_each_entity([](ECS::Entity entity) {
           entity.destroy();
-        }
+          });
       }
 
       // Process housekeeping to ensure old entities (including tile colliders) are actually destroyed

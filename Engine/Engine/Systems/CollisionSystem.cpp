@@ -19,7 +19,6 @@
 #include "../Perf.h"
 #include "../FileIO/Settings.h"
 #include "../Graphics/Renderer.h" // for picturing the quad tree
-#include <limits>
 
 using namespace Engine;
 using namespace Systems;
@@ -54,12 +53,6 @@ void col2D::update()
 {
   Engine::Perf::start("Collision Update");
 
-  if (!spatial_tree_sat)
-  {
-    Engine::Perf::stop("Collision Update");
-    return;
-  }
-
   // reset the tree from last frame
   spatial_tree_sat->clear();
 
@@ -67,14 +60,17 @@ void col2D::update()
   for (ECS::EntityID entity_id : entities)
   {
     ECS::Entity entity(entity_id);
-    update_entity(entity);
+    Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
 
-    // Defensive: entity lists can momentarily contain stale/mismatched entities during level switches.
-    if (entity.get_component<Components::BoxCollider>() == nullptr)
-    {
+    // Entity membership can become stale across runtime edits/spawns.
+    // Skip entries that no longer satisfy this system's component set.
+    if (!xform || !rigid || !box) {
       continue;
     }
 
+    update_entity(entity);
     spatial_tree_sat->insert(entity);
   }
 
@@ -84,8 +80,7 @@ void col2D::update()
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
 
-    if (rigid == nullptr || box == nullptr)
-    {
+    if (!rigid || !box) {
       continue;
     }
 
@@ -111,15 +106,13 @@ void col2D::update()
       // Skip self-collision
       if (entity == other) { continue; }
       Components::BoxCollider* other_box = other.get_component<Components::BoxCollider>();
-      if (other_box == nullptr)
-      {
-        continue;
-      }
       // Get other entity's layers
       ECS::LayerSignature other_layers = other.get_layers();
       // Check if these entities' layers should collide using the global collision matrix
       if (!ECS::LayerRegistry::should_layers_collide(entity_layers, other_layers))
-      { continue; }
+      {
+        continue;
+      }
 
       // Check if both entities intersect
       CollisionResult collision = check_collision(*box, *other_box);
@@ -141,10 +134,6 @@ void col2D::update()
       {
         Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
         Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
-        if (xform == nullptr)
-        {
-          continue;
-        }
         // we add the MTV here because it is not the penetration vector but rather how far the object needs to be pushed out to resolve the collision
         // Basically we snapping the object out of the collided surface
         if (collision.get_penetration() > 0.5f)
@@ -166,8 +155,8 @@ void col2D::update()
           rigid->velocity -= normal_dir_vtr * speed_into_surface;
         }
         //====================================//
-        
-        
+
+
         // Ok so the part above works now but we need another way to check if the player/ entity is on the ground / a jumpable surface
         // Behold the power of dot product (all the math need to re sketch out to explain cuz my whiteboard has limited space KEKW)
 
@@ -178,7 +167,7 @@ void col2D::update()
         if (cos_of_angle_of_slope >= cosf(phy2D::get_slope_radian_threshold()))
         {
           rigid->on_ground = true;
-          
+
           /*==========================
           / Calculating Normal Force /
           ==========================*/
@@ -198,8 +187,7 @@ void col2D::update()
           tangent = dot_product(rigid->velocity, tangent) < 0 ? -tangent : tangent;
 
           // This is how much friction can be generated in this frame
-          f32 other_kinetic = other_rigid ? other_rigid->kinetic_coefficient : 1.0f;
-          f32 friction_experienced = normal_magnitude * (rigid->kinetic_coefficient * other_kinetic) * 2.f;
+          f32 friction_experienced = normal_magnitude * (rigid->kinetic_coefficient * other_rigid->kinetic_coefficient) * 2.f;
 
           /*====================================================================================
           / Calculating the friction force needed to immediately stop the entity in this frame /
@@ -258,20 +246,28 @@ void col2D::update_entity(Engine::ECS::Entity entity)
   Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
   Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
 
-  if (xform == nullptr || box == nullptr)
-  {
+  if (!xform || !box) {
     return;
   }
-  
+
   // Calculate flipped offset
   Vec2D flipped_offset = box->offset;
   if (auto* flip = entity.get_component<Components::Flip>()) {
     flipped_offset.x *= flip->value.x;
     flipped_offset.y *= flip->value.y;
   }
-  
+
   if (box->type == Components::ColliderType::AABB)
   {
+    // Keep AABB half-extents consistent with collider width/height.
+    // Some prefabs/levels serialize half_width/half_height as 0 but do have width/height.
+    if (box->width > 0.0f) {
+      box->aabb.half_width = box->width * 0.5f;
+    }
+    if (box->height > 0.0f) {
+      box->aabb.half_height = box->height * 0.5f;
+    }
+
     box->aabb.pos = xform->position + flipped_offset;
   }
   else if (box->type == Components::ColliderType::OBB ||
@@ -296,13 +292,6 @@ AABB col2D::get_entity_aabb(ECS::Entity entity)
 {
   Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
 
-  if (box == nullptr)
-  {
-    // Sentinel AABB far outside typical world bounds so quadtree insertion/range checks ignore it.
-    constexpr f32 kHuge = std::numeric_limits<f32>::max() / 4.0f;
-    return AABB(Vec2D(kHuge, kHuge), 0.0f, 0.0f);
-  }
-
   if (box->type == Components::ColliderType::AABB)
   {
     // Direct AABB access
@@ -312,11 +301,6 @@ AABB col2D::get_entity_aabb(ECS::Entity entity)
   // Since we dont know if the shape is rotated, we need to compute all the vertices anyways
 
   std::vector<Vec2D> xformed_vertices = box->polygon.get_transformed_vertices();
-  if (xformed_vertices.empty())
-  {
-    constexpr f32 kHuge = std::numeric_limits<f32>::max() / 4.0f;
-    return AABB(Vec2D(kHuge, kHuge), 0.0f, 0.0f);
-  }
 
   Vec2D min = xformed_vertices[0];
   Vec2D max = xformed_vertices[0];

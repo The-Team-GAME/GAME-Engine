@@ -36,6 +36,9 @@ namespace CatMonkeyStateCallbacks
     static constexpr float k_minicity_speed = 200.0f;
     static constexpr float k_foreground_city_speed = 180.0f;
     static constexpr float k_background_city_speed = 350.0f;
+
+    static constexpr const char* k_city_layer_blueprint = "CatMonkeyCityLayer";
+    static constexpr const char* k_city_layer_active_state = "Active";
   }
 
   std::unordered_map<Engine::ECS::EntityID, BossRuntime>& runtimes()
@@ -234,6 +237,37 @@ namespace CatMonkeyStateCallbacks
     return e;
   }
 
+  inline void ensure_city_layer_state_machine(Engine::ECS::Entity e)
+  {
+    if (!e.is_valid()) {
+      return;
+    }
+
+    auto* sm = e.get_component<Components::StateMachine>();
+    if (!sm) {
+      e.add_component<Components::StateMachine>();
+      sm = e.get_component<Components::StateMachine>();
+    }
+    if (!sm) {
+      return;
+    }
+
+    if (!sm->has_state(k_city_layer_active_state)) {
+      sm->add_state(Components::State(k_city_layer_active_state));
+    }
+
+    sm->blueprint_id = k_city_layer_blueprint;
+
+    if (sm->get_current_state().empty()) {
+      sm->set_initial_state(k_city_layer_active_state);
+    }
+    else if (!sm->is_in_state(k_city_layer_active_state)) {
+      sm->change_state(k_city_layer_active_state);
+    }
+
+    sm->play_property_anim();
+  }
+
   inline void init_city_scroll_if_needed(BossRuntime& rt) {
     if (!rt.city_scroll_enabled || rt.city_scroll_initialized) return;
 
@@ -252,6 +286,7 @@ namespace CatMonkeyStateCallbacks
       for (Engine::ECS::Entity e : {a, b}) {
         detach_from_parent_if_present(e);
         set_entity_alpha_if_present(e, 1.0f);
+        ensure_city_layer_state_machine(e);
         if (auto* t = e.get_component<Components::Transform2D>()) {
           // Align all layers by their bottom-left corner.
           t->position.y = cam_bottom + 0.5f * t->scale.y;
@@ -290,6 +325,17 @@ namespace CatMonkeyStateCallbacks
       Engine::ECS::Entity a = find_entity_by_name_with_transform(base_name);
       Engine::ECS::Entity b = find_entity_by_name_with_transform(copy_name.c_str());
       if (!a.is_valid() || !b.is_valid()) return;
+
+      auto timeline_is_driving = [](Engine::ECS::Entity e) {
+        auto* sm = e.get_component<Components::StateMachine>();
+        return sm && sm->is_property_anim_playing();
+      };
+
+      // If either layer is currently driven by its timeline clip, don't fight it.
+      if (timeline_is_driving(a) || timeline_is_driving(b)) {
+        return;
+      }
+
       auto* ta = a.get_component<Components::Transform2D>();
       auto* tb = b.get_component<Components::Transform2D>();
       if (!ta || !tb) return;

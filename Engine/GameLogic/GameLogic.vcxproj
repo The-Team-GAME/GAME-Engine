@@ -169,7 +169,6 @@
     <ClCompile Include="GameLogicEntry.cpp" />
     <ClCompile Include="GameStates\BasicState.cpp" />
     <ClCompile Include="GameStates\EnteringTrainCutsceneState.cpp" />
-    <ClCompile Include="GameStates\LevelTwoStartState.cpp" />
     <ClCompile Include="GameStates\OpeningCutsceneState.cpp" />
     <ClCompile Include="GameStates\OptionsState.cpp" />
     <ClCompile Include="GameStates\OldManDialogueState.cpp" />
@@ -209,7 +208,6 @@
     <ClInclude Include="GameStates\BehaviourState.h" />
     <ClInclude Include="GameStates\BasicState.h" />
     <ClInclude Include="GameStates\EnteringTrainCutsceneState.h" />
-    <ClInclude Include="GameStates\LevelTwoStartState.h" />
     <ClInclude Include="GameStates\OpeningCutsceneState.h" />
     <ClInclude Include="GameStates\VideoPlaybackState.h" />
     <ClInclude Include="GameStates\DistortionEffectState.h" />

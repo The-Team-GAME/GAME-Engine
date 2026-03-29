@@ -24,6 +24,7 @@
 #include "../Components/GameplayComponent.h"
 #include "../Components/InteractableComponents.h"
 #include "../Components/HealthComponents.h"
+#include "../../Engine/LevelManager.h"
 #include "../../Engine/UpgradeManager.h"
 #include "../../Engine/UpgradeUIStateMachine.h"
 #include "../../Engine/TempUpgradeUIManager.h"
@@ -73,17 +74,16 @@ class GameplayState : public Engine::Scene
 
 public:
   void load() {
+    // GameplayState is LevelOne-only.
+    // SceneManager::load_scene() clears LevelManager state before Scene::load(),
+    // so we always (re)open LevelOne here.
+    if (Engine::LevelManager::get_current_level_path().empty()) {
+      Engine::LevelManager::open_level(DEFAULT_LEVEL_PATH);
+    }
+
     current_upgrade_threshold_ = 2;
     current_kills_for_upgrade_ = 0;
     upgrade_btn_anim_time_ = 0.0f;
-    // If another state (e.g. cutscenes / portals) requested a specific level,
-    // honor it here. Otherwise, fall back to the default gameplay level.
-    const std::string pending = Engine::LevelManager::consume_pending_level_to_open();
-    const std::string level_to_open = pending.empty() ? DEFAULT_LEVEL_PATH : pending;
-    Log::info("[GameplayState] Opening level: {} (pending was: {})",
-      level_to_open,
-      pending.empty() ? std::string("<empty>") : pending);
-    Engine::Resources::open_level(level_to_open);
 
 
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();

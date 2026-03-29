@@ -523,6 +523,36 @@ namespace CatMonkeyStateCallbacks
   }
   void summon5_on_update(Engine::ECS::Entity entity) { summon_impl_on_update(entity); }
 
+  void city_layer_active_on_enter(Engine::ECS::Entity entity)
+  {
+    if (auto* color = entity.get_component<Components::Color>()) {
+      color->a = 1.0f;
+    }
+
+    if (auto* sm = entity.get_component<Components::StateMachine>()) {
+      // If a timeline clip exists on this state, start it when the layer becomes active.
+      sm->play_property_anim();
+    }
+  }
+
+  void city_layer_active_on_update(Engine::ECS::Entity entity)
+  {
+    auto* sm = entity.get_component<Components::StateMachine>();
+    if (!sm) {
+      return;
+    }
+
+    auto it = sm->states.find(sm->get_current_state());
+    if (it == sm->states.end() || !it->second.property_animation.has_value()) {
+      return;
+    }
+
+    // Keep looping clips alive without requiring manual replay.
+    if (it->second.property_animation->is_looping && !sm->is_property_anim_playing()) {
+      sm->play_property_anim();
+    }
+  }
+
   void summon_on_enter(Engine::ECS::Entity entity) { summon_impl_on_enter(entity, 0); }
   void summon_on_update(Engine::ECS::Entity entity) {}
 
@@ -575,6 +605,15 @@ namespace CatMonkeyStateCallbacks
     STATE("Death", CatMonkeyStateCallbacks::death_on_enter, CatMonkeyStateCallbacks::death_on_update, NO_CALLBACK)
 
     registry.register_blueprint("CatMonkey", bp);
+
+    ::Engine::StateMachineBlueprint city_bp;
+    city_bp.initial_state = "Active";
+    {
+      auto& bp = city_bp;
+      STATE("Active", CatMonkeyStateCallbacks::city_layer_active_on_enter, CatMonkeyStateCallbacks::city_layer_active_on_update, NO_CALLBACK)
+    }
+
+    registry.register_blueprint("CatMonkeyCityLayer", city_bp);
   }
 }
 

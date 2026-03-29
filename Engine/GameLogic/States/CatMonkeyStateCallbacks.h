@@ -35,6 +35,8 @@ namespace CatMonkeyStateCallbacks
   void summon4_on_update(Engine::ECS::Entity entity);
   void summon5_on_enter(Engine::ECS::Entity entity);
   void summon5_on_update(Engine::ECS::Entity entity);
+  void city_layer_active_on_enter(Engine::ECS::Entity entity);
+  void city_layer_active_on_update(Engine::ECS::Entity entity);
   void summon_on_enter(Engine::ECS::Entity entity);
   void summon_on_update(Engine::ECS::Entity entity);
   void hit_on_enter(Engine::ECS::Entity entity);

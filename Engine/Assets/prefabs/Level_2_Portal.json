@@ -48,6 +48,7 @@
                         "x": 0.0,
                         "y": 0.0
                     },
+                    "air_time": 0.0,
                     "apply_force": false,
                     "gravity": {
                         "x": 0.0,

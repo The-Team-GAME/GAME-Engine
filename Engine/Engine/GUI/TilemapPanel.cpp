@@ -1125,6 +1125,11 @@ namespace TilemapPanel {
               int preview_rows = is_animated_atlas ? anim_sheet_rows : atlas_rows;
               float calc_preview_height = desired_tile_size * preview_rows;
 
+              // Side-scroller for super-wide atlases.
+              float preview_child_height = calc_preview_height + ImGui::GetStyle().ScrollbarSize + 4.0f;
+              ImGui::BeginChild("##AtlasPreviewScroller", ImVec2(0.0f, preview_child_height), true,
+                ImGuiWindowFlags_HorizontalScrollbar);
+
               if (is_animated_atlas) {
                 // Calculate prop size from sheet size and frame count (values are always valid due to clamping)
                 int prop_cols = anim_sheet_cols / anim_frame_cols;
@@ -1148,6 +1153,8 @@ namespace TilemapPanel {
                   preview_widget_state
                 );
               }
+
+              ImGui::EndChild();
             }
 
             // Submit button
@@ -1899,12 +1906,19 @@ namespace TilemapPanel {
               atlas_widget_states.resize(i + 1);
             }
 
+            // Side-scroller for super-wide tile atlases.
+            float preview_child_height = preview_height + ImGui::GetStyle().ScrollbarSize + 4.0f;
+            ImGui::BeginChild("##TileSelectionAtlasScroller", ImVec2(0.0f, preview_child_height), true,
+              ImGuiWindowFlags_HorizontalScrollbar);
+
             ImGuiWidgets::TextureAtlasPreview(
               temp_texture,
               temp_atlas,
               preview_height,
               atlas_widget_states[i]
             );
+
+            ImGui::EndChild();
 
             // Handle selection changes after widget returns
             if (!atlas_widget_states[i].current_selection.is_empty()) {

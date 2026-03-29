@@ -16,11 +16,67 @@
 #include "CatMonkeyBossRuntime.h"
 #include "../Components/CatMonkeyBossComponent.h"
 #include "../Components/EnemyHealthComponent.h"
+#include "../../Engine/Components/UtilityComponents.h"
 #include "../../Engine/Reflection/ReflectionLibrary.h"
 
 namespace CatMonkeyStateCallbacks
 {
   namespace {
+    std::string to_lower_ascii(std::string s)
+    {
+      for (char& c : s) {
+        if (c >= 'A' && c <= 'Z') c = static_cast<char>(c - 'A' + 'a');
+      }
+      return s;
+    }
+
+    std::optional<std::string> spawn_cloud_prefab_for_enemy_prefab(const std::string& enemy_prefab_path)
+    {
+      if (enemy_prefab_path.empty()) return std::nullopt;
+
+      std::string filename = std::filesystem::path(enemy_prefab_path).filename().string();
+      filename = to_lower_ascii(std::move(filename));
+
+      if (filename == "turret_monkey.json") return std::string{"prefabs/spawn_cloud_purple.json"};
+      if (filename == "spray can monkey.json") return std::string{"prefabs/spawn_cloud_pink.json"};
+      if (filename == "slingshot_monkey.json") return std::string{"prefabs/spawn_cloud_yellow.json"};
+      if (filename == "lazy_monkey.json") return std::string{"prefabs/spawn_cloud_blue.json"};
+
+      return std::nullopt;
+    }
+
+    void spawn_spawn_cloud_if_configured(const std::string& enemy_prefab_path, const Math::Vec2D& pos)
+    {
+      auto cloud_path = spawn_cloud_prefab_for_enemy_prefab(enemy_prefab_path);
+      if (!cloud_path) return;
+
+      Engine::ECS::Prefab cloud_prefab = Engine::Resources::load_prefab(*cloud_path);
+      if (!cloud_prefab.is_valid()) {
+        Log::warning("CatMonkey: failed to load spawn cloud prefab {}", *cloud_path);
+        return;
+      }
+
+      Engine::ECS::Entity cloud = Engine::ECS::instantiate_prefab(cloud_prefab);
+      if (!cloud.is_valid()) return;
+
+      if (auto* t = cloud.get_component<Components::Transform2D>()) {
+        t->position = pos;
+      }
+
+      // Ensure the animation starts at spawn time (prefabs often store editor timestamps).
+      float lifetime_sec = 1.0f;
+      if (auto* anim = cloud.get_component<Components::Animation>()) {
+        anim->startTime = Engine::Time::get_time();
+        if (anim->totalDuration > 0.0f) {
+          lifetime_sec = std::max(0.05f, anim->totalDuration + 0.05f);
+        }
+      }
+
+      if (!cloud.has_component<Components::Lifetime>()) {
+        cloud.add_component<Components::Lifetime>(lifetime_sec);
+      }
+    }
+
     int max_hp_from_prefab(const std::string& prefab_path)
     {
       if (prefab_path.empty()) return 0;
@@ -263,6 +319,11 @@ namespace CatMonkeyStateCallbacks
     if (auto* t = enemy.get_component<Components::Transform2D>()) {
       t->position = pos;
     }
+
+    if (enemy.is_valid()) {
+      spawn_spawn_cloud_if_configured(prefab_path, pos);
+    }
+
     return enemy;
   }
 
