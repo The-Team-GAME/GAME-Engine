@@ -226,6 +226,17 @@ void TipsBookState::update()
     return;
   }
 
+  // Any-key navigation: advance page or close when on last page.
+  if (Engine::Input::is_any_key_pressed()) {
+    if (page == 1) {
+      show_page2();
+    } else {
+      Engine::SceneManager::pop_scene();
+    }
+    return;
+  }
+
+  // Mouse click on nav arrow also toggles page.
   if (tips_button_id == 0 || !Engine::ECS::is_entity_active(Engine::ECS::Entity(tips_button_id)))
     return;
 
