@@ -1,0 +1,247 @@
+{
+    "data": {
+        "components": [
+            {
+                "data": {
+                    "atlas_indices": [
+                        0,
+                        1,
+                        2,
+                        3,
+                        4,
+                        5
+                    ],
+                    "before_times": [
+                        0.0,
+                        0.15000000596046448,
+                        0.30000001192092896,
+                        0.45000001788139343,
+                        0.6000000238418579,
+                        0.75
+                    ],
+                    "durations": [
+                        0.15000000596046448,
+                        0.15000000596046448,
+                        0.15000000596046448,
+                        0.15000000596046448,
+                        0.15000000596046448,
+                        0.15000000596046448
+                    ],
+                    "is_looping": false,
+                    "startTime": 1077.52783203125,
+                    "totalDuration": 0.8999999761581421
+                },
+                "type": "Components::Animation"
+            },
+            {
+                "data": {
+                    "aabb": {
+                        "half_height": 50.0,
+                        "half_width": 50.0,
+                        "pos": {
+                            "x": -2670.96484375,
+                            "y": 894.9356079101563
+                        }
+                    },
+                    "collided": false,
+                    "height": 100.0,
+                    "kinetic_friction": 1.0,
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "polygon": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "rotation": 0.0,
+                        "vertices": []
+                    },
+                    "radius": 0.0,
+                    "resolve_collisions": false,
+                    "type": "AABB",
+                    "width": 100.0
+                },
+                "type": "Components::BoxCollider"
+            },
+            {
+                "data": {
+                    "a": 1.0,
+                    "b": 1.0,
+                    "g": 1.0,
+                    "r": 1.0
+                },
+                "type": "Components::Color"
+            },
+            {
+                "data": {
+                    "acceleration": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "air_time": 199.67869567871094,
+                    "apply_force": true,
+                    "gravity": {
+                        "x": 0.0,
+                        "y": 1000.0
+                    },
+                    "is_jumping": false,
+                    "is_static": false,
+                    "mass": 1.0,
+                    "on_ground": false,
+                    "use_gravity": false,
+                    "velocity": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "x_terminal_velocity": 500.0,
+                    "y_terminal_velocity": 1000.0
+                },
+                "type": "Components::RigidBody"
+            },
+            {
+                "data": {
+                    "path": "images/Stage2/cloud_purple.png"
+                },
+                "type": "Components::Texture"
+            },
+            {
+                "data": {
+                    "drawIndex": 0,
+                    "tex_coords_list": [
+                        [
+                            {
+                                "x": 0.0,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.1666666716337204,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.1666666716337204,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.1666666716337204,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.3333333432674408,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.3333333432674408,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.1666666716337204,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.3333333432674408,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.5,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.5,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.3333333432674408,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.5,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.6666666865348816,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.6666666865348816,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.5,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.6666666865348816,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.8333333134651184,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.8333333134651184,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.6666666865348816,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.8333333134651184,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 1.0,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 1.0,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.8333333134651184,
+                                "y": 0.0
+                            }
+                        ]
+                    ]
+                },
+                "type": "Components::TextureAtlas"
+            },
+            {
+                "data": {
+                    "position": {
+                        "x": -2670.96484375,
+                        "y": 894.9356079101563
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 100.0,
+                        "y": 100.0
+                    }
+                },
+                "type": "Components::Transform2D"
+            }
+        ],
+        "filepath": "prefabs/spawn_cloud_purple.json",
+        "layers": [
+            "effect"
+        ],
+        "uuid": "ac77a3da-5160-400f1-a8fb-2715ea6d091f"
+    },
+    "dataType": "Prefab"
+}
