@@ -57,7 +57,9 @@ void RunGame()
   Engine::ECS::register_layer("main_menu_0");
   Engine::ECS::register_layer("main_menu_1");
   Engine::ECS::register_layer("main_menu_2");
+  Engine::ECS::register_layer("main_menu_char"); // Character behind carriage (BroSleeping)
   Engine::ECS::register_layer("main_menu_3");
+  Engine::ECS::register_layer("main_menu_impact"); // Impact flash — behind Bro/Carriage-Sheet
   Engine::ECS::register_layer("main_menu_4");
   Engine::ECS::register_layer("main_menu_5");
   Engine::ECS::register_layer("main_menu_6");

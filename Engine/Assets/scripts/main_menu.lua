@@ -50,23 +50,15 @@ function main_menu_start_on_exit(entity)
 end
 
 -- ============================================================================
--- Sprite-swap callbacks: called on_enter of "Menu" state for specific entities
+-- Sprite-swap callbacks: no longer needed (Carriage-Sheet handles transitions)
 -- ============================================================================
 
--- Entity 49 (player_sleeping): swap sleeping spritesheet → awake Bro.png
 function main_menu_bro_menu_enter(entity)
-  local tex = entity.Texture
-  if tex then
-    tex.path = "images/UI/MainMenu/UI/Bro.png"
-  end
+  -- no-op: bro is now part of Carriage-Sheet.png
 end
 
--- Entity 51 (Train Overlay / Front): swap graffiti → no graffiti version
 function main_menu_front_menu_enter(entity)
-  local tex = entity.Texture
-  if tex then
-    tex.path = "images/UI/MainMenu (Start)/Front - no graffiti.png"
-  end
+  -- no-op: carriage is now part of Carriage-Sheet.png
 end
 
 -- ============================================================================
@@ -117,14 +109,14 @@ end
 function main_menu_play_hover(entity)
   local tex = entity.Texture
   if tex then
-    tex.path = "images/UI/MainMenu/UI/Hovered/PlayButtonHovered.PNG"
+    tex.path = "images/NewMainMenu/Buttons/PlayButtonHovered.PNG"
   end
 end
 
 function main_menu_play_exit(entity)
   local tex = entity.Texture
   if tex then
-    tex.path = "images/UI/MainMenu/UI/PlayButton.png"
+    tex.path = "images/NewMainMenu/Buttons/PlayButton.png"
   end
 end
 
@@ -132,14 +124,14 @@ end
 function main_menu_options_hover(entity)
   local tex = entity.Texture
   if tex then
-    tex.path = "images/UI/MainMenu/UI/Hovered/OptionsButtonHovered.PNG"
+    tex.path = "images/NewMainMenu/Buttons/OptionsButtonHovered.PNG"
   end
 end
 
 function main_menu_options_exit(entity)
   local tex = entity.Texture
   if tex then
-    tex.path = "images/UI/MainMenu/UI/OptionsButton.png"
+    tex.path = "images/NewMainMenu/Buttons/OptionsButton.png"
   end
 end
 
@@ -147,14 +139,14 @@ end
 function main_menu_credits_hover(entity)
   local tex = entity.Texture
   if tex then
-    tex.path = "images/UI/MainMenu/UI/Hovered/CreditsButtonHovered.PNG"
+    tex.path = "images/NewMainMenu/Buttons/CreditsButtonHovered.PNG"
   end
 end
 
 function main_menu_credits_exit(entity)
   local tex = entity.Texture
   if tex then
-    tex.path = "images/UI/MainMenu/UI/CreditsButton.png"
+    tex.path = "images/NewMainMenu/Buttons/CreditsButton.png"
   end
 end
 
@@ -162,14 +154,14 @@ end
 function main_menu_exit_hover(entity)
   local tex = entity.Texture
   if tex then
-    tex.path = "images/UI/MainMenu/UI/Hovered/ExitButtonHovered.PNG"
+    tex.path = "images/NewMainMenu/Buttons/ExitButtonHovered.PNG"
   end
 end
 
 function main_menu_exit_exit(entity)
   local tex = entity.Texture
   if tex then
-    tex.path = "images/UI/MainMenu/UI/ExitButton.png"
+    tex.path = "images/NewMainMenu/Buttons/ExitButton.png"
   end
 end
 
