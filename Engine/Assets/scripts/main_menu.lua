@@ -39,7 +39,7 @@ local BUTTON_TARGETS = {
   ["images/NewMainMenu/Buttons/ExitButton.png"] = { x = 925.42, y = 754.58, delay = 0.21 },
 }
 
-local SLIDE_DURATION = 0.5
+local SLIDE_DURATION = 0.25
 
 local function ease_out_cubic(t)
   local u = 1 - t
@@ -106,11 +106,6 @@ function main_menu_transition_on_enter(entity)
     return
   end
 
-  local color = entity.Color
-  if color then
-    color.a = 1.0
-  end
-
   button_anim[entity:get_id()] = {
     start_x = tr.position.x,
     start_y = tr.position.y,
@@ -136,10 +131,6 @@ function main_menu_transition_on_update(entity)
 
     local elapsed = Time.get_time() - anim.start_time - anim.delay
     if elapsed < 0.0 then
-      local color = entity.Color
-      if color then
-        color.a = 1.0
-      end
       return
     end
 
@@ -151,15 +142,13 @@ function main_menu_transition_on_update(entity)
       tr.position.y = anim.start_y + (anim.target_y - anim.start_y) * eased
     end
 
-    local color = entity.Color
-    if color then
-      color.a = 1.0
-    end
-
     if t >= 1.0 then
       button_anim[eid] = nil
-      if sm then
-        sm:change_state("Menu")
+      if not next(button_anim) then
+        -- Only transition to the Menu state when all buttons are finished
+        if sm then
+          sm:change_state("Menu")
+        end
       end
     end
     return
@@ -194,10 +183,6 @@ function main_menu_menu_on_enter(entity)
     tr.position.y = target.y
   end
 
-  local color = entity.Color
-  if color then
-    color.a = 1.0
-  end
 end
 
 function main_menu_menu_on_update(entity)
