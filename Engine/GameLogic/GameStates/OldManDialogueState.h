@@ -42,12 +42,24 @@ private:
   static constexpr float SCREEN_CENTER_X = 800.0f;
   static constexpr float SCREEN_CENTER_Y = 450.0f;
 
-  Engine::ECS::EntityID dimmer_id_ = 0;
-  Engine::ECS::EntityID dialogue_bg_id_ = 0;
-  Engine::ECS::EntityID npc_portrait_id_ = 0;
+  // Dialogue sprite dimensions (all slides are 1536x576)
+  static constexpr float SLIDE_W = 1536.0f;
+  static constexpr float SLIDE_H = 576.0f;
+  static constexpr float SLIDE_X = SCREEN_CENTER_X;                    // horizontally centred
+  static constexpr float SLIDE_Y = 900.0f - SLIDE_H * 0.5f;           // anchored to bottom
+  static constexpr int   SLIDE_COUNT = 6;
 
-  Engine::Graphics::Font dialogue_font_;
-  Engine::Graphics::Font continue_font_;
+  static constexpr const char* SLIDE_PATHS[SLIDE_COUNT] = {
+    "images/Dialogue/1_Bro_dialogue.png",
+    "images/Dialogue/2_Oldman_dialogue.png",
+    "images/Dialogue/3_Bro_dialogue.png",
+    "images/Dialogue/4_Oldman_dialogue_Tips.png",
+    "images/Dialogue/5_Oldman_dialogue.png",
+    "images/Dialogue/6_Oldman_dialogue.png",
+  };
+
+  Engine::ECS::EntityID dialogue_sprite_id_ = 0;
+  int  current_slide_ = 0;
   float close_enable_time_unscaled_ = 0.0f;
   bool e_close_armed_ = false;
   bool request_tips_on_close_ = false;
