@@ -59,6 +59,7 @@ private:
     "images/Dialogue/6_Oldman_dialogue.png",
   };
 
+  Engine::ECS::EntityID dimmer_id_          = 0;
   Engine::ECS::EntityID dialogue_sprite_id_ = 0;
   int  current_slide_ = 0;
   float close_enable_time_unscaled_ = 0.0f;

@@ -19,6 +19,8 @@ void OldManDialogueState::load()
   e_close_armed_ = false;
   request_tips_on_close_ = false;
 
+  dimmer_id_ = Engine::UI::create_screen_dimmer(0.5f);
+
   dialogue_sprite_id_ = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(SLIDE_X, SLIDE_Y, 0.0f, SLIDE_W * SLIDE_SCALE, SLIDE_H * SLIDE_SCALE)
     .add_component<Components::Texture>(Engine::Resources::load_texture(SLIDE_PATHS[0]))
@@ -86,6 +88,10 @@ void OldManDialogueState::unload()
     Engine::ECS::destroy_entity(Engine::ECS::Entity(dialogue_sprite_id_));
   }
   dialogue_sprite_id_ = 0;
+  if (dimmer_id_ != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(dimmer_id_))) {
+    Engine::ECS::destroy_entity(Engine::ECS::Entity(dimmer_id_));
+  }
+  dimmer_id_ = 0;
 
   is_open = false;
   open_tips_request = open_tips_request || request_tips_on_close_;
