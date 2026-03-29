@@ -15,16 +15,6 @@
 #include "pch.h"
 #include "VictoryState.h"
 
-// Check if any key or mouse button was pressed this frame
-static bool any_key_pressed() {
-  // Check all keyboard keys
-  for (int key = 32; key <= 348; ++key) { // GLFW_KEY_SPACE to GLFW_KEY_LAST
-    if (Engine::Input::is_pressed(static_cast<Engine::KeyCode>(key))) {
-      return true;
-    }
-  }
-  return false;
-}
 
 void VictoryState::load()
 {
@@ -61,7 +51,7 @@ void VictoryState::init()
 void VictoryState::update()
 {
   // Press any key to return to main menu
-  if (any_key_pressed()) {
+  if (Engine::Input::is_any_key_pressed()) {
     Engine::SceneManager::load_scene("MainMenuState");
   }
 }

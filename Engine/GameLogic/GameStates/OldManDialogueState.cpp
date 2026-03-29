@@ -45,14 +45,14 @@ void OldManDialogueState::update()
     return;
   }
 
+  // Wait for E (the key that opened the dialogue) to be released before arming.
   const bool e_down = Engine::Input::is_held_raw(Engine::KeyCode::E) || Engine::Input::is_held(Engine::KeyCode::E);
   if (!e_close_armed_ && !e_down) {
     e_close_armed_ = true;
     return;
   }
 
-  const bool e_pressed = Engine::Input::is_pressed_raw(Engine::KeyCode::E) || Engine::Input::is_pressed(Engine::KeyCode::E);
-  if (e_close_armed_ && e_pressed && Engine::Time::get_unscaled_time() >= close_enable_time_unscaled_) {
+  if (e_close_armed_ && Engine::Input::is_any_key_pressed() && Engine::Time::get_unscaled_time() >= close_enable_time_unscaled_) {
     if (current_slide_ < SLIDE_COUNT - 1) {
       // Advance to next slide
       ++current_slide_;
@@ -63,7 +63,7 @@ void OldManDialogueState::update()
       Log::info("[OldManFlow] Advanced to slide {}", current_slide_ + 1);
     } else {
       // Last slide — close dialogue and request tips
-      Log::info("[OldManFlow] Dialogue close by E (request tips)");
+      Log::info("[OldManFlow] Dialogue close by key press (request tips)");
       request_tips_on_close_ = true;
       suppress_oldman_reopen_once = true;
       block_oldman_reopen_until_unscaled = Engine::Time::get_unscaled_time() + 1.0f;
