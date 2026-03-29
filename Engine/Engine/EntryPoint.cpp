@@ -54,15 +54,16 @@ void RunGame()
   Engine::ECS::register_layer("player");
   Engine::ECS::register_layer("scene_change_trigger");
   Engine::ECS::register_layer("effect");
-  Engine::ECS::register_layer("main_menu_0");
-  Engine::ECS::register_layer("main_menu_1");
-  Engine::ECS::register_layer("main_menu_2");
-  Engine::ECS::register_layer("main_menu_char"); // Character behind carriage (BroSleeping)
-  Engine::ECS::register_layer("main_menu_3");
+  Engine::ECS::register_layer("main_menu_background");
+  Engine::ECS::register_layer("main_menu_midground");
+  Engine::ECS::register_layer("main_menu_foreground");
+  Engine::ECS::register_layer("main_menu_character"); // Character behind carriage (BroSleeping)
+  Engine::ECS::register_layer("main_menu_carriage");
   Engine::ECS::register_layer("main_menu_impact"); // Impact flash — behind Bro/Carriage-Sheet
-  Engine::ECS::register_layer("main_menu_4");
-  Engine::ECS::register_layer("main_menu_5");
-  Engine::ECS::register_layer("main_menu_6");
+  Engine::ECS::register_layer("main_menu_button"); // Buttons after impact, before BroPunching
+  Engine::ECS::register_layer("main_menu_bropunch");
+  Engine::ECS::register_layer("main_menu_red_overlay");
+  Engine::ECS::register_layer("main_menu_anykey");
   Engine::ECS::register_layer("main_menu_ui");  // Main menu UI elements (buttons, overlays)
   Engine::ECS::register_layer("upgrade_ui_bg"); // Upgrade picker: dimmer overlay
   Engine::ECS::register_layer("upgrade_ui_fg"); // Upgrade picker: cards, panels, particles
