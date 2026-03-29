@@ -25,8 +25,8 @@
 namespace CatMonkeyStateCallbacks
 {
     // Tunnel logic parameters based on user request:
-    // Starts at -1900 x, travels horizontally right, teleports back when reaching 2750 x.
-    inline void tick_tunnel_image(Engine::ECS::Entity tunnel_entity, float speed = 500.0f)
+    // Starts at 2750 x, travels horizontally left, teleports back when reaching -1900 x.
+    inline void tick_tunnel_image(Engine::ECS::Entity tunnel_entity, float speed = -500.0f)
     {
         // Don't update if entity doesn't exist or isn't active
         if (!tunnel_entity.is_valid() || !tunnel_entity.is_valid()) return;
@@ -34,8 +34,8 @@ namespace CatMonkeyStateCallbacks
         auto* transform = tunnel_entity.get_component<Components::Transform2D>();
         if (!transform) return;
 
-        float start_x = -1900.0f;
-        float end_x = 2750.0f;
+        float start_x = 2750.0f;
+        float end_x = -1900.0f;
 
         // Move the image
         transform->position.x += speed * Engine::Time::get_fixed_dt();
@@ -80,7 +80,7 @@ namespace CatMonkeyStateCallbacks
                     
                     // Optional: snap to starting position initially so it doesn't flash at a wrong spot
                     if (auto* transform = t.get_component<Components::Transform2D>()) {
-                        transform->position.x = -1900.0f;
+                        transform->position.x = 2750.0f;
                         transform->position.y = 600.0f;
                     }
                 }

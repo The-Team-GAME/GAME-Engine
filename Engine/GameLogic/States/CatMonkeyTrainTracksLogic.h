@@ -26,7 +26,7 @@ namespace CatMonkeyStateCallbacks
 {
     // Train tracks logic parameters based on user request:
     // Starts at -1900 x, travels horizontally, teleports back when reaching 2750 x.
-    inline void tick_train_tracks_image(Engine::ECS::Entity train_tracks_entity, float speed = -500.0f)
+    inline void tick_train_tracks_image(Engine::ECS::Entity train_tracks_entity, float speed = -1000.0f)
     {
         // Don't update if entity doesn't exist or isn't active
         if (!train_tracks_entity.is_valid() || !train_tracks_entity.is_valid()) return;
