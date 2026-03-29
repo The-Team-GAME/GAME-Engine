@@ -53,22 +53,6 @@ class MainMenuState : public Engine::Scene
   float sky_timer = 0.0f;
   float sky_duration = 7.0f;
 
-  // Check if any key or mouse button was pressed this frame
-  bool any_key_pressed() {
-    // Check all keyboard keys
-    for (int key = 32; key <= 348; ++key) { // GLFW_KEY_SPACE to GLFW_KEY_LAST
-      if (Engine::Input::is_pressed(static_cast<Engine::KeyCode>(key))) {
-        return true;
-      }
-    }
-    // // Check mouse buttons
-    // if (Engine::Input::is_pressed(Engine::KeyCode::MouseLeft) ||
-    //   Engine::Input::is_pressed(Engine::KeyCode::MouseRight) ||
-    //   Engine::Input::is_pressed(Engine::KeyCode::MouseMiddle)) {
-    //   return true;
-    // }
-    return false;
-  }
 
   void create_start_screen() {
     // Entity 106: BackSky background (scrolling) - layer 0
@@ -438,7 +422,7 @@ public:
       }
 
       // Check for any key press to transition to main menu
-      if (any_key_pressed()) {
+      if (Engine::Input::is_any_key_pressed()) {
         Engine::AudioSystem::stopEvent(SPLASH_SFX_SNORE_EVENT, true);
         Engine::AudioSystem::stopEvent(SPLASH_SFX_TRAIN_EVENT, true);
         Engine::AudioSystem::playSceneMusic(MAIN_MENU_BGM_EVENT, 0.3f, true);
