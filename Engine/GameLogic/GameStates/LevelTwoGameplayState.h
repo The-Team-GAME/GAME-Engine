@@ -70,7 +70,13 @@ public:
   void load() {
     // LevelTwoGameplayState is LevelTwo-only.
     if (Engine::LevelManager::get_current_level_path().empty()) {
+#ifndef GAME_BUILD
+      if (!Engine::LevelTabManager::open_tab(DEFAULT_LEVEL_PATH, true)) {
+        Engine::LevelManager::open_level(DEFAULT_LEVEL_PATH);
+      }
+#else
       Engine::LevelManager::open_level(DEFAULT_LEVEL_PATH);
+#endif
     }
 
     current_upgrade_threshold_ = 2;

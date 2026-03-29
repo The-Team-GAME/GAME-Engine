@@ -342,6 +342,8 @@ namespace CatMonkeyStateCallbacks
             if (auto* t = centered.get_component<Components::Transform2D>()) {
               const float z = std::clamp(rt.centered_cut_zoom, 0.1f, 10.0f);
               t->scale = { z, z };
+              t->position = rt.post_spawn_pos_start;
+              t->rotation = rt.post_spawn_rot_start;
             }
           }
           rt.centered_cut_override_zoom = false; // one-shot
@@ -487,6 +489,10 @@ namespace CatMonkeyStateCallbacks
       if (cat_cam.is_valid()) {
         if (auto* ct = cat_cam.get_component<Components::Transform2D>()) {
           cat_zoom = ct->scale.x;
+            rt.post_spawn_pos_start = ct->position;
+            rt.post_spawn_pos_target = ct->position;
+            rt.post_spawn_rot_start = ct->rotation;
+            rt.post_spawn_rot_target = ct->rotation;
         }
       }
       cat_zoom = std::clamp(cat_zoom, 0.1f, 10.0f);
@@ -633,5 +639,7 @@ namespace {
   REGISTER_FUNCTION(Cat_monkey_idle_update)
   // ... all others
 }
+
+
 
 

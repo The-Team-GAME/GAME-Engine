@@ -25,6 +25,9 @@
 #include "../Components/InteractableComponents.h"
 #include "../Components/HealthComponents.h"
 #include "../../Engine/LevelManager.h"
+#ifndef GAME_BUILD
+#include "../../Engine/LevelTabManager.h"
+#endif
 #include "../../Engine/UpgradeManager.h"
 #include "../../Engine/UpgradeUIStateMachine.h"
 #include "../../Engine/TempUpgradeUIManager.h"
@@ -78,7 +81,13 @@ public:
     // SceneManager::load_scene() clears LevelManager state before Scene::load(),
     // so we always (re)open LevelOne here.
     if (Engine::LevelManager::get_current_level_path().empty()) {
+#ifndef GAME_BUILD
+      if (!Engine::LevelTabManager::open_tab(DEFAULT_LEVEL_PATH, true)) {
+        Engine::LevelManager::open_level(DEFAULT_LEVEL_PATH);
+      }
+#else
       Engine::LevelManager::open_level(DEFAULT_LEVEL_PATH);
+#endif
     }
 
     current_upgrade_threshold_ = 2;
