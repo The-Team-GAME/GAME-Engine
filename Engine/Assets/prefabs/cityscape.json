@@ -29,13 +29,13 @@
             {
                 "data": {
                     "position": {
-                        "x": -5371.78857421875,
-                        "y": 333.3682861328125
+                        "x": 2340.3564453125,
+                        "y": 399.69451904296875
                     },
                     "rotation": 0.0,
                     "scale": {
-                        "x": 5000.0,
-                        "y": 2000.0
+                        "x": 5940.177734375,
+                        "y": 1442.3861083984375
                     }
                 },
                 "type": "Components::Transform2D"
@@ -43,7 +43,7 @@
         ],
         "filepath": "prefabs/cityscape.json",
         "layers": [
-            "default"
+            "background"
         ],
         "uuid": "b647f4b3-ecf3-40f96-8620-2c6d932980b1"
     },
