@@ -1,0 +1,41 @@
+{
+    "data": {
+        "components": [
+            {
+                "data": {
+                    "a": 0.46666666865348816,
+                    "b": 1.0,
+                    "g": 1.0,
+                    "r": 1.0
+                },
+                "type": "Components::Color"
+            },
+            {
+                "data": {
+                    "path": "images/Background/BuildingsCombined.png"
+                },
+                "type": "Components::Texture"
+            },
+            {
+                "data": {
+                    "position": {
+                        "x": 2271.629638671875,
+                        "y": 381.65606689453125
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 4800.0,
+                        "y": 900.0
+                    }
+                },
+                "type": "Components::Transform2D"
+            }
+        ],
+        "filepath": "prefabs/building_main.json",
+        "layers": [
+            "default"
+        ],
+        "uuid": "b0176bc0-aa98-40f90-a3cd-ee9b621b7ed9"
+    },
+    "dataType": "Prefab"
+}

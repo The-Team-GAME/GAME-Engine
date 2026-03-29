@@ -35,6 +35,7 @@ namespace
   // =================== */
   std::array<bool, GLFW_MOUSE_BUTTON_LAST + GLFW_KEY_LAST + 2> currentKeys;
   std::array<bool, GLFW_MOUSE_BUTTON_LAST + GLFW_KEY_LAST + 2> previousKeys;
+  bool any_key_pressed_this_frame = false;
 
   /* =================== //
   // Mouse state         //
@@ -77,16 +78,23 @@ namespace Engine
     // Update previous states
     previousKeys = currentKeys;
 
+    any_key_pressed_this_frame = false;
+
     // Update current mouse button state
     for (int button = 0; button <= GLFW_MOUSE_BUTTON_LAST; ++button)
     {
       currentKeys[button] = (glfwGetMouseButton(window, button) == GLFW_PRESS);
+      if (currentKeys[button] && !previousKeys[button])
+        any_key_pressed_this_frame = true;
     }
 
     // Update current keyboard state
     for (int key = 0; key <= GLFW_KEY_LAST; ++key)
     {
-      currentKeys[key + GLFW_MOUSE_BUTTON_LAST + 1] = (glfwGetKey(window, key) == GLFW_PRESS);
+      int idx = key + GLFW_MOUSE_BUTTON_LAST + 1;
+      currentKeys[idx] = (glfwGetKey(window, key) == GLFW_PRESS);
+      if (key != GLFW_KEY_ESCAPE && currentKeys[idx] && !previousKeys[idx])
+        any_key_pressed_this_frame = true;
     }
 
 
@@ -150,6 +158,11 @@ namespace Engine
   {
     int idx = key_to_index(key);
     return currentKeys[idx];
+  }
+
+  bool Input::is_any_key_pressed()
+  {
+    return any_key_pressed_this_frame;
   }
 
   glm::vec2 Input::get_mouse_position()

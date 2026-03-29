@@ -148,6 +148,18 @@ namespace Engine {
     // Sets the current level path directly (for compatibility).
     ENGINE_API void set_current_level_path(const std::string& path);
 
+    // ============================================================================
+    // Scene Transition Helpers
+    // ============================================================================
+
+    // Request that the next scene (typically GameplayState) opens this level.
+    // This is useful because SceneManager::load_scene() clears all level state
+    // before calling Scene::load().
+    ENGINE_API void set_pending_start_level(const std::string& filepath, bool append_resource_path = true);
+
+    // Returns the pending start level filepath (or empty) and clears it.
+    ENGINE_API std::string consume_pending_start_level(bool* out_append_resource_path = nullptr);
+
   } // namespace LevelManager
 
 } // namespace Engine

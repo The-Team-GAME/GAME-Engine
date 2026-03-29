@@ -61,7 +61,7 @@
                         0.20000000298023224
                     ],
                     "is_looping": true,
-                    "startTime": 149.6061248779297,
+                    "startTime": 483.1925354003906,
                     "totalDuration": 4.0
                 },
                 "type": "Components::Animation"
@@ -125,7 +125,7 @@
             },
             {
                 "data": {
-                    "destroy_at": 121.00546264648438
+                    "destroy_at": 122.18499755859375
                 },
                 "type": "Components::Lifetime"
             },
@@ -135,6 +135,7 @@
                         "x": 0.0,
                         "y": 0.0
                     },
+                    "air_time": 0.0,
                     "apply_force": true,
                     "gravity": {
                         "x": 0.0,
@@ -329,7 +330,7 @@
         ],
         "filepath": "prefabs/spray_cloud.json",
         "layers": [
-            "damage_player",
+            "hazard",
             "spray"
         ],
         "uuid": "53762d03-a26f-409e3-82e6-4d0943344032"

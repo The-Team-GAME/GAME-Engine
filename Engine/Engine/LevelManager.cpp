@@ -39,6 +39,11 @@ namespace {
   std::mutex preload_mutex;
   std::unordered_map<std::string, Engine::EntityList> preload_results;
 
+
+  // (Stored as a filepath relative to Resources::resource_path when append_resource_path=true.)
+  std::string pending_start_level_path;
+  bool pending_start_level_append_resource_path = true;
+
   // Global preloaded snapshot map: level_path → deactivated entity IDs (pristine state)
   std::unordered_map<std::string, std::vector<Engine::ECS::EntityID>> preloaded_snapshots;
 
@@ -476,14 +481,36 @@ namespace Engine {
         return full_path;
       }
 
+      // Fail-fast: missing file (game-mode path, resource-relative)
+      // For append_resource_path=false we may be importing/copying into resources,
+      // so don't pre-check existence here.
+      if (append_resource_path && !std::filesystem::exists(full_path)) {
+        Log::warning("[LevelManager] Failed to open level (file not found): {}", full_path);
+        EventManager::send_event<Events::ToastEvent>(
+          "Level not found: " + Path(full_path).get_filename(),
+          Events::ToastType::Warning,
+          4.0f
+        );
+        return "";
+      }
+
+      // Load the level from disk first; avoid calling on_exit/cache if the load fails.
+      EntityList entities = Resources::load_level(filepath, append_resource_path, false);
+      if (entities.empty()) {
+        Log::warning("[LevelManager] Failed to open level (0 entities): {}", full_path);
+        EventManager::send_event<Events::ToastEvent>(
+          "Failed to load level: " + Path(full_path).get_filename(),
+          Events::ToastType::Warning,
+          4.0f
+        );
+        return "";
+      }
+
       // Call on_exit for current level before switching
       if (!active_level_id.empty() && is_level_open(active_level_id)) {
         call_level_exit();
         cache_active_level();
       }
-
-      // Load the level from disk
-      EntityList entities = Resources::load_level(filepath, append_resource_path, false);
 
       // Single-world approach
       LevelState new_state;
@@ -1093,6 +1120,25 @@ namespace Engine {
     void set_current_level_path(const std::string& path)
     {
       current_level_path = path;
+    }
+
+    void set_pending_start_level(const std::string& filepath, bool append_resource_path)
+    {
+      pending_start_level_path = filepath;
+      pending_start_level_append_resource_path = append_resource_path;
+      Log::info("[LevelManager] Pending start level set: {} (append_resource_path={})", filepath, append_resource_path);
+    }
+
+    std::string consume_pending_start_level(bool* out_append_resource_path)
+    {
+      if (out_append_resource_path) {
+        *out_append_resource_path = pending_start_level_append_resource_path;
+      }
+
+      std::string result = pending_start_level_path;
+      pending_start_level_path.clear();
+      pending_start_level_append_resource_path = true;
+      return result;
     }
 
     EntityList capture_world_entities()

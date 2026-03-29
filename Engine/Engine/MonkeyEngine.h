@@ -42,6 +42,7 @@
 #include "FileIO/PrefabsFileIO.h"
 #include "Systems/PhysicsSystem.h"
 #include "FileIO/Settings.h" // Remove in the future, we should not expose this directly
+#include "UIUtils.h"
 #include "LevelManager.h"
 #include "FileIO/LevelFileIO.h"
 #include "Logger.h"

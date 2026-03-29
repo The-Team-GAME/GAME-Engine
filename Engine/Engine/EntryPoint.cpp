@@ -52,6 +52,7 @@ void RunGame()
   Engine::ECS::register_layer("enemy");
   Engine::ECS::register_layer("player_trail");
   Engine::ECS::register_layer("player");
+  Engine::ECS::register_layer("scene_change_trigger");
   Engine::ECS::register_layer("effect");
   Engine::ECS::register_layer("main_menu_0");
   Engine::ECS::register_layer("main_menu_1");
@@ -63,6 +64,11 @@ void RunGame()
   Engine::ECS::register_layer("main_menu_ui");  // Main menu UI elements (buttons, overlays)
   Engine::ECS::register_layer("upgrade_ui_bg"); // Upgrade picker: dimmer overlay
   Engine::ECS::register_layer("upgrade_ui_fg"); // Upgrade picker: cards, panels, particles
+  Engine::ECS::register_layer("overlay_bg");      // Always-on-top full-screen dimmer/fade
+  Engine::ECS::register_layer("overlay_items_1"); // Items rendered above the dimmer (sprites, panels, cards)
+  Engine::ECS::register_layer("overlay_items_2"); // Burst particles / items above panels
+  Engine::ECS::register_layer("overlay_items_3"); // Mini cards / items above particles (buttons, carets)
+  Engine::ECS::register_layer("scene_change_trigger"); // Invisible portal volumes (player-triggered level transitions)
 #ifndef GAME_BUILD
   Engine::ECS::register_layer("debug");
 #endif

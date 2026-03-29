@@ -29,6 +29,16 @@ void pphy2D::update_entity(ECS::Entity entity)
 {
 	Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
 	Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
+
+	if (!rigid->on_ground)
+	{
+		rigid->air_time += Time::get_fixed_dt();
+	}
+	else
+	{
+		rigid->air_time = 0.f;
+	}
+
 	if (rigid->apply_force)
 	{
 		phy2D::update_kinematics(*rigid);

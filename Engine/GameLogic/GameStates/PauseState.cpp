@@ -83,13 +83,7 @@ void PauseState::load()
   float cam_y = camera.position.y + 450.0f;
 
   // Create black semi-transparent background covering whole screen
-  auto background = Engine::ECS::create_entity()
-    .add_component<Components::Transform2D>(cam_x, cam_y, 0.0f, 1600.0f, 900.0f)
-    .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
-    .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.5f)
-    .add_component<Components::UI>()
-    .add_to_layer("main_menu_4");
-  background_id = background.get_id();
+  background_id = Engine::UI::create_screen_dimmer(0.5f);
 
   // Create menu sprite (starts with nothing selected)
   auto menu_sprite = Engine::ECS::create_entity()
@@ -97,7 +91,7 @@ void PauseState::load()
     .add_component<Components::Texture>(nothing_selected_tex)
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
     .add_component<Components::UI>()
-    .add_to_layer("main_menu_5");
+    .add_to_layer("overlay_items_1");
   menu_sprite_id = menu_sprite.get_id();
 
   // Helper lambda to create a polygon collider with proper offset
@@ -119,7 +113,7 @@ void PauseState::load()
   }))
     .add_component<Components::Clickable>("pause_menu_resume", "pause_hover_resume", "pause_hover_none")
     .add_component<Components::UI>()
-    .add_to_layer("main_menu_5");
+    .add_to_layer("overlay_items_1");
   resume_collider_id = resume_collider.get_id();
 
   // Restart button collider
@@ -134,7 +128,7 @@ void PauseState::load()
   }))
     .add_component<Components::Clickable>("pause_menu_restart", "pause_hover_restart", "pause_hover_none")
     .add_component<Components::UI>()
-    .add_to_layer("main_menu_5");
+    .add_to_layer("overlay_items_1");
   restart_collider_id = restart_collider.get_id();
 
   // Options button collider
@@ -149,7 +143,7 @@ void PauseState::load()
   }))
     .add_component<Components::Clickable>("pause_menu_options", "pause_hover_options", "pause_hover_none")
     .add_component<Components::UI>()
-    .add_to_layer("main_menu_5");
+    .add_to_layer("overlay_items_1");
   options_collider_id = options_collider.get_id();
 
   // Exit button collider
@@ -164,7 +158,7 @@ void PauseState::load()
   }))
     .add_component<Components::Clickable>("pause_menu_exit", "pause_hover_exit", "pause_hover_none")
     .add_component<Components::UI>()
-    .add_to_layer("main_menu_5");
+    .add_to_layer("overlay_items_1");
   exit_collider_id = exit_collider.get_id();
 
   Engine::Time::set_time_scale(0.0001f); // can't set to 0 or input will not work

@@ -20,9 +20,11 @@
 
 #include "TipsBookState.h"
 #include "UpgradePickerState.h"
+#include "OldManDialogueState.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/InteractableComponents.h"
 #include "../Components/HealthComponents.h"
+#include "../../Engine/LevelManager.h"
 #include "../../Engine/UpgradeManager.h"
 #include "../../Engine/UpgradeUIStateMachine.h"
 #include "../../Engine/TempUpgradeUIManager.h"
@@ -30,14 +32,17 @@
 
 class GameplayState : public Engine::Scene
 {
+  static constexpr const char* DEFAULT_LEVEL_PATH = "levels/LevelOneTestingExtra.json";
+
   static constexpr const char* GAMEPLAY_BGM_EVENT = "event:/BGM/LevelBGM";
   static constexpr const char* GAMEPLAY_BATTLECRY_EVENT = "event:/SFX/PlayerStartCry";
   static constexpr float TIPS_BUTTON_HUD_X = -227.0f;
   static constexpr float TIPS_BUTTON_HUD_Y = 92.0f;
-  static constexpr float TIPS_BUTTON_SIZE = 220.0f;
+  static constexpr float TIPS_BUTTON_HUD_SIZE = 220.0f;
   // UI entity IDs
   Engine::ECS::EntityID pause_button_id = 0;
   Engine::ECS::EntityID tips_button_id = 0;
+  float oldman_tips_request_cooldown_until_ = 0.0f;
   Engine::ECS::EntityID upgrade_btn_id_[4] = { 0, 0, 0, 0 };
   int current_upgrade_threshold_ = 2;
   int current_kills_for_upgrade_ = 0;
@@ -69,11 +74,16 @@ class GameplayState : public Engine::Scene
 
 public:
   void load() {
+    // GameplayState is LevelOne-only.
+    // SceneManager::load_scene() clears LevelManager state before Scene::load(),
+    // so we always (re)open LevelOne here.
+    if (Engine::LevelManager::get_current_level_path().empty()) {
+      Engine::LevelManager::open_level(DEFAULT_LEVEL_PATH);
+    }
+
     current_upgrade_threshold_ = 2;
     current_kills_for_upgrade_ = 0;
     upgrade_btn_anim_time_ = 0.0f;
-    //Engine::Resources::open_level("levels/LevelOneTestingExtra.json");
-    Engine::LevelManager::open_level("levels/LevelOneTestingExtra.json");
 
 
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
@@ -117,11 +127,13 @@ public:
       tips_button_id = tips_btn.get_id();
       set_tips_button_layer("main_menu_4");
       if (auto* ui = tips_btn.get_component<Components::UI>()) ui->anchor = { 1.0f, 0.0f };
+      set_tips_button_size(TIPS_BUTTON_HUD_SIZE);
       set_tips_button_hud_position();
     }
     else {
       auto tips_btn_created = Engine::ECS::create_entity()
-        .add_component<Components::Transform2D>(TIPS_BUTTON_HUD_X, TIPS_BUTTON_HUD_Y, 0.0f, TIPS_BUTTON_SIZE, TIPS_BUTTON_SIZE)
+        .set_name("TipsButtonHUD")
+        .add_component<Components::Transform2D>(TIPS_BUTTON_HUD_X, TIPS_BUTTON_HUD_Y, 0.0f, TIPS_BUTTON_HUD_SIZE, TIPS_BUTTON_HUD_SIZE)
         .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/TipsBook.png"))
         .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
         .add_component<Components::UI>(1.0f, 0.0f)
@@ -160,6 +172,21 @@ public:
   };
 
   void update() {
+    const float now_unscaled = Engine::Time::get_unscaled_time();
+    const bool tips_scene_on_top = (Engine::SceneManager::get_current_scene_name() == "TipsBookState") || TipsBookState::is_open;
+    if (OldManDialogueState::consume_open_tips_request()) {
+      if (!tips_scene_on_top && now_unscaled >= oldman_tips_request_cooldown_until_) {
+        oldman_tips_request_cooldown_until_ = now_unscaled + 0.30f;
+        TipsBookState::tips_button_id = tips_button_id;
+        Log::info("[OldManFlow] Pushing TipsBookState from old-man request");
+        Engine::SceneManager::push_scene("TipsBookState");
+        return;
+      }
+      Log::info("[OldManFlow] Ignored old-man tips request (tips_scene_on_top={}, cooldown_left={})",
+        tips_scene_on_top ? 1 : 0,
+        (oldman_tips_request_cooldown_until_ > now_unscaled) ? (oldman_tips_request_cooldown_until_ - now_unscaled) : 0.0f);
+    }
+
     // UI elements use screen-space coordinates (no camera tracking needed)
     // Get mouse position in screen/viewport coordinates for UI click detection
     glm::vec2 mouse_pos = Engine::Input::get_mouse_position();
@@ -199,6 +226,7 @@ public:
           mouse_pos.y >= screen_pos.y - half_h &&
           mouse_pos.y <= screen_pos.y + half_h) {
           if (Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
+            if (TipsBookState::is_open || Engine::SceneManager::get_current_scene_name() == "TipsBookState") return;
             TipsBookState::tips_button_id = tips_button_id;
             Engine::SceneManager::push_scene("TipsBookState");
             return;
@@ -209,6 +237,7 @@ public:
 
     // Tips keyboard shortcut
     if (Engine::Input::is_pressed(Engine::KeyCode::I)) {
+      if (TipsBookState::is_open || Engine::SceneManager::get_current_scene_name() == "TipsBookState") return;
       TipsBookState::tips_button_id = tips_button_id;
       Engine::SceneManager::push_scene("TipsBookState");
       return;
@@ -302,6 +331,14 @@ public:
 
   void set_tips_button_hud_position() {
     set_tips_button_position(TIPS_BUTTON_HUD_X, TIPS_BUTTON_HUD_Y);
+  }
+
+  void set_tips_button_size(float size) {
+    if (tips_button_id == 0 || !Engine::ECS::is_entity_active(Engine::ECS::Entity(tips_button_id))) return;
+    auto* tips_transform = Engine::ECS::Entity(tips_button_id).get_component<Components::Transform2D>();
+    if (!tips_transform) return;
+    tips_transform->scale.x = size;
+    tips_transform->scale.y = size;
   }
 
   void draw() {

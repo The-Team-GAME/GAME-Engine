@@ -1,0 +1,24 @@
+{
+    "data": {
+        "entities": [
+            {
+                "id": 1919,
+                "name": "player_with_hitbox",
+                "prefab": "prefabs/player_with_hitbox.json",
+                "prefab_id": "59fcc5a1-1735-40361-987d-3a72895b2523",
+                "transform": {
+                    "position": {
+                        "x": -2577.843017578125,
+                        "y": 1025.8955078125
+                    },
+                    "rotation": 0.04699169844388962,
+                    "scale": {
+                        "x": 384.0,
+                        "y": 256.0
+                    }
+                }
+            }
+        ]
+    },
+    "dataType": "EntitySelection"
+}

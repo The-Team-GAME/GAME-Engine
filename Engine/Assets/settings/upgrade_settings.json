@@ -17,7 +17,8 @@
     "threshold_scaling": 1.02,
     "upgrades": [
         {
-            "card_index": 0,
+            "card_image": "images/Upgrades/Card_Basic_Dmg.png",
+            "card_frames": 24,
             "display_name": "Basic Attack Damage +1",
             "id": "flat_atk_dmg",
             "max_level": 5,
@@ -27,7 +28,8 @@
             "value": 1.0
         },
         {
-            "card_index": 1,
+            "card_image": "images/Upgrades/Card_Uppercut_Dmg.png",
+            "card_frames": 24,
             "display_name": "Uppercut Damage +1",
             "id": "flat_upp_dmg",
             "max_level": 5,
@@ -37,7 +39,8 @@
             "value": 1.0
         },
         {
-            "card_index": 2,
+            "card_image": "images/Upgrades/Card_Smash_Dmg.png",
+            "card_frames": 24,
             "display_name": "Downsmash Damage +1",
             "id": "flat_smash_dmg",
             "max_level": 5,
@@ -47,7 +50,8 @@
             "value": 1.0
         },
         {
-            "card_index": 3,
+            "card_image": "images/Upgrades/Card_Uppercut_CD.png",
+            "card_frames": 1,
             "display_name": "Uppercut Cooldown -1",
             "id": "upp_cd_reduce",
             "max_level": 5,
@@ -57,7 +61,8 @@
             "value": 1.0
         },
         {
-            "card_index": 4,
+            "card_image": "images/Upgrades/Card_Smash_CD.png",
+            "card_frames": 1,
             "display_name": "Downsmash Cooldown -1",
             "id": "smash_cd_reduce",
             "max_level": 5,
@@ -67,7 +72,8 @@
             "value": 1.0
         },
         {
-            "card_index": 5,
+            "card_image": "images/Upgrades/Card_Dash_CD.png",
+            "card_frames": 1,
             "display_name": "Dash Cooldown -1",
             "id": "dash_cd_reduce",
             "max_level": 5,

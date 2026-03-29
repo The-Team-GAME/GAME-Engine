@@ -79,6 +79,7 @@ namespace Components
     // These values are loaded from file
     f32 walk_speed = 300'000.f;
     f32 jump_force = -30'000'000.f;
+    f32 coyote_jump_buffer = 0.3f;
     Vec2D knockback_value;
     Vec2D knockback_recieved{ 100'000.f, 50'000.f };
     bool damage_immune = false;
@@ -107,6 +108,11 @@ namespace Components
     AttackData attack2_data   { 60.0f, 0.0f, 100.0f, 64.0f, 0.1f, 1.0f, Vec2D(5000.0f, 0.0f) };
     AttackData attack3_data   { 60.0f, 0.0f, 100.0f, 64.0f, 0.1f, 3.0f, Vec2D(5000.0f, 0.0f) };
 
+  };
+
+  struct Checkpoint
+  {
+    bool claimed = false;
   };
 
   struct Enemy
@@ -308,8 +314,5 @@ REGISTER_COMPONENT(Components::TurretMonkey, chase_speed, attack_cooldown, attac
 REGISTER_COMPONENT(Components::SlingshotMonkey, chase_speed, dash_speed, dash_cooldown, dash_windup_duration, dash_indicator_height, leap_speed, leap_height, attack_cooldown, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, close_attack_range, dash_attack_range)
 REGISTER_COMPONENT(Components::SprayCanMonkey, chase_speed, attack_cooldown, last_attack_time, attack_windup, detection_range, chase_range, attack_range, spray_duration, spray_range, spray_width, knockback, damage, cloud_spawn_time, cloud_initial_vx)
 REGISTER_COMPONENT(Components::Attack, damage, knockback, play_punch_hit_sfx, is_continuous, damage_interval, impact_vfx_texture)
-
-LUA_BIND_METHODS(Components::Attack, {
-    lua["Attack"]["should_apply_damage"] = &Components::Attack::should_apply_damage;
-})
 REGISTER_COMPONENT(Components::PendingKnockback, knockback)
+REGISTER_COMPONENT(Components::Checkpoint, claimed)

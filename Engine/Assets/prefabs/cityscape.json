@@ -1,0 +1,51 @@
+{
+    "data": {
+        "components": [
+            {
+                "data": {
+                    "child_ids": [
+                        4289,
+                        4293,
+                        4295
+                    ]
+                },
+                "type": "Components::Children"
+            },
+            {
+                "data": {
+                    "a": 1.0,
+                    "b": 1.0,
+                    "g": 1.0,
+                    "r": 1.0
+                },
+                "type": "Components::Color"
+            },
+            {
+                "data": {
+                    "path": "images/UI/MainMenu/BackGround/BackSky.png"
+                },
+                "type": "Components::Texture"
+            },
+            {
+                "data": {
+                    "position": {
+                        "x": 2340.3564453125,
+                        "y": 399.69451904296875
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 5940.177734375,
+                        "y": 1442.3861083984375
+                    }
+                },
+                "type": "Components::Transform2D"
+            }
+        ],
+        "filepath": "prefabs/cityscape.json",
+        "layers": [
+            "background"
+        ],
+        "uuid": "b647f4b3-ecf3-40f96-8620-2c6d932980b1"
+    },
+    "dataType": "Prefab"
+}

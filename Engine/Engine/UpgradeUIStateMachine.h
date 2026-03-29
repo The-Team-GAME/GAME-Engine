@@ -97,6 +97,7 @@ namespace Engine
     float card_base_y_[2] = {};
     float card_base_sx_[2] = {};
     float card_base_sy_[2] = {};
+    int   card_frames_[2] = { 1, 1 };  // frame count per displayed card (for manual animation)
     float picker_open_time_ = 0.0f;
 
     // Intro animation from top for cards on picker open
@@ -104,6 +105,9 @@ namespace Engine
     float card_intro_time_ = 0.0f;
 
     int   hovered_card_ = -1;
+    int   keyboard_selected_card_ = -1;  // -1 = none; set by A/D keys, cleared on pick
+    float last_mouse_x_ = 0.0f;
+    float last_mouse_y_ = 0.0f;
     float hover_lerp_[2] = {};
     float card_tilt_[2] = {};   // current Z-rotation (degrees) for tilt effects
     float stamp_time_ = -1.0f;

@@ -21,6 +21,8 @@
 #include "FileIO/SettingsManager.h"
 #include "Easing.h"
 #include "Graphics/Renderer.h"
+#include "UIUtils.h"
+#include <glm/glm.hpp>
 #include <cmath>
 #include <random>
 
@@ -246,6 +248,35 @@ namespace Engine
 
       glm::vec2 mouse = Input::get_mouse_position();
 
+      // Keyboard navigation: A/D to select, Space to confirm
+      if (Input::is_pressed(KeyCode::A) || Input::is_pressed(KeyCode::Left))
+        keyboard_selected_card_ = 0;
+      if (Input::is_pressed(KeyCode::D) || Input::is_pressed(KeyCode::Right))
+        keyboard_selected_card_ = 1;
+      // Mouse movement clears keyboard selection so mouse takes over again
+      if (mouse.x != last_mouse_x_ || mouse.y != last_mouse_y_)
+        keyboard_selected_card_ = -1;
+      last_mouse_x_ = mouse.x;
+      last_mouse_y_ = mouse.y;
+      if (Input::is_pressed(KeyCode::Space) && keyboard_selected_card_ >= 0)
+      {
+        int slot = keyboard_selected_card_;
+        keyboard_selected_card_ = -1;
+        if (cfg.enable_selection_stamp)
+        {
+          stamp_card_ = slot; stamp_time_ = 0.0f;
+        }
+        else if (cfg.enable_card_arc)
+        {
+          start_arc(slot);
+        }
+        else
+        {
+          handle_card_selection(slot);
+        }
+        break;
+      }
+
       // Hit-test card 0
       if (card0_id_ != 0 && ECS::is_entity_active(ECS::Entity(card0_id_)))
       {
@@ -332,6 +363,17 @@ namespace Engine
     picker_open_time_ += dt;
 
     ECS::EntityID card_ids[2] = { card0_id_, card1_id_ };
+
+    // Manually drive card sprite animation using unscaled time (AnimationUpdateSystem
+    // uses scaled time which is near-frozen while the picker is open)
+    float card_fps = cfg.card_anim_fps;
+    if (card_fps <= 0.0f) card_fps = 1.0f;
+    for (int i = 0; i < 2; ++i)
+    {
+      if (card_ids[i] == 0 || card_frames_[i] <= 1) continue;
+      if (auto* atlas = ECS::Entity(card_ids[i]).get_component<Components::TextureAtlas>())
+        atlas->drawIndex = static_cast<int>(picker_open_time_ * card_fps) % card_frames_[i];
+    }
 
     // Start from base values each frame; effects accumulate offsets
     float pos_y[2] = { card_base_y_[0], card_base_y_[1] };
@@ -530,6 +572,9 @@ namespace Engine
           hovered_card_ = i;
         }
       }
+      // Keyboard selection overrides mouse hover
+      if (keyboard_selected_card_ >= 0)
+        hovered_card_ = keyboard_selected_card_;
 
       for (int i = 0; i < 2; ++i)
       {
@@ -794,13 +839,6 @@ namespace Engine
 
         // Convert the flying card into a mini-card so it joins the wave
         {
-          //constexpr float ss_scale = 2.0f;
-          constexpr int   ss_card_w = 128;
-          constexpr int   ss_card_h = 224;
-          constexpr int   ss_rows = 1;
-          constexpr int   ss_cols = 8;
-          constexpr int   ss_total = 6;
-
           auto& mgr_ref = UpgradeManager::instance();
           auto& settings_ref = FileIO::SettingsManager<FileIO::UpgradeSettings>::get();
           int rolled_idx = mgr_ref.get_rolled_card(arc_card_);
@@ -819,16 +857,16 @@ namespace Engine
           // Spawn a mini-card at the landing spot
           if (rolled_idx >= 0 && rolled_idx < static_cast<int>(settings_ref.upgrades.size()))
           {
-            auto spritesheet = Resources::load_texture("images/Upgrades/Cards_Spritesheet.png");
+            const auto& arc_upg = settings_ref.upgrades[rolled_idx];
             auto mc = ECS::create_entity()
               .add_component<Components::Transform2D>(arc_end_x_, arc_end_y_, 0.0f, arc_end_sx_, arc_end_sy_)
-              .add_component<Components::Texture>(spritesheet)
-              .add_component<Components::TextureAtlas>(ss_card_w, ss_card_h, ss_rows, ss_cols, ss_total)
+              .add_component<Components::Texture>(Resources::load_texture(arc_upg.card_image))
+              .add_component<Components::TextureAtlas>(128, 256, 1, arc_upg.card_frames, arc_upg.card_frames)
               .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
               .add_component<Components::UI>()
-              .add_to_layer("upgrade_ui_fg");
+              .add_to_layer("overlay_items_3");
             if (auto* atlas = ECS::Entity(mc.get_id()).get_component<Components::TextureAtlas>())
-              atlas->drawIndex = settings_ref.upgrades[rolled_idx].card_index;
+              atlas->drawIndex = 0;
 
             mini_card_ids_.push_back(mc.get_id());
             mini_card_row_.push_back(arc_target_row_);
@@ -927,6 +965,7 @@ namespace Engine
     stamp_time_ = -1.0f;
     stamp_card_ = -1;
     hovered_card_ = -1;
+    keyboard_selected_card_ = -1;
     hover_lerp_[0] = 0.0f;
     hover_lerp_[1] = 0.0f;
     card_tilt_[0] = 0.0f;
@@ -964,11 +1003,17 @@ namespace Engine
       }
 
       int rolled_idx = mgr.get_rolled_card(i);
-      auto* atlas = ECS::Entity(card_id).get_component<Components::TextureAtlas>();
-      if (atlas && rolled_idx >= 0 && rolled_idx < static_cast<int>(settings.upgrades.size()))
-        atlas->drawIndex = settings.upgrades[rolled_idx].card_index;
-      else if (atlas)
-        atlas->drawIndex = 0;
+      if (rolled_idx >= 0 && rolled_idx < static_cast<int>(settings.upgrades.size()))
+      {
+        const auto& upg = settings.upgrades[rolled_idx];
+        if (auto* tex = ECS::Entity(card_id).get_component<Components::Texture>())
+          *tex = Resources::load_texture(upg.card_image);
+        if (auto* atlas = ECS::Entity(card_id).get_component<Components::TextureAtlas>())
+          *atlas = Components::TextureAtlas(128, 256, 1, upg.card_frames, upg.card_frames);
+        card_frames_[i] = upg.card_frames;
+        if (auto* atlas = ECS::Entity(card_id).get_component<Components::TextureAtlas>())
+          atlas->drawIndex = 0;
+      }
     }
   }
 
@@ -996,17 +1041,10 @@ namespace Engine
     auto& settings = FileIO::SettingsManager<FileIO::UpgradeSettings>::get();
     auto& cfg = FileIO::SettingsManager<FileIO::CardAnimSettings>::get_mutable();
 
-    auto rect = Resources::get_rect_texture();
-
-    // ---- Spritesheet (Cards_Spritesheet.png: 1024 x 224) ----
-    constexpr int   ss_img_w = 1024;  // full image width  in pixels
-    constexpr int   ss_img_h = 224;   // full image height in pixels
-    constexpr int   ss_cols = 8;     // number of columns in the sheet
-    constexpr int   ss_rows = 1;     // number of rows    in the sheet
-    constexpr int   ss_total = 6;     // number of cards in use (last 2 ignored for now)
-    constexpr int   ss_card_w = ss_img_w / ss_cols;  // 128 — one frame width
-    constexpr int   ss_card_h = ss_img_h / ss_rows;  // 224 — one frame height
-    constexpr float ss_scale = 2.0f;                // display scale multiplier
+    // ---- Per-card textures (128 x 256 per frame; animated cards have 24 frames = 3072 px wide) ----
+    constexpr int   card_w = 128;        // frame width in pixels
+    constexpr int   card_h = 256;        // frame height in pixels
+    constexpr float card_scale = 2.0f;   // display scale multiplier
 
     // ---- Panel (UpgradeMenu.png: 192 x 256) ----
     constexpr float panel_img_w = 192.0f;
@@ -1014,21 +1052,14 @@ namespace Engine
     constexpr float panel_scale = 2.0f;  // display scale multiplier
     // -----------------------------------------------------------------------
 
-    auto spritesheet = Resources::load_texture("images/Upgrades/Cards_Spritesheet.png");
     auto panel_tex = Resources::load_texture("images/Upgrades/UpgradeMenu.png");
 
     // Dimmer — full-screen dark overlay
-    auto dimmer = ECS::create_entity()
-      .add_component<Components::Transform2D>(800.0f, 450.0f, 0.0f, 1600.0f, 900.0f)
-      .add_component<Components::Texture>(rect)
-      .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.6f)
-      .add_component<Components::UI>()
-      .add_to_layer("upgrade_ui_bg");
-    dimmer_id_ = dimmer.get_id();
+    dimmer_id_ = UI::create_screen_dimmer(0.6f, "overlay_bg");
 
     // Layout sizing — derived from image sizes and scale factors above
-    constexpr float card_display_w = static_cast<float>(ss_card_w) * ss_scale;
-    constexpr float card_display_h = static_cast<float>(ss_card_h) * ss_scale;
+    constexpr float card_display_w = static_cast<float>(card_w) * card_scale;
+    constexpr float card_display_h = static_cast<float>(card_h) * card_scale;
     constexpr float panel_display_w = panel_img_w * panel_scale;
     constexpr float panel_display_h = panel_img_h * panel_scale;
     constexpr float gap = 10.0f;
@@ -1048,7 +1079,7 @@ namespace Engine
       .add_component<Components::Texture>(panel_tex)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()
-      .add_to_layer("upgrade_ui_fg");
+      .add_to_layer("overlay_items_1");
     panel_id_ = panel.get_id();
 
     // ---- Mini-cards showing acquired upgrades on the panel ----
@@ -1133,15 +1164,16 @@ namespace Engine
         }
         float y = panel_top + row_y[cat];
 
+        auto card_tex = Resources::load_texture(upg.card_image);
         auto mc = ECS::create_entity()
           .add_component<Components::Transform2D>(x, y, 0.0f, mini_w, mini_h)
-          .add_component<Components::Texture>(spritesheet)
-          .add_component<Components::TextureAtlas>(ss_card_w, ss_card_h, ss_rows, ss_cols, ss_total)
+          .add_component<Components::Texture>(card_tex)
+          .add_component<Components::TextureAtlas>(card_w, card_h, 1, upg.card_frames, upg.card_frames)
           .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
           .add_component<Components::UI>()
-          .add_to_layer("upgrade_ui_fg");
+          .add_to_layer("overlay_items_3");
         if (auto* atlas = ECS::Entity(mc.get_id()).get_component<Components::TextureAtlas>())
-          atlas->drawIndex = upg.card_index;
+          atlas->drawIndex = 0;
         mini_card_ids_.push_back(mc.get_id());
         mini_card_row_.push_back(cat);
         mini_card_base_x_.push_back(x);
@@ -1155,34 +1187,40 @@ namespace Engine
 
     // Card 0 — center
     int idx0 = mgr.get_rolled_card(0);
-    int draw0 = (idx0 >= 0 && idx0 < static_cast<int>(settings.upgrades.size()))
-      ? settings.upgrades[idx0].card_index : 0;
+    const auto* upg0 = (idx0 >= 0 && idx0 < static_cast<int>(settings.upgrades.size()))
+      ? &settings.upgrades[idx0] : nullptr;
+    auto c0tex = Resources::load_texture(upg0 ? upg0->card_image : "images/Upgrades/Card_Basic_Dmg.png");
+    int c0frames = upg0 ? upg0->card_frames : 1;
+    card_frames_[0] = c0frames;
 
     auto c0 = ECS::create_entity()
       .add_component<Components::Transform2D>(card0_cx, center_y, 0.0f, card_display_w, card_display_h)
-      .add_component<Components::Texture>(spritesheet)
-      .add_component<Components::TextureAtlas>(ss_card_w, ss_card_h, ss_rows, ss_cols, ss_total)
+      .add_component<Components::Texture>(c0tex)
+      .add_component<Components::TextureAtlas>(card_w, card_h, 1, c0frames, c0frames)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()
-      .add_to_layer("upgrade_ui_fg");
+      .add_to_layer("overlay_items_1");
     if (auto* atlas = ECS::Entity(c0.get_id()).get_component<Components::TextureAtlas>())
-      atlas->drawIndex = draw0;
+      atlas->drawIndex = 0;
     card0_id_ = c0.get_id();
 
     // Card 1 — right
     int idx1 = mgr.get_rolled_card(1);
-    int draw1 = (idx1 >= 0 && idx1 < static_cast<int>(settings.upgrades.size()))
-      ? settings.upgrades[idx1].card_index : 0;
+    const auto* upg1 = (idx1 >= 0 && idx1 < static_cast<int>(settings.upgrades.size()))
+      ? &settings.upgrades[idx1] : nullptr;
+    auto c1tex = Resources::load_texture(upg1 ? upg1->card_image : "images/Upgrades/Card_Basic_Dmg.png");
+    int c1frames = upg1 ? upg1->card_frames : 1;
+    card_frames_[1] = c1frames;
 
     auto c1 = ECS::create_entity()
       .add_component<Components::Transform2D>(card1_cx, center_y, 0.0f, card_display_w, card_display_h)
-      .add_component<Components::Texture>(spritesheet)
-      .add_component<Components::TextureAtlas>(ss_card_w, ss_card_h, ss_rows, ss_cols, ss_total)
+      .add_component<Components::Texture>(c1tex)
+      .add_component<Components::TextureAtlas>(card_w, card_h, 1, c1frames, c1frames)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()
-      .add_to_layer("upgrade_ui_fg");
+      .add_to_layer("overlay_items_1");
     if (auto* atlas = ECS::Entity(c1.get_id()).get_component<Components::TextureAtlas>())
-      atlas->drawIndex = draw1;
+      atlas->drawIndex = 0;
     card1_id_ = c1.get_id();
 
     // ---- Store base values and reset animation state ----
@@ -1195,8 +1233,7 @@ namespace Engine
     card_intro_active_ = true;
     card_intro_time_ = 0.0f;
     hovered_card_ = -1;
-
-    // Place cards at intro start position to avoid a one-frame snap to final.
+    keyboard_selected_card_ = -1;
     //auto& cfg = FileIO::SettingsManager<FileIO::CardAnimSettings>::get_mutable();
     float start_offset = cfg.intro_start_offset;
     if (card0_id_ != 0)
@@ -1497,7 +1534,7 @@ namespace Engine
         .add_component<Components::Texture>(rect)
         .add_component<Components::Color>(c[0], c[1], c[2], 1.0f)
         .add_component<Components::UI>()
-        .add_to_layer("upgrade_ui_fg");
+        .add_to_layer("overlay_items_2");
 
       BurstParticle bp;
       bp.id = e.get_id();

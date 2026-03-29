@@ -60,6 +60,16 @@ void col2D::update()
   for (ECS::EntityID entity_id : entities)
   {
     ECS::Entity entity(entity_id);
+    Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
+
+    // Entity membership can become stale across runtime edits/spawns.
+    // Skip entries that no longer satisfy this system's component set.
+    if (!xform || !rigid || !box) {
+      continue;
+    }
+
     update_entity(entity);
     spatial_tree_sat->insert(entity);
   }
@@ -69,6 +79,10 @@ void col2D::update()
     ECS::Entity entity(entity_id);
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
+
+    if (!rigid || !box) {
+      continue;
+    }
 
     // Reset rigid->on_ground here
     rigid->on_ground = false;
@@ -96,7 +110,9 @@ void col2D::update()
       ECS::LayerSignature other_layers = other.get_layers();
       // Check if these entities' layers should collide using the global collision matrix
       if (!ECS::LayerRegistry::should_layers_collide(entity_layers, other_layers))
-      { continue; }
+      {
+        continue;
+      }
 
       // Check if both entities intersect
       CollisionResult collision = check_collision(*box, *other_box);
@@ -139,8 +155,8 @@ void col2D::update()
           rigid->velocity -= normal_dir_vtr * speed_into_surface;
         }
         //====================================//
-        
-        
+
+
         // Ok so the part above works now but we need another way to check if the player/ entity is on the ground / a jumpable surface
         // Behold the power of dot product (all the math need to re sketch out to explain cuz my whiteboard has limited space KEKW)
 
@@ -151,7 +167,7 @@ void col2D::update()
         if (cos_of_angle_of_slope >= cosf(phy2D::get_slope_radian_threshold()))
         {
           rigid->on_ground = true;
-          
+
           /*==========================
           / Calculating Normal Force /
           ==========================*/
@@ -229,16 +245,29 @@ void col2D::update_entity(Engine::ECS::Entity entity)
 {
   Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
   Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
-  
+
+  if (!xform || !box) {
+    return;
+  }
+
   // Calculate flipped offset
   Vec2D flipped_offset = box->offset;
   if (auto* flip = entity.get_component<Components::Flip>()) {
     flipped_offset.x *= flip->value.x;
     flipped_offset.y *= flip->value.y;
   }
-  
+
   if (box->type == Components::ColliderType::AABB)
   {
+    // Keep AABB half-extents consistent with collider width/height.
+    // Some prefabs/levels serialize half_width/half_height as 0 but do have width/height.
+    if (box->width > 0.0f) {
+      box->aabb.half_width = box->width * 0.5f;
+    }
+    if (box->height > 0.0f) {
+      box->aabb.half_height = box->height * 0.5f;
+    }
+
     box->aabb.pos = xform->position + flipped_offset;
   }
   else if (box->type == Components::ColliderType::OBB ||
