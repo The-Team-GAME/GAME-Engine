@@ -21,6 +21,8 @@
 #include "FileIO/SettingsManager.h"
 #include "Easing.h"
 #include "Graphics/Renderer.h"
+#include "UIUtils.h"
+#include <glm/glm.hpp>
 #include <cmath>
 #include <random>
 
@@ -245,6 +247,35 @@ namespace Engine
       if (arc_active_ || pre_shift_time_ >= 0.0f || smash_time_ >= 0.0f || linger_time_ >= 0.0f) break;
 
       glm::vec2 mouse = Input::get_mouse_position();
+
+      // Keyboard navigation: A/D to select, Space to confirm
+      if (Input::is_pressed(KeyCode::A) || Input::is_pressed(KeyCode::Left))
+        keyboard_selected_card_ = 0;
+      if (Input::is_pressed(KeyCode::D) || Input::is_pressed(KeyCode::Right))
+        keyboard_selected_card_ = 1;
+      // Mouse movement clears keyboard selection so mouse takes over again
+      if (mouse.x != last_mouse_x_ || mouse.y != last_mouse_y_)
+        keyboard_selected_card_ = -1;
+      last_mouse_x_ = mouse.x;
+      last_mouse_y_ = mouse.y;
+      if (Input::is_pressed(KeyCode::Space) && keyboard_selected_card_ >= 0)
+      {
+        int slot = keyboard_selected_card_;
+        keyboard_selected_card_ = -1;
+        if (cfg.enable_selection_stamp)
+        {
+          stamp_card_ = slot; stamp_time_ = 0.0f;
+        }
+        else if (cfg.enable_card_arc)
+        {
+          start_arc(slot);
+        }
+        else
+        {
+          handle_card_selection(slot);
+        }
+        break;
+      }
 
       // Hit-test card 0
       if (card0_id_ != 0 && ECS::is_entity_active(ECS::Entity(card0_id_)))
@@ -541,6 +572,9 @@ namespace Engine
           hovered_card_ = i;
         }
       }
+      // Keyboard selection overrides mouse hover
+      if (keyboard_selected_card_ >= 0)
+        hovered_card_ = keyboard_selected_card_;
 
       for (int i = 0; i < 2; ++i)
       {
@@ -830,7 +864,7 @@ namespace Engine
               .add_component<Components::TextureAtlas>(128, 256, 1, arc_upg.card_frames, arc_upg.card_frames)
               .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
               .add_component<Components::UI>()
-              .add_to_layer("upgrade_ui_fg");
+              .add_to_layer("overlay_items_3");
             if (auto* atlas = ECS::Entity(mc.get_id()).get_component<Components::TextureAtlas>())
               atlas->drawIndex = 0;
 
@@ -931,6 +965,7 @@ namespace Engine
     stamp_time_ = -1.0f;
     stamp_card_ = -1;
     hovered_card_ = -1;
+    keyboard_selected_card_ = -1;
     hover_lerp_[0] = 0.0f;
     hover_lerp_[1] = 0.0f;
     card_tilt_[0] = 0.0f;
@@ -1006,8 +1041,6 @@ namespace Engine
     auto& settings = FileIO::SettingsManager<FileIO::UpgradeSettings>::get();
     auto& cfg = FileIO::SettingsManager<FileIO::CardAnimSettings>::get_mutable();
 
-    auto rect = Resources::get_rect_texture();
-
     // ---- Per-card textures (128 x 256 per frame; animated cards have 24 frames = 3072 px wide) ----
     constexpr int   card_w = 128;        // frame width in pixels
     constexpr int   card_h = 256;        // frame height in pixels
@@ -1022,13 +1055,7 @@ namespace Engine
     auto panel_tex = Resources::load_texture("images/Upgrades/UpgradeMenu.png");
 
     // Dimmer — full-screen dark overlay
-    auto dimmer = ECS::create_entity()
-      .add_component<Components::Transform2D>(800.0f, 450.0f, 0.0f, 1600.0f, 900.0f)
-      .add_component<Components::Texture>(rect)
-      .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.6f)
-      .add_component<Components::UI>()
-      .add_to_layer("upgrade_ui_bg");
-    dimmer_id_ = dimmer.get_id();
+    dimmer_id_ = UI::create_screen_dimmer(0.6f, "overlay_bg");
 
     // Layout sizing — derived from image sizes and scale factors above
     constexpr float card_display_w = static_cast<float>(card_w) * card_scale;
@@ -1052,7 +1079,7 @@ namespace Engine
       .add_component<Components::Texture>(panel_tex)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()
-      .add_to_layer("upgrade_ui_fg");
+      .add_to_layer("overlay_items_1");
     panel_id_ = panel.get_id();
 
     // ---- Mini-cards showing acquired upgrades on the panel ----
@@ -1144,7 +1171,7 @@ namespace Engine
           .add_component<Components::TextureAtlas>(card_w, card_h, 1, upg.card_frames, upg.card_frames)
           .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
           .add_component<Components::UI>()
-          .add_to_layer("upgrade_ui_fg");
+          .add_to_layer("overlay_items_3");
         if (auto* atlas = ECS::Entity(mc.get_id()).get_component<Components::TextureAtlas>())
           atlas->drawIndex = 0;
         mini_card_ids_.push_back(mc.get_id());
@@ -1172,7 +1199,7 @@ namespace Engine
       .add_component<Components::TextureAtlas>(card_w, card_h, 1, c0frames, c0frames)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()
-      .add_to_layer("upgrade_ui_fg");
+      .add_to_layer("overlay_items_1");
     if (auto* atlas = ECS::Entity(c0.get_id()).get_component<Components::TextureAtlas>())
       atlas->drawIndex = 0;
     card0_id_ = c0.get_id();
@@ -1191,7 +1218,7 @@ namespace Engine
       .add_component<Components::TextureAtlas>(card_w, card_h, 1, c1frames, c1frames)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>()
-      .add_to_layer("upgrade_ui_fg");
+      .add_to_layer("overlay_items_1");
     if (auto* atlas = ECS::Entity(c1.get_id()).get_component<Components::TextureAtlas>())
       atlas->drawIndex = 0;
     card1_id_ = c1.get_id();
@@ -1206,8 +1233,7 @@ namespace Engine
     card_intro_active_ = true;
     card_intro_time_ = 0.0f;
     hovered_card_ = -1;
-
-    // Place cards at intro start position to avoid a one-frame snap to final.
+    keyboard_selected_card_ = -1;
     //auto& cfg = FileIO::SettingsManager<FileIO::CardAnimSettings>::get_mutable();
     float start_offset = cfg.intro_start_offset;
     if (card0_id_ != 0)
@@ -1508,7 +1534,7 @@ namespace Engine
         .add_component<Components::Texture>(rect)
         .add_component<Components::Color>(c[0], c[1], c[2], 1.0f)
         .add_component<Components::UI>()
-        .add_to_layer("upgrade_ui_fg");
+        .add_to_layer("overlay_items_2");
 
       BurstParticle bp;
       bp.id = e.get_id();

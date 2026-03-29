@@ -15,16 +15,6 @@
 #include "pch.h"
 #include "VictoryState.h"
 
-// Check if any key or mouse button was pressed this frame
-static bool any_key_pressed() {
-  // Check all keyboard keys
-  for (int key = 32; key <= 348; ++key) { // GLFW_KEY_SPACE to GLFW_KEY_LAST
-    if (Engine::Input::is_pressed(static_cast<Engine::KeyCode>(key))) {
-      return true;
-    }
-  }
-  return false;
-}
 
 void VictoryState::load()
 {
@@ -34,13 +24,7 @@ void VictoryState::load()
   float cam_y = camera.position.y + 450.0f;
 
   // Create black semi-transparent background covering whole screen
-  auto background = Engine::ECS::create_entity()
-    .add_component<Components::Transform2D>(cam_x, cam_y, 0.0f, 1600.0f, 900.0f)
-    .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
-    .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.5f)
-    .add_component<Components::UI>()
-    .add_to_layer("main_menu_4");
-  background_id = background.get_id();
+  background_id = Engine::UI::create_screen_dimmer(0.5f);
 
   // Create victory screen sprite
   auto victory_screen = Engine::ECS::create_entity()
@@ -48,7 +32,7 @@ void VictoryState::load()
     .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/In-Game Pause/PrimitiveWin/VictoryScreen.png"))
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
     .add_component<Components::UI>()
-    .add_to_layer("main_menu_5");
+    .add_to_layer("overlay_items_1");
   victory_screen_id = victory_screen.get_id();
 
   Engine::Time::set_time_scale(0.0001f); // can't set to 0 or input will not work
@@ -61,7 +45,7 @@ void VictoryState::init()
 void VictoryState::update()
 {
   // Press any key to return to main menu
-  if (any_key_pressed()) {
+  if (Engine::Input::is_any_key_pressed()) {
     Engine::SceneManager::load_scene("MainMenuState");
   }
 }

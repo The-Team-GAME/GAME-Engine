@@ -57,7 +57,7 @@ void TipsBookState::ensure_nav_button()
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
     .add_component<Components::UI>()
     .add_component<Components::RuntimeOnly>()
-    .add_to_layer("main_menu_6");
+    .add_to_layer("overlay_items_3");
   tips_button_id = temp_btn.get_id();
   owns_nav_button_ = true;
 }
@@ -72,10 +72,10 @@ void TipsBookState::set_nav_right()
   Engine::ECS::Entity btn(tips_button_id);
   if (!btn.is_valid()) return;
 
-  btn.clear_layers().add_to_layer("main_menu_6");
+  btn.clear_layers().add_to_layer("overlay_items_3");
 
-  float half_w      = TIPS_OVERLAY_WIDTH  * 0.5f;
-  float half_h      = TIPS_OVERLAY_HEIGHT * 0.5f;
+  float half_w = TIPS_OVERLAY_WIDTH * 0.5f;
+  float half_h = TIPS_OVERLAY_HEIGHT * 0.5f;
   float button_half = TIPS_BUTTON_NAV_SIZE * 0.5f;
 
   float screen_x = TIPS_OVERLAY_CENTER_X + half_w - TIPS_NAV_MARGIN_X - button_half;
@@ -108,10 +108,10 @@ void TipsBookState::set_nav_left()
   Engine::ECS::Entity btn(tips_button_id);
   if (!btn.is_valid()) return;
 
-  btn.clear_layers().add_to_layer("main_menu_6");
+  btn.clear_layers().add_to_layer("overlay_items_3");
 
-  float half_w      = TIPS_OVERLAY_WIDTH  * 0.5f;
-  float half_h      = TIPS_OVERLAY_HEIGHT * 0.5f;
+  float half_w = TIPS_OVERLAY_WIDTH * 0.5f;
+  float half_h = TIPS_OVERLAY_HEIGHT * 0.5f;
   float button_half = TIPS_BUTTON_NAV_SIZE * 0.5f;
 
   float screen_x = TIPS_OVERLAY_CENTER_X - half_w + TIPS_NAV_MARGIN_X + button_half;
@@ -149,8 +149,8 @@ void TipsBookState::restore_hud_button()
   if (auto* t = btn.get_component<Components::Transform2D>()) {
     t->position.x = TIPS_BUTTON_HUD_X;
     t->position.y = TIPS_BUTTON_HUD_Y;
-    t->scale.x    = TIPS_BUTTON_HUD_SIZE;
-    t->scale.y    = TIPS_BUTTON_HUD_SIZE;
+    t->scale.x = TIPS_BUTTON_HUD_SIZE;
+    t->scale.y = TIPS_BUTTON_HUD_SIZE;
   }
   if (btn.has_component<Components::TextureAtlas>())
     btn.remove_component<Components::TextureAtlas>();
@@ -177,7 +177,7 @@ void TipsBookState::show_page1()
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
     .add_component<Components::UI>()
     .add_component<Components::RuntimeOnly>()
-    .add_to_layer("main_menu_5")
+    .add_to_layer("overlay_items_1")
     .get_id();
 
   set_nav_right();
@@ -196,7 +196,7 @@ void TipsBookState::show_page2()
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
     .add_component<Components::UI>()
     .add_component<Components::RuntimeOnly>()
-    .add_to_layer("main_menu_5")
+    .add_to_layer("overlay_items_1")
     .get_id();
 
   set_nav_left();
@@ -211,14 +211,7 @@ void TipsBookState::load()
   is_open = true;
   ensure_nav_button();
 
-  bg_id = Engine::ECS::create_entity()
-    .add_component<Components::Transform2D>(800.0f, 450.0f, 0.0f, 1600.0f, 900.0f)
-    .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
-    .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.5f)
-    .add_component<Components::UI>()
-    .add_component<Components::RuntimeOnly>()
-    .add_to_layer("main_menu_4")
-    .get_id();
+  bg_id = Engine::UI::create_screen_dimmer(0.5f, "overlay_bg", true);
 
   show_page1();
   Engine::Time::set_time_scale(0.0001f);
@@ -233,21 +226,32 @@ void TipsBookState::update()
     return;
   }
 
+  // Any-key navigation: advance page or close when on last page.
+  if (Engine::Input::is_any_key_pressed()) {
+    if (page == 1) {
+      show_page2();
+    } else {
+      Engine::SceneManager::pop_scene();
+    }
+    return;
+  }
+
+  // Mouse click on nav arrow also toggles page.
   if (tips_button_id == 0 || !Engine::ECS::is_entity_active(Engine::ECS::Entity(tips_button_id)))
     return;
 
   glm::vec2 mouse_pos = Engine::Input::get_mouse_position();
-  auto* t  = Engine::ECS::Entity(tips_button_id).get_component<Components::Transform2D>();
+  auto* t = Engine::ECS::Entity(tips_button_id).get_component<Components::Transform2D>();
   auto* ui = Engine::ECS::Entity(tips_button_id).get_component<Components::UI>();
   if (!t || !ui) return;
 
-  auto vres    = Engine::Graphics::get_virtual_resolution();
-  float sx     = vres.x * ui->anchor.x + t->position.x;
-  float sy     = vres.y * ui->anchor.y + t->position.y;
-  float hw     = t->scale.x * 0.5f;
-  float hh     = t->scale.y * 0.5f;
+  auto vres = Engine::Graphics::get_virtual_resolution();
+  float sx = vres.x * ui->anchor.x + t->position.x;
+  float sy = vres.y * ui->anchor.y + t->position.y;
+  float hw = t->scale.x * 0.5f;
+  float hh = t->scale.y * 0.5f;
   bool  hovered = (mouse_pos.x >= sx - hw && mouse_pos.x <= sx + hw &&
-                   mouse_pos.y >= sy - hh && mouse_pos.y <= sy + hh);
+    mouse_pos.y >= sy - hh && mouse_pos.y <= sy + hh);
 
   if (hovered && Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
     if (page == 1) show_page2();
@@ -265,9 +269,9 @@ void TipsBookState::unload()
     Engine::ECS::destroy_entity(Engine::ECS::Entity(bg_id));
   if (overlay_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(overlay_id)))
     Engine::ECS::destroy_entity(Engine::ECS::Entity(overlay_id));
-  bg_id      = 0;
+  bg_id = 0;
   overlay_id = 0;
-  page       = 1;
+  page = 1;
 
   if (owns_nav_button_) {
     if (tips_button_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(tips_button_id))) {
