@@ -38,6 +38,17 @@ void OldManDialogueState::init() {}
 
 void OldManDialogueState::update()
 {
+  // Returning from TipsBookState: restore entities and re-freeze time.
+  if (tips_was_open_) {
+    tips_was_open_ = false;
+    Engine::ECS::Entity(dimmer_id_).add_to_layer("overlay_bg");
+    Engine::ECS::Entity(dialogue_sprite_id_).add_to_layer("overlay_items_1");
+    Engine::Time::set_time_scale(0.0001f);
+    e_close_armed_ = false;
+    close_enable_time_unscaled_ = Engine::Time::get_unscaled_time() + 0.30f;
+    return;
+  }
+
   const bool esc_pressed = Engine::Input::is_pressed_raw(Engine::KeyCode::Escape) || Engine::Input::is_pressed(Engine::KeyCode::Escape);
   if (esc_pressed) {
     Log::info("[OldManFlow] Dialogue close by ESC");
@@ -63,10 +74,21 @@ void OldManDialogueState::update()
         tex->texture_handle = Engine::Resources::load_texture(SLIDE_PATHS[current_slide_]);
       }
       Log::info("[OldManFlow] Advanced to slide {}", current_slide_ + 1);
+
+      // After showing slide 4 (index 3), open tips book on top of dialogue
+      if (current_slide_ - 1 == TIPS_PUSH_SLIDE) {
+        TipsBookState::tips_button_id = 0; // no HUD button to return to
+        Log::info("[OldManFlow] Pushing TipsBookState mid-dialogue");
+        // Hide dialogue entities so they don't show through the tips book.
+        Engine::ECS::Entity(dimmer_id_).clear_layers();
+        Engine::ECS::Entity(dialogue_sprite_id_).clear_layers();
+        tips_was_open_ = true;
+        Engine::SceneManager::push_scene("TipsBookState");
+        // Re-arm handled in update() on return; no need to set here.
+      }
     } else {
-      // Last slide — close dialogue and request tips
-      Log::info("[OldManFlow] Dialogue close by key press (request tips)");
-      request_tips_on_close_ = true;
+      // Last slide — close dialogue (tips was already shown mid-conversation)
+      Log::info("[OldManFlow] Dialogue close by key press");
       suppress_oldman_reopen_once = true;
       block_oldman_reopen_until_unscaled = Engine::Time::get_unscaled_time() + 1.0f;
       Engine::SceneManager::pop_scene();

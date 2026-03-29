@@ -10,6 +10,7 @@
 #pragma once
 
 #include "pch.h"
+#include "TipsBookState.h"
 
 class OldManDialogueState : public Engine::Scene
 {
@@ -48,7 +49,8 @@ private:
   static constexpr float SLIDE_SCALE = 0.85f; // use smaller scale to avoid oversized dialogue
   static constexpr float SLIDE_X = SCREEN_CENTER_X;                                           // horizontally centred
   static constexpr float SLIDE_Y = 900.0f - (SLIDE_H * SLIDE_SCALE) * 0.5f;                  // anchored to bottom
-  static constexpr int   SLIDE_COUNT = 6;
+  static constexpr int   SLIDE_COUNT      = 6;
+  static constexpr int   TIPS_PUSH_SLIDE  = 3; // after showing this slide (index 3 = slide 4), push TipsBookState
 
   static constexpr const char* SLIDE_PATHS[SLIDE_COUNT] = {
     "images/Dialogue/1_Bro_dialogue.png",
@@ -61,8 +63,9 @@ private:
 
   Engine::ECS::EntityID dimmer_id_          = 0;
   Engine::ECS::EntityID dialogue_sprite_id_ = 0;
-  int  current_slide_ = 0;
+  int   current_slide_              = 0;
   float close_enable_time_unscaled_ = 0.0f;
-  bool e_close_armed_ = false;
-  bool request_tips_on_close_ = false;
+  bool  e_close_armed_              = false;
+  bool  request_tips_on_close_      = false;
+  bool  tips_was_open_              = false; // true while TipsBookState is stacked on top
 };
