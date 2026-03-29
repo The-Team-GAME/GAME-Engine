@@ -88,8 +88,11 @@ namespace PlayerStateCallbacks
     }
     if (!(take_attack_input(entity) || take_movement_input(entity)))
     {
-      Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
-      state_machine->change_state("Idle");
+      if (!default_state)
+      {
+        Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
+        state_machine->change_state("Idle");
+      }
     }
   }
   bool take_attack_input(ECS::Entity entity)
@@ -148,8 +151,8 @@ namespace PlayerStateCallbacks
       state_machine->change_state("Dash");
       return true;
     }
-    if (Input::is_held(KeyCode::Space)
-      && (player_rigid->on_ground || player_rigid->air_time < player_comp->coyote_jump_buffer)
+    if (Input::is_pressed(KeyCode::Space)
+      && (player_rigid->on_ground || player_rigid->air_time < player_comp->coyote_jump_buffer )
       && !player_rigid->is_jumping)
     {
       state_machine->change_state("Jumping");
@@ -313,11 +316,12 @@ namespace PlayerStateCallbacks
     assert(rigid);
 
     // we check for rigid->on_ground here because on the first few frames there is still a chance that the player will be counted as on gound
-    if (!rigid->on_ground && rigid->velocity.y > 0.f)// && rigid->velocity.y >= 0.0f)
+    if (rigid->velocity.y > 0.f)// && rigid->velocity.y >= 0.0f)
     {
       Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
       assert(sm);
       sm->change_state("Falling");
+      return;
     }
     take_input(entity);
   }
