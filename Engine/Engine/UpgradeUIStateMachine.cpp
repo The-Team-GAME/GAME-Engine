@@ -21,6 +21,7 @@
 #include "FileIO/SettingsManager.h"
 #include "Easing.h"
 #include "Graphics/Renderer.h"
+#include "UIUtils.h"
 #include <glm/glm.hpp>
 #include <cmath>
 #include <random>
@@ -1040,8 +1041,6 @@ namespace Engine
     auto& settings = FileIO::SettingsManager<FileIO::UpgradeSettings>::get();
     auto& cfg = FileIO::SettingsManager<FileIO::CardAnimSettings>::get_mutable();
 
-    auto rect = Resources::get_rect_texture();
-
     // ---- Per-card textures (128 x 256 per frame; animated cards have 24 frames = 3072 px wide) ----
     constexpr int   card_w = 128;        // frame width in pixels
     constexpr int   card_h = 256;        // frame height in pixels
@@ -1056,13 +1055,7 @@ namespace Engine
     auto panel_tex = Resources::load_texture("images/Upgrades/UpgradeMenu.png");
 
     // Dimmer — full-screen dark overlay
-    auto dimmer = ECS::create_entity()
-      .add_component<Components::Transform2D>(800.0f, 450.0f, 0.0f, 1600.0f, 900.0f)
-      .add_component<Components::Texture>(rect)
-      .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.6f)
-      .add_component<Components::UI>()
-      .add_to_layer("upgrade_ui_bg");
-    dimmer_id_ = dimmer.get_id();
+    dimmer_id_ = UI::create_screen_dimmer(0.6f, "upgrade_ui_bg");
 
     // Layout sizing — derived from image sizes and scale factors above
     constexpr float card_display_w = static_cast<float>(card_w) * card_scale;

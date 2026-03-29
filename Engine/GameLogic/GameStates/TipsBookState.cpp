@@ -211,14 +211,7 @@ void TipsBookState::load()
   is_open = true;
   ensure_nav_button();
 
-  bg_id = Engine::ECS::create_entity()
-    .add_component<Components::Transform2D>(800.0f, 450.0f, 0.0f, 1600.0f, 900.0f)
-    .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
-    .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.5f)
-    .add_component<Components::UI>()
-    .add_component<Components::RuntimeOnly>()
-    .add_to_layer("main_menu_4")
-    .get_id();
+  bg_id = Engine::UI::create_screen_dimmer(0.5f, "main_menu_4", /*runtime_only=*/true);
 
   show_page1();
   Engine::Time::set_time_scale(0.0001f);

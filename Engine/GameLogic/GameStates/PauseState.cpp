@@ -83,13 +83,7 @@ void PauseState::load()
   float cam_y = camera.position.y + 450.0f;
 
   // Create black semi-transparent background covering whole screen
-  auto background = Engine::ECS::create_entity()
-    .add_component<Components::Transform2D>(cam_x, cam_y, 0.0f, 1600.0f, 900.0f)
-    .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
-    .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.5f)
-    .add_component<Components::UI>()
-    .add_to_layer("main_menu_4");
-  background_id = background.get_id();
+  background_id = Engine::UI::create_screen_dimmer(0.5f, "main_menu_4");
 
   // Create menu sprite (starts with nothing selected)
   auto menu_sprite = Engine::ECS::create_entity()
