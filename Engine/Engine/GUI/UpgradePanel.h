@@ -877,6 +877,8 @@ inline void UpgradePanel()
         ImGui::Unindent();
       }
 
+      ImGui::DragFloat("Card Anim FPS", &anim.card_anim_fps, 1.0f, 1.0f, 120.0f, "%.0f");
+
       ImGui::Checkbox("Hover Lift", &anim.enable_hover_lift);
       if (anim.enable_hover_lift)
       {

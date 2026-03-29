@@ -97,6 +97,7 @@ namespace Engine
     float card_base_y_[2] = {};
     float card_base_sx_[2] = {};
     float card_base_sy_[2] = {};
+    int   card_frames_[2] = { 1, 1 };  // frame count per displayed card (for manual animation)
     float picker_open_time_ = 0.0f;
 
     // Intro animation from top for cards on picker open
