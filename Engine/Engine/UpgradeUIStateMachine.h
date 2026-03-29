@@ -105,6 +105,9 @@ namespace Engine
     float card_intro_time_ = 0.0f;
 
     int   hovered_card_ = -1;
+    int   keyboard_selected_card_ = -1;  // -1 = none; set by A/D keys, cleared on pick
+    float last_mouse_x_ = 0.0f;
+    float last_mouse_y_ = 0.0f;
     float hover_lerp_[2] = {};
     float card_tilt_[2] = {};   // current Z-rotation (degrees) for tilt effects
     float stamp_time_ = -1.0f;

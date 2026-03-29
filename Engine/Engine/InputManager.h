@@ -71,6 +71,12 @@ namespace Engine
     static bool is_held_raw(KeyCode key);
 
     /**
+     * @brief Returns true if any key or mouse button was pressed this frame.
+     * Bypasses ImGui focus-blocking. Excludes Escape.
+     */
+    static bool is_any_key_pressed();
+
+    /**
      * @brief Gets the current position of the mouse cursor in window coordinates.
      * @return glm::vec2 A vector containing the x and y position of the mouse.
      */
