@@ -25,12 +25,42 @@ local function any_key_pressed()
   return false
 end
 
+-- Stores per-button fly-in animation state keyed by entity ID.
+-- { start_x, start_y, target_x, target_y, start_time, delay, duration }
+local button_anim = {}
+
+-- The reworked MainMenu.json keeps the buttons authored off-screen.
+-- These are the historical on-screen resting positions that the buttons
+-- should fly toward during the Transition state.
+local BUTTON_TARGETS = {
+  ["images/NewMainMenu/Buttons/PlayButton.png"] = { x = 665.83, y = 294.58, delay = 0.00 },
+  ["images/NewMainMenu/Buttons/OptionsButton.png"] = { x = 989.17, y = 346.67, delay = 0.07 },
+  ["images/NewMainMenu/Buttons/CreditsButton.png"] = { x = 1054.58, y = 542.50, delay = 0.14 },
+  ["images/NewMainMenu/Buttons/ExitButton.png"] = { x = 925.42, y = 754.58, delay = 0.21 },
+}
+
+local SLIDE_DURATION = 0.5
+
+local function ease_out_cubic(t)
+  local u = 1 - t
+  return 1 - u * u * u
+end
+
+local function get_button_target(entity)
+  local tex = entity.Texture
+  if not tex then
+    return nil
+  end
+
+  return BUTTON_TARGETS[tex.path]
+end
+
 -- ============================================================================
 -- "Start" state — sleeping / title screen
 -- ============================================================================
 
 function main_menu_start_on_enter(entity)
-  -- nothing needed; buttons are held off-screen by the Start state property animation
+  -- Button transforms are already authored off-screen in MainMenu.json.
 end
 
 function main_menu_start_on_update(entity)
@@ -66,13 +96,76 @@ end
 -- ============================================================================
 
 function main_menu_transition_on_enter(entity)
-  -- nothing needed; fly-in is driven by the Transition state property animation
+  if not entity:has("Clickable") then
+    return
+  end
+
+  local tr = entity.Transform2D
+  local target = get_button_target(entity)
+  if not tr or not target then
+    return
+  end
+
+  local color = entity.Color
+  if color then
+    color.a = 1.0
+  end
+
+  button_anim[entity:get_id()] = {
+    start_x = tr.position.x,
+    start_y = tr.position.y,
+    target_x = target.x,
+    target_y = target.y,
+    start_time = Time.get_time(),
+    delay = target.delay,
+    duration = SLIDE_DURATION,
+  }
 end
 
 function main_menu_transition_on_update(entity)
-  -- Advance to Menu once the fly-in property animation has finished.
-  -- Entities with no Transition property animation (train, etc.) will have
-  -- is_property_anim_playing() = false immediately and skip through instantly.
+  if entity:has("Clickable") then
+    local eid = entity:get_id()
+    local anim = button_anim[eid]
+    local sm = entity.StateMachine
+    if not anim then
+      if sm then
+        sm:change_state("Menu")
+      end
+      return
+    end
+
+    local elapsed = Time.get_time() - anim.start_time - anim.delay
+    if elapsed < 0.0 then
+      local color = entity.Color
+      if color then
+        color.a = 1.0
+      end
+      return
+    end
+
+    local t = math.min(elapsed / anim.duration, 1.0)
+    local eased = ease_out_cubic(t)
+    local tr = entity.Transform2D
+    if tr then
+      tr.position.x = anim.start_x + (anim.target_x - anim.start_x) * eased
+      tr.position.y = anim.start_y + (anim.target_y - anim.start_y) * eased
+    end
+
+    local color = entity.Color
+    if color then
+      color.a = 1.0
+    end
+
+    if t >= 1.0 then
+      button_anim[eid] = nil
+      if sm then
+        sm:change_state("Menu")
+      end
+    end
+    return
+  end
+
+  -- Non-button entities still rely on their authored property animations.
   local sm = entity.StateMachine
   if sm and not sm:is_property_anim_playing() then
     sm:change_state("Menu")
@@ -80,7 +173,9 @@ function main_menu_transition_on_update(entity)
 end
 
 function main_menu_transition_on_exit(entity)
-  -- nothing needed
+  if entity:has("Clickable") then
+    button_anim[entity:get_id()] = nil
+  end
 end
 
 -- ============================================================================
@@ -88,7 +183,21 @@ end
 -- ============================================================================
 
 function main_menu_menu_on_enter(entity)
-  -- nothing needed; buttons have arrived at their resting positions
+  if not entity:has("Clickable") then
+    return
+  end
+
+  local tr = entity.Transform2D
+  local target = get_button_target(entity)
+  if tr and target then
+    tr.position.x = target.x
+    tr.position.y = target.y
+  end
+
+  local color = entity.Color
+  if color then
+    color.a = 1.0
+  end
 end
 
 function main_menu_menu_on_update(entity)
