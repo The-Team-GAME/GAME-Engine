@@ -6,13 +6,11 @@ local SPLASH_SFX_SNORE_EVENT = "event:/SFX/SplashSnoreSFX"
 local SPLASH_SFX_TRAIN_EVENT = "event:/SFX/SplashTrainSFX"
 
 local OPTIONS_CONTROLLER_NAME = "Whole train"
-local OPTIONS_PANEL_LAYER = "overlay_bg"
-local OPTIONS_CONTENT_LAYER = "overlay_items_1"
-local OPTIONS_CONTROL_LAYER = "overlay_items_3"
 
 local button_anim = {}
+local menu_anim = {}
 local options_active = false
-local options_ui = {}
+local options_transition = nil
 
 local MAIN_MENU_ENTITY_NAMES = {
   "Whole train",
@@ -29,6 +27,21 @@ local MAIN_MENU_ENTITY_NAMES = {
   "CreditsButton",
   "ExitButton",
   "BackSky",
+}
+
+local OPTIONS_ENTITY_NAMES = {
+  "OptionsPanel",
+  "OptionsBGMLabel",
+  "OptionsSFXLabel",
+  "OptionsScreenLabel",
+  "OptionsBGMBar",
+  "OptionsSFXBar",
+  "OptionsWindowed",
+  "OptionsFullscreen",
+  "OptionsBGMLeft",
+  "OptionsBGMRight",
+  "OptionsSFXLeft",
+  "OptionsSFXRight",
 }
 
 local BUTTON_TEXTURES = {
@@ -57,124 +70,31 @@ local BUTTON_TARGETS = {
   ExitButton = { x = 925.42, y = 754.58, delay = 0.21 },
 }
 
-local OPTIONS_LAYOUT = {
-  panel = {
-    name = "OptionsPanel",
-    texture = "images/NewMainMenu/Options/New group.png",
-    x = 933.2921,
-    y = 394.4612,
-    scale_x = 1171.6666,
-    scale_y = 587.5,
-    layer = OPTIONS_PANEL_LAYER,
-  },
-  bgm_label = {
-    name = "OptionsBGMLabel",
-    texture = "images/NewMainMenu/Options/BGM.png",
-    x = 645.8967,
-    y = 256.8189,
-    scale_x = 97.5,
-    scale_y = 40.0,
-    layer = OPTIONS_CONTENT_LAYER,
-  },
-  sfx_label = {
-    name = "OptionsSFXLabel",
-    texture = "images/NewMainMenu/Options/SFX.png",
-    x = 639.9020,
-    y = 357.9290,
-    scale_x = 85.8333,
-    scale_y = 40.0,
-    layer = OPTIONS_CONTENT_LAYER,
-  },
-  screen_label = {
-    name = "OptionsScreenLabel",
-    texture = "images/NewMainMenu/Options/SCREEN.png",
-    x = 681.9982,
-    y = 471.0284,
-    scale_x = 175.8333,
-    scale_y = 41.6667,
-    layer = OPTIONS_CONTENT_LAYER,
-  },
-  bgm_bar = {
-    name = "OptionsBGMBar",
-    texture = "images/NewMainMenu/Options/10.png",
-    x = 877.0935,
-    y = 303.8838,
-    scale_x = 440.8333,
-    scale_y = 20.0,
-    layer = OPTIONS_CONTENT_LAYER,
-  },
-  sfx_bar = {
-    name = "OptionsSFXBar",
-    texture = "images/NewMainMenu/Options/10.png",
-    x = 877.3156,
-    y = 413.0756,
-    scale_x = 440.8333,
-    scale_y = 20.0,
-    layer = OPTIONS_CONTENT_LAYER,
-  },
-  windowed = {
-    name = "OptionsWindowed",
-    texture = "images/NewMainMenu/Options/Windowed.png",
-    x = 748.9164,
-    y = 528.9769,
-    scale_x = 148.3333,
-    scale_y = 26.6667,
-    layer = OPTIONS_CONTENT_LAYER,
-    click = { width = 148.3333, height = 26.6667, on_click = "main_menu_set_windowed" },
-  },
-  fullscreen = {
-    name = "OptionsFullscreen",
-    texture = "images/NewMainMenu/Options/FullscreenUnselected.png",
-    x = 1001.4919,
-    y = 528.9769,
-    scale_x = 160.0,
-    scale_y = 26.6667,
-    layer = OPTIONS_CONTENT_LAYER,
-    click = { width = 160.0, height = 26.6667, on_click = "main_menu_set_fullscreen" },
-  },
-  bgm_left = {
-    name = "OptionsBGMLeft",
-    texture = "images/NewMainMenu/Options/ArrowLeft.png",
-    x = 700.0,
-    y = 303.8838,
-    scale_x = 42.0,
-    scale_y = 42.0,
-    layer = OPTIONS_CONTROL_LAYER,
-    click = { width = 42.0, height = 42.0, on_click = "main_menu_bgm_decrease" },
-  },
-  bgm_right = {
-    name = "OptionsBGMRight",
-    texture = "images/NewMainMenu/Options/ArrowRight.png",
-    x = 1054.0,
-    y = 303.8838,
-    scale_x = 42.0,
-    scale_y = 42.0,
-    layer = OPTIONS_CONTROL_LAYER,
-    click = { width = 42.0, height = 42.0, on_click = "main_menu_bgm_increase" },
-  },
-  sfx_left = {
-    name = "OptionsSFXLeft",
-    texture = "images/NewMainMenu/Options/ArrowLeft.png",
-    x = 700.0,
-    y = 413.0756,
-    scale_x = 42.0,
-    scale_y = 42.0,
-    layer = OPTIONS_CONTROL_LAYER,
-    click = { width = 42.0, height = 42.0, on_click = "main_menu_sfx_decrease" },
-  },
-  sfx_right = {
-    name = "OptionsSFXRight",
-    texture = "images/NewMainMenu/Options/ArrowRight.png",
-    x = 1054.0,
-    y = 413.0756,
-    scale_x = 42.0,
-    scale_y = 42.0,
-    layer = OPTIONS_CONTROL_LAYER,
-    click = { width = 42.0, height = 42.0, on_click = "main_menu_sfx_increase" },
-  },
+local BUTTON_START_POSITIONS = {
+  PlayButton = { x = 4736.5908, y = -2802.7388 },
+  OptionsButton = { x = 7005.0000, y = -1755.4059 },
+  CreditsButton = { x = 8713.1445, y = 1169.2300 },
+  ExitButton = { x = 9109.5029, y = 4277.5044 },
+}
+
+local OPTIONS_TARGETS = {
+  OptionsPanel = { x = 933.2921, y = 394.4612, delay = 0.00 },
+  OptionsBGMLabel = { x = 645.8967, y = 256.8189, delay = 0.03 },
+  OptionsBGMBar = { x = 877.0935, y = 303.8838, delay = 0.05 },
+  OptionsBGMLeft = { x = 700.0000, y = 303.8838, delay = 0.07 },
+  OptionsBGMRight = { x = 1054.0000, y = 303.8838, delay = 0.09 },
+  OptionsSFXLabel = { x = 639.9020, y = 357.9290, delay = 0.11 },
+  OptionsSFXBar = { x = 877.3156, y = 413.0756, delay = 0.13 },
+  OptionsSFXLeft = { x = 700.0000, y = 413.0756, delay = 0.15 },
+  OptionsSFXRight = { x = 1054.0000, y = 413.0756, delay = 0.17 },
+  OptionsScreenLabel = { x = 681.9982, y = 471.0284, delay = 0.19 },
+  OptionsWindowed = { x = 748.9164, y = 528.9769, delay = 0.21 },
+  OptionsFullscreen = { x = 1001.4919, y = 528.9769, delay = 0.23 },
 }
 
 local SLIDE_DURATION = 0.25
+local OPTIONS_SLIDE_DURATION = 0.28
+local OPTIONS_HIDDEN_OFFSET_X = 1800.0
 
 local function clamp(value, min_value, max_value)
   return math.min(math.max(value, min_value), max_value)
@@ -204,8 +124,31 @@ local function get_button_target(entity)
   return BUTTON_TARGETS[entity:get_name()]
 end
 
+local function get_button_start_position(entity)
+  if not entity then
+    return nil
+  end
+  return BUTTON_START_POSITIONS[entity:get_name()]
+end
+
 local function get_named_entity(name)
   return ECS.get_entity_by_name(name)
+end
+
+local function get_option_target(entity_name)
+  return OPTIONS_TARGETS[entity_name]
+end
+
+local function get_option_hidden_position(entity_name)
+  local target = get_option_target(entity_name)
+  if not target then
+    return nil
+  end
+
+  return {
+    x = target.x - OPTIONS_HIDDEN_OFFSET_X,
+    y = target.y,
+  }
 end
 
 local function is_options_controller(entity)
@@ -242,80 +185,133 @@ local function change_main_menu_state(state_name)
   end
 end
 
+local function set_entity_position(entity_name, x, y)
+  local entity = get_named_entity(entity_name)
+  if not entity or not entity:is_valid() then
+    return
+  end
+
+  local tr = entity.Transform2D
+  if tr then
+    tr.position.x = x
+    tr.position.y = y
+  end
+end
+
+local function clear_menu_animations()
+  for entity_name, _ in pairs(menu_anim) do
+    menu_anim[entity_name] = nil
+  end
+end
+
+local function queue_menu_animation(entity_name, target_x, target_y, delay, duration)
+  local entity = get_named_entity(entity_name)
+  if not entity or not entity:is_valid() then
+    return
+  end
+
+  local tr = entity.Transform2D
+  if not tr then
+    return
+  end
+
+  menu_anim[entity_name] = {
+    entity = entity,
+    start_x = tr.position.x,
+    start_y = tr.position.y,
+    target_x = target_x,
+    target_y = target_y,
+    start_time = Time.get_time(),
+    delay = delay or 0.0,
+    duration = duration or SLIDE_DURATION,
+  }
+end
+
+local function update_menu_animations()
+  local now = Time.get_time()
+  for entity_name, anim in pairs(menu_anim) do
+    local entity = anim.entity
+    if not entity or not entity:is_valid() then
+      menu_anim[entity_name] = nil
+    else
+      local elapsed = now - anim.start_time - anim.delay
+      if elapsed >= 0.0 then
+        local t = math.min(elapsed / anim.duration, 1.0)
+        local eased = ease_out_cubic(t)
+        local tr = entity.Transform2D
+        if tr then
+          tr.position.x = anim.start_x + (anim.target_x - anim.start_x) * eased
+          tr.position.y = anim.start_y + (anim.target_y - anim.start_y) * eased
+        end
+
+        if t >= 1.0 then
+          menu_anim[entity_name] = nil
+        end
+      end
+    end
+  end
+end
+
+local function has_menu_animations()
+  return next(menu_anim) ~= nil
+end
+
+local function snap_options_hidden()
+  for _, entity_name in ipairs(OPTIONS_ENTITY_NAMES) do
+    local hidden = get_option_hidden_position(entity_name)
+    if hidden then
+      set_entity_position(entity_name, hidden.x, hidden.y)
+    end
+  end
+end
+
+local function queue_options_in()
+  for _, entity_name in ipairs(OPTIONS_ENTITY_NAMES) do
+    local target = get_option_target(entity_name)
+    if target then
+      queue_menu_animation(entity_name, target.x, target.y, target.delay, OPTIONS_SLIDE_DURATION)
+    end
+  end
+end
+
+local function queue_options_out()
+  for _, entity_name in ipairs(OPTIONS_ENTITY_NAMES) do
+    local hidden = get_option_hidden_position(entity_name)
+    if hidden then
+      queue_menu_animation(entity_name, hidden.x, hidden.y, 0.0, OPTIONS_SLIDE_DURATION)
+    end
+  end
+end
+
+local function queue_buttons_to_menu()
+  for entity_name, target in pairs(BUTTON_TARGETS) do
+    queue_menu_animation(entity_name, target.x, target.y, target.delay, SLIDE_DURATION)
+  end
+end
+
+local function queue_buttons_to_start()
+  for entity_name, target in pairs(BUTTON_START_POSITIONS) do
+    local button_target = BUTTON_TARGETS[entity_name]
+    local delay = 0.0
+    if button_target then
+      delay = button_target.delay
+    end
+    queue_menu_animation(entity_name, target.x, target.y, delay, SLIDE_DURATION)
+  end
+end
+
 local function menu_is_ready()
   local controller = get_named_entity(OPTIONS_CONTROLLER_NAME)
   if not controller or not controller:is_valid() then
     return false
   end
 
+  if next(button_anim) ~= nil or has_menu_animations() then
+    return false
+  end
+
   local sm = controller.StateMachine
   return sm and (sm:is_in_state("Menu") or sm:is_in_state("Options"))
-end
-
-local function destroy_options_ui()
-  for key, entity in pairs(options_ui) do
-    if entity and entity:is_valid() then
-      ECS.destroy_entity(entity)
-    end
-    options_ui[key] = nil
-  end
-end
-
-local function create_options_entity(def)
-  local entity = ECS.create_entity()
-  entity:set_name(def.name)
-  entity:clear_layers()
-  entity:add_to_layer(def.layer)
-  entity:add("Transform2D")
-  entity:add("Texture")
-  entity:add("Color")
-
-  local tr = entity.Transform2D
-  tr.position.x = def.x
-  tr.position.y = def.y
-  tr.rotation = 0.0
-  tr.scale.x = def.scale_x
-  tr.scale.y = def.scale_y
-
-  local tex = entity.Texture
-  tex.path = def.texture
-
-  local color = entity.Color
-  color.r = 1.0
-  color.g = 1.0
-  color.b = 1.0
-  color.a = 1.0
-
-  if def.click then
-    entity:add("BoxCollider")
-    local collider = entity.BoxCollider
-    collider.resolve_collisions = false
-    collider.collided = false
-    collider.type = ColliderType.AABB
-    collider.width = def.click.width
-    collider.height = def.click.height
-    collider.aabb.half_width = def.click.width * 0.5
-    collider.aabb.half_height = def.click.height * 0.5
-    collider.offset.x = 0.0
-    collider.offset.y = 0.0
-
-    entity:add("Clickable")
-    entity.Clickable.on_click.name = def.click.on_click or ""
-    entity.Clickable.on_hover.name = def.click.on_hover or ""
-    entity.Clickable.exit_hover.name = def.click.on_exit or ""
-  end
-
-  return entity
-end
-
-local function ensure_options_ui()
-  if next(options_ui) ~= nil then
-    return
-  end
-
-  for key, def in pairs(OPTIONS_LAYOUT) do
-    options_ui[key] = create_options_entity(def)
-  end
 end
 
 local function volume_to_step(volume)
@@ -331,29 +327,26 @@ local function get_slider_texture_path(step)
 end
 
 local function sync_options_visuals()
-  if not options_active or next(options_ui) == nil then
-    return
-  end
-
-  local bgm_bar = options_ui.bgm_bar
+  local bgm_bar = get_named_entity("OptionsBGMBar")
   if bgm_bar and bgm_bar:is_valid() and bgm_bar.Texture then
     bgm_bar.Texture.path = get_slider_texture_path(volume_to_step(Settings.get_bgm_volume()))
   end
 
-  local sfx_bar = options_ui.sfx_bar
+  local sfx_bar = get_named_entity("OptionsSFXBar")
   if sfx_bar and sfx_bar:is_valid() and sfx_bar.Texture then
     sfx_bar.Texture.path = get_slider_texture_path(volume_to_step(Settings.get_sfx_volume()))
   end
 
   local is_fullscreen = Settings.get_fullscreen()
-  local windowed = options_ui.windowed
+
+  local windowed = get_named_entity("OptionsWindowed")
   if windowed and windowed:is_valid() and windowed.Texture then
     windowed.Texture.path = is_fullscreen and
       "images/NewMainMenu/Options/WindowedUnselected.png" or
       "images/NewMainMenu/Options/Windowed.png"
   end
 
-  local fullscreen = options_ui.fullscreen
+  local fullscreen = get_named_entity("OptionsFullscreen")
   if fullscreen and fullscreen:is_valid() and fullscreen.Texture then
     fullscreen.Texture.path = is_fullscreen and
       "images/NewMainMenu/Options/Fullscreen.png" or
@@ -367,23 +360,29 @@ local function open_options_menu()
   end
 
   options_active = true
+  options_transition = "opening"
   reset_menu_button_textures()
+  queue_buttons_to_start()
+  queue_options_in()
+  sync_options_visuals()
   change_main_menu_state("Options")
 end
 
 local function close_options_menu()
-  if not options_active then
+  if not options_active or options_transition == "closing" then
     return
   end
 
   options_active = false
+  options_transition = "closing"
   reset_menu_button_textures()
-  destroy_options_ui()
+  queue_buttons_to_menu()
+  queue_options_out()
   change_main_menu_state("Menu")
 end
 
 function start_game()
-  if options_active then
+  if options_active or options_transition ~= nil then
     return
   end
   Scene.load("OpeningCutsceneState")
@@ -402,7 +401,7 @@ function options_menu()
 end
 
 function exit_game()
-  if options_active then
+  if options_active or options_transition ~= nil then
     return
   end
   App.stop()
@@ -461,6 +460,13 @@ function main_menu_set_fullscreen()
 end
 
 function main_menu_start_on_enter(entity)
+  if is_options_controller(entity) then
+    options_active = false
+    options_transition = nil
+    clear_menu_animations()
+    snap_options_hidden()
+    reset_menu_button_textures()
+  end
 end
 
 function main_menu_start_on_update(entity)
@@ -562,18 +568,27 @@ function main_menu_menu_on_enter(entity)
   if entity:has("Clickable") then
     local tr = entity.Transform2D
     local target = get_button_target(entity)
-    if tr and target then
+    if tr and target and options_transition ~= "closing" then
       tr.position.x = target.x
       tr.position.y = target.y
     end
   end
 
-  if is_options_controller(entity) then
-    destroy_options_ui()
+  if is_options_controller(entity) and options_transition ~= "closing" then
+    snap_options_hidden()
   end
 end
 
 function main_menu_menu_on_update(entity)
+  if not is_options_controller(entity) then
+    return
+  end
+
+  update_menu_animations()
+
+  if options_transition == "closing" and not has_menu_animations() then
+    options_transition = nil
+  end
 end
 
 function main_menu_menu_on_exit(entity)
@@ -582,15 +597,14 @@ end
 function main_menu_options_on_enter(entity)
   if entity:has("Clickable") then
     local tr = entity.Transform2D
-    local target = get_button_target(entity)
-    if tr and target then
+    local target = get_button_start_position(entity)
+    if tr and target and options_transition ~= "opening" then
       tr.position.x = target.x
       tr.position.y = target.y
     end
   end
 
   if is_options_controller(entity) then
-    ensure_options_ui()
     sync_options_visuals()
   end
 end
@@ -600,18 +614,20 @@ function main_menu_options_on_update(entity)
     return
   end
 
-  if Input.is_pressed(Key.Escape) then
+  update_menu_animations()
+  sync_options_visuals()
+
+  if options_transition == "opening" and not has_menu_animations() then
+    options_transition = nil
+  end
+
+  if Input.is_pressed(Key.Escape) and not has_menu_animations() then
     close_options_menu()
     return
   end
-
-  sync_options_visuals()
 end
 
 function main_menu_options_on_exit(entity)
-  if is_options_controller(entity) then
-    destroy_options_ui()
-  end
 end
 
 function main_menu_play_hover(entity)
@@ -632,6 +648,9 @@ function main_menu_play_exit(entity)
 end
 
 function main_menu_options_hover(entity)
+  if options_active then
+    return
+  end
   local tex = entity.Texture
   if tex then
     tex.path = BUTTON_TEXTURES.OptionsButton.hovered

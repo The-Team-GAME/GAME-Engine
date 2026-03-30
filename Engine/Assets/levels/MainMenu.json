@@ -18,7 +18,19 @@
                 2575,
                 2576,
                 2577,
-                2578
+                2578,
+                2580,
+                2581,
+                2582,
+                2583,
+                2584,
+                2585,
+                2586,
+                2587,
+                2588,
+                2589,
+                2590,
+                2591
               ]
             },
             "type": "Components::Children"
@@ -4292,6 +4304,930 @@
           "main_menu_button"
         ],
         "name": "ExitButton"
+      },
+      {
+        "components": [
+          {
+            "data": {
+              "a": 1.0,
+              "b": 1.0,
+              "g": 1.0,
+              "r": 1.0
+            },
+            "type": "Components::Color"
+          },
+          {
+            "data": {
+              "local_offset": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "offset_initialized": false,
+              "parent_id": 2565,
+              "prev_parent_pos": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            "type": "Components::Parent"
+          },
+          {
+            "data": {
+              "path": "images/NewMainMenu/Options/New group.png"
+            },
+            "type": "Components::Texture"
+          },
+          {
+            "data": {
+              "position": {
+                "x": -866.7078857421875,
+                "y": 394.4611511230469
+              },
+              "rotation": 0.0,
+              "scale": {
+                "x": 1171.6666259765625,
+                "y": 587.5
+              }
+            },
+            "type": "Components::Transform2D"
+          }
+        ],
+        "id": 2580,
+        "layers": [
+          "default",
+          "overlay_bg"
+        ],
+        "name": "OptionsPanel"
+      },
+      {
+        "components": [
+          {
+            "data": {
+              "a": 1.0,
+              "b": 1.0,
+              "g": 1.0,
+              "r": 1.0
+            },
+            "type": "Components::Color"
+          },
+          {
+            "data": {
+              "local_offset": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "offset_initialized": false,
+              "parent_id": 2565,
+              "prev_parent_pos": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            "type": "Components::Parent"
+          },
+          {
+            "data": {
+              "path": "images/NewMainMenu/Options/BGM.png"
+            },
+            "type": "Components::Texture"
+          },
+          {
+            "data": {
+              "position": {
+                "x": -1154.103271484375,
+                "y": 256.8189392089844
+              },
+              "rotation": 0.0,
+              "scale": {
+                "x": 97.5,
+                "y": 40.0
+              }
+            },
+            "type": "Components::Transform2D"
+          }
+        ],
+        "id": 2581,
+        "layers": [
+          "default",
+          "overlay_items_1"
+        ],
+        "name": "OptionsBGMLabel"
+      },
+      {
+        "components": [
+          {
+            "data": {
+              "a": 1.0,
+              "b": 1.0,
+              "g": 1.0,
+              "r": 1.0
+            },
+            "type": "Components::Color"
+          },
+          {
+            "data": {
+              "local_offset": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "offset_initialized": false,
+              "parent_id": 2565,
+              "prev_parent_pos": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            "type": "Components::Parent"
+          },
+          {
+            "data": {
+              "path": "images/NewMainMenu/Options/SFX.png"
+            },
+            "type": "Components::Texture"
+          },
+          {
+            "data": {
+              "position": {
+                "x": -1160.0979614257812,
+                "y": 357.9290466308594
+              },
+              "rotation": 0.0,
+              "scale": {
+                "x": 85.83329772949219,
+                "y": 40.0
+              }
+            },
+            "type": "Components::Transform2D"
+          }
+        ],
+        "id": 2582,
+        "layers": [
+          "default",
+          "overlay_items_1"
+        ],
+        "name": "OptionsSFXLabel"
+      },
+      {
+        "components": [
+          {
+            "data": {
+              "a": 1.0,
+              "b": 1.0,
+              "g": 1.0,
+              "r": 1.0
+            },
+            "type": "Components::Color"
+          },
+          {
+            "data": {
+              "local_offset": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "offset_initialized": false,
+              "parent_id": 2565,
+              "prev_parent_pos": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            "type": "Components::Parent"
+          },
+          {
+            "data": {
+              "path": "images/NewMainMenu/Options/SCREEN.png"
+            },
+            "type": "Components::Texture"
+          },
+          {
+            "data": {
+              "position": {
+                "x": -1118.0017700195312,
+                "y": 471.0284423828125
+              },
+              "rotation": 0.0,
+              "scale": {
+                "x": 175.8333282470703,
+                "y": 41.66666793823242
+              }
+            },
+            "type": "Components::Transform2D"
+          }
+        ],
+        "id": 2583,
+        "layers": [
+          "default",
+          "overlay_items_1"
+        ],
+        "name": "OptionsScreenLabel"
+      },
+      {
+        "components": [
+          {
+            "data": {
+              "a": 1.0,
+              "b": 1.0,
+              "g": 1.0,
+              "r": 1.0
+            },
+            "type": "Components::Color"
+          },
+          {
+            "data": {
+              "local_offset": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "offset_initialized": false,
+              "parent_id": 2565,
+              "prev_parent_pos": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            "type": "Components::Parent"
+          },
+          {
+            "data": {
+              "path": "images/NewMainMenu/Options/10.png"
+            },
+            "type": "Components::Texture"
+          },
+          {
+            "data": {
+              "position": {
+                "x": -922.906494140625,
+                "y": 303.8837890625
+              },
+              "rotation": 0.0,
+              "scale": {
+                "x": 440.8333435058594,
+                "y": 20.0
+              }
+            },
+            "type": "Components::Transform2D"
+          }
+        ],
+        "id": 2584,
+        "layers": [
+          "default",
+          "overlay_items_1"
+        ],
+        "name": "OptionsBGMBar"
+      },
+      {
+        "components": [
+          {
+            "data": {
+              "a": 1.0,
+              "b": 1.0,
+              "g": 1.0,
+              "r": 1.0
+            },
+            "type": "Components::Color"
+          },
+          {
+            "data": {
+              "local_offset": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "offset_initialized": false,
+              "parent_id": 2565,
+              "prev_parent_pos": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            "type": "Components::Parent"
+          },
+          {
+            "data": {
+              "path": "images/NewMainMenu/Options/10.png"
+            },
+            "type": "Components::Texture"
+          },
+          {
+            "data": {
+              "position": {
+                "x": -922.6843872070312,
+                "y": 413.0755920410156
+              },
+              "rotation": 0.0,
+              "scale": {
+                "x": 440.8333435058594,
+                "y": 20.0
+              }
+            },
+            "type": "Components::Transform2D"
+          }
+        ],
+        "id": 2585,
+        "layers": [
+          "default",
+          "overlay_items_1"
+        ],
+        "name": "OptionsSFXBar"
+      },
+      {
+        "components": [
+          {
+            "data": {
+              "aabb": {
+                "half_height": 13.333333015441895,
+                "half_width": 74.16666412353516,
+                "pos": {
+                  "x": -1051.0836181640625,
+                  "y": 528.9769287109375
+                }
+              },
+              "collided": false,
+              "height": 26.66666603088379,
+              "kinetic_friction": 1.0,
+              "offset": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "polygon": {
+                "position": {
+                  "x": 0.0,
+                  "y": 0.0
+                },
+                "rotation": 0.0,
+                "vertices": []
+              },
+              "radius": 0.0,
+              "resolve_collisions": false,
+              "type": "AABB",
+              "width": 148.3333282470703
+            },
+            "type": "Components::BoxCollider"
+          },
+          {
+            "data": {
+              "exit_hover": {
+                "name": ""
+              },
+              "on_click": {
+                "name": "main_menu_set_windowed"
+              },
+              "on_hover": {
+                "name": ""
+              }
+            },
+            "type": "Components::Clickable"
+          },
+          {
+            "data": {
+              "a": 1.0,
+              "b": 1.0,
+              "g": 1.0,
+              "r": 1.0
+            },
+            "type": "Components::Color"
+          },
+          {
+            "data": {
+              "local_offset": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "offset_initialized": false,
+              "parent_id": 2565,
+              "prev_parent_pos": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            "type": "Components::Parent"
+          },
+          {
+            "data": {
+              "path": "images/NewMainMenu/Options/Windowed.png"
+            },
+            "type": "Components::Texture"
+          },
+          {
+            "data": {
+              "position": {
+                "x": -1051.0836181640625,
+                "y": 528.9769287109375
+              },
+              "rotation": 0.0,
+              "scale": {
+                "x": 148.3333282470703,
+                "y": 26.66666603088379
+              }
+            },
+            "type": "Components::Transform2D"
+          }
+        ],
+        "id": 2586,
+        "layers": [
+          "default",
+          "overlay_items_1"
+        ],
+        "name": "OptionsWindowed"
+      },
+      {
+        "components": [
+          {
+            "data": {
+              "aabb": {
+                "half_height": 13.333333015441895,
+                "half_width": 80.0,
+                "pos": {
+                  "x": -798.5081176757812,
+                  "y": 528.9769287109375
+                }
+              },
+              "collided": false,
+              "height": 26.66666603088379,
+              "kinetic_friction": 1.0,
+              "offset": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "polygon": {
+                "position": {
+                  "x": 0.0,
+                  "y": 0.0
+                },
+                "rotation": 0.0,
+                "vertices": []
+              },
+              "radius": 0.0,
+              "resolve_collisions": false,
+              "type": "AABB",
+              "width": 160.0
+            },
+            "type": "Components::BoxCollider"
+          },
+          {
+            "data": {
+              "exit_hover": {
+                "name": ""
+              },
+              "on_click": {
+                "name": "main_menu_set_fullscreen"
+              },
+              "on_hover": {
+                "name": ""
+              }
+            },
+            "type": "Components::Clickable"
+          },
+          {
+            "data": {
+              "a": 1.0,
+              "b": 1.0,
+              "g": 1.0,
+              "r": 1.0
+            },
+            "type": "Components::Color"
+          },
+          {
+            "data": {
+              "local_offset": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "offset_initialized": false,
+              "parent_id": 2565,
+              "prev_parent_pos": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            "type": "Components::Parent"
+          },
+          {
+            "data": {
+              "path": "images/NewMainMenu/Options/FullscreenUnselected.png"
+            },
+            "type": "Components::Texture"
+          },
+          {
+            "data": {
+              "position": {
+                "x": -798.5081176757812,
+                "y": 528.9769287109375
+              },
+              "rotation": 0.0,
+              "scale": {
+                "x": 160.0,
+                "y": 26.66666603088379
+              }
+            },
+            "type": "Components::Transform2D"
+          }
+        ],
+        "id": 2587,
+        "layers": [
+          "default",
+          "overlay_items_1"
+        ],
+        "name": "OptionsFullscreen"
+      },
+      {
+        "components": [
+          {
+            "data": {
+              "aabb": {
+                "half_height": 21.0,
+                "half_width": 21.0,
+                "pos": {
+                  "x": -1100.0,
+                  "y": 303.8837890625
+                }
+              },
+              "collided": false,
+              "height": 42.0,
+              "kinetic_friction": 1.0,
+              "offset": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "polygon": {
+                "position": {
+                  "x": 0.0,
+                  "y": 0.0
+                },
+                "rotation": 0.0,
+                "vertices": []
+              },
+              "radius": 0.0,
+              "resolve_collisions": false,
+              "type": "AABB",
+              "width": 42.0
+            },
+            "type": "Components::BoxCollider"
+          },
+          {
+            "data": {
+              "exit_hover": {
+                "name": ""
+              },
+              "on_click": {
+                "name": "main_menu_bgm_decrease"
+              },
+              "on_hover": {
+                "name": ""
+              }
+            },
+            "type": "Components::Clickable"
+          },
+          {
+            "data": {
+              "a": 1.0,
+              "b": 1.0,
+              "g": 1.0,
+              "r": 1.0
+            },
+            "type": "Components::Color"
+          },
+          {
+            "data": {
+              "local_offset": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "offset_initialized": false,
+              "parent_id": 2565,
+              "prev_parent_pos": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            "type": "Components::Parent"
+          },
+          {
+            "data": {
+              "path": "images/NewMainMenu/Options/ArrowLeft.png"
+            },
+            "type": "Components::Texture"
+          },
+          {
+            "data": {
+              "position": {
+                "x": -1100.0,
+                "y": 303.8837890625
+              },
+              "rotation": 0.0,
+              "scale": {
+                "x": 42.0,
+                "y": 42.0
+              }
+            },
+            "type": "Components::Transform2D"
+          }
+        ],
+        "id": 2588,
+        "layers": [
+          "default",
+          "overlay_items_3"
+        ],
+        "name": "OptionsBGMLeft"
+      },
+      {
+        "components": [
+          {
+            "data": {
+              "aabb": {
+                "half_height": 21.0,
+                "half_width": 21.0,
+                "pos": {
+                  "x": -746.0,
+                  "y": 303.8837890625
+                }
+              },
+              "collided": false,
+              "height": 42.0,
+              "kinetic_friction": 1.0,
+              "offset": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "polygon": {
+                "position": {
+                  "x": 0.0,
+                  "y": 0.0
+                },
+                "rotation": 0.0,
+                "vertices": []
+              },
+              "radius": 0.0,
+              "resolve_collisions": false,
+              "type": "AABB",
+              "width": 42.0
+            },
+            "type": "Components::BoxCollider"
+          },
+          {
+            "data": {
+              "exit_hover": {
+                "name": ""
+              },
+              "on_click": {
+                "name": "main_menu_bgm_increase"
+              },
+              "on_hover": {
+                "name": ""
+              }
+            },
+            "type": "Components::Clickable"
+          },
+          {
+            "data": {
+              "a": 1.0,
+              "b": 1.0,
+              "g": 1.0,
+              "r": 1.0
+            },
+            "type": "Components::Color"
+          },
+          {
+            "data": {
+              "local_offset": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "offset_initialized": false,
+              "parent_id": 2565,
+              "prev_parent_pos": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            "type": "Components::Parent"
+          },
+          {
+            "data": {
+              "path": "images/NewMainMenu/Options/ArrowRight.png"
+            },
+            "type": "Components::Texture"
+          },
+          {
+            "data": {
+              "position": {
+                "x": -746.0,
+                "y": 303.8837890625
+              },
+              "rotation": 0.0,
+              "scale": {
+                "x": 42.0,
+                "y": 42.0
+              }
+            },
+            "type": "Components::Transform2D"
+          }
+        ],
+        "id": 2589,
+        "layers": [
+          "default",
+          "overlay_items_3"
+        ],
+        "name": "OptionsBGMRight"
+      },
+      {
+        "components": [
+          {
+            "data": {
+              "aabb": {
+                "half_height": 21.0,
+                "half_width": 21.0,
+                "pos": {
+                  "x": -1100.0,
+                  "y": 413.0755920410156
+                }
+              },
+              "collided": false,
+              "height": 42.0,
+              "kinetic_friction": 1.0,
+              "offset": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "polygon": {
+                "position": {
+                  "x": 0.0,
+                  "y": 0.0
+                },
+                "rotation": 0.0,
+                "vertices": []
+              },
+              "radius": 0.0,
+              "resolve_collisions": false,
+              "type": "AABB",
+              "width": 42.0
+            },
+            "type": "Components::BoxCollider"
+          },
+          {
+            "data": {
+              "exit_hover": {
+                "name": ""
+              },
+              "on_click": {
+                "name": "main_menu_sfx_decrease"
+              },
+              "on_hover": {
+                "name": ""
+              }
+            },
+            "type": "Components::Clickable"
+          },
+          {
+            "data": {
+              "a": 1.0,
+              "b": 1.0,
+              "g": 1.0,
+              "r": 1.0
+            },
+            "type": "Components::Color"
+          },
+          {
+            "data": {
+              "local_offset": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "offset_initialized": false,
+              "parent_id": 2565,
+              "prev_parent_pos": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            "type": "Components::Parent"
+          },
+          {
+            "data": {
+              "path": "images/NewMainMenu/Options/ArrowLeft.png"
+            },
+            "type": "Components::Texture"
+          },
+          {
+            "data": {
+              "position": {
+                "x": -1100.0,
+                "y": 413.0755920410156
+              },
+              "rotation": 0.0,
+              "scale": {
+                "x": 42.0,
+                "y": 42.0
+              }
+            },
+            "type": "Components::Transform2D"
+          }
+        ],
+        "id": 2590,
+        "layers": [
+          "default",
+          "overlay_items_3"
+        ],
+        "name": "OptionsSFXLeft"
+      },
+      {
+        "components": [
+          {
+            "data": {
+              "aabb": {
+                "half_height": 21.0,
+                "half_width": 21.0,
+                "pos": {
+                  "x": -746.0,
+                  "y": 413.0755920410156
+                }
+              },
+              "collided": false,
+              "height": 42.0,
+              "kinetic_friction": 1.0,
+              "offset": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "polygon": {
+                "position": {
+                  "x": 0.0,
+                  "y": 0.0
+                },
+                "rotation": 0.0,
+                "vertices": []
+              },
+              "radius": 0.0,
+              "resolve_collisions": false,
+              "type": "AABB",
+              "width": 42.0
+            },
+            "type": "Components::BoxCollider"
+          },
+          {
+            "data": {
+              "exit_hover": {
+                "name": ""
+              },
+              "on_click": {
+                "name": "main_menu_sfx_increase"
+              },
+              "on_hover": {
+                "name": ""
+              }
+            },
+            "type": "Components::Clickable"
+          },
+          {
+            "data": {
+              "a": 1.0,
+              "b": 1.0,
+              "g": 1.0,
+              "r": 1.0
+            },
+            "type": "Components::Color"
+          },
+          {
+            "data": {
+              "local_offset": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "offset_initialized": false,
+              "parent_id": 2565,
+              "prev_parent_pos": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            "type": "Components::Parent"
+          },
+          {
+            "data": {
+              "path": "images/NewMainMenu/Options/ArrowRight.png"
+            },
+            "type": "Components::Texture"
+          },
+          {
+            "data": {
+              "position": {
+                "x": -746.0,
+                "y": 413.0755920410156
+              },
+              "rotation": 0.0,
+              "scale": {
+                "x": 42.0,
+                "y": 42.0
+              }
+            },
+            "type": "Components::Transform2D"
+          }
+        ],
+        "id": 2591,
+        "layers": [
+          "default",
+          "overlay_items_3"
+        ],
+        "name": "OptionsSFXRight"
       },
       {
         "components": [
