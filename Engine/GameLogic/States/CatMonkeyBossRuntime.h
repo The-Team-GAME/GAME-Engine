@@ -30,7 +30,7 @@ namespace CatMonkeyStateCallbacks
     static constexpr const char* k_centered_camera_name = "Centered";
 
     static constexpr float k_post_summon_camera_linger_sec = 1.0f;
-    static constexpr float k_summon5_cinematic_duration_sec = 6.0f;
+    static constexpr float k_summon5_cinematic_duration_sec = 5.0f;
     static constexpr float k_summon5_zoom_in_start = 4.5f;
     static constexpr float k_summon5_target_zoom = 0.62f;
     inline const Math::Vec2D k_summon5_target_pos = { -290.0f, -190.0f };
@@ -138,6 +138,18 @@ namespace CatMonkeyStateCallbacks
     bool city_scroll_enabled = false;
     bool city_scroll_initialized = false;
 
+    // Mid-building slow oscillation (enabled when Summon5 is reached).
+    bool mid_building_enabled = false;
+    bool mid_building_initialized = false;
+    float mid_building_phase = 0.0f; // radians, drives the sinusoidal oscillation
+
+    // Ambient camera shake: small up/down nudge every 4-10 seconds.
+    bool ambient_shake_active = false;      // enabled on first boss idle enter
+    float ambient_shake_next_time = 0.0f;   // when to fire the next shake
+    float ambient_shake_offset_y = 0.0f;    // current applied y offset
+    int   ambient_shake_tick = 0;           // sub-tick within one shake burst
+    float ambient_shake_tick_time = 0.0f;   // when to advance the sub-tick
+
     // Debug (one-time logs; avoids per-frame spam).
     bool debug_logged_summon5_enter = false;
     bool debug_logged_city_init = false;
@@ -158,6 +170,8 @@ namespace CatMonkeyStateCallbacks
   // City scroll system
   void ensure_city_layers_hidden(BossRuntime& rt);
   void tick_city_scroll_if_enabled(BossRuntime& rt);
+  void tick_mid_building_if_active(BossRuntime& rt);
+  void tick_ambient_camera_shake(BossRuntime& rt);
 
   // Shake system
   void start_summon5_cat_camera_shake(BossRuntime& rt);

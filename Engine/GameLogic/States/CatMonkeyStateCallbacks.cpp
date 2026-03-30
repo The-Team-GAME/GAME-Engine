@@ -12,6 +12,7 @@
 // Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "pch.h"
+#include <random>
 #include "CatMonkeyStateCallbacks.h"
 #include "CatMonkeyBossRuntime.h"
 #include "CatMonkeyTunnelLogic.h"
@@ -276,6 +277,16 @@ namespace CatMonkeyStateCallbacks
       rt.summon_pacing_initialized = true;
       rt.next_summon_allowed_time = Engine::Time::get_time() + summon_cooldown(entity);
     }
+
+    // Enable ambient camera shake on first idle enter.
+    if (!rt.ambient_shake_active) {
+      rt.ambient_shake_active = true;
+      static std::mt19937 rng{ std::random_device{}() };
+      std::uniform_real_distribution<float> dist(4.0f, 10.0f);
+      rt.ambient_shake_next_time = Engine::Time::get_time() + dist(rng);
+      rt.ambient_shake_tick = 0;
+      rt.ambient_shake_offset_y = 0.0f;
+    }
   }
 
   void idle_on_update(Engine::ECS::Entity entity) {
@@ -288,6 +299,8 @@ namespace CatMonkeyStateCallbacks
 
     BossRuntime& rt = runtime_for(entity);
     tick_city_scroll_if_enabled(rt);
+    tick_mid_building_if_active(rt);
+    tick_ambient_camera_shake(rt);
     tick_tunnel_if_active(rt);
     tick_train_tracks_if_active(rt);
     // Summon5 timed spawning: continue spawning queued minions over time.
@@ -414,6 +427,8 @@ namespace CatMonkeyStateCallbacks
     BossRuntime& rt = runtime_for(entity);
 
     tick_city_scroll_if_enabled(rt);
+    tick_mid_building_if_active(rt);
+    tick_ambient_camera_shake(rt);
     tick_tunnel_if_active(rt);
     tick_train_tracks_if_active(rt);
 
@@ -527,6 +542,7 @@ namespace CatMonkeyStateCallbacks
     rt.tunnel_destroyed = true;
     destroy_tunnel(rt);
     rt.city_scroll_enabled = true;
+    rt.mid_building_enabled = true;
 
     // Summon5: skip Cat_Monkey camera entirely. Immediately place the Centered
     // camera at 4.5 zoom at the Cat_Monkey camera's current world position,
@@ -616,6 +632,8 @@ namespace CatMonkeyStateCallbacks
     if (entity.is_valid()) {
       BossRuntime& rt = runtime_for(entity);
       tick_city_scroll_if_enabled(rt);
+      tick_mid_building_if_active(rt);
+      tick_ambient_camera_shake(rt);
       tick_tunnel_if_active(rt);
       tick_train_tracks_if_active(rt);
     }

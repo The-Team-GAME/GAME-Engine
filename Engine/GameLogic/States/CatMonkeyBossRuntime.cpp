@@ -12,6 +12,7 @@
 // Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "pch.h"
+#include <random>
 #include "CatMonkeyBossRuntime.h"
 
 namespace CatMonkeyStateCallbacks
@@ -32,6 +33,21 @@ namespace CatMonkeyStateCallbacks
     static constexpr float k_cityscape_speed = 200.0f;
     static constexpr float k_foreground_city_speed = 180.0f;
     static constexpr float k_background_city_speed = 350.0f;
+
+    // Mid-building oscillation
+    static constexpr const char* k_mid_building_name   = "mid_building";
+    static constexpr const char* k_mid_building_prefab = "prefabs/mid_building.json";
+    static constexpr float k_mid_building_start_x      = 1000.0f;
+    static constexpr float k_mid_building_start_y      = 780.0f;
+    static constexpr float k_mid_building_amplitude    = 100.0f; // oscillates ±100 from start_x
+    static constexpr float k_mid_building_speed        = 0.3f;   // radians/sec (slow sway)
+
+    // Ambient camera shake
+    static constexpr float k_ambient_shake_amplitude   = 0.25f;  // y offset in world units
+    static constexpr float k_ambient_shake_interval_min = 4.0f;  // seconds between shakes
+    static constexpr float k_ambient_shake_interval_max = 10.0f;
+    static constexpr float k_ambient_shake_tick_sec    = 0.05f;  // time per sub-tick
+    static constexpr int   k_ambient_shake_ticks       = 6;      // ticks per shake burst
 
     static constexpr const char* k_city_layer_blueprint = "CatMonkeyCityLayer";
     static constexpr const char* k_city_layer_active_state = "Active";
@@ -333,6 +349,100 @@ namespace CatMonkeyStateCallbacks
     tick_single(k_cityscape_layer_name, k_cityscape_speed, -5000.0f, 6000.0f);
     tick_single(k_foreground_city_layer_name, k_foreground_city_speed, -3500.0f, 4500.0f);
     tick_single(k_background_city_layer_name, k_background_city_speed, -2500.0f, 4500.0f);
+  }
+
+  void tick_mid_building_if_active(BossRuntime& rt)
+  {
+    if (!rt.mid_building_enabled) return;
+
+    // First-time init: find or spawn the entity and snap it to start position.
+    if (!rt.mid_building_initialized) {
+      Engine::ECS::Entity e = find_entity_by_name_with_transform(k_mid_building_name);
+      if (!e.is_valid()) {
+        e = Engine::ECS::instantiate_prefab(Engine::Resources::load_prefab(k_mid_building_prefab));
+      }
+      if (e.is_valid()) {
+        if (auto* t = e.get_component<Components::Transform2D>()) {
+          t->position.x = k_mid_building_start_x;
+          t->position.y = k_mid_building_start_y;
+        }
+        if (auto* c = e.get_component<Components::Color>()) {
+          c->a = 1.0f;
+        }
+      }
+      rt.mid_building_phase = 0.0f;
+      rt.mid_building_initialized = true;
+    }
+
+    const float dt = Engine::Time::get_fixed_dt();
+    if (dt <= 0.0f) return;
+
+    rt.mid_building_phase += k_mid_building_speed * dt;
+
+    Engine::ECS::Entity e = find_entity_by_name_with_transform(k_mid_building_name);
+    if (!e.is_valid()) return;
+    auto* t = e.get_component<Components::Transform2D>();
+    if (!t) return;
+
+    // Sinusoidal oscillation: start_x + amplitude * sin(phase)
+    // sin goes 0 -> -1 -> 0 -> +1 -> 0, matching left-right-centre-right-left cycle.
+    t->position.x = k_mid_building_start_x + k_mid_building_amplitude * std::sin(rt.mid_building_phase);
+    t->position.y = k_mid_building_start_y;
+  }
+
+  void tick_ambient_camera_shake(BossRuntime& rt)
+  {
+    if (!rt.ambient_shake_active) return;
+
+    const float now = Engine::Time::get_time();
+
+    // Between shakes: wait until next scheduled time.
+    if (rt.ambient_shake_tick == 0 && now < rt.ambient_shake_next_time) return;
+
+    // Determine which camera is currently active.
+    Engine::ECS::Entity cam;
+    if (rt.camera_override_active && rt.camera_override_mode == BossRuntime::CameraOverrideMode::CatMonkey) {
+      cam = find_camera_entity_by_name(k_cat_monkey_camera_name);
+    } else {
+      cam = find_camera_entity_by_name(k_centered_camera_name);
+    }
+    if (!cam.is_valid()) return;
+    auto* t = cam.get_component<Components::Transform2D>();
+    if (!t) return;
+
+    // Fire first sub-tick when time arrives.
+    if (rt.ambient_shake_tick == 0) {
+      rt.ambient_shake_tick = 1;
+      rt.ambient_shake_tick_time = now + k_ambient_shake_tick_sec;
+      rt.ambient_shake_offset_y = k_ambient_shake_amplitude;
+      t->position.y += rt.ambient_shake_offset_y;
+      return;
+    }
+
+    // Advance sub-ticks.
+    if (now < rt.ambient_shake_tick_time) return;
+    rt.ambient_shake_tick_time = now + k_ambient_shake_tick_sec;
+
+    // Remove previous offset then apply new one (alternating up/down).
+    t->position.y -= rt.ambient_shake_offset_y;
+    rt.ambient_shake_tick++;
+
+    if (rt.ambient_shake_tick > k_ambient_shake_ticks) {
+      // Shake burst done; ensure y is restored and schedule next shake.
+      rt.ambient_shake_offset_y = 0.0f;
+      rt.ambient_shake_tick = 0;
+
+      // Random interval [min, max]
+      static std::mt19937 rng{ std::random_device{}() };
+      std::uniform_real_distribution<float> dist(k_ambient_shake_interval_min, k_ambient_shake_interval_max);
+      rt.ambient_shake_next_time = now + dist(rng);
+      return;
+    }
+
+    // Alternate direction each sub-tick.
+    rt.ambient_shake_offset_y = (rt.ambient_shake_tick % 2 == 0)
+      ? k_ambient_shake_amplitude : -k_ambient_shake_amplitude;
+    t->position.y += rt.ambient_shake_offset_y;
   }
 
   void start_summon5_cat_camera_shake(BossRuntime& rt)

@@ -55,8 +55,8 @@
             {
                 "data": {
                     "position": {
-                        "x": -1000.0,
-                        "y": 0.0
+                        "x": 225.0,
+                        "y": 25.0
                     },
                     "rotation": 0.0,
                     "scale": {
@@ -69,7 +69,7 @@
         ],
         "filepath": "prefabs/foreground_city.json",
         "layers": [
-            "default"
+            "background"
         ],
         "uuid": "9e0f4249-137b-40796-9c2e-079525131ade"
     },
