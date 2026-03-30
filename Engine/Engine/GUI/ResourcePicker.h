@@ -39,9 +39,6 @@ namespace ResourcePicker {
   bool texture_picker_popup(const char* popup_id, std::string& selected_path,
     const std::string& current_path = "");
 
-  bool texture_picker_popup_multi(const char* popup_id, std::vector<std::string>& selected_paths,
-    const std::vector<std::string>& current_paths = {});
-
   /*=================================================================================
   Function Brief:
   Displays a font picker popup with preview of all loaded fonts.

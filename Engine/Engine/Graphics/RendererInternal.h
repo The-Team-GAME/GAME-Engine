@@ -24,7 +24,6 @@
 #include "../Logger.h"
 #include "../TypeDef.h"
 #include "../Math/Vector2D.h"
-#include "../Components/AnimatorComponents.h"
 
 namespace Engine {
   namespace Graphics
@@ -153,34 +152,25 @@ namespace Engine {
       int anim_rows = 1;                  // How many rows of animation frames in the texture
       float frame_duration = 0.1f;        // Duration of each animation frame in seconds
       bool is_looping = true;             // Whether the animation loops
-      std::vector<int> active_frames;     // List of frame indices to use. If empty, uses all frames from 0 to (anim_cols*anim_rows)-1
 
       // Get total frame count
-      int get_frame_count() const { 
-        return active_frames.empty() ? (anim_cols * anim_rows) : static_cast<int>(active_frames.size()); 
-      }
+      int get_frame_count() const { return anim_cols * anim_rows; }
 
       // Get total animation duration
       float get_total_duration() const { return frame_duration * get_frame_count(); }
-
-      // Get actual frame index
-      int get_actual_frame_index(int current_frame) const {
-        if (active_frames.empty()) return current_frame;
-        if (current_frame < 0 || current_frame >= active_frames.size()) return 0;
-        return active_frames[current_frame];
-      }
     };
 
+    // Atlas entry for tilemap rendering - flattened structure
     struct AtlasEntry {
-      Texture texture_handle;
-      std::string texture_path;
-      std::vector<SubTexture> subTextures;
-      int drawIndex;
-      std::map<int, TileColliderConfig> tile_collider_configs;
-      AnimatedTileConfig animation_config;
+      Texture texture_handle;                    // Shared pointer to texture data (runtime only, not serialized)
+      std::vector<SubTexture> subTextures;       // UV coordinates for each tile in the atlas
+      int drawIndex = -1;                        // Current subTexture index to draw (unused in tilemap)
+      std::string texture_path;                  // Path to texture file (for serialization/deserialization)
+      std::unordered_map<int, TileColliderConfig> tile_collider_configs; // Per-tile collider configurations (tile_index -> config)
+      AnimatedTileConfig animation_config;       // Animation configuration for this atlas
       float friction = 1.0f;                     // Friction coefficient applied to colliders generated from this atlas
 
-      AtlasEntry() : texture_handle(nullptr), texture_path(""), subTextures(), drawIndex(-1), tile_collider_configs(), animation_config(), friction(1.0f) {}
+      AtlasEntry() : texture_handle(nullptr), subTextures(), drawIndex(-1), texture_path(""), friction(1.0f) {}
     };
 
   }
@@ -190,5 +180,5 @@ REFLECT_ENUM(Engine::Graphics::TileColliderType, Default, AABB, Polygon);
 REFLECT_FIELDS(Engine::Graphics::SubTexture, tex_coords);
 REFLECT_FIELDS(Engine::Graphics::Tile, atlas_index, tile_index);
 REFLECT_FIELDS(Engine::Graphics::TileColliderConfig, collider_type, aabb_width, aabb_height, aabb_offset, custom_vertices);
-REFLECT_FIELDS(Engine::Graphics::AnimatedTileConfig, is_animated, sheet_cols, sheet_rows, prop_cols, prop_rows, anim_cols, anim_rows, frame_duration, is_looping, active_frames);
+REFLECT_FIELDS(Engine::Graphics::AnimatedTileConfig, is_animated, sheet_cols, sheet_rows, prop_cols, prop_rows, anim_cols, anim_rows, frame_duration, is_looping);
 REFLECT_FIELDS(Engine::Graphics::AtlasEntry, texture_path, subTextures, drawIndex, tile_collider_configs, animation_config, friction);

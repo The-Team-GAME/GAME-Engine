@@ -20,34 +20,6 @@
             },
             {
                 "data": {
-                    "blueprint_id": "CatMonkeyCityLayer",
-                    "current_state_name": "Active",
-                    "property_anim_playing": false,
-                    "states": [
-                        {
-                            "first": "Active",
-                            "second": {
-                                "animation": null,
-                                "audio": null,
-                                "name": "Active",
-                                "on_enter_callback": {
-                                    "name": "CatMonkeyStateCallbacks::city_layer_active_on_enter"
-                                },
-                                "on_exit_callback": {
-                                    "name": ""
-                                },
-                                "on_update_callback": {
-                                    "name": "CatMonkeyStateCallbacks::city_layer_active_on_update"
-                                },
-                                "property_animation": null
-                            }
-                        }
-                    ]
-                },
-                "type": "Components::StateMachine"
-            },
-            {
-                "data": {
                     "path": "images/Background/FrontBuildings.png"
                 },
                 "type": "Components::Texture"
@@ -55,8 +27,8 @@
             {
                 "data": {
                     "position": {
-                        "x": 1775.8487548828125,
-                        "y": 0.0
+                        "x": -5383.75048828125,
+                        "y": 313.9295654296875
                     },
                     "rotation": 0.0,
                     "scale": {

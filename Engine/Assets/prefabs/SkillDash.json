@@ -3,32 +3,6 @@
         "components": [
             {
                 "data": {
-                    "atlas_indices": [
-                        35
-                    ],
-                    "before_times": [
-                        0.0
-                    ],
-                    "durations": [
-                        0.07999999821186066
-                    ],
-                    "is_looping": true,
-                    "startTime": 364.048828125,
-                    "totalDuration": 0.07999999821186066
-                },
-                "type": "Components::Animation"
-            },
-            {
-                "data": {
-                    "a": 1.0,
-                    "b": 1.0,
-                    "g": 1.0,
-                    "r": 1.0
-                },
-                "type": "Components::Color"
-            },
-            {
-                "data": {
                     "blueprint_id": "DashCooldown",
                     "current_state_name": "READY",
                     "property_anim_playing": false,
@@ -48,7 +22,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 364.048828125,
+                                        "startTime": 3760.010986328125,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -739,7 +713,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 364.048828125,
+                                        "startTime": 3760.010986328125,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -1430,7 +1404,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 364.048828125,
+                                        "startTime": 3760.010986328125,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -2121,7 +2095,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 364.048828125,
+                                        "startTime": 3760.010986328125,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -2812,7 +2786,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 364.048828125,
+                                        "startTime": 3760.010986328125,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -3503,7 +3477,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 364.048828125,
+                                        "startTime": 3760.010986328125,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -4194,7 +4168,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 364.048828125,
+                                        "startTime": 3760.010986328125,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -4885,7 +4859,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 364.048828125,
+                                        "startTime": 3760.010986328125,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -5576,7 +5550,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 364.048828125,
+                                        "startTime": 3760.010986328125,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -6345,7 +6319,7 @@
                                             0.02500000037252903
                                         ],
                                         "is_looping": false,
-                                        "startTime": 364.048828125,
+                                        "startTime": 3760.010986328125,
                                         "totalDuration": 0.6749998927116394
                                     },
                                     "collider_data": null,
@@ -7036,7 +7010,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": true,
-                                        "startTime": 364.048828125,
+                                        "startTime": 3760.010986328125,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -7718,6 +7692,33 @@
             },
             {
                 "data": {
+                    "position": {
+                        "x": 248.71527099609375,
+                        "y": 242.94671630859375
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 189.42138671875,
+                        "y": 189.42138671875
+                    }
+                },
+                "type": "Components::Transform2D"
+            },
+            {
+                "data": {},
+                "type": "Components::UI"
+            },
+            {
+                "data": {
+                    "a": 1.0,
+                    "b": 1.0,
+                    "g": 1.0,
+                    "r": 1.0
+                },
+                "type": "Components::Color"
+            },
+            {
+                "data": {
                     "path": "images/skill_dash.png"
                 },
                 "type": "Components::Texture"
@@ -8380,32 +8381,26 @@
             },
             {
                 "data": {
-                    "position": {
-                        "x": 241.7168426513672,
-                        "y": 207.95448303222656
-                    },
-                    "rotation": 0.0,
-                    "scale": {
-                        "x": 189.42138671875,
-                        "y": 189.42138671875
-                    }
+                    "atlas_indices": [
+                        35
+                    ],
+                    "before_times": [
+                        0.0
+                    ],
+                    "durations": [
+                        0.07999999821186066
+                    ],
+                    "is_looping": true,
+                    "startTime": 3760.010986328125,
+                    "totalDuration": 0.07999999821186066
                 },
-                "type": "Components::Transform2D"
-            },
-            {
-                "data": {
-                    "anchor": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "type": "Components::UI"
+                "type": "Components::Animation"
             }
         ],
         "filepath": "prefabs/SkillDash.json",
         "layers": [
             "default",
-            "main_menu_background"
+            "main_menu_6"
         ],
         "uuid": "a9cd4511-aba8-40f90-8c00-87dd17b20447"
     },

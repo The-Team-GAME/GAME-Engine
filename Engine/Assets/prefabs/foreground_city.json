@@ -20,34 +20,6 @@
             },
             {
                 "data": {
-                    "blueprint_id": "CatMonkeyCityLayer",
-                    "current_state_name": "Active",
-                    "property_anim_playing": false,
-                    "states": [
-                        {
-                            "first": "Active",
-                            "second": {
-                                "animation": null,
-                                "audio": null,
-                                "name": "Active",
-                                "on_enter_callback": {
-                                    "name": "CatMonkeyStateCallbacks::city_layer_active_on_enter"
-                                },
-                                "on_exit_callback": {
-                                    "name": ""
-                                },
-                                "on_update_callback": {
-                                    "name": "CatMonkeyStateCallbacks::city_layer_active_on_update"
-                                },
-                                "property_animation": null
-                            }
-                        }
-                    ]
-                },
-                "type": "Components::StateMachine"
-            },
-            {
-                "data": {
                     "path": "images/Background/MidBuildings.png"
                 },
                 "type": "Components::Texture"
@@ -55,8 +27,8 @@
             {
                 "data": {
                     "position": {
-                        "x": 225.0,
-                        "y": 25.0
+                        "x": -5368.40576171875,
+                        "y": 343.0875244140625
                     },
                     "rotation": 0.0,
                     "scale": {
@@ -69,7 +41,8 @@
         ],
         "filepath": "prefabs/foreground_city.json",
         "layers": [
-            "background"
+            "default",
+            "tilemap_background_near"
         ],
         "uuid": "9e0f4249-137b-40796-9c2e-079525131ade"
     },

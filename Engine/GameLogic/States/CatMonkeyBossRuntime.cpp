@@ -12,7 +12,6 @@
 // Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "pch.h"
-#include <random>
 #include "CatMonkeyBossRuntime.h"
 
 namespace CatMonkeyStateCallbacks
@@ -23,31 +22,20 @@ namespace CatMonkeyStateCallbacks
 
     // City layer names/prefabs (extracted from original)
     static constexpr const char* k_cityscape_layer_name = "cityscape";
+    static constexpr const char* k_mid_building_layer_name = "mid_building";
+    static constexpr const char* k_minicity_layer_name = "minicity";
     static constexpr const char* k_foreground_city_layer_name = "foreground_city";
     static constexpr const char* k_background_city_layer_name = "background_city";
 
     static constexpr const char* k_cityscape_prefab_path = "prefabs/cityscape.json";
+    static constexpr const char* k_mid_building_prefab_path = "prefabs/mid_building.json";
     static constexpr const char* k_foreground_city_prefab_path = "prefabs/foreground_city.json";
     static constexpr const char* k_background_city_prefab_path = "prefabs/background_city.json";
 
     static constexpr float k_cityscape_speed = 200.0f;
+    static constexpr float k_minicity_speed = 200.0f;
     static constexpr float k_foreground_city_speed = 180.0f;
     static constexpr float k_background_city_speed = 350.0f;
-
-    // Mid-building oscillation
-    static constexpr const char* k_mid_building_name   = "mid_building";
-    static constexpr const char* k_mid_building_prefab = "prefabs/mid_building.json";
-    static constexpr float k_mid_building_start_x      = 1000.0f;
-    static constexpr float k_mid_building_start_y      = 780.0f;
-    static constexpr float k_mid_building_amplitude    = 100.0f; // oscillates ±100 from start_x
-    static constexpr float k_mid_building_speed        = 0.3f;   // radians/sec (slow sway)
-
-    // Ambient camera shake
-    static constexpr float k_ambient_shake_amplitude   = 0.25f;  // y offset in world units
-    static constexpr float k_ambient_shake_interval_min = 4.0f;  // seconds between shakes
-    static constexpr float k_ambient_shake_interval_max = 10.0f;
-    static constexpr float k_ambient_shake_tick_sec    = 0.05f;  // time per sub-tick
-    static constexpr int   k_ambient_shake_ticks       = 6;      // ticks per shake burst
 
     static constexpr const char* k_city_layer_blueprint = "CatMonkeyCityLayer";
     static constexpr const char* k_city_layer_active_state = "Active";
@@ -226,6 +214,8 @@ namespace CatMonkeyStateCallbacks
     }
 
     set_entity_alpha_if_present(find_entity_by_name_with_transform(k_cityscape_layer_name), 0.0f);
+    set_entity_alpha_if_present(find_entity_by_name_with_transform(k_mid_building_layer_name), 0.0f);
+    set_entity_alpha_if_present(find_entity_by_name_with_transform(k_minicity_layer_name), 0.0f);
     set_entity_alpha_if_present(find_entity_by_name_with_transform(k_foreground_city_layer_name), 0.0f);
     set_entity_alpha_if_present(find_entity_by_name_with_transform(k_background_city_layer_name), 0.0f);
     rt.city_layers_hidden = true;
@@ -281,33 +271,40 @@ namespace CatMonkeyStateCallbacks
   inline void init_city_scroll_if_needed(BossRuntime& rt) {
     if (!rt.city_scroll_enabled || rt.city_scroll_initialized) return;
 
+    const Engine::Graphics::CameraBounds bounds = Engine::Graphics::get_camera_bounds();
+    const float cam_left = bounds.min_x;
+    const float cam_bottom = bounds.min_y;
+
     if (!rt.debug_logged_city_init) {
-      Log::info("CatMonkey: initializing Summon5 city scroll.");
+      Log::info("CatMonkey: initializing Summon5 city scroll. Camera bounds min_x={}, max_x={}", cam_left, bounds.max_x);
       rt.debug_logged_city_init = true;
     }
 
-    auto setup_single = [&](const char* prefab_path, const char* base_name, float start_x, float start_y) {
+    auto setup_pair = [&](const char* prefab_path, const char* base_name) {
       Engine::ECS::Entity a = ensure_layer(prefab_path, base_name, 0);
-      detach_from_parent_if_present(a);
-      set_entity_alpha_if_present(a, 1.0f);
-      ensure_city_layer_state_machine(a);
-      
-      if (auto* ta = a.get_component<Components::Transform2D>()) {
-        ta->position.x = start_x;
-        ta->position.y = start_y;
+      Engine::ECS::Entity b = ensure_layer(prefab_path, base_name, 1);
+      for (Engine::ECS::Entity e : {a, b}) {
+        detach_from_parent_if_present(e);
+        set_entity_alpha_if_present(e, 1.0f);
+        ensure_city_layer_state_machine(e);
+        if (auto* t = e.get_component<Components::Transform2D>()) {
+          // Align all layers by their bottom-left corner.
+          t->position.y = cam_bottom + 0.5f * t->scale.y;
+        }
       }
-      
-      // Cleanup copy if it somehow existed previously
-      std::string copy_name = std::string(base_name) + "_copy";
-      Engine::ECS::Entity b = find_entity_by_name_with_transform(copy_name.c_str());
-      if (b.is_valid()) {
-          b.destroy();
+      if (auto* ta = a.get_component<Components::Transform2D>()) {
+        const float w = std::max(1.0f, ta->scale.x);
+        ta->position.x = cam_left + 0.5f * w;
+        if (auto* tb = b.get_component<Components::Transform2D>()) {
+          tb->position.x = ta->position.x + w;
+        }
       }
     };
 
-    setup_single(k_cityscape_prefab_path, k_cityscape_layer_name, 6000.0f, 300.0f);
-    setup_single(k_foreground_city_prefab_path, k_foreground_city_layer_name, 4500.0f, 25.0f);
-    setup_single(k_background_city_prefab_path, k_background_city_layer_name, 4500.0f, 0.0f);
+    setup_pair(k_cityscape_prefab_path, k_cityscape_layer_name);
+    setup_pair(k_mid_building_prefab_path, k_mid_building_layer_name);
+    setup_pair(k_foreground_city_prefab_path, k_foreground_city_layer_name);
+    setup_pair(k_background_city_prefab_path, k_background_city_layer_name);
 
     rt.city_scroll_initialized = true;
   }
@@ -319,130 +316,41 @@ namespace CatMonkeyStateCallbacks
     init_city_scroll_if_needed(rt);
     if (!rt.city_scroll_initialized) return;
 
+    const Engine::Graphics::CameraBounds bounds = Engine::Graphics::get_camera_bounds();
     const float dt = Engine::Time::get_fixed_dt();
     if (dt <= 0.0f) return;
 
-    auto tick_single = [&](const char* base_name, float speed, float end_x, float start_x) {
+    auto tick_pair = [&](const char* base_name, float speed) {
+      std::string copy_name = std::string(base_name) + "_copy";
       Engine::ECS::Entity a = find_entity_by_name_with_transform(base_name);
-      if (!a.is_valid()) return;
+      Engine::ECS::Entity b = find_entity_by_name_with_transform(copy_name.c_str());
+      if (!a.is_valid() || !b.is_valid()) return;
 
       auto timeline_is_driving = [](Engine::ECS::Entity e) {
         auto* sm = e.get_component<Components::StateMachine>();
         return sm && sm->is_property_anim_playing();
       };
 
-      if (timeline_is_driving(a)) {
+      // If either layer is currently driven by its timeline clip, don't fight it.
+      if (timeline_is_driving(a) || timeline_is_driving(b)) {
         return;
       }
 
       auto* ta = a.get_component<Components::Transform2D>();
-      if (!ta) return;
-      
-      // Move left (negative speed)
-      ta->position.x -= speed * dt;
-      
-      if (ta->position.x <= end_x) {
-          ta->position.x = start_x;
-      }
+      auto* tb = b.get_component<Components::Transform2D>();
+      if (!ta || !tb) return;
+      float width = std::max(ta->scale.x, tb->scale.x);
+      ta->position.x += speed * dt;
+      tb->position.x += speed * dt;
+      // Loop seamlessly when a layer's left edge reaches the camera right edge.
+      if (ta->position.x - 0.5f * ta->scale.x >= bounds.max_x) ta->position.x = tb->position.x + width;
+      if (tb->position.x - 0.5f * tb->scale.x >= bounds.max_x) tb->position.x = ta->position.x + width;
     };
 
-    tick_single(k_cityscape_layer_name, k_cityscape_speed, -5000.0f, 6000.0f);
-    tick_single(k_foreground_city_layer_name, k_foreground_city_speed, -3500.0f, 4500.0f);
-    tick_single(k_background_city_layer_name, k_background_city_speed, -2500.0f, 4500.0f);
-  }
-
-  void tick_mid_building_if_active(BossRuntime& rt)
-  {
-    if (!rt.mid_building_enabled) return;
-
-    // First-time init: find or spawn the entity and snap it to start position.
-    if (!rt.mid_building_initialized) {
-      Engine::ECS::Entity e = find_entity_by_name_with_transform(k_mid_building_name);
-      if (!e.is_valid()) {
-        e = Engine::ECS::instantiate_prefab(Engine::Resources::load_prefab(k_mid_building_prefab));
-      }
-      if (e.is_valid()) {
-        if (auto* t = e.get_component<Components::Transform2D>()) {
-          t->position.x = k_mid_building_start_x;
-          t->position.y = k_mid_building_start_y;
-        }
-        if (auto* c = e.get_component<Components::Color>()) {
-          c->a = 1.0f;
-        }
-      }
-      rt.mid_building_phase = 0.0f;
-      rt.mid_building_initialized = true;
-    }
-
-    const float dt = Engine::Time::get_fixed_dt();
-    if (dt <= 0.0f) return;
-
-    rt.mid_building_phase += k_mid_building_speed * dt;
-
-    Engine::ECS::Entity e = find_entity_by_name_with_transform(k_mid_building_name);
-    if (!e.is_valid()) return;
-    auto* t = e.get_component<Components::Transform2D>();
-    if (!t) return;
-
-    // Sinusoidal oscillation: start_x + amplitude * sin(phase)
-    // sin goes 0 -> -1 -> 0 -> +1 -> 0, matching left-right-centre-right-left cycle.
-    t->position.x = k_mid_building_start_x + k_mid_building_amplitude * std::sin(rt.mid_building_phase);
-    t->position.y = k_mid_building_start_y;
-  }
-
-  void tick_ambient_camera_shake(BossRuntime& rt)
-  {
-    if (!rt.ambient_shake_active) return;
-
-    const float now = Engine::Time::get_time();
-
-    // Between shakes: wait until next scheduled time.
-    if (rt.ambient_shake_tick == 0 && now < rt.ambient_shake_next_time) return;
-
-    // Determine which camera is currently active.
-    Engine::ECS::Entity cam;
-    if (rt.camera_override_active && rt.camera_override_mode == BossRuntime::CameraOverrideMode::CatMonkey) {
-      cam = find_camera_entity_by_name(k_cat_monkey_camera_name);
-    } else {
-      cam = find_camera_entity_by_name(k_centered_camera_name);
-    }
-    if (!cam.is_valid()) return;
-    auto* t = cam.get_component<Components::Transform2D>();
-    if (!t) return;
-
-    // Fire first sub-tick when time arrives.
-    if (rt.ambient_shake_tick == 0) {
-      rt.ambient_shake_tick = 1;
-      rt.ambient_shake_tick_time = now + k_ambient_shake_tick_sec;
-      rt.ambient_shake_offset_y = k_ambient_shake_amplitude;
-      t->position.y += rt.ambient_shake_offset_y;
-      return;
-    }
-
-    // Advance sub-ticks.
-    if (now < rt.ambient_shake_tick_time) return;
-    rt.ambient_shake_tick_time = now + k_ambient_shake_tick_sec;
-
-    // Remove previous offset then apply new one (alternating up/down).
-    t->position.y -= rt.ambient_shake_offset_y;
-    rt.ambient_shake_tick++;
-
-    if (rt.ambient_shake_tick > k_ambient_shake_ticks) {
-      // Shake burst done; ensure y is restored and schedule next shake.
-      rt.ambient_shake_offset_y = 0.0f;
-      rt.ambient_shake_tick = 0;
-
-      // Random interval [min, max]
-      static std::mt19937 rng{ std::random_device{}() };
-      std::uniform_real_distribution<float> dist(k_ambient_shake_interval_min, k_ambient_shake_interval_max);
-      rt.ambient_shake_next_time = now + dist(rng);
-      return;
-    }
-
-    // Alternate direction each sub-tick.
-    rt.ambient_shake_offset_y = (rt.ambient_shake_tick % 2 == 0)
-      ? k_ambient_shake_amplitude : -k_ambient_shake_amplitude;
-    t->position.y += rt.ambient_shake_offset_y;
+    tick_pair(k_cityscape_layer_name, k_cityscape_speed);
+    tick_pair(k_mid_building_layer_name, k_minicity_speed);
+    tick_pair(k_foreground_city_layer_name, k_foreground_city_speed);
+    tick_pair(k_background_city_layer_name, k_background_city_speed);
   }
 
   void start_summon5_cat_camera_shake(BossRuntime& rt)

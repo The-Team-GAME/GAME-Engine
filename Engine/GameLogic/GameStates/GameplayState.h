@@ -2,10 +2,9 @@
 // file:    GameplayState.h
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (90%)
+// author:  Chew Shee Yang (70%)
+//          Ryan Ang An Kiat (30%)
 //          Primary author
-//          Ryan Ang An Kiat (10%)
-//          Secondary author
 //
 // email:   chew.s@digipen.edu
 //
@@ -79,7 +78,7 @@ public:
     // SceneManager::load_scene() clears LevelManager state before Scene::load(),
     // so we always (re)open LevelOne here.
     if (Engine::LevelManager::get_current_level_path().empty()) {
-      Engine::Resources::open_level(DEFAULT_LEVEL_PATH);
+      Engine::LevelManager::open_level(DEFAULT_LEVEL_PATH);
     }
 
     current_upgrade_threshold_ = 2;
