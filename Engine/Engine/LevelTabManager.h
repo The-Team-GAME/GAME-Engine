@@ -18,7 +18,6 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "EngineExport.h"
 
 namespace Engine {
 
@@ -40,7 +39,7 @@ namespace Engine {
     // ============================================================================
 
     // Opens a level and creates a tab for it.
-    ENGINE_API bool open_tab(const std::string& filepath, bool append_resource_path = true);
+    bool open_tab(const std::string& filepath, bool append_resource_path = true);
 
     // Creates a new empty level tab.
     std::string create_new_tab(const std::string& name = "New Level");
