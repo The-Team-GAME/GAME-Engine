@@ -3,6 +3,32 @@
         "components": [
             {
                 "data": {
+                    "atlas_indices": [
+                        35
+                    ],
+                    "before_times": [
+                        0.0
+                    ],
+                    "durations": [
+                        0.07999999821186066
+                    ],
+                    "is_looping": true,
+                    "startTime": 349.52642822265625,
+                    "totalDuration": 0.07999999821186066
+                },
+                "type": "Components::Animation"
+            },
+            {
+                "data": {
+                    "a": 1.0,
+                    "b": 1.0,
+                    "g": 1.0,
+                    "r": 1.0
+                },
+                "type": "Components::Color"
+            },
+            {
+                "data": {
                     "blueprint_id": "SmashCooldown",
                     "current_state_name": "READY",
                     "property_anim_playing": false,
@@ -22,7 +48,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 3765.005859375,
+                                        "startTime": 349.52642822265625,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -713,7 +739,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 3765.005859375,
+                                        "startTime": 349.52642822265625,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -1404,7 +1430,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 3765.005859375,
+                                        "startTime": 349.52642822265625,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -2095,7 +2121,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 3765.005859375,
+                                        "startTime": 349.52642822265625,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -2786,7 +2812,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 3765.005859375,
+                                        "startTime": 349.52642822265625,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -3477,7 +3503,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 3765.005859375,
+                                        "startTime": 349.52642822265625,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -4168,7 +4194,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 3765.005859375,
+                                        "startTime": 349.52642822265625,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -4859,7 +4885,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 3765.005859375,
+                                        "startTime": 349.52642822265625,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -5550,7 +5576,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 3765.005859375,
+                                        "startTime": 349.52642822265625,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -6319,7 +6345,7 @@
                                             0.02500000037252903
                                         ],
                                         "is_looping": false,
-                                        "startTime": 3765.005859375,
+                                        "startTime": 349.52642822265625,
                                         "totalDuration": 0.6749998927116394
                                     },
                                     "collider_data": null,
@@ -7010,7 +7036,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": true,
-                                        "startTime": 3765.005859375,
+                                        "startTime": 349.52642822265625,
                                         "totalDuration": 0.07999999821186066
                                     },
                                     "collider_data": null,
@@ -7692,33 +7718,6 @@
             },
             {
                 "data": {
-                    "position": {
-                        "x": 462.9319763183594,
-                        "y": 244.4990234375
-                    },
-                    "rotation": 0.0,
-                    "scale": {
-                        "x": 189.42138671875,
-                        "y": 189.42138671875
-                    }
-                },
-                "type": "Components::Transform2D"
-            },
-            {
-                "data": {},
-                "type": "Components::UI"
-            },
-            {
-                "data": {
-                    "a": 1.0,
-                    "b": 1.0,
-                    "g": 1.0,
-                    "r": 1.0
-                },
-                "type": "Components::Color"
-            },
-            {
-                "data": {
                     "path": "images/skill_smash.png"
                 },
                 "type": "Components::Texture"
@@ -8381,26 +8380,32 @@
             },
             {
                 "data": {
-                    "atlas_indices": [
-                        35
-                    ],
-                    "before_times": [
-                        0.0
-                    ],
-                    "durations": [
-                        0.07999999821186066
-                    ],
-                    "is_looping": true,
-                    "startTime": 3765.005859375,
-                    "totalDuration": 0.07999999821186066
+                    "position": {
+                        "x": 464.0232849121094,
+                        "y": 208.42147827148438
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 189.42138671875,
+                        "y": 189.42138671875
+                    }
                 },
-                "type": "Components::Animation"
+                "type": "Components::Transform2D"
+            },
+            {
+                "data": {
+                    "anchor": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "type": "Components::UI"
             }
         ],
         "filepath": "prefabs/SkillSmash.json",
         "layers": [
             "default",
-            "main_menu_6"
+            "main_menu_background"
         ],
         "uuid": "443cdb81-cc56-40ef0-9f7e-e47e6279a8f4"
     },
