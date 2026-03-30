@@ -194,6 +194,24 @@
                       ]
                     }
                   }
+                },
+                {
+                  "first": "Options",
+                  "second": {
+                    "animation": null,
+                    "audio": null,
+                    "name": "Options",
+                    "on_enter_callback": {
+                      "name": "main_menu_options_on_enter"
+                    },
+                    "on_exit_callback": {
+                      "name": "main_menu_options_on_exit"
+                    },
+                    "on_update_callback": {
+                      "name": "main_menu_options_on_update"
+                    },
+                    "property_animation": null
+                  }
                 }
               ]
             },
@@ -520,6 +538,70 @@
                     },
                     "on_update_callback": {
                       "name": "main_menu_start_on_update"
+                    },
+                    "property_animation": null
+                  }
+                },
+                {
+                  "first": "Options",
+                  "second": {
+                    "animation": {
+                      "animation": {
+                        "atlas_indices": [
+                          0
+                        ],
+                        "before_times": [
+                          0.0
+                        ],
+                        "durations": [
+                          0.0010000000474974513
+                        ],
+                        "is_looping": true,
+                        "startTime": 214.15036010742188,
+                        "totalDuration": 0.0010000000474974513
+                      },
+                      "collider_data": null,
+                      "scale": {
+                        "x": 1600.0,
+                        "y": 900.0
+                      },
+                      "texture": {
+                        "path": "images/NewMainMenu/Carriage.png"
+                      },
+                      "texture_atlas": {
+                        "drawIndex": -1,
+                        "tex_coords_list": [
+                          [
+                            {
+                              "x": 0.0,
+                              "y": 1.0
+                            },
+                            {
+                              "x": 1.0,
+                              "y": 1.0
+                            },
+                            {
+                              "x": 1.0,
+                              "y": 0.0
+                            },
+                            {
+                              "x": 0.0,
+                              "y": 0.0
+                            }
+                          ]
+                        ]
+                      }
+                    },
+                    "audio": null,
+                    "name": "Options",
+                    "on_enter_callback": {
+                      "name": "main_menu_options_on_enter"
+                    },
+                    "on_exit_callback": {
+                      "name": "main_menu_options_on_exit"
+                    },
+                    "on_update_callback": {
+                      "name": "main_menu_options_on_update"
                     },
                     "property_animation": null
                   }
@@ -895,6 +977,44 @@
                     },
                     "on_update_callback": {
                       "name": "main_menu_transition_on_update"
+                    },
+                    "property_animation": {
+                      "duration": 0.0010000000474974513,
+                      "is_looping": false,
+                      "tracks": [
+                        {
+                          "easing": "Linear",
+                          "keyframes": [
+                            {
+                              "time": 0.0,
+                              "value": 0.0
+                            },
+                            {
+                              "time": 0.0010000000474974513,
+                              "value": 0.0
+                            }
+                          ],
+                          "target_component": "Components::Color",
+                          "target_field_path": "a"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "first": "Options",
+                  "second": {
+                    "animation": null,
+                    "audio": null,
+                    "name": "Options",
+                    "on_enter_callback": {
+                      "name": "main_menu_options_on_enter"
+                    },
+                    "on_exit_callback": {
+                      "name": "main_menu_options_on_exit"
+                    },
+                    "on_update_callback": {
+                      "name": "main_menu_options_on_update"
                     },
                     "property_animation": {
                       "duration": 0.0010000000474974513,
@@ -1880,6 +2000,234 @@
                       ]
                     }
                   }
+                },
+                {
+                  "first": "Options",
+                  "second": {
+                    "animation": {
+                      "animation": {
+                        "atlas_indices": [
+                          8
+                        ],
+                        "before_times": [
+                          0.0
+                        ],
+                        "durations": [
+                          0.07500000298023224
+                        ],
+                        "is_looping": true,
+                        "startTime": 214.15036010742188,
+                        "totalDuration": 0.07500000298023224
+                      },
+                      "collider_data": null,
+                      "scale": {
+                        "x": 1600.0,
+                        "y": 900.0
+                      },
+                      "texture": {
+                        "path": "images/NewMainMenu/Carriage-Sheet.png"
+                      },
+                      "texture_atlas": {
+                        "drawIndex": -1,
+                        "tex_coords_list": [
+                          [
+                            {
+                              "x": 0.0,
+                              "y": 1.0
+                            },
+                            {
+                              "x": 0.1111111119389534,
+                              "y": 1.0
+                            },
+                            {
+                              "x": 0.1111111119389534,
+                              "y": 0.0
+                            },
+                            {
+                              "x": 0.0,
+                              "y": 0.0
+                            }
+                          ],
+                          [
+                            {
+                              "x": 0.1111111119389534,
+                              "y": 1.0
+                            },
+                            {
+                              "x": 0.2222222238779068,
+                              "y": 1.0
+                            },
+                            {
+                              "x": 0.2222222238779068,
+                              "y": 0.0
+                            },
+                            {
+                              "x": 0.1111111119389534,
+                              "y": 0.0
+                            }
+                          ],
+                          [
+                            {
+                              "x": 0.2222222238779068,
+                              "y": 1.0
+                            },
+                            {
+                              "x": 0.3333333432674408,
+                              "y": 1.0
+                            },
+                            {
+                              "x": 0.3333333432674408,
+                              "y": 0.0
+                            },
+                            {
+                              "x": 0.2222222238779068,
+                              "y": 0.0
+                            }
+                          ],
+                          [
+                            {
+                              "x": 0.3333333432674408,
+                              "y": 1.0
+                            },
+                            {
+                              "x": 0.4444444477558136,
+                              "y": 1.0
+                            },
+                            {
+                              "x": 0.4444444477558136,
+                              "y": 0.0
+                            },
+                            {
+                              "x": 0.3333333432674408,
+                              "y": 0.0
+                            }
+                          ],
+                          [
+                            {
+                              "x": 0.4444444477558136,
+                              "y": 1.0
+                            },
+                            {
+                              "x": 0.5555555820465088,
+                              "y": 1.0
+                            },
+                            {
+                              "x": 0.5555555820465088,
+                              "y": 0.0
+                            },
+                            {
+                              "x": 0.4444444477558136,
+                              "y": 0.0
+                            }
+                          ],
+                          [
+                            {
+                              "x": 0.5555555820465088,
+                              "y": 1.0
+                            },
+                            {
+                              "x": 0.6666666865348816,
+                              "y": 1.0
+                            },
+                            {
+                              "x": 0.6666666865348816,
+                              "y": 0.0
+                            },
+                            {
+                              "x": 0.5555555820465088,
+                              "y": 0.0
+                            }
+                          ],
+                          [
+                            {
+                              "x": 0.6666666865348816,
+                              "y": 1.0
+                            },
+                            {
+                              "x": 0.7777777910232544,
+                              "y": 1.0
+                            },
+                            {
+                              "x": 0.7777777910232544,
+                              "y": 0.0
+                            },
+                            {
+                              "x": 0.6666666865348816,
+                              "y": 0.0
+                            }
+                          ],
+                          [
+                            {
+                              "x": 0.7777777910232544,
+                              "y": 1.0
+                            },
+                            {
+                              "x": 0.8888888955116272,
+                              "y": 1.0
+                            },
+                            {
+                              "x": 0.8888888955116272,
+                              "y": 0.0
+                            },
+                            {
+                              "x": 0.7777777910232544,
+                              "y": 0.0
+                            }
+                          ],
+                          [
+                            {
+                              "x": 0.8888888955116272,
+                              "y": 1.0
+                            },
+                            {
+                              "x": 1.0,
+                              "y": 1.0
+                            },
+                            {
+                              "x": 1.0,
+                              "y": 0.0
+                            },
+                            {
+                              "x": 0.8888888955116272,
+                              "y": 0.0
+                            }
+                          ]
+                        ]
+                      }
+                    },
+                    "audio": null,
+                    "name": "Options",
+                    "on_enter_callback": {
+                      "name": "main_menu_options_on_enter"
+                    },
+                    "on_exit_callback": {
+                      "name": "main_menu_options_on_exit"
+                    },
+                    "on_update_callback": {
+                      "name": "main_menu_options_on_update"
+                    },
+                    "property_animation": {
+                      "duration": 0.0010000000474974513,
+                      "is_looping": false,
+                      "tracks": [
+                        {
+                          "easing": "Linear",
+                          "keyframes": [
+                            {
+                              "time": 0.0,
+                              "value": 1.0
+                            },
+                            {
+                              "time": 0.0010000000474974513,
+                              "value": 1.0
+                            }
+                          ],
+                          "target_component": "Components::Color",
+                          "target_field_path": "a"
+                        }
+                      ]
+                    }
+                  }
                 }
               ]
             },
@@ -2228,6 +2576,44 @@
                       ]
                     }
                   }
+                },
+                {
+                  "first": "Options",
+                  "second": {
+                    "animation": null,
+                    "audio": null,
+                    "name": "Options",
+                    "on_enter_callback": {
+                      "name": "main_menu_options_on_enter"
+                    },
+                    "on_exit_callback": {
+                      "name": "main_menu_options_on_exit"
+                    },
+                    "on_update_callback": {
+                      "name": "main_menu_options_on_update"
+                    },
+                    "property_animation": {
+                      "duration": 20.0,
+                      "is_looping": true,
+                      "tracks": [
+                        {
+                          "easing": "Linear",
+                          "keyframes": [
+                            {
+                              "time": 0.0,
+                              "value": 2400.0
+                            },
+                            {
+                              "time": 20.0,
+                              "value": -800.0
+                            }
+                          ],
+                          "target_component": "Components::Transform2D",
+                          "target_field_path": "position.x"
+                        }
+                      ]
+                    }
+                  }
                 }
               ]
             },
@@ -2504,6 +2890,74 @@
                       ]
                     }
                   }
+                },
+                {
+                  "first": "Options",
+                  "second": {
+                    "animation": null,
+                    "audio": null,
+                    "name": "Options",
+                    "on_enter_callback": {
+                      "name": "main_menu_options_on_enter"
+                    },
+                    "on_exit_callback": {
+                      "name": "main_menu_options_on_exit"
+                    },
+                    "on_update_callback": {
+                      "name": "main_menu_options_on_update"
+                    },
+                    "property_animation": {
+                      "duration": 0.0010000000474974513,
+                      "is_looping": false,
+                      "tracks": [
+                        {
+                          "easing": "Linear",
+                          "keyframes": [
+                            {
+                              "time": 0.0,
+                              "value": 1.0
+                            },
+                            {
+                              "time": 0.0010000000474974513,
+                              "value": 1.0
+                            }
+                          ],
+                          "target_component": "Components::Color",
+                          "target_field_path": "a"
+                        },
+                        {
+                          "easing": "Linear",
+                          "keyframes": [
+                            {
+                              "time": 0.0,
+                              "value": 1600.0
+                            },
+                            {
+                              "time": 0.0010000000474974513,
+                              "value": 1600.0
+                            }
+                          ],
+                          "target_component": "Components::Transform2D",
+                          "target_field_path": "scale.x"
+                        },
+                        {
+                          "easing": "Linear",
+                          "keyframes": [
+                            {
+                              "time": 0.0,
+                              "value": 900.0
+                            },
+                            {
+                              "time": 0.0010000000474974513,
+                              "value": 900.0
+                            }
+                          ],
+                          "target_component": "Components::Transform2D",
+                          "target_field_path": "scale.y"
+                        }
+                      ]
+                    }
+                  }
                 }
               ]
             },
@@ -2661,6 +3115,44 @@
                       "name": "main_menu_start_on_update"
                     },
                     "property_animation": null
+                  }
+                },
+                {
+                  "first": "Options",
+                  "second": {
+                    "animation": null,
+                    "audio": null,
+                    "name": "Options",
+                    "on_enter_callback": {
+                      "name": "main_menu_options_on_enter"
+                    },
+                    "on_exit_callback": {
+                      "name": "main_menu_options_on_exit"
+                    },
+                    "on_update_callback": {
+                      "name": "main_menu_options_on_update"
+                    },
+                    "property_animation": {
+                      "duration": 0.0010000000474974513,
+                      "is_looping": false,
+                      "tracks": [
+                        {
+                          "easing": "Linear",
+                          "keyframes": [
+                            {
+                              "time": 0.0,
+                              "value": 0.0
+                            },
+                            {
+                              "time": 0.0010000000474974513,
+                              "value": 0.0
+                            }
+                          ],
+                          "target_component": "Components::Color",
+                          "target_field_path": "a"
+                        }
+                      ]
+                    }
                   }
                 }
               ]
@@ -2845,6 +3337,44 @@
                             },
                             {
                               "time": 3.0,
+                              "value": 0.0
+                            }
+                          ],
+                          "target_component": "Components::Color",
+                          "target_field_path": "a"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "first": "Options",
+                  "second": {
+                    "animation": null,
+                    "audio": null,
+                    "name": "Options",
+                    "on_enter_callback": {
+                      "name": "main_menu_options_on_enter"
+                    },
+                    "on_exit_callback": {
+                      "name": "main_menu_options_on_exit"
+                    },
+                    "on_update_callback": {
+                      "name": "main_menu_options_on_update"
+                    },
+                    "property_animation": {
+                      "duration": 0.0010000000474974513,
+                      "is_looping": false,
+                      "tracks": [
+                        {
+                          "easing": "Linear",
+                          "keyframes": [
+                            {
+                              "time": 0.0,
+                              "value": 0.0
+                            },
+                            {
+                              "time": 0.0010000000474974513,
                               "value": 0.0
                             }
                           ],
@@ -3055,6 +3585,24 @@
                       ]
                     }
                   }
+                },
+                {
+                  "first": "Options",
+                  "second": {
+                    "animation": null,
+                    "audio": null,
+                    "name": "Options",
+                    "on_enter_callback": {
+                      "name": "main_menu_options_on_enter"
+                    },
+                    "on_exit_callback": {
+                      "name": "main_menu_options_on_exit"
+                    },
+                    "on_update_callback": {
+                      "name": "main_menu_options_on_update"
+                    },
+                    "property_animation": null
+                  }
                 }
               ]
             },
@@ -3255,6 +3803,24 @@
                         }
                       ]
                     }
+                  }
+                },
+                {
+                  "first": "Options",
+                  "second": {
+                    "animation": null,
+                    "audio": null,
+                    "name": "Options",
+                    "on_enter_callback": {
+                      "name": "main_menu_options_on_enter"
+                    },
+                    "on_exit_callback": {
+                      "name": "main_menu_options_on_exit"
+                    },
+                    "on_update_callback": {
+                      "name": "main_menu_options_on_update"
+                    },
+                    "property_animation": null
                   }
                 }
               ]
@@ -3457,6 +4023,24 @@
                       ]
                     }
                   }
+                },
+                {
+                  "first": "Options",
+                  "second": {
+                    "animation": null,
+                    "audio": null,
+                    "name": "Options",
+                    "on_enter_callback": {
+                      "name": "main_menu_options_on_enter"
+                    },
+                    "on_exit_callback": {
+                      "name": "main_menu_options_on_exit"
+                    },
+                    "on_update_callback": {
+                      "name": "main_menu_options_on_update"
+                    },
+                    "property_animation": null
+                  }
                 }
               ]
             },
@@ -3658,6 +4242,24 @@
                       ]
                     }
                   }
+                },
+                {
+                  "first": "Options",
+                  "second": {
+                    "animation": null,
+                    "audio": null,
+                    "name": "Options",
+                    "on_enter_callback": {
+                      "name": "main_menu_options_on_enter"
+                    },
+                    "on_exit_callback": {
+                      "name": "main_menu_options_on_exit"
+                    },
+                    "on_update_callback": {
+                      "name": "main_menu_options_on_update"
+                    },
+                    "property_animation": null
+                  }
                 }
               ]
             },
@@ -3813,6 +4415,44 @@
                     },
                     "on_update_callback": {
                       "name": "main_menu_start_on_update"
+                    },
+                    "property_animation": {
+                      "duration": 45.0,
+                      "is_looping": true,
+                      "tracks": [
+                        {
+                          "easing": "Linear",
+                          "keyframes": [
+                            {
+                              "time": 0.0,
+                              "value": 4000.0
+                            },
+                            {
+                              "time": 45.0,
+                              "value": -2400.0
+                            }
+                          ],
+                          "target_component": "Components::Transform2D",
+                          "target_field_path": "position.x"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "first": "Options",
+                  "second": {
+                    "animation": null,
+                    "audio": null,
+                    "name": "Options",
+                    "on_enter_callback": {
+                      "name": "main_menu_options_on_enter"
+                    },
+                    "on_exit_callback": {
+                      "name": "main_menu_options_on_exit"
+                    },
+                    "on_update_callback": {
+                      "name": "main_menu_options_on_update"
                     },
                     "property_animation": {
                       "duration": 45.0,

@@ -28,9 +28,13 @@
 #include "InputManager.h"
 #include "KeyCodes.h"
 #include "Time.h"
+#include "Core.h"
 #include "Audio/AudioSystem.h"
 #include "SceneManager.h"
 #include "LevelManager.h"
+#include "WindowManager.h"
+#include "FileIO/Settings.h"
+#include "FileIO/SettingsManager.h"
 #include "Math/Vector2D.h"
 #include "Math/Vector3D.h"
 #include "Math/Vector4D.h"
@@ -136,6 +140,8 @@ namespace Engine {
     bind_input();
     bind_time();
     bind_audio();
+    bind_settings();
+    bind_app();
     bind_scene_manager();
     bind_level_manager();
 
@@ -167,9 +173,11 @@ namespace Engine {
     // runs AFTER this shutdown — by which point the lua_State is gone.
     {
       auto& fr = FunctionRegistry::instance();
+      using Sig0 = void();
       using Sig1 = void(ECS::Entity);
       using Sig2 = void(ECS::Entity, ECS::Entity);
       for (const auto& name : lua_registered_functions_) {
+        fr.unregister_function<Sig0>(name);
         fr.unregister_function<Sig1>(name);
         fr.unregister_function<Sig2>(name);
       }
@@ -530,6 +538,15 @@ namespace Engine {
       }
       return sol::lua_nil;
     };
+
+    ecs["get_entity_by_name"] = [](sol::this_state ts, const std::string& name) -> sol::object {
+      for (auto entity : ECS::get_all_entities()) {
+        if (entity.get_name() == name) {
+          return sol::make_object(sol::state_view(ts), entity);
+        }
+      }
+      return sol::lua_nil;
+    };
   }
 
   // ============================================================================
@@ -747,6 +764,94 @@ namespace Engine {
   }
 
   // ============================================================================
+  // bind_settings
+  // ============================================================================
+
+  void LuaManager::bind_settings() {
+    auto& L = *lua_;
+
+    sol::table settings = L.create_named_table("Settings");
+
+    settings["get_fullscreen"] = []() {
+      return Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get().fullscreen;
+    };
+
+    settings["set_fullscreen"] = [](bool fullscreen) {
+      auto& game_settings = Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get_mutable();
+      game_settings.fullscreen = fullscreen;
+      Engine::WindowManager::set_fullscreen(game_settings.fullscreen);
+      Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::save();
+      return game_settings.fullscreen;
+    };
+
+    settings["get_vsync"] = []() {
+      return Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get().vsync;
+    };
+
+    settings["set_vsync"] = [](bool enabled) {
+      auto& game_settings = Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get_mutable();
+      game_settings.vsync = enabled;
+      Engine::WindowManager::set_vsync(game_settings.vsync);
+      Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::save();
+      return game_settings.vsync;
+    };
+
+    settings["get_bgm_volume"] = []() {
+      return Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get().bgm_volume;
+    };
+
+    settings["set_bgm_volume"] = [](float volume) {
+      auto& game_settings = Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get_mutable();
+      game_settings.bgm_volume = std::clamp(volume, 0.0f, 1.0f);
+      Engine::AudioSystem::setBGMVolume(game_settings.bgm_volume);
+      Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::save();
+      return game_settings.bgm_volume;
+    };
+
+    settings["get_sfx_volume"] = []() {
+      return Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get().sfx_volume;
+    };
+
+    settings["set_sfx_volume"] = [](float volume) {
+      auto& game_settings = Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get_mutable();
+      game_settings.sfx_volume = std::clamp(volume, 0.0f, 1.0f);
+      Engine::AudioSystem::setSFXVolume(game_settings.sfx_volume);
+      Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::save();
+      return game_settings.sfx_volume;
+    };
+
+    settings["save_game"] = []() {
+      return Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::save();
+    };
+
+    settings["reload_game"] = []() {
+      if (!Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::load("Assets/settings/game_settings.json")) {
+        return false;
+      }
+
+      const auto& game_settings = Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get();
+      Engine::WindowManager::set_fullscreen(game_settings.fullscreen);
+      Engine::WindowManager::set_vsync(game_settings.vsync);
+      Engine::AudioSystem::setBGMVolume(game_settings.bgm_volume);
+      Engine::AudioSystem::setSFXVolume(game_settings.sfx_volume);
+      return true;
+    };
+  }
+
+  // ============================================================================
+  // bind_app
+  // ============================================================================
+
+  void LuaManager::bind_app() {
+    auto& L = *lua_;
+
+    sol::table app = L.create_named_table("App");
+    app["stop"] = []() {
+      Engine::Core::stop();
+    };
+  }
+
+  // ============================================================================
   // bind_scene_manager
   // ============================================================================
 
@@ -929,13 +1034,30 @@ namespace Engine {
 
       // Skip if already registered as a C++ function (not one we registered from Lua before)
       auto& fr = FunctionRegistry::instance();
+      using Sig0 = void();
       using Sig1 = void(ECS::Entity);
       using Sig2 = void(ECS::Entity, ECS::Entity);
-      if (fr.has_function<Sig1>(func_name) && lua_registered_functions_.count(func_name) == 0) return;
+      if (lua_registered_functions_.count(func_name) == 0 &&
+          (fr.has_function<Sig0>(func_name) ||
+           fr.has_function<Sig1>(func_name) ||
+           fr.has_function<Sig2>(func_name))) {
+        return;
+      }
 
       // Capture the Lua function and wrap it
       sol::protected_function lua_func = val_obj.as<sol::protected_function>();
       std::string captured_name = func_name; // capture for lambda
+
+      // Register zero-argument signature for UI click callbacks.
+      fr.register_function<Sig0>(func_name, std::function<Sig0>(
+        [lua_func, captured_name]() {
+          auto result = lua_func();
+          if (!result.valid()) {
+            sol::error err = result;
+            Log::error("[Lua] Error calling '{}': {}", captured_name, err.what());
+          }
+        }
+      ));
 
       // Register single-entity signature
       fr.register_function<Sig1>(func_name, std::function<Sig1>(
@@ -975,9 +1097,11 @@ namespace Engine {
 
     // 1. Remove all Lua-registered functions from FunctionRegistry
     auto& fr = FunctionRegistry::instance();
+    using Sig0 = void();
     using Sig1 = void(ECS::Entity);
     using Sig2 = void(ECS::Entity, ECS::Entity);
     for (const auto& name : lua_registered_functions_) {
+      fr.unregister_function<Sig0>(name);
       fr.unregister_function<Sig1>(name);
       fr.unregister_function<Sig2>(name);
     }

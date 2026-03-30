@@ -112,6 +112,8 @@ namespace Engine {
     void bind_input();
     void bind_time();
     void bind_audio();
+    void bind_settings();
+    void bind_app();
     void bind_scene_manager();
     void bind_level_manager();
     void load_scripts();
