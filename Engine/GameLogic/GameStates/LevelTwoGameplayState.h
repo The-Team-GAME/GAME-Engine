@@ -36,6 +36,10 @@ class LevelTwoGameplayState : public Engine::Scene
   // UI entity IDs
   Engine::ECS::EntityID pause_button_id = 0;
   Engine::ECS::EntityID tips_button_id = 0;
+
+  // Ambient train bump shake
+  float ambient_shake_next_time_ = 0.0f;   // 3-second hard bump
+  float train_rumble_next_time_  = 0.0f;   // 0.5-second low rumble
   float oldman_tips_request_cooldown_until_ = 0.0f;
   Engine::ECS::EntityID upgrade_btn_id_[4] = { 0, 0, 0, 0 };
   int current_upgrade_threshold_ = 2;
@@ -70,7 +74,7 @@ public:
   void load() {
     // LevelTwoGameplayState is LevelTwo-only.
     if (Engine::LevelManager::get_current_level_path().empty()) {
-      Engine::LevelManager::open_level(DEFAULT_LEVEL_PATH);
+      Engine::Resources::open_level(DEFAULT_LEVEL_PATH);
     }
 
     current_upgrade_threshold_ = 2;
@@ -147,6 +151,10 @@ public:
   void init() {
     Engine::AudioSystem::playSceneMusic(GAMEPLAY_BGM_EVENT, 0.3f, true);
     Engine::AudioSystem::playEvent(GAMEPLAY_BATTLECRY_EVENT);
+
+    // Schedule first ambient train shakes
+    ambient_shake_next_time_ = Engine::Time::get_time() + 3.0f;
+    train_rumble_next_time_  = Engine::Time::get_time() + 0.5f;
   };
 
   void update() {
@@ -225,6 +233,24 @@ public:
 
     Engine::UpgradeUIStateMachine::instance().update();
     update_upgrade_button();
+
+    // Train shakes - intervals are long enough that combat shakes (decay ~0.4s)
+    // always clear before the next train shake fires, so they never stack.
+    {
+      const float now = Engine::Time::get_time();
+
+      // Continuous low-level rumble every 0.5s (combat shakes decay in ~0.4s, so no overlap)
+      if (now >= train_rumble_next_time_) {
+        Engine::Systems::add_camera_shake(0.01f);
+        train_rumble_next_time_ = now + 0.5f;
+      }
+
+      // Periodic hard bump every 3 seconds
+      if (now >= ambient_shake_next_time_) {
+        Engine::Systems::add_camera_shake(0.2f);
+        ambient_shake_next_time_ = now + 3.0f;
+      }
+    }
   };
 
   void update_upgrade_button() {
@@ -314,6 +340,8 @@ public:
     Engine::UpgradeUIStateMachine::instance().set_picker_open_callback({});
     Engine::UpgradeUIStateMachine::instance().reset();
     upgrade_btn_anim_time_ = 0.0f;
+    ambient_shake_next_time_ = 0.0f;
+    train_rumble_next_time_  = 0.0f;
   };
 
   void unload() {

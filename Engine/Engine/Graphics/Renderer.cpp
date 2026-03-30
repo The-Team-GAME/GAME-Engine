@@ -1901,6 +1901,8 @@ namespace Engine {
 
           int current_frame = static_cast<int>(time_in_anim / anim_config.frame_duration);
           current_frame = std::clamp(current_frame, 0, total_frames - 1);
+          
+          int actual_frame = anim_config.get_actual_frame_index(current_frame);
 
           // Calculate the tile index offset for animation
           // The texture is laid out as a 2D grid:
@@ -1920,8 +1922,8 @@ namespace Engine {
           int local_row = base_tile / anim_config.prop_cols;
 
           // Frame position in the animation grid
-          int frame_col = current_frame % anim_config.anim_cols;
-          int frame_row = current_frame / anim_config.anim_cols;
+          int frame_col = actual_frame % anim_config.anim_cols;
+          int frame_row = actual_frame / anim_config.anim_cols;
 
           // Calculate sheet position using stored sheet dimensions (avoids integer division precision loss)
           int tile_col = frame_col * anim_config.prop_cols + local_col;

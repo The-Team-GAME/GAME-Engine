@@ -22,19 +22,47 @@
             },
             {
                 "data": {
-                    "path": "images/UI/MainMenu/BackGround/BackSky.png"
+                    "blueprint_id": "CatMonkeyCityLayer",
+                    "current_state_name": "Active",
+                    "property_anim_playing": false,
+                    "states": [
+                        {
+                            "first": "Active",
+                            "second": {
+                                "animation": null,
+                                "audio": null,
+                                "name": "Active",
+                                "on_enter_callback": {
+                                    "name": "CatMonkeyStateCallbacks::city_layer_active_on_enter"
+                                },
+                                "on_exit_callback": {
+                                    "name": ""
+                                },
+                                "on_update_callback": {
+                                    "name": "CatMonkeyStateCallbacks::city_layer_active_on_update"
+                                },
+                                "property_animation": null
+                            }
+                        }
+                    ]
+                },
+                "type": "Components::StateMachine"
+            },
+            {
+                "data": {
+                    "path": "images/Background/BackSky1.png"
                 },
                 "type": "Components::Texture"
             },
             {
                 "data": {
                     "position": {
-                        "x": 2340.3564453125,
-                        "y": 399.69451904296875
+                        "x": -5000.0,
+                        "y": 300.0
                     },
                     "rotation": 0.0,
                     "scale": {
-                        "x": 5940.177734375,
+                        "x": 15000.0,
                         "y": 1442.3861083984375
                     }
                 },
@@ -43,7 +71,7 @@
         ],
         "filepath": "prefabs/cityscape.json",
         "layers": [
-            "background"
+            "default"
         ],
         "uuid": "b647f4b3-ecf3-40f96-8620-2c6d932980b1"
     },
