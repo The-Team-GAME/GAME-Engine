@@ -42,6 +42,8 @@ local OPTIONS_ENTITY_NAMES = {
   "OptionsBGMRight",
   "OptionsSFXLeft",
   "OptionsSFXRight",
+  "OptionsScreenLeft",
+  "OptionsScreenRight",
 }
 
 local BUTTON_TEXTURES = {
@@ -81,15 +83,17 @@ local OPTIONS_TARGETS = {
   OptionsPanel = { x = 933.2921, y = 394.4612, delay = 0.00 },
   OptionsBGMLabel = { x = 645.8967, y = 256.8189, delay = 0.03 },
   OptionsBGMBar = { x = 877.0935, y = 303.8838, delay = 0.05 },
-  OptionsBGMLeft = { x = 700.0000, y = 303.8838, delay = 0.07 },
-  OptionsBGMRight = { x = 1054.0000, y = 303.8838, delay = 0.09 },
+  OptionsBGMLeft = { x = 626.0000, y = 303.8838, delay = 0.07 },
+  OptionsBGMRight = { x = 1130.0000, y = 303.8838, delay = 0.09 },
   OptionsSFXLabel = { x = 639.9020, y = 357.9290, delay = 0.11 },
   OptionsSFXBar = { x = 877.3156, y = 413.0756, delay = 0.13 },
-  OptionsSFXLeft = { x = 700.0000, y = 413.0756, delay = 0.15 },
-  OptionsSFXRight = { x = 1054.0000, y = 413.0756, delay = 0.17 },
+  OptionsSFXLeft = { x = 626.0000, y = 413.0756, delay = 0.15 },
+  OptionsSFXRight = { x = 1130.0000, y = 413.0756, delay = 0.17 },
   OptionsScreenLabel = { x = 681.9982, y = 471.0284, delay = 0.19 },
+  OptionsScreenLeft = { x = 626.0000, y = 528.9769, delay = 0.20 },
   OptionsWindowed = { x = 748.9164, y = 528.9769, delay = 0.21 },
   OptionsFullscreen = { x = 1001.4919, y = 528.9769, delay = 0.23 },
+  OptionsScreenRight = { x = 1130.0000, y = 528.9769, delay = 0.24 },
 }
 
 local SLIDE_DURATION = 0.25
@@ -315,15 +319,15 @@ local function menu_is_ready()
 end
 
 local function volume_to_step(volume)
-  return clamp(math.floor(volume * 10.0 + 0.5), 1, 10)
+  return clamp(math.floor(volume * 10.0 + 0.5), 0, 10)
 end
 
 local function step_to_volume(step)
-  return clamp(step, 1, 10) / 10.0
+  return clamp(step, 0, 10) / 10.0
 end
 
 local function get_slider_texture_path(step)
-  return string.format("images/NewMainMenu/Options/%d.png", clamp(step, 1, 10))
+  return string.format("images/NewMainMenu/Options/%d.png", clamp(step, 0, 10))
 end
 
 local function sync_options_visuals()
