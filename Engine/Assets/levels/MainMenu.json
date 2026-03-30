@@ -2227,11 +2227,11 @@
                           "keyframes": [
                             {
                               "time": 0.0,
-                              "value": 1.0
+                              "value": 0.0
                             },
                             {
                               "time": 0.0010000000474974513,
-                              "value": 1.0
+                              "value": 0.0
                             }
                           ],
                           "target_component": "Components::Color",
@@ -2927,11 +2927,11 @@
                           "keyframes": [
                             {
                               "time": 0.0,
-                              "value": 1.0
+                              "value": 0.0
                             },
                             {
                               "time": 0.0010000000474974513,
-                              "value": 1.0
+                              "value": 0.0
                             }
                           ],
                           "target_component": "Components::Color",
