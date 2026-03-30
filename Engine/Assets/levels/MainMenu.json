@@ -4835,7 +4835,7 @@
             "data": {
               "aabb": {
                 "half_height": 23.75,
-                "half_width": 14.58333333333333,
+                "half_width": 14.583333333333332,
                 "pos": {
                   "x": -1100.0,
                   "y": 303.8837890625
@@ -4859,7 +4859,7 @@
               "radius": 0.0,
               "resolve_collisions": false,
               "type": "AABB",
-              "width": 29.16666666666666
+              "width": 29.166666666666664
             },
             "type": "Components::BoxCollider"
           },
@@ -4915,8 +4915,8 @@
               },
               "rotation": 0.0,
               "scale": {
-                "x": 42.0,
-                "y": 42.0
+                "x": 29.166666666666664,
+                "y": 47.5
               }
             },
             "type": "Components::Transform2D"
@@ -4935,7 +4935,7 @@
             "data": {
               "aabb": {
                 "half_height": 23.75,
-                "half_width": 14.58333333333333,
+                "half_width": 14.583333333333332,
                 "pos": {
                   "x": -746.0,
                   "y": 303.8837890625
@@ -4959,7 +4959,7 @@
               "radius": 0.0,
               "resolve_collisions": false,
               "type": "AABB",
-              "width": 29.16666666666666
+              "width": 29.166666666666664
             },
             "type": "Components::BoxCollider"
           },
@@ -5015,8 +5015,8 @@
               },
               "rotation": 0.0,
               "scale": {
-                "x": 42.0,
-                "y": 42.0
+                "x": 29.166666666666664,
+                "y": 47.5
               }
             },
             "type": "Components::Transform2D"
@@ -5035,7 +5035,7 @@
             "data": {
               "aabb": {
                 "half_height": 23.75,
-                "half_width": 14.58333333333333,
+                "half_width": 14.583333333333332,
                 "pos": {
                   "x": -1100.0,
                   "y": 413.0755920410156
@@ -5059,7 +5059,7 @@
               "radius": 0.0,
               "resolve_collisions": false,
               "type": "AABB",
-              "width": 29.16666666666666
+              "width": 29.166666666666664
             },
             "type": "Components::BoxCollider"
           },
@@ -5115,8 +5115,8 @@
               },
               "rotation": 0.0,
               "scale": {
-                "x": 42.0,
-                "y": 42.0
+                "x": 29.166666666666664,
+                "y": 47.5
               }
             },
             "type": "Components::Transform2D"
@@ -5135,7 +5135,7 @@
             "data": {
               "aabb": {
                 "half_height": 23.75,
-                "half_width": 14.58333333333333,
+                "half_width": 14.583333333333332,
                 "pos": {
                   "x": -746.0,
                   "y": 413.0755920410156
@@ -5159,7 +5159,7 @@
               "radius": 0.0,
               "resolve_collisions": false,
               "type": "AABB",
-              "width": 29.16666666666666
+              "width": 29.166666666666664
             },
             "type": "Components::BoxCollider"
           },
@@ -5215,8 +5215,8 @@
               },
               "rotation": 0.0,
               "scale": {
-                "x": 42.0,
-                "y": 42.0
+                "x": 29.166666666666664,
+                "y": 47.5
               }
             },
             "type": "Components::Transform2D"
@@ -5458,7 +5458,7 @@
             "data": {
               "aabb": {
                 "half_height": 23.75,
-                "half_width": 14.58333333333333,
+                "half_width": 14.583333333333332,
                 "pos": {
                   "x": -1100.0,
                   "y": 303.8837890625
@@ -5482,7 +5482,7 @@
               "radius": 0.0,
               "resolve_collisions": false,
               "type": "AABB",
-              "width": 29.16666666666666
+              "width": 29.166666666666664
             },
             "type": "Components::BoxCollider"
           },
@@ -5538,8 +5538,8 @@
               },
               "rotation": 0.0,
               "scale": {
-                "x": 42.0,
-                "y": 42.0
+                "x": 29.166666666666664,
+                "y": 47.5
               }
             },
             "type": "Components::Transform2D"
@@ -5558,7 +5558,7 @@
             "data": {
               "aabb": {
                 "half_height": 23.75,
-                "half_width": 14.58333333333333,
+                "half_width": 14.583333333333332,
                 "pos": {
                   "x": -746.0,
                   "y": 303.8837890625
@@ -5582,7 +5582,7 @@
               "radius": 0.0,
               "resolve_collisions": false,
               "type": "AABB",
-              "width": 29.16666666666666
+              "width": 29.166666666666664
             },
             "type": "Components::BoxCollider"
           },
@@ -5638,8 +5638,8 @@
               },
               "rotation": 0.0,
               "scale": {
-                "x": 42.0,
-                "y": 42.0
+                "x": 29.166666666666664,
+                "y": 47.5
               }
             },
             "type": "Components::Transform2D"
