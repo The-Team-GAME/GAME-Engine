@@ -4925,7 +4925,7 @@
         "id": 2588,
         "layers": [
           "default",
-          "overlay_items_3"
+          "overlay_items_1"
         ],
         "name": "OptionsBGMLeft"
       },
@@ -5025,7 +5025,7 @@
         "id": 2589,
         "layers": [
           "default",
-          "overlay_items_3"
+          "overlay_items_1"
         ],
         "name": "OptionsBGMRight"
       },
@@ -5125,7 +5125,7 @@
         "id": 2590,
         "layers": [
           "default",
-          "overlay_items_3"
+          "overlay_items_1"
         ],
         "name": "OptionsSFXLeft"
       },
@@ -5225,7 +5225,7 @@
         "id": 2591,
         "layers": [
           "default",
-          "overlay_items_3"
+          "overlay_items_1"
         ],
         "name": "OptionsSFXRight"
       },
@@ -5548,7 +5548,7 @@
         "id": 2592,
         "layers": [
           "default",
-          "overlay_items_3"
+          "overlay_items_1"
         ],
         "name": "OptionsScreenLeft"
       },
@@ -5648,7 +5648,7 @@
         "id": 2593,
         "layers": [
           "default",
-          "overlay_items_3"
+          "overlay_items_1"
         ],
         "name": "OptionsScreenRight"
       }
