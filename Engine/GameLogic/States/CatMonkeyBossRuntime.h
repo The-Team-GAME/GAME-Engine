@@ -31,7 +31,9 @@ namespace CatMonkeyStateCallbacks
 
     static constexpr float k_post_summon_camera_linger_sec = 1.0f;
     static constexpr float k_summon5_cinematic_duration_sec = 6.0f;
-    static constexpr float k_summon5_target_zoom = 0.65f;
+    static constexpr float k_summon5_zoom_in_start = 4.5f;
+    static constexpr float k_summon5_target_zoom = 0.62f;
+    inline const Math::Vec2D k_summon5_target_pos = { -290.0f, -190.0f };
     static constexpr int k_summon5_shake_count = 8;
     static constexpr float k_summon5_shake_interval_sec = 0.05f;
     static constexpr float k_summon5_shake_amplitude = 12.0f;

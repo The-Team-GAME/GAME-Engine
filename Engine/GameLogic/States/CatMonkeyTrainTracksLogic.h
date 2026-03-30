@@ -69,20 +69,20 @@ namespace CatMonkeyStateCallbacks
     inline void ensure_train_tracks_tracked(BossRuntime& rt)
     {
         if (rt.train_tracks_entity_id == Engine::ECS::INVALID_ENTITY) {
-            Engine::ECS::Entity t = find_train_tracks_entity();
+            // Destroy any static train_tracks already present in the scene so we
+            // don't end up with a duplicate alongside the spawned one.
+            Engine::ECS::Entity existing = find_train_tracks_entity();
+            if (existing.is_valid()) {
+                existing.destroy();
+            }
+
+            // Always spawn a fresh instance from the prefab.
+            Engine::ECS::Entity t = Engine::ECS::instantiate_prefab(Engine::Resources::load_prefab("prefabs/train_tracks.json"));
             if (t.is_valid()) {
                 rt.train_tracks_entity_id = t.get_id();
-            } else {
-                // Not found, so instantiate the train_tracks prefab!
-                t = Engine::ECS::instantiate_prefab(Engine::Resources::load_prefab("prefabs/train_tracks.json"));
-                if (t.is_valid()) {
-                    rt.train_tracks_entity_id = t.get_id();
-                    
-                    // Optional: snap to starting position initially so it doesn't flash at a wrong spot
-                    if (auto* transform = t.get_component<Components::Transform2D>()) {
-                        transform->position.x = 3000.0f;
-                        transform->position.y = 900.0f; 
-                    }
+                if (auto* transform = t.get_component<Components::Transform2D>()) {
+                    transform->position.x = 3000.0f;
+                    transform->position.y = 900.0f;
                 }
             }
         }

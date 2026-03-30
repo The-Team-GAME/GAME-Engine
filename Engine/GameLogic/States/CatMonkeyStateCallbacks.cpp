@@ -418,9 +418,7 @@ namespace CatMonkeyStateCallbacks
     tick_train_tracks_if_active(rt);
 
     if (!has_animation_finished(entity)) {
-      if (rt.pending_summon_index == 4 && rt.camera_override_mode == BossRuntime::CameraOverrideMode::CatMonkey) {
-        tick_summon5_cat_camera_shake(rt);
-      }
+      // Summon5 no longer uses the Cat_Monkey shake; skip that tick.
       return;
     }
 
@@ -446,63 +444,66 @@ namespace CatMonkeyStateCallbacks
     rt.summon_pending = false;
     const bool immediate_zoom = rt.pending_summon_immediate_zoom;
     rt.pending_summon_immediate_zoom = false;
+    const bool is_summon5 = (rt.pending_summon_index == 4);
 
     const float now = Engine::Time::get_time();
     rt.next_summon_allowed_time = now + summon_cooldown(entity);
 
-    // Linger on CatMonkey
-    rt.camera_override_active = true;
-    rt.camera_override_mode = BossRuntime::CameraOverrideMode::CatMonkey;
-    rt.camera_override_until = now + k_post_summon_camera_linger_sec;
-    activate_cat_monkey_camera_if_present();
+    if (is_summon5) {
+      // Already on Centered camera — no linger needed, start cinematic immediately.
+      rt.camera_override_active = true;
+      rt.camera_override_mode   = BossRuntime::CameraOverrideMode::Centered;
+      rt.camera_override_until  = std::numeric_limits<float>::infinity();
+      activate_centered_camera_if_present();
+      rt.post_spawn_cinematic_start_time = now;
+    } else {
+      // Linger on CatMonkey, then cut to Centered.
+      rt.camera_override_active = true;
+      rt.camera_override_mode   = BossRuntime::CameraOverrideMode::CatMonkey;
+      rt.camera_override_until  = now + k_post_summon_camera_linger_sec;
+      activate_cat_monkey_camera_if_present();
+      rt.post_spawn_cinematic_start_time = now + k_post_summon_camera_linger_sec;
+    }
 
-    // Prepare the Centered camera cinematic (will run after the cut from CatMonkey -> Centered).
-    ensure_centered_camera_baseline(rt);
-    // Always reset the Centered camera to the scene-load view before we start the post-summon pan-out.
-    // This keeps Summon1-4 consistent across waves.
-    apply_centered_camera_baseline(rt);
+    // Prepare the Centered camera cinematic.
+    // For Summon5 the camera is already placed (done in summon5_on_enter), so
+    // skip the baseline reset that would clobber it.
     Engine::ECS::Entity centered = find_camera_entity_by_name(k_centered_camera_name);
-    if (centered.is_valid()) {
-      if (auto* t = centered.get_component<Components::Transform2D>()) {
-        rt.post_spawn_pos_start = rt.centered_cam_baseline_saved ? rt.centered_cam_baseline_pos : t->position;
-        rt.post_spawn_pos_target = rt.post_spawn_pos_start;
-        rt.post_spawn_rot_start = rt.centered_cam_baseline_saved ? rt.centered_cam_baseline_rot : t->rotation;
-        rt.post_spawn_rot_target = rt.post_spawn_rot_start;
-        rt.post_spawn_zoom_start = rt.centered_cam_baseline_saved ? rt.centered_cam_baseline_zoom : t->scale.x;
+    if (!is_summon5) {
+      ensure_centered_camera_baseline(rt);
+      // Always reset the Centered camera to the scene-load view before we start the post-summon pan-out.
+      // This keeps Summon1-4 consistent across waves.
+      apply_centered_camera_baseline(rt);
+      if (centered.is_valid()) {
+        if (auto* t = centered.get_component<Components::Transform2D>()) {
+          rt.post_spawn_pos_start = rt.centered_cam_baseline_saved ? rt.centered_cam_baseline_pos : t->position;
+          rt.post_spawn_pos_target = rt.post_spawn_pos_start;
+          rt.post_spawn_rot_start = rt.centered_cam_baseline_saved ? rt.centered_cam_baseline_rot : t->rotation;
+          rt.post_spawn_rot_target = rt.post_spawn_rot_start;
+          rt.post_spawn_zoom_start = rt.centered_cam_baseline_saved ? rt.centered_cam_baseline_zoom : t->scale.x;
+        }
       }
     }
 
     rt.post_spawn_cinematic_active = true;
-    rt.post_spawn_cinematic_start_time = now + k_post_summon_camera_linger_sec;
 
     if (immediate_zoom) {
       // Summon1-4: small smooth pan-out (subtle zoom-out) to reduce harshness.
       rt.post_spawn_cinematic_end_time = rt.post_spawn_cinematic_start_time + 0.75f;
       rt.post_spawn_zoom_target = std::clamp(rt.post_spawn_zoom_start * 0.90f, 0.1f, 10.0f);
     } else {
-      // Summon5: longer smoother cinematic toward the Summon5 target zoom.
-      // Start the Centered camera at the current Cat_Monkey zoom so the cut doesn't
-      // cause an instant zoom-out.
-      float cat_zoom = rt.post_spawn_zoom_start;
-      Engine::ECS::Entity cat_cam = find_camera_entity_by_name(k_cat_monkey_camera_name);
-      if (cat_cam.is_valid()) {
-        if (auto* ct = cat_cam.get_component<Components::Transform2D>()) {
-          cat_zoom = ct->scale.x;
-            rt.post_spawn_pos_start = ct->position;
-            rt.post_spawn_pos_target = ct->position;
-            rt.post_spawn_rot_start = ct->rotation;
-            rt.post_spawn_rot_target = ct->rotation;
-        }
-      }
-      cat_zoom = std::clamp(cat_zoom, 0.1f, 10.0f);
-      rt.centered_cut_override_zoom = true;
-      rt.centered_cut_zoom = cat_zoom;
-      rt.post_spawn_zoom_start = cat_zoom;
+      // Summon5: Centered camera is already at k_summon5_zoom_in_start at the
+      // boss position (set in summon5_on_enter). Just configure the pan-out target.
       if (centered.is_valid()) {
         if (auto* t = centered.get_component<Components::Transform2D>()) {
-          t->scale = { cat_zoom, cat_zoom };
+          rt.post_spawn_pos_start  = t->position;
+          rt.post_spawn_rot_start  = t->rotation;
+          rt.post_spawn_rot_target = t->rotation;
         }
       }
+      rt.post_spawn_zoom_start  = k_summon5_zoom_in_start;
+      rt.post_spawn_pos_target  = k_summon5_target_pos;
+      rt.centered_cut_override_zoom = false; // no cut needed, already on Centered
 
       rt.post_spawn_cinematic_end_time = rt.post_spawn_cinematic_start_time + k_summon5_cinematic_duration_sec;
       rt.post_spawn_zoom_target = k_summon5_target_zoom;
@@ -526,7 +527,33 @@ namespace CatMonkeyStateCallbacks
     rt.tunnel_destroyed = true;
     destroy_tunnel(rt);
     rt.city_scroll_enabled = true;
-    start_summon5_cat_camera_shake(rt);
+
+    // Summon5: skip Cat_Monkey camera entirely. Immediately place the Centered
+    // camera at 4.5 zoom at the Cat_Monkey camera's current world position,
+    // then switch to it so the cinematic pan-out starts from there.
+    Engine::ECS::Entity cat_cam = find_camera_entity_by_name(k_cat_monkey_camera_name);
+    Engine::ECS::Entity centered = find_camera_entity_by_name(k_centered_camera_name);
+
+    Math::Vec2D start_pos = {};
+    float start_rot = 0.0f;
+    if (cat_cam.is_valid()) {
+      if (auto* ct = cat_cam.get_component<Components::Transform2D>()) {
+        start_pos = ct->position;
+        start_rot  = ct->rotation;
+      }
+    }
+
+    if (centered.is_valid()) {
+      if (auto* t = centered.get_component<Components::Transform2D>()) {
+        t->position = start_pos;
+        t->rotation = start_rot;
+        t->scale    = { k_summon5_zoom_in_start, k_summon5_zoom_in_start };
+      }
+    }
+
+    // Override the CatMonkey camera mode set by summon_impl_on_enter.
+    rt.camera_override_mode = BossRuntime::CameraOverrideMode::Centered;
+    activate_centered_camera_if_present();
   }
   void summon5_on_update(Engine::ECS::Entity entity) { summon_impl_on_update(entity); }
 

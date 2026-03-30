@@ -11,6 +11,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
+#include <algorithm>
 #include "../Reflection/ReflectionLibrary/Macros.h"
 #include "../Reflection/ReflectionLibrary/GenericValue.h"
 #include "../Easing.h"

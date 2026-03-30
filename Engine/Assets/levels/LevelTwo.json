@@ -33,7 +33,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 15800,
+                            "parent_id": 2318,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -56,7 +56,7 @@
                         "type": "Components::TileMap"
                     }
                 ],
-                "id": 15798,
+                "id": 2316,
                 "layers": [
                     "default"
                 ],
@@ -85,13 +85,13 @@
                     {
                         "data": {
                             "local_offset": {
-                                "x": -681.5052490234375,
+                                "x": -681.5053100585938,
                                 "y": -641.6915283203125
                             },
                             "offset_initialized": true,
-                            "parent_id": 15807,
+                            "parent_id": 2325,
                             "prev_parent_pos": {
-                                "x": 514.4136962890625,
+                                "x": 506.0804138183594,
                                 "y": 641.9970092773438
                             }
                         },
@@ -100,7 +100,7 @@
                     {
                         "data": {
                             "position": {
-                                "x": -167.091552734375,
+                                "x": -175.42489624023438,
                                 "y": 0.30548095703125
                             },
                             "rotation": 0.0,
@@ -112,7 +112,7 @@
                         "type": "Components::Transform2D"
                     }
                 ],
-                "id": 15799,
+                "id": 2317,
                 "layers": [
                     "default"
                 ],
@@ -136,7 +136,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 15800,
+                "id": 2318,
                 "layers": [
                     "default"
                 ],
@@ -156,7 +156,7 @@
                                 0.07999999821186066
                             ],
                             "is_looping": true,
-                            "startTime": 89.1216049194336,
+                            "startTime": 81.86869812011719,
                             "totalDuration": 0.07999999821186066
                         },
                         "type": "Components::Animation"
@@ -177,7 +177,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 15800,
+                            "parent_id": 2318,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -206,7 +206,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -897,7 +897,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -1588,7 +1588,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -2279,7 +2279,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -2970,7 +2970,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -3661,7 +3661,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -4352,7 +4352,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -5043,7 +5043,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -5734,7 +5734,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -6503,7 +6503,7 @@
                                                     0.02500000037252903
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.6749998927116394
                                             },
                                             "collider_data": null,
@@ -7194,7 +7194,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -8560,7 +8560,7 @@
                         "type": "Components::UI"
                     }
                 ],
-                "id": 15801,
+                "id": 2319,
                 "layers": [
                     "default",
                     "main_menu_6"
@@ -8590,7 +8590,7 @@
                                 0.07999999821186066
                             ],
                             "is_looping": true,
-                            "startTime": 89.1216049194336,
+                            "startTime": 81.86869812011719,
                             "totalDuration": 0.07999999821186066
                         },
                         "type": "Components::Animation"
@@ -8611,7 +8611,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 15800,
+                            "parent_id": 2318,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -8640,7 +8640,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -9331,7 +9331,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -10022,7 +10022,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -10713,7 +10713,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -11404,7 +11404,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -12095,7 +12095,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -12786,7 +12786,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -13477,7 +13477,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -14168,7 +14168,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -14937,7 +14937,7 @@
                                                     0.02500000037252903
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.6749998927116394
                                             },
                                             "collider_data": null,
@@ -15628,7 +15628,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -16994,7 +16994,7 @@
                         "type": "Components::UI"
                     }
                 ],
-                "id": 15802,
+                "id": 2320,
                 "layers": [
                     "default",
                     "main_menu_6"
@@ -17024,7 +17024,7 @@
                                 0.07999999821186066
                             ],
                             "is_looping": true,
-                            "startTime": 89.1216049194336,
+                            "startTime": 81.86869812011719,
                             "totalDuration": 0.07999999821186066
                         },
                         "type": "Components::Animation"
@@ -17045,7 +17045,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 15800,
+                            "parent_id": 2318,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -17074,7 +17074,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -17765,7 +17765,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -18456,7 +18456,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -19147,7 +19147,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -19838,7 +19838,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -20529,7 +20529,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -21220,7 +21220,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -21911,7 +21911,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -22602,7 +22602,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -23371,7 +23371,7 @@
                                                     0.02500000037252903
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.6749998927116394
                                             },
                                             "collider_data": null,
@@ -24062,7 +24062,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -25428,7 +25428,7 @@
                         "type": "Components::UI"
                     }
                 ],
-                "id": 15803,
+                "id": 2321,
                 "layers": [
                     "default",
                     "main_menu_6"
@@ -25471,7 +25471,7 @@
                                 "y": -452.346435546875
                             },
                             "offset_initialized": true,
-                            "parent_id": 15806,
+                            "parent_id": 2324,
                             "prev_parent_pos": {
                                 "x": 512.1565551757813,
                                 "y": 378.5860290527344
@@ -25494,7 +25494,7 @@
                         "type": "Components::Transform2D"
                     }
                 ],
-                "id": 15804,
+                "id": 2322,
                 "layers": [
                     "default"
                 ],
@@ -25532,7 +25532,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 15800,
+                            "parent_id": 2318,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -25552,13 +25552,6 @@
                             },
                             "tiles": [
                                 {
-                                    "first": 51539607555,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1255
-                                    }
-                                },
-                                {
                                     "first": 51539607568,
                                     "second": {
                                         "atlas_index": 37,
@@ -25573,10 +25566,17 @@
                                     }
                                 },
                                 {
-                                    "first": 51539607567,
+                                    "first": 25769803773,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1267
+                                        "tile_index": 745
+                                    }
+                                },
+                                {
+                                    "first": 47244640264,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 1188
                                     }
                                 },
                                 {
@@ -25615,31 +25615,10 @@
                                     }
                                 },
                                 {
-                                    "first": 55834574845,
+                                    "first": 17179869181,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1249
-                                    }
-                                },
-                                {
-                                    "first": 55834574847,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1251
-                                    }
-                                },
-                                {
-                                    "first": 47244640264,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1188
-                                    }
-                                },
-                                {
-                                    "first": 25769803773,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 745
+                                        "tile_index": 601
                                     }
                                 },
                                 {
@@ -25650,38 +25629,10 @@
                                     }
                                 },
                                 {
-                                    "first": 17179869181,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 601
-                                    }
-                                },
-                                {
-                                    "first": 55834574842,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1246
-                                    }
-                                },
-                                {
-                                    "first": 51539607560,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1260
-                                    }
-                                },
-                                {
                                     "first": 21474836497,
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 765
-                                    }
-                                },
-                                {
-                                    "first": 25769803793,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 837
                                     }
                                 },
                                 {
@@ -25692,17 +25643,17 @@
                                     }
                                 },
                                 {
-                                    "first": 34359738385,
+                                    "first": 25769803793,
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 837
                                     }
                                 },
                                 {
-                                    "first": 38654705681,
+                                    "first": 34359738385,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1053
+                                        "tile_index": 837
                                     }
                                 },
                                 {
@@ -25713,17 +25664,10 @@
                                     }
                                 },
                                 {
-                                    "first": 42949672977,
+                                    "first": 38654705681,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1125
-                                    }
-                                },
-                                {
-                                    "first": 12884901896,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 612
+                                        "tile_index": 1053
                                     }
                                 },
                                 {
@@ -25734,6 +25678,20 @@
                                     }
                                 },
                                 {
+                                    "first": 12884901896,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 612
+                                    }
+                                },
+                                {
+                                    "first": 42949672977,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 1125
+                                    }
+                                },
+                                {
                                     "first": 51539607551,
                                     "second": {
                                         "atlas_index": 37,
@@ -25741,10 +25699,31 @@
                                     }
                                 },
                                 {
+                                    "first": 34359738386,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 982
+                                    }
+                                },
+                                {
                                     "first": 47244640257,
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 1181
+                                    }
+                                },
+                                {
+                                    "first": 12884901898,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 614
+                                    }
+                                },
+                                {
+                                    "first": 42949672979,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 1127
                                     }
                                 },
                                 {
@@ -25783,17 +25762,17 @@
                                     }
                                 },
                                 {
-                                    "first": 47244640265,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1189
-                                    }
-                                },
-                                {
                                     "first": 25769803772,
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 744
+                                    }
+                                },
+                                {
+                                    "first": 47244640265,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 1189
                                     }
                                 },
                                 {
@@ -25804,13 +25783,6 @@
                                     }
                                 },
                                 {
-                                    "first": 47244640269,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1193
-                                    }
-                                },
-                                {
                                     "first": 17179869202,
                                     "second": {
                                         "atlas_index": 37,
@@ -25818,10 +25790,17 @@
                                     }
                                 },
                                 {
-                                    "first": 55834574841,
+                                    "first": 47244640269,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1245
+                                        "tile_index": 1193
+                                    }
+                                },
+                                {
+                                    "first": 25769803795,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 839
                                     }
                                 },
                                 {
@@ -25839,10 +25818,10 @@
                                     }
                                 },
                                 {
-                                    "first": 47244640272,
+                                    "first": 51539607559,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1196
+                                        "tile_index": 1259
                                     }
                                 },
                                 {
@@ -25853,17 +25832,10 @@
                                     }
                                 },
                                 {
-                                    "first": 51539607559,
+                                    "first": 47244640272,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1259
-                                    }
-                                },
-                                {
-                                    "first": 51539607552,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1252
+                                        "tile_index": 1196
                                     }
                                 },
                                 {
@@ -25874,31 +25846,10 @@
                                     }
                                 },
                                 {
-                                    "first": 51539607554,
+                                    "first": 30064771090,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1254
-                                    }
-                                },
-                                {
-                                    "first": 51539607557,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1257
-                                    }
-                                },
-                                {
-                                    "first": 51539607558,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1258
-                                    }
-                                },
-                                {
-                                    "first": 51539607561,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1261
+                                        "tile_index": 910
                                     }
                                 },
                                 {
@@ -25909,13 +25860,6 @@
                                     }
                                 },
                                 {
-                                    "first": 51539607562,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1262
-                                    }
-                                },
-                                {
                                     "first": 21474836499,
                                     "second": {
                                         "atlas_index": 37,
@@ -25923,24 +25867,10 @@
                                     }
                                 },
                                 {
-                                    "first": 51539607563,
+                                    "first": 51539607562,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1263
-                                    }
-                                },
-                                {
-                                    "first": 51539607564,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1264
-                                    }
-                                },
-                                {
-                                    "first": 51539607566,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1266
+                                        "tile_index": 1262
                                     }
                                 },
                                 {
@@ -25951,31 +25881,10 @@
                                     }
                                 },
                                 {
-                                    "first": 51539607569,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1269
-                                    }
-                                },
-                                {
                                     "first": 51539607549,
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 1177
-                                    }
-                                },
-                                {
-                                    "first": 17179869203,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 695
-                                    }
-                                },
-                                {
-                                    "first": 12884901924,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 640
                                     }
                                 },
                                 {
@@ -25986,10 +25895,17 @@
                                     }
                                 },
                                 {
-                                    "first": 42949672978,
+                                    "first": 12884901924,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1126
+                                        "tile_index": 640
+                                    }
+                                },
+                                {
+                                    "first": 17179869203,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 695
                                     }
                                 },
                                 {
@@ -26000,17 +25916,10 @@
                                     }
                                 },
                                 {
-                                    "first": 42949672979,
+                                    "first": 42949672978,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1127
-                                    }
-                                },
-                                {
-                                    "first": 12884901898,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 614
+                                        "tile_index": 1126
                                     }
                                 },
                                 {
@@ -26021,17 +25930,10 @@
                                     }
                                 },
                                 {
-                                    "first": 34359738386,
+                                    "first": 17179869180,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 982
-                                    }
-                                },
-                                {
-                                    "first": 30064771090,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 910
+                                        "tile_index": 600
                                     }
                                 },
                                 {
@@ -26049,13 +25951,6 @@
                                     }
                                 },
                                 {
-                                    "first": 25769803795,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 839
-                                    }
-                                },
-                                {
                                     "first": 30064771091,
                                     "second": {
                                         "atlas_index": 37,
@@ -26063,17 +25958,17 @@
                                     }
                                 },
                                 {
-                                    "first": 34359738387,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 983
-                                    }
-                                },
-                                {
                                     "first": 51539607539,
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 1167
+                                    }
+                                },
+                                {
+                                    "first": 34359738387,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 983
                                     }
                                 },
                                 {
@@ -26095,13 +25990,6 @@
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 1250
-                                    }
-                                },
-                                {
-                                    "first": 17179869180,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 600
                                     }
                                 },
                                 {
@@ -26413,13 +26301,6 @@
                                     }
                                 },
                                 {
-                                    "first": 51539607588,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1288
-                                    }
-                                },
-                                {
                                     "first": 17179869176,
                                     "second": {
                                         "atlas_index": 37,
@@ -26476,13 +26357,6 @@
                                     }
                                 },
                                 {
-                                    "first": 51539607570,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1270
-                                    }
-                                },
-                                {
                                     "first": 51539607571,
                                     "second": {
                                         "atlas_index": 37,
@@ -26497,34 +26371,6 @@
                                     }
                                 },
                                 {
-                                    "first": 51539607572,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1272
-                                    }
-                                },
-                                {
-                                    "first": 51539607573,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1273
-                                    }
-                                },
-                                {
-                                    "first": 51539607575,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1275
-                                    }
-                                },
-                                {
-                                    "first": 51539607576,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1276
-                                    }
-                                },
-                                {
                                     "first": 51539607577,
                                     "second": {
                                         "atlas_index": 37,
@@ -26536,20 +26382,6 @@
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 1169
-                                    }
-                                },
-                                {
-                                    "first": 51539607578,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1278
-                                    }
-                                },
-                                {
-                                    "first": 51539607579,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1279
                                     }
                                 },
                                 {
@@ -26623,13 +26455,6 @@
                                     }
                                 },
                                 {
-                                    "first": 51539607581,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1281
-                                    }
-                                },
-                                {
                                     "first": 30064771110,
                                     "second": {
                                         "atlas_index": 37,
@@ -26641,13 +26466,6 @@
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 589
-                                    }
-                                },
-                                {
-                                    "first": 51539607582,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1282
                                     }
                                 },
                                 {
@@ -26665,13 +26483,6 @@
                                     }
                                 },
                                 {
-                                    "first": 51539607584,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1284
-                                    }
-                                },
-                                {
                                     "first": 12884901919,
                                     "second": {
                                         "atlas_index": 37,
@@ -26679,24 +26490,10 @@
                                     }
                                 },
                                 {
-                                    "first": 51539607585,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1285
-                                    }
-                                },
-                                {
                                     "first": 51539607586,
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 1286
-                                    }
-                                },
-                                {
-                                    "first": 51539607587,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1287
                                     }
                                 },
                                 {
@@ -26760,13 +26557,6 @@
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 633
-                                    }
-                                },
-                                {
-                                    "first": 55834574833,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1237
                                     }
                                 },
                                 {
@@ -27008,13 +26798,6 @@
                                     }
                                 },
                                 {
-                                    "first": 55834574832,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1236
-                                    }
-                                },
-                                {
                                     "first": 55834574834,
                                     "second": {
                                         "atlas_index": 37,
@@ -27022,45 +26805,10 @@
                                     }
                                 },
                                 {
-                                    "first": 55834574835,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1239
-                                    }
-                                },
-                                {
-                                    "first": 55834574836,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1240
-                                    }
-                                },
-                                {
-                                    "first": 55834574838,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1242
-                                    }
-                                },
-                                {
-                                    "first": 55834574839,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1243
-                                    }
-                                },
-                                {
                                     "first": 55834574843,
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 1247
-                                    }
-                                },
-                                {
-                                    "first": 55834574844,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1248
                                     }
                                 },
                                 {
@@ -27113,24 +26861,10 @@
                                     }
                                 },
                                 {
-                                    "first": 55834574826,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1230
-                                    }
-                                },
-                                {
                                     "first": 17179869165,
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 585
-                                    }
-                                },
-                                {
-                                    "first": 55834574827,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1231
                                     }
                                 },
                                 {
@@ -27141,24 +26875,10 @@
                                     }
                                 },
                                 {
-                                    "first": 55834574829,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1233
-                                    }
-                                },
-                                {
                                     "first": 17179869162,
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 582
-                                    }
-                                },
-                                {
-                                    "first": 55834574830,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1234
                                     }
                                 },
                                 {
@@ -27250,7 +26970,7 @@
                         "type": "Components::TileMap"
                     }
                 ],
-                "id": 15805,
+                "id": 2323,
                 "layers": [
                     "tilemap_foreground_mid"
                 ],
@@ -27309,7 +27029,7 @@
                                 0.20000000298023224
                             ],
                             "is_looping": true,
-                            "startTime": 89.1216049194336,
+                            "startTime": 81.86869812011719,
                             "totalDuration": 2.8000004291534424
                         },
                         "type": "Components::Animation"
@@ -27436,7 +27156,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 15800,
+                            "parent_id": 2318,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -27770,7 +27490,7 @@
                                                     0.019999999552965164
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 1.7599989175796509
                                             },
                                             "collider_data": null,
@@ -28350,7 +28070,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 2.319999933242798
                                             },
                                             "collider_data": null,
@@ -28867,7 +28587,7 @@
                                                     0.20000000298023224
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 2.8000004291534424
                                             },
                                             "collider_data": null,
@@ -29414,7 +29134,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 2.3999998569488525
                                             },
                                             "collider_data": null,
@@ -29904,7 +29624,7 @@
                                                     0.20000000298023224
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": null,
@@ -30394,7 +30114,7 @@
                                                     0.20000000298023224
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": null,
@@ -31322,7 +31042,7 @@
                         "type": "Components::Transform2D"
                     }
                 ],
-                "id": 15806,
+                "id": 2324,
                 "layers": [
                     "enemy"
                 ],
@@ -31420,7 +31140,7 @@
                                 0.10000000149011612
                             ],
                             "is_looping": true,
-                            "startTime": 89.1216049194336,
+                            "startTime": 81.86869812011719,
                             "totalDuration": 2.3999998569488525
                         },
                         "type": "Components::Animation"
@@ -31512,7 +31232,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 15800,
+                            "parent_id": 2318,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -31737,7 +31457,7 @@
                                                     0.032999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.4049999713897705
                                             },
                                             "collider_data": {
@@ -31991,7 +31711,7 @@
                                                     0.5
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 2.1499998569488525
                                             },
                                             "collider_data": {
@@ -32287,7 +32007,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
@@ -32514,7 +32234,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.30000001192092896
                                             },
                                             "collider_data": {
@@ -32728,7 +32448,7 @@
                                                     0.03500000014901161
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.3449999988079071
                                             },
                                             "collider_data": {
@@ -33021,7 +32741,7 @@
                                                     0.11999999731779099
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.11999999731779099
                                             },
                                             "collider_data": {
@@ -33236,7 +32956,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.5
                                             },
                                             "collider_data": {
@@ -33619,7 +33339,7 @@
                                                     1.0
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
@@ -33911,7 +33631,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.20000000298023224
                                             },
                                             "collider_data": null,
@@ -34200,7 +33920,7 @@
                                                     0.05000000074505806
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.20000000298023224
                                             },
                                             "collider_data": {
@@ -34499,7 +34219,7 @@
                                                     0.05000000074505806
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.15000000596046448
                                             },
                                             "collider_data": null,
@@ -34938,7 +34658,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 2.3999998569488525
                                             },
                                             "collider_data": {
@@ -35437,7 +35157,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.5
                                             },
                                             "collider_data": null,
@@ -35579,7 +35299,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.30000001192092896
                                             },
                                             "collider_data": {
@@ -35787,7 +35507,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
@@ -36050,7 +35770,7 @@
                                                     0.05000000074505806
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.15000000596046448
                                             },
                                             "collider_data": {
@@ -36313,7 +36033,7 @@
                                                     0.20000000298023224
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
@@ -36422,7 +36142,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.10000000149011612
                                             },
                                             "collider_data": {
@@ -36642,7 +36362,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
@@ -37283,7 +37003,7 @@
                     {
                         "data": {
                             "position": {
-                                "x": 514.4136962890625,
+                                "x": 506.0804138183594,
                                 "y": 641.9970092773438
                             },
                             "rotation": 0.04699169844388962,
@@ -37295,7 +37015,7 @@
                         "type": "Components::Transform2D"
                     }
                 ],
-                "id": 15807,
+                "id": 2325,
                 "layers": [
                     "player"
                 ],
@@ -37324,7 +37044,7 @@
                                 0.10000000149011612
                             ],
                             "is_looping": true,
-                            "startTime": 89.1216049194336,
+                            "startTime": 81.86869812011719,
                             "totalDuration": 0.10000000149011612
                         },
                         "type": "Components::Animation"
@@ -37345,7 +37065,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 15800,
+                            "parent_id": 2318,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -37374,7 +37094,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.10000000149011612
                                             },
                                             "collider_data": null,
@@ -38173,7 +37893,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.7000000476837158
                                             },
                                             "collider_data": null,
@@ -38972,7 +38692,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.7000000476837158
                                             },
                                             "collider_data": null,
@@ -39771,7 +39491,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.7000000476837158
                                             },
                                             "collider_data": null,
@@ -40570,7 +40290,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.7000000476837158
                                             },
                                             "collider_data": null,
@@ -41351,7 +41071,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.10000000149011612
                                             },
                                             "collider_data": null,
@@ -42132,7 +41852,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.10000000149011612
                                             },
                                             "collider_data": null,
@@ -42913,7 +42633,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.10000000149011612
                                             },
                                             "collider_data": null,
@@ -43694,7 +43414,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.10000000149011612
                                             },
                                             "collider_data": null,
@@ -44493,7 +44213,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.7000000476837158
                                             },
                                             "collider_data": null,
@@ -45274,7 +44994,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.10000000149011612
                                             },
                                             "collider_data": null,
@@ -46820,7 +46540,7 @@
                         "type": "Components::UI"
                     }
                 ],
-                "id": 15808,
+                "id": 2326,
                 "layers": [
                     "main_menu_3"
                 ],
@@ -46918,7 +46638,7 @@
                                 0.10000000149011612
                             ],
                             "is_looping": true,
-                            "startTime": 89.1216049194336,
+                            "startTime": 81.86869812011719,
                             "totalDuration": 2.3999998569488525
                         },
                         "type": "Components::Animation"
@@ -46939,7 +46659,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 15800,
+                            "parent_id": 2318,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -46968,7 +46688,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 0.10000000149011612
                                             },
                                             "collider_data": null,
@@ -48466,7 +48186,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 2.3999998569488525
                                             },
                                             "collider_data": null,
@@ -49892,7 +49612,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 2.3999998569488525
                                             },
                                             "collider_data": null,
@@ -51318,7 +51038,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 2.3999998569488525
                                             },
                                             "collider_data": null,
@@ -52744,7 +52464,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 2.3999998569488525
                                             },
                                             "collider_data": null,
@@ -54188,7 +53908,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.1216049194336,
+                                                "startTime": 81.86869812011719,
                                                 "totalDuration": 2.3999998569488525
                                             },
                                             "collider_data": null,
@@ -55734,7 +55454,7 @@
                         "type": "Components::UI"
                     }
                 ],
-                "id": 15809,
+                "id": 2327,
                 "layers": [
                     "main_menu_5"
                 ],
@@ -55776,7 +55496,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 15800,
+                            "parent_id": 2318,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -55799,7 +55519,7 @@
                         "type": "Components::Transform2D"
                     }
                 ],
-                "id": 15810,
+                "id": 2328,
                 "layers": [
                     "default"
                 ],
@@ -55837,7 +55557,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 15800,
+                            "parent_id": 2318,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -55856,6 +55576,20 @@
                                 "y": 64.0
                             },
                             "tiles": [
+                                {
+                                    "first": 47244640255,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 1107
+                                    }
+                                },
+                                {
+                                    "first": 38654705687,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 1059
+                                    }
+                                },
                                 {
                                     "first": 34359738362,
                                     "second": {
@@ -55878,20 +55612,6 @@
                                     }
                                 },
                                 {
-                                    "first": 47244640255,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1107
-                                    }
-                                },
-                                {
-                                    "first": 38654705687,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1059
-                                    }
-                                },
-                                {
                                     "first": 25769803788,
                                     "second": {
                                         "atlas_index": 37,
@@ -55906,13 +55626,6 @@
                                     }
                                 },
                                 {
-                                    "first": 42949672961,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1109
-                                    }
-                                },
-                                {
                                     "first": 25769803789,
                                     "second": {
                                         "atlas_index": 37,
@@ -55920,10 +55633,10 @@
                                     }
                                 },
                                 {
-                                    "first": 25769803790,
+                                    "first": 42949672961,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 834
+                                        "tile_index": 1109
                                     }
                                 },
                                 {
@@ -55934,24 +55647,17 @@
                                     }
                                 },
                                 {
-                                    "first": 25769803791,
+                                    "first": 55834574847,
                                     "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 835
+                                        "atlas_index": 40,
+                                        "tile_index": 0
                                     }
                                 },
                                 {
-                                    "first": 38654705650,
+                                    "first": 25769803790,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 950
-                                    }
-                                },
-                                {
-                                    "first": 38654705680,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1052
+                                        "tile_index": 834
                                     }
                                 },
                                 {
@@ -55962,17 +55668,24 @@
                                     }
                                 },
                                 {
-                                    "first": 25769803785,
+                                    "first": 38654705680,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 829
+                                        "tile_index": 1052
                                     }
                                 },
                                 {
-                                    "first": 38654705686,
+                                    "first": 38654705650,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1058
+                                        "tile_index": 950
+                                    }
+                                },
+                                {
+                                    "first": 25769803791,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 835
                                     }
                                 },
                                 {
@@ -55983,24 +55696,17 @@
                                     }
                                 },
                                 {
-                                    "first": 34359738404,
+                                    "first": 38654705686,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1000
+                                        "tile_index": 1058
                                     }
                                 },
                                 {
-                                    "first": 34359738360,
+                                    "first": 25769803785,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 884
-                                    }
-                                },
-                                {
-                                    "first": 25769803786,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 830
+                                        "tile_index": 829
                                     }
                                 },
                                 {
@@ -56011,24 +55717,31 @@
                                     }
                                 },
                                 {
-                                    "first": 25769803787,
+                                    "first": 55834574835,
                                     "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 831
+                                        "atlas_index": 40,
+                                        "tile_index": 0
                                     }
                                 },
                                 {
-                                    "first": 25769803771,
+                                    "first": 25769803786,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 743
+                                        "tile_index": 830
                                     }
                                 },
                                 {
-                                    "first": 34359738405,
+                                    "first": 34359738360,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1001
+                                        "tile_index": 884
+                                    }
+                                },
+                                {
+                                    "first": 34359738404,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 1000
                                     }
                                 },
                                 {
@@ -56039,17 +55752,31 @@
                                     }
                                 },
                                 {
+                                    "first": 34359738405,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 1001
+                                    }
+                                },
+                                {
+                                    "first": 25769803771,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 743
+                                    }
+                                },
+                                {
+                                    "first": 25769803787,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 831
+                                    }
+                                },
+                                {
                                     "first": 42949672968,
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 1116
-                                    }
-                                },
-                                {
-                                    "first": 42949672969,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1117
                                     }
                                 },
                                 {
@@ -56060,10 +55787,10 @@
                                     }
                                 },
                                 {
-                                    "first": 17179869220,
+                                    "first": 42949672969,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 712
+                                        "tile_index": 1117
                                     }
                                 },
                                 {
@@ -56074,10 +55801,17 @@
                                     }
                                 },
                                 {
-                                    "first": 17179869221,
+                                    "first": 17179869220,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 713
+                                        "tile_index": 712
+                                    }
+                                },
+                                {
+                                    "first": 42949672971,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 1119
                                     }
                                 },
                                 {
@@ -56088,10 +55822,10 @@
                                     }
                                 },
                                 {
-                                    "first": 42949672971,
+                                    "first": 17179869221,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1119
+                                        "tile_index": 713
                                     }
                                 },
                                 {
@@ -56116,10 +55850,10 @@
                                     }
                                 },
                                 {
-                                    "first": 21474836496,
+                                    "first": 42949672975,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 764
+                                        "tile_index": 1123
                                     }
                                 },
                                 {
@@ -56130,24 +55864,10 @@
                                     }
                                 },
                                 {
-                                    "first": 42949672975,
+                                    "first": 21474836496,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1123
-                                    }
-                                },
-                                {
-                                    "first": 25769803792,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 836
-                                    }
-                                },
-                                {
-                                    "first": 34359738354,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 878
+                                        "tile_index": 764
                                     }
                                 },
                                 {
@@ -56158,10 +55878,17 @@
                                     }
                                 },
                                 {
-                                    "first": 17179869183,
+                                    "first": 34359738354,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 603
+                                        "tile_index": 878
+                                    }
+                                },
+                                {
+                                    "first": 25769803792,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 836
                                     }
                                 },
                                 {
@@ -56169,6 +55896,13 @@
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 1050
+                                    }
+                                },
+                                {
+                                    "first": 17179869183,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 603
                                     }
                                 },
                                 {
@@ -56186,10 +55920,10 @@
                                     }
                                 },
                                 {
-                                    "first": 47244640251,
+                                    "first": 38654705675,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1103
+                                        "tile_index": 1047
                                     }
                                 },
                                 {
@@ -56200,24 +55934,10 @@
                                     }
                                 },
                                 {
-                                    "first": 38654705675,
+                                    "first": 47244640251,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1047
-                                    }
-                                },
-                                {
-                                    "first": 30064771108,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 928
-                                    }
-                                },
-                                {
-                                    "first": 38654705656,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 956
+                                        "tile_index": 1103
                                     }
                                 },
                                 {
@@ -56228,10 +55948,17 @@
                                     }
                                 },
                                 {
-                                    "first": 38654705673,
+                                    "first": 38654705656,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1045
+                                        "tile_index": 956
+                                    }
+                                },
+                                {
+                                    "first": 30064771108,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 928
                                     }
                                 },
                                 {
@@ -56242,10 +55969,10 @@
                                     }
                                 },
                                 {
-                                    "first": 38654705658,
+                                    "first": 38654705673,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 958
+                                        "tile_index": 1045
                                     }
                                 },
                                 {
@@ -56256,17 +55983,10 @@
                                     }
                                 },
                                 {
-                                    "first": 21474836491,
+                                    "first": 38654705658,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 759
-                                    }
-                                },
-                                {
-                                    "first": 30064771067,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 815
+                                        "tile_index": 958
                                     }
                                 },
                                 {
@@ -56277,10 +55997,17 @@
                                     }
                                 },
                                 {
-                                    "first": 21474836495,
+                                    "first": 30064771067,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 763
+                                        "tile_index": 815
+                                    }
+                                },
+                                {
+                                    "first": 21474836491,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 759
                                     }
                                 },
                                 {
@@ -56288,6 +56015,13 @@
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 1124
+                                    }
+                                },
+                                {
+                                    "first": 21474836495,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 763
                                     }
                                 },
                                 {
@@ -56319,6 +56053,13 @@
                                     }
                                 },
                                 {
+                                    "first": 51539607572,
+                                    "second": {
+                                        "atlas_index": 40,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
                                     "first": 30064771058,
                                     "second": {
                                         "atlas_index": 37,
@@ -56330,6 +56071,13 @@
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 908
+                                    }
+                                },
+                                {
+                                    "first": 51539607563,
+                                    "second": {
+                                        "atlas_index": 40,
+                                        "tile_index": 0
                                     }
                                 },
                                 {
@@ -56536,6 +56284,13 @@
                                     }
                                 },
                                 {
+                                    "first": 51539607569,
+                                    "second": {
+                                        "atlas_index": 40,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
                                     "first": 21474836489,
                                     "second": {
                                         "atlas_index": 37,
@@ -56571,6 +56326,13 @@
                                     }
                                 },
                                 {
+                                    "first": 51539607573,
+                                    "second": {
+                                        "atlas_index": 39,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
                                     "first": 21474836493,
                                     "second": {
                                         "atlas_index": 37,
@@ -56582,6 +56344,13 @@
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 762
+                                    }
+                                },
+                                {
+                                    "first": 51539607575,
+                                    "second": {
+                                        "atlas_index": 40,
+                                        "tile_index": 0
                                     }
                                 },
                                 {
@@ -57054,6 +56823,13 @@
                                     }
                                 },
                                 {
+                                    "first": 51539607566,
+                                    "second": {
+                                        "atlas_index": 40,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
                                     "first": 25769803776,
                                     "second": {
                                         "atlas_index": 37,
@@ -57369,6 +57145,13 @@
                                     }
                                 },
                                 {
+                                    "first": 55834574839,
+                                    "second": {
+                                        "atlas_index": 39,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
                                     "first": 25769803759,
                                     "second": {
                                         "atlas_index": 37,
@@ -57380,6 +57163,13 @@
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 732
+                                    }
+                                },
+                                {
+                                    "first": 55834574841,
+                                    "second": {
+                                        "atlas_index": 40,
+                                        "tile_index": 0
                                     }
                                 },
                                 {
@@ -57478,6 +57268,13 @@
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 803
+                                    }
+                                },
+                                {
+                                    "first": 51539607582,
+                                    "second": {
+                                        "atlas_index": 39,
+                                        "tile_index": 0
                                     }
                                 },
                                 {
@@ -57583,6 +57380,13 @@
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 875
+                                    }
+                                },
+                                {
+                                    "first": 55834574836,
+                                    "second": {
+                                        "atlas_index": 39,
+                                        "tile_index": 0
                                     }
                                 },
                                 {
@@ -57695,6 +57499,13 @@
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 1018
+                                    }
+                                },
+                                {
+                                    "first": 51539607584,
+                                    "second": {
+                                        "atlas_index": 40,
+                                        "tile_index": 0
                                     }
                                 },
                                 {
@@ -57863,6 +57674,13 @@
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 669
+                                    }
+                                },
+                                {
+                                    "first": 51539607570,
+                                    "second": {
+                                        "atlas_index": 39,
+                                        "tile_index": 0
                                     }
                                 },
                                 {
@@ -58090,10 +57908,24 @@
                                     }
                                 },
                                 {
+                                    "first": 55834574830,
+                                    "second": {
+                                        "atlas_index": 39,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
                                     "first": 25769803769,
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 741
+                                    }
+                                },
+                                {
+                                    "first": 55834574832,
+                                    "second": {
+                                        "atlas_index": 40,
+                                        "tile_index": 0
                                     }
                                 },
                                 {
@@ -58157,6 +57989,13 @@
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 951
+                                    }
+                                },
+                                {
+                                    "first": 51539607588,
+                                    "second": {
+                                        "atlas_index": 39,
+                                        "tile_index": 0
                                     }
                                 },
                                 {
@@ -58545,6 +58384,13 @@
                                     }
                                 },
                                 {
+                                    "first": 51539607564,
+                                    "second": {
+                                        "atlas_index": 39,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
                                     "first": 21474836505,
                                     "second": {
                                         "atlas_index": 37,
@@ -58563,6 +58409,13 @@
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 912
+                                    }
+                                },
+                                {
+                                    "first": 51539607567,
+                                    "second": {
+                                        "atlas_index": 39,
+                                        "tile_index": 0
                                     }
                                 },
                                 {
@@ -58627,13 +58480,160 @@
                                         "atlas_index": 37,
                                         "tile_index": 1134
                                     }
+                                },
+                                {
+                                    "first": 55834574827,
+                                    "second": {
+                                        "atlas_index": 39,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 55834574833,
+                                    "second": {
+                                        "atlas_index": 39,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 55834574842,
+                                    "second": {
+                                        "atlas_index": 39,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 55834574845,
+                                    "second": {
+                                        "atlas_index": 39,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 51539607552,
+                                    "second": {
+                                        "atlas_index": 39,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 51539607555,
+                                    "second": {
+                                        "atlas_index": 39,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 51539607558,
+                                    "second": {
+                                        "atlas_index": 39,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 51539607561,
+                                    "second": {
+                                        "atlas_index": 39,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 51539607576,
+                                    "second": {
+                                        "atlas_index": 39,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 51539607579,
+                                    "second": {
+                                        "atlas_index": 39,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 51539607585,
+                                    "second": {
+                                        "atlas_index": 39,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 55834574826,
+                                    "second": {
+                                        "atlas_index": 40,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 55834574829,
+                                    "second": {
+                                        "atlas_index": 40,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 55834574838,
+                                    "second": {
+                                        "atlas_index": 40,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 55834574844,
+                                    "second": {
+                                        "atlas_index": 40,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 51539607554,
+                                    "second": {
+                                        "atlas_index": 40,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 51539607557,
+                                    "second": {
+                                        "atlas_index": 40,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 51539607560,
+                                    "second": {
+                                        "atlas_index": 40,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 51539607578,
+                                    "second": {
+                                        "atlas_index": 40,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 51539607581,
+                                    "second": {
+                                        "atlas_index": 40,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 51539607587,
+                                    "second": {
+                                        "atlas_index": 40,
+                                        "tile_index": 0
+                                    }
                                 }
                             ]
                         },
                         "type": "Components::TileMap"
                     }
                 ],
-                "id": 15811,
+                "id": 2329,
                 "layers": [
                     "tilemap_background_near"
                 ],
