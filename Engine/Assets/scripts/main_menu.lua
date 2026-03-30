@@ -100,6 +100,10 @@ local SLIDE_DURATION = 0.25
 local OPTIONS_SLIDE_DURATION = 0.28
 local OPTIONS_HIDDEN_OFFSET_X = 1800.0
 
+local VOLUME_CHANGE_DEBOUNCE = 0.16
+local last_bgm_change_time = 0.0
+local last_sfx_change_time = 0.0
+
 local function clamp(value, min_value, max_value)
   return math.min(math.max(value, min_value), max_value)
 end
@@ -318,14 +322,6 @@ local function menu_is_ready()
   return sm and (sm:is_in_state("Menu") or sm:is_in_state("Options"))
 end
 
-local function volume_to_step(volume)
-  return clamp(math.floor(volume * 10.0 + 0.5), 0, 10)
-end
-
-local function step_to_volume(step)
-  return clamp(step, 0, 10) / 10.0
-end
-
 local function get_slider_texture_path(step)
   return string.format("images/NewMainMenu/Options/%d.png", clamp(step, 0, 10))
 end
@@ -333,12 +329,14 @@ end
 local function sync_options_visuals()
   local bgm_bar = get_named_entity("OptionsBGMBar")
   if bgm_bar and bgm_bar:is_valid() and bgm_bar.Texture then
-    bgm_bar.Texture.path = get_slider_texture_path(volume_to_step(Settings.get_bgm_volume()))
+    local bgm_step = clamp(math.floor(Settings.get_bgm_volume() * 10.0 + 0.5), 0, 10)
+    bgm_bar.Texture.path = get_slider_texture_path(bgm_step)
   end
 
   local sfx_bar = get_named_entity("OptionsSFXBar")
   if sfx_bar and sfx_bar:is_valid() and sfx_bar.Texture then
-    sfx_bar.Texture.path = get_slider_texture_path(volume_to_step(Settings.get_sfx_volume()))
+    local sfx_step = clamp(math.floor(Settings.get_sfx_volume() * 10.0 + 0.5), 0, 10)
+    sfx_bar.Texture.path = get_slider_texture_path(sfx_step)
   end
 
   local is_fullscreen = Settings.get_fullscreen()
@@ -411,40 +409,54 @@ function exit_game()
   App.stop()
 end
 
+local function change_bgm_volume(delta)
+  local now = Time.get_time()
+  if now - last_bgm_change_time < VOLUME_CHANGE_DEBOUNCE then
+    return
+  end
+  last_bgm_change_time = now
+  local volume = clamp(Settings.get_bgm_volume() + delta, 0.0, 1.0)
+  Settings.set_bgm_volume(volume)
+  sync_options_visuals()
+end
+
+local function change_sfx_volume(delta)
+  local now = Time.get_time()
+  if now - last_sfx_change_time < VOLUME_CHANGE_DEBOUNCE then
+    return
+  end
+  last_sfx_change_time = now
+  local volume = clamp(Settings.get_sfx_volume() + delta, 0.0, 1.0)
+  Settings.set_sfx_volume(volume)
+  sync_options_visuals()
+end
+
 function main_menu_bgm_decrease()
   if not options_active then
     return
   end
-  local step = volume_to_step(Settings.get_bgm_volume()) - 1
-  Settings.set_bgm_volume(step_to_volume(step))
-  sync_options_visuals()
+  change_bgm_volume(-0.1)
 end
 
 function main_menu_bgm_increase()
   if not options_active then
     return
   end
-  local step = volume_to_step(Settings.get_bgm_volume()) + 1
-  Settings.set_bgm_volume(step_to_volume(step))
-  sync_options_visuals()
+  change_bgm_volume(0.1)
 end
 
 function main_menu_sfx_decrease()
   if not options_active then
     return
   end
-  local step = volume_to_step(Settings.get_sfx_volume()) - 1
-  Settings.set_sfx_volume(step_to_volume(step))
-  sync_options_visuals()
+  change_sfx_volume(-0.1)
 end
 
 function main_menu_sfx_increase()
   if not options_active then
     return
   end
-  local step = volume_to_step(Settings.get_sfx_volume()) + 1
-  Settings.set_sfx_volume(step_to_volume(step))
-  sync_options_visuals()
+  change_sfx_volume(0.1)
 end
 
 function main_menu_set_windowed()
