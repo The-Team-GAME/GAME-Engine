@@ -1,0 +1,42 @@
+{
+    "data": {
+        "components": [
+            {
+                "data": {
+                    "position": {
+                        "x": -2657.652587890625,
+                        "y": 1028.710205078125
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 128.0,
+                        "y": 128.0
+                    }
+                },
+                "type": "Components::Transform2D"
+            },
+            {
+                "data": {
+                    "on_enter": {
+                        "name": "SpawnpointCallbacks::spawnpoint_on_enter"
+                    },
+                    "on_exit": {
+                        "name": "SpawnpointCallbacks::spawnpoint_on_exit"
+                    },
+                    "on_update": {
+                        "name": "SpawnpointCallbacks::spawnpoint_on_update"
+                    },
+                    "radius": 100.0
+                },
+                "type": "Components::Interactable"
+            }
+        ],
+        "filepath": "prefabs/Spawnpoint.json",
+        "layers": [
+            "default",
+            "player"
+        ],
+        "uuid": "ddeff2b7-71ff-403d3-b7bd-c9ecf32f1802"
+    },
+    "dataType": "Prefab"
+}
