@@ -144,7 +144,7 @@ void TipsBookState::restore_hud_button()
   Engine::ECS::Entity btn(tips_button_id);
   if (!btn.is_valid()) return;
 
-  btn.clear_layers().add_to_layer("main_menu_4");
+  btn.clear_layers().add_to_layer("gameplay_ui_2");
 
   if (auto* t = btn.get_component<Components::Transform2D>()) {
     t->position.x = TIPS_BUTTON_HUD_X;
