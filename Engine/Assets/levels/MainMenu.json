@@ -4566,6 +4566,52 @@
               }
             },
             "type": "Components::Transform2D"
+          },
+          {
+            "type": "Components::BoxCollider",
+            "data": {
+              "type": "AABB",
+              "width": 440.8333435058594,
+              "height": 20.0,
+              "aabb": {
+                "half_width": 220.4166717529297,
+                "half_height": 10.0,
+                "pos": {
+                  "x": 0.0,
+                  "y": 0.0
+                }
+              },
+              "offset": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "radius": 0.0,
+              "collided": false,
+              "kinetic_friction": 1.0,
+              "resolve_collisions": false,
+              "polygon": {
+                "vertices": [],
+                "position": {
+                  "x": 0.0,
+                  "y": 0.0
+                },
+                "rotation": 0.0
+              }
+            }
+          },
+          {
+            "type": "Components::Clickable",
+            "data": {
+              "on_click": {
+                "name": "main_menu_bgm_bar_click"
+              },
+              "on_hover": {
+                "name": ""
+              },
+              "exit_hover": {
+                "name": ""
+              }
+            }
           }
         ],
         "id": 2584,
@@ -4620,6 +4666,52 @@
               }
             },
             "type": "Components::Transform2D"
+          },
+          {
+            "type": "Components::BoxCollider",
+            "data": {
+              "type": "AABB",
+              "width": 440.8333435058594,
+              "height": 20.0,
+              "aabb": {
+                "half_width": 220.4166717529297,
+                "half_height": 10.0,
+                "pos": {
+                  "x": 0.0,
+                  "y": 0.0
+                }
+              },
+              "offset": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "radius": 0.0,
+              "collided": false,
+              "kinetic_friction": 1.0,
+              "resolve_collisions": false,
+              "polygon": {
+                "vertices": [],
+                "position": {
+                  "x": 0.0,
+                  "y": 0.0
+                },
+                "rotation": 0.0
+              }
+            }
+          },
+          {
+            "type": "Components::Clickable",
+            "data": {
+              "on_click": {
+                "name": "main_menu_sfx_bar_click"
+              },
+              "on_hover": {
+                "name": ""
+              },
+              "exit_hover": {
+                "name": ""
+              }
+            }
           }
         ],
         "id": 2585,

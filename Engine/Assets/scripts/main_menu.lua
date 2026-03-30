@@ -445,6 +445,43 @@ function main_menu_bgm_increase()
   change_bgm_volume(0.1)
 end
 
+local function handle_bar_click(entity_name, is_bgm)
+  local entity = get_named_entity(entity_name)
+  if not entity or not entity:is_valid() then
+    return
+  end
+  local tr = entity.Transform2D
+  if not tr then
+    return
+  end
+  
+  local mouse = Input.get_mouse_world_position()
+  local width = 440.83334
+  local left_edge = tr.position.x - (width * 0.5)
+  local offset = mouse.x - left_edge
+  local ratio = clamp(offset / width, 0.0, 1.0)
+  
+  local step = math.floor(ratio * 10.0 + 0.5)
+  local volume = step / 10.0
+  
+  if is_bgm then
+    Settings.set_bgm_volume(volume)
+  else
+    Settings.set_sfx_volume(volume)
+  end
+  sync_options_visuals()
+end
+
+function main_menu_bgm_bar_click()
+  if not options_active then return end
+  handle_bar_click("OptionsBGMBar", true)
+end
+
+function main_menu_sfx_bar_click()
+  if not options_active then return end
+  handle_bar_click("OptionsSFXBar", false)
+end
+
 function main_menu_sfx_decrease()
   if not options_active then
     return
