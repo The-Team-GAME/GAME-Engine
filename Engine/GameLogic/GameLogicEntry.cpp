@@ -168,8 +168,10 @@ static void register_collision_callbacks()
         Log::info("camera shake requested on enemy hit");
         Log::info("Enemy took {} damage! HP: {}/{}", damage, enemy_health->current_hp, enemy_health->max_hp);
 
-        Engine::AudioSystem::playEvent("event:/SFX/PlayerPunch");
-        Log::info("Playing FMOD event: event:/SFX/PlayerPunch");
+        if (attack->play_punch_hit_sfx) {
+          Engine::AudioSystem::playEvent("event:/SFX/PlayerPunch");
+          Log::info("Playing FMOD event: event:/SFX/PlayerPunch");
+        }
 
         if (enemy_health->current_hp <= 0) {
           if (state_machine->get_current_state() != "Death") {

@@ -117,7 +117,6 @@
 		<relationship name="effects">
 			<destination>{12e3851b-c6da-496e-b1af-0693c6f8602c}</destination>
 			<destination>{e3cac7fb-732c-47b0-948d-afaa5cbd4c28}</destination>
-			<destination>{e2025ff5-4b3e-42f1-b0ac-89e5f65bfcff}</destination>
 		</relationship>
 	</object>
 	<object class="MixerBusPanner" id="{917ea15d-eece-47a2-bffb-d3ce09bb8c9b}">
@@ -151,26 +150,6 @@
 		</property>
 	</object>
 	<object class="MixerBusFader" id="{e3cac7fb-732c-47b0-948d-afaa5cbd4c28}" />
-	<object class="SFXReverbEffect" id="{e2025ff5-4b3e-42f1-b0ac-89e5f65bfcff}">
-		<property name="decayTime">
-			<value>1000</value>
-		</property>
-		<property name="lowShelfFrequency">
-			<value>650</value>
-		</property>
-		<property name="lowShelfGain">
-			<value>12</value>
-		</property>
-		<property name="highCut">
-			<value>7000</value>
-		</property>
-		<property name="wetLevel">
-			<value>-1.5</value>
-		</property>
-		<property name="dryLevel">
-			<value>-5.5</value>
-		</property>
-	</object>
 	<object class="PitchShifterEffect" id="{79b92efd-349a-44c6-951b-0785b5a79e3c}">
 		<property name="pitch">
 			<value>1.09000003</value>
