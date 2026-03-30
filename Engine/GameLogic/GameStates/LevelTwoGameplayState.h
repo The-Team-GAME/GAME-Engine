@@ -74,13 +74,7 @@ public:
   void load() {
     // LevelTwoGameplayState is LevelTwo-only.
     if (Engine::LevelManager::get_current_level_path().empty()) {
-#ifndef GAME_BUILD
-      if (!Engine::LevelTabManager::open_tab(DEFAULT_LEVEL_PATH, true)) {
-        Engine::LevelManager::open_level(DEFAULT_LEVEL_PATH);
-      }
-#else
-      Engine::LevelManager::open_level(DEFAULT_LEVEL_PATH);
-#endif
+      Engine::Resources::open_level(DEFAULT_LEVEL_PATH);
     }
 
     current_upgrade_threshold_ = 2;
@@ -253,7 +247,7 @@ public:
 
       // Periodic hard bump every 3 seconds
       if (now >= ambient_shake_next_time_) {
-        Engine::Systems::add_camera_shake(0.25f);
+        Engine::Systems::add_camera_shake(0.2f);
         ambient_shake_next_time_ = now + 3.0f;
       }
     }
