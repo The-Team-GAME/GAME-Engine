@@ -191,6 +191,7 @@
     <ClCompile Include="States\MainMenuCallbacks.cpp" />
     <ClCompile Include="States\PlayerStateCallbacks.cpp" />
     <ClCompile Include="States\SkillCooldownStateCallbacks.cpp" />
+    <ClCompile Include="States\SpawnpointCallbacks.cpp" />
     <ClCompile Include="States\SprayCanMonkeyStateCallbacks.cpp" />
     <ClCompile Include="States\TurretMonkeyStateCallbacks.cpp" />
   </ItemGroup>

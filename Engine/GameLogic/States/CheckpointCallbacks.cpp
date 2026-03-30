@@ -13,9 +13,14 @@
 
 #include "pch.h"
 #include "../Components/GameplayComponent.h"
+#include "./Components/HealthComponents.h"
 
 namespace CheckpointCallbacks
 {
+
+  Engine::ECS::Entity active_checkpoint{};
+  constexpr float CHECKPOINT_HEAL_PER_SEC = 1.0f; // 1 HP per second
+  float checkpoint_heal_carry = 0.0f;
 
   inline void spawn_checkpoint_prompt(Engine::ECS::Entity checkpoint)
   {
@@ -38,9 +43,13 @@ namespace CheckpointCallbacks
   void checkpoint_on_enter(Engine::ECS::Entity checkpoint, Engine::ECS::Entity player_entity)
   {
     auto* checkpoint_transform = checkpoint.get_component<Components::Transform2D>();
+    auto* checkpoint_data = checkpoint.get_component<Components::Checkpoint>();
     auto* player = player_entity.get_component<Components::Player>();
 
-    if (!checkpoint_transform || !player) return;
+    if (!checkpoint_transform || !checkpoint_data || !player) return;
+
+    if (checkpoint == active_checkpoint)
+      return;
 
     player->respawn_point = checkpoint_transform->position;
     player->respawn_point.y -= 50.0f; //ground offset
@@ -51,16 +60,61 @@ namespace CheckpointCallbacks
       checkpoint_transform->position.y);
 
     spawn_checkpoint_prompt(checkpoint);
+
   }
 
   void checkpoint_on_update([[maybe_unused]] Engine::ECS::Entity checkpoint,
-    [[maybe_unused]] Engine::ECS::Entity player_entity)
+    Engine::ECS::Entity player_entity)
   {
+
+    if (checkpoint == active_checkpoint)
+      return;
+
+    auto* health = player_entity.get_component<Components::Health>();
+    if (!health) return;
+
+    if (health->value >= health->max)
+    {
+      checkpoint_heal_carry = 0.0f;
+      return;
+    }
+
+    checkpoint_heal_carry += CHECKPOINT_HEAL_PER_SEC * Engine::Time::get_fixed_dt();
+
+    while (checkpoint_heal_carry >= 1.0f)
+    {
+      health->heal(1);
+      checkpoint_heal_carry -= 1.0f;
+
+      if (health->value >= health->max)
+      {
+        checkpoint_heal_carry = 0.0f;
+        break;
+      }
+    }
   }
 
   void checkpoint_on_exit([[maybe_unused]] Engine::ECS::Entity checkpoint,
     [[maybe_unused]] Engine::ECS::Entity player_entity)
   {
+    auto* checkpoint_data = checkpoint.get_component<Components::Checkpoint>();
+    if (!checkpoint_data) return;
+
+    if (checkpoint_data->claimed)
+      return;
+
+    if (active_checkpoint.is_valid())
+    {
+      if (auto* old_checkpoint = active_checkpoint.get_component<Components::Checkpoint>())
+      {
+        old_checkpoint->claimed = false;
+      }
+    }
+
+    checkpoint_data->claimed = true;
+    active_checkpoint = checkpoint;
+
+    checkpoint_heal_carry = 0.0f;
   }
 }
 
