@@ -461,7 +461,8 @@ local function handle_bar_click(entity_name, is_bgm)
   local offset = mouse.x - left_edge
   local ratio = clamp(offset / width, 0.0, 1.0)
   
-  local step = math.floor(ratio * 10.0 + 0.5)
+  local step = math.ceil(ratio * 10.0)
+  step = clamp(step, 1, 10)
   local volume = step / 10.0
   
   if is_bgm then
