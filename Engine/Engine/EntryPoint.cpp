@@ -15,6 +15,7 @@
 #include "EventManager/EventManager.h"
 #include "FunctionRegistry.h"
 #include "Components/StateMachineBlueprintRegistry.h"
+#include "LuaManager.h"
 
 namespace {
   constexpr const char* PRELOADED_GAMEPLAY_LEVEL = "levels/LevelOneTestingExtra.json";
@@ -53,13 +54,21 @@ void RunGame()
   Engine::ECS::register_layer("player");
   Engine::ECS::register_layer("scene_change_trigger");
   Engine::ECS::register_layer("effect");
-  Engine::ECS::register_layer("main_menu_0");
-  Engine::ECS::register_layer("main_menu_1");
-  Engine::ECS::register_layer("main_menu_2");
-  Engine::ECS::register_layer("main_menu_3");
-  Engine::ECS::register_layer("main_menu_4");
-  Engine::ECS::register_layer("main_menu_5");
-  Engine::ECS::register_layer("main_menu_6");
+  Engine::ECS::register_layer("main_menu_background");
+  Engine::ECS::register_layer("main_menu_midground");
+  Engine::ECS::register_layer("main_menu_foreground");
+  Engine::ECS::register_layer("main_menu_character"); // Character behind carriage (BroSleeping)
+  Engine::ECS::register_layer("main_menu_carriage");
+  Engine::ECS::register_layer("main_menu_impact"); // Impact flash — behind Bro/Carriage-Sheet
+  Engine::ECS::register_layer("main_menu_button"); // Buttons after impact, before BroPunching
+  Engine::ECS::register_layer("main_menu_bropunch");
+  Engine::ECS::register_layer("main_menu_red_overlay");
+  Engine::ECS::register_layer("main_menu_anykey");
+  Engine::ECS::register_layer("main_menu_ui");  // Main menu UI elements (buttons, overlays)
+  Engine::ECS::register_layer("gameplay_ui_1");
+  Engine::ECS::register_layer("gameplay_ui_2");
+  Engine::ECS::register_layer("gameplay_ui_3");
+  Engine::ECS::register_layer("gameplay_ui_4");
   Engine::ECS::register_layer("upgrade_ui_bg"); // Upgrade picker: dimmer overlay
   Engine::ECS::register_layer("upgrade_ui_fg"); // Upgrade picker: cards, panels, particles
   Engine::ECS::register_layer("overlay_bg");      // Always-on-top full-screen dimmer/fade
@@ -96,6 +105,11 @@ void RunGame()
     Engine::Core::exit();
     return;
   }
+
+  // ── Initialize Lua scripting ──────────────────────────────────────────
+  // Must happen AFTER loading the DLL so that GameLogic components
+  // are registered into LuaBindingRegistry before we drain it.
+  Engine::LuaManager::instance().init();
 
   // ── Load prefabs / assets ────────────────────────────────────────────
   // Must happen AFTER loading the DLL so that GameLogic components
@@ -135,11 +149,28 @@ void RunGame()
   Engine::HotReload::stop_source_watcher();
 #endif
   Engine::Core::exit();
+
+  // ── Cleanup ─────────────────────────────────────────────────────────
+  // SHUTDOWN ORDER IS CRITICAL — read before changing:
+  //
+  // 1. LuaManager::shutdown() FIRST (before unloading the DLL).
+  //    Closing the sol::state runs the Lua GC. The GC touches:
+  //      a) Sol2 userdatas holding raw C++ component pointers → ECS must be alive.
+  //      b) Lua metatables whose C++ closures were compiled into GameLogic.dll
+  //         (e.g. LUA_BIND_METHODS lambdas) → DLL must still be mapped.
+  //    Both conditions require Lua to close BEFORE ECS destruction and BEFORE
+  //    FreeLibrary. Also, FunctionRegistry::clear_all() (called by
+  //    UnregisterGameLogic inside unload_game_logic) destroys std::function
+  //    closures that hold sol::protected_function — those decrefs must happen
+  //    while the sol::state is still alive.
+  Engine::LuaManager::instance().shutdown();
+  Engine::LuaBindingRegistry::destroy_instance();
+
+  // 2. Unload the DLL. UnregisterGameLogic clears scenes, FunctionRegistry, etc.
+  //    Now safe because the Lua GC has already finished.
   Engine::HotReload::unload_game_logic();
 
-  // Delete all intentionally-leaked singletons now that the DLL is unloaded
-  // and no code will access them. This frees the struct shells AND their
-  // remaining STL structural overhead (sentinel nodes, iterator-debug proxies).
+  // 3. Destroy ECS world. Safe now that Lua is gone (no more GC touching component ptrs).
   Engine::ECS::destroy_world();
   Engine::ECS::ComponentTypeManager::destroy_type_map();
   Engine::EventManager::destroy_all();

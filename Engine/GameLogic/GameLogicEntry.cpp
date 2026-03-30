@@ -31,7 +31,6 @@
 #include "GameStates/BasicState.h"
 #include "GameStates/PhysicsTestState.h"
 #include "GameStates/DistortionEffectState.h"
-#include "GameStates/LuaState.h"
 #include "GameStates/BehaviourState.h"
 #include "GameStates/GameplayState.h"
 #include "GameStates/LevelTwoGameplayState.h"
@@ -40,7 +39,6 @@
 #include "GameStates/UpgradePickerState.h"
 #include "GameStates/PauseState.h"
 #include "GameStates/VictoryState.h"
-#include "GameStates/OptionsState.h"
 #include "GameStates/VideoPlaybackState.h"
 #include "GameStates/OpeningCutsceneState.h"
 #include "GameStates/EnteringTrainCutsceneState.h"
@@ -168,8 +166,10 @@ static void register_collision_callbacks()
         Log::info("camera shake requested on enemy hit");
         Log::info("Enemy took {} damage! HP: {}/{}", damage, enemy_health->current_hp, enemy_health->max_hp);
 
-        Engine::AudioSystem::playEvent("event:/SFX/PlayerPunch");
-        Log::info("Playing FMOD event: event:/SFX/PlayerPunch");
+        if (attack->play_punch_hit_sfx) {
+          Engine::AudioSystem::playEvent("event:/SFX/PlayerPunch");
+          Log::info("Playing FMOD event: event:/SFX/PlayerPunch");
+        }
 
         if (enemy_health->current_hp <= 0) {
           if (state_machine->get_current_state() != "Death") {
@@ -508,16 +508,6 @@ static void register_function_callbacks()
     }
     }));
 
-  // Main menu button callbacks
-  reg.register_function<void()>("start_game", std::function<void()>([]() {
-    Engine::SceneManager::load_scene("OpeningCutsceneState");
-    }));
-  reg.register_function<void()>("options_menu", std::function<void()>([]() {
-    }));
-  reg.register_function<void()>("exit_game", std::function<void()>([]() {
-    Engine::Core::stop();
-    }));
-
   // Victory interactable callback
   reg.register_function<void(Engine::ECS::Entity, Engine::ECS::Entity)>("show_victory",
     std::function<void(Engine::ECS::Entity, Engine::ECS::Entity)>([](Engine::ECS::Entity, Engine::ECS::Entity) {
@@ -547,14 +537,12 @@ static void register_scenes()
   Engine::SceneManager::register_scene<BasicState>("BasicState");
   Engine::SceneManager::register_scene<PhysicsTestState>("PhysicsTestState");
   Engine::SceneManager::register_scene<DistortionEffectState>("DistortionEffectState");
-  Engine::SceneManager::register_scene<LuaState>("LuaState");
   Engine::SceneManager::register_scene<BehaviourState>("BehaviourState");
   Engine::SceneManager::register_scene<TipsBookState>("TipsBookState");
   Engine::SceneManager::register_scene<OldManDialogueState>("OldManDialogueState");
   Engine::SceneManager::register_scene<UpgradePickerState>("UpgradePickerState");
   Engine::SceneManager::register_scene<PauseState>("PauseState");
   Engine::SceneManager::register_scene<VictoryState>("VictoryState");
-  Engine::SceneManager::register_scene<OptionsState>("OptionsState");
   Engine::SceneManager::register_scene<VideoPlaybackState>("VideoPlaybackState");
   Engine::SceneManager::register_scene<OpeningCutsceneState>("OpeningCutsceneState");
   Engine::SceneManager::register_scene<EnteringTrainCutsceneState>("EnteringTrainCutsceneState");

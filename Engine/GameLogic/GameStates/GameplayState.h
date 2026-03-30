@@ -119,14 +119,14 @@ public:
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::UI>(1.0f, 0.0f)
       .add_component<Components::RuntimeOnly>()
-      .add_to_layer("main_menu_4");
+      .add_to_layer("gameplay_ui_2");
     pause_button_id = pause_btn.get_id();
 
     // Tips book button - top right beside pause (reuse level entity if present)
     auto tips_btn = find_tips_button_entity();
     if (tips_btn.is_valid()) {
       tips_button_id = tips_btn.get_id();
-      set_tips_button_layer("main_menu_4");
+      set_tips_button_layer("gameplay_ui_2");
       if (auto* ui = tips_btn.get_component<Components::UI>()) ui->anchor = { 1.0f, 0.0f };
       set_tips_button_size(TIPS_BUTTON_HUD_SIZE);
       set_tips_button_hud_position();
@@ -139,7 +139,7 @@ public:
         .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
         .add_component<Components::UI>(1.0f, 0.0f)
         .add_component<Components::RuntimeOnly>()
-        .add_to_layer("main_menu_4");
+        .add_to_layer("gameplay_ui_2");
       tips_button_id = tips_btn_created.get_id();
     }
 
@@ -153,7 +153,7 @@ public:
         .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.0f)  // start hidden
         .add_component<Components::UI>(0.0f, 1.0f)
         .add_component<Components::RuntimeOnly>()
-        .add_to_layer("main_menu_4");
+        .add_to_layer("gameplay_ui_2");
       return e.get_id();
       };
     upgrade_btn_id_[0] = make_upgrade_btn("images/Upgrades/skills_upgrade_2.png", 64, 11);

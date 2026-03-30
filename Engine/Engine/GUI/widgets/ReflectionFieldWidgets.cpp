@@ -29,6 +29,8 @@
 #include "../../FunctionRegistry.h"
 #include "../../Audio/AudioSystem.h"
 #include "../../Graphics/Renderer.h"
+#include "../../LuaManager.h"
+#include "../../Components/StateMachineBlueprintRegistry.h"
 
 namespace ImGuiWidgets {
 
@@ -637,22 +639,27 @@ namespace ImGuiWidgets {
     ReflectionLibrary::Object& field_obj = field_value.getObject();
     bool local_modified = false;
 
+    auto& bp_registry = Engine::StateMachineBlueprintRegistry::instance();
+
+    auto bp_it = field_obj.find("blueprint_id");
+    std::string current_bp_id;
+    if (bp_it != field_obj.end() && bp_it->second.isString()) {
+      current_bp_id = bp_it->second.getString();
+    }
+
+    bool current_is_lua = bp_registry.is_lua_blueprint(current_bp_id);
+
     // ========================================================================
-    // Blueprint ID selector dropdown
+    // Blueprint ID selector dropdown (supports both C++ and Lua blueprints)
     // ========================================================================
     {
-      auto bp_it = field_obj.find("blueprint_id");
-      std::string current_bp_id;
-      if (bp_it != field_obj.end() && bp_it->second.isString()) {
-        current_bp_id = bp_it->second.getString();
-      }
-
-      auto all_ids = Engine::StateMachineBlueprintRegistry::instance().get_all_ids();
+      auto all_ids = bp_registry.get_all_ids();
       std::sort(all_ids.begin(), all_ids.end());
 
       ImGui::Text("Blueprint:");
       ImGui::SameLine();
       const char* preview = current_bp_id.empty() ? "(none)" : current_bp_id.c_str();
+      ImGui::SetNextItemWidth(200.0f);
       if (ImGui::BeginCombo("##blueprint_id", preview)) {
         if (ImGui::Selectable("(none)", current_bp_id.empty())) {
           field_obj["blueprint_id"] = ReflectionLibrary::GenericValue(std::string(""));
@@ -660,73 +667,273 @@ namespace ImGuiWidgets {
           field_obj["current_state_name"] = ReflectionLibrary::GenericValue(std::string(""));
           local_modified = true;
         }
-        for (const auto& id : all_ids) {
-          bool is_selected = (id == current_bp_id);
-          if (ImGui::Selectable(id.c_str(), is_selected)) {
-            field_obj["blueprint_id"] = ReflectionLibrary::GenericValue(id);
-            local_modified = true;
 
-            // ---- Sync states from the newly selected blueprint ----
-            const auto* bp = Engine::StateMachineBlueprintRegistry::instance().get_blueprint(id);
-            if (bp) {
-              // Build a lookup of existing serialized states so we preserve animation/audio data
-              std::map<std::string, ReflectionLibrary::GenericValue> existing_states;
-              auto st_it = field_obj.find("states");
-              if (st_it != field_obj.end()) {
-                auto existing_map = ReflectionLibrary::convert_array_of_pairs_to_map(st_it->second);
-                if (existing_map.isObject()) {
-                  existing_states = existing_map.getObject();
+        // Separate C++ and Lua blueprints in the dropdown
+        bool has_cpp = false, has_lua = false;
+        for (const auto& id : all_ids) {
+          if (!bp_registry.is_lua_blueprint(id)) has_cpp = true;
+          else has_lua = true;
+        }
+
+        if (has_cpp) {
+          ImGui::TextDisabled("-- C++ Blueprints --");
+          for (const auto& id : all_ids) {
+            if (bp_registry.is_lua_blueprint(id)) continue;
+            bool is_selected = (id == current_bp_id);
+            if (ImGui::Selectable(id.c_str(), is_selected)) {
+              field_obj["blueprint_id"] = ReflectionLibrary::GenericValue(id);
+              local_modified = true;
+
+              // ---- Sync states from the newly selected blueprint ----
+              const auto* bp = bp_registry.get_blueprint(id);
+              if (bp) {
+                // Build a lookup of existing serialized states so we preserve animation/audio data
+                std::map<std::string, ReflectionLibrary::GenericValue> existing_states;
+                auto st_it = field_obj.find("states");
+                if (st_it != field_obj.end()) {
+                  auto existing_map = ReflectionLibrary::convert_array_of_pairs_to_map(st_it->second);
+                  if (existing_map.isObject()) {
+                    existing_states = existing_map.getObject();
+                  }
+                }
+
+                // Build new states array-of-pairs from the blueprint
+                ReflectionLibrary::Array new_states_array;
+                for (const auto& sb : bp->states) {
+                  ReflectionLibrary::Object pair_obj;
+                  pair_obj["first"] = ReflectionLibrary::GenericValue(sb.state_name);
+
+                  auto ex_it = existing_states.find(sb.state_name);
+                  if (ex_it != existing_states.end()) {
+                    pair_obj["second"] = ex_it->second;
+                  }
+                  else {
+                    ReflectionLibrary::Object state_obj;
+                    state_obj["name"] = ReflectionLibrary::GenericValue(sb.state_name);
+                    state_obj["animation"] = ReflectionLibrary::GenericValue();
+                    state_obj["audio"] = ReflectionLibrary::GenericValue();
+
+                    ReflectionLibrary::Object enter_cb;
+                    enter_cb["name"] = ReflectionLibrary::GenericValue(sb.on_enter);
+                    state_obj["on_enter_callback"] = ReflectionLibrary::GenericValue(std::move(enter_cb));
+
+                    ReflectionLibrary::Object update_cb;
+                    update_cb["name"] = ReflectionLibrary::GenericValue(sb.on_update);
+                    state_obj["on_update_callback"] = ReflectionLibrary::GenericValue(std::move(update_cb));
+
+                    ReflectionLibrary::Object exit_cb;
+                    exit_cb["name"] = ReflectionLibrary::GenericValue(sb.on_exit);
+                    state_obj["on_exit_callback"] = ReflectionLibrary::GenericValue(std::move(exit_cb));
+
+                    pair_obj["second"] = ReflectionLibrary::GenericValue(std::move(state_obj));
+                  }
+                  new_states_array.push_back(ReflectionLibrary::GenericValue(std::move(pair_obj)));
+                }
+
+                field_obj["states"] = ReflectionLibrary::GenericValue(std::move(new_states_array));
+
+                auto csn_it = field_obj.find("current_state_name");
+                bool needs_initial = !csn_it->second.isString() || csn_it->second.getString().empty();
+                if (needs_initial && !bp->initial_state.empty()) {
+                  field_obj["current_state_name"] = ReflectionLibrary::GenericValue(bp->initial_state);
                 }
               }
+            }
+            if (is_selected) ImGui::SetItemDefaultFocus();
+          }
+        }
 
-              // Build new states array-of-pairs from the blueprint
-              ReflectionLibrary::Array new_states_array;
-              for (const auto& sb : bp->states) {
-                ReflectionLibrary::Object pair_obj;
-                pair_obj["first"] = ReflectionLibrary::GenericValue(sb.state_name);
+        if (has_lua) {
+          ImGui::TextDisabled("-- Lua Blueprints --");
+          for (const auto& id : all_ids) {
+            if (!bp_registry.is_lua_blueprint(id)) continue;
+            bool is_selected = (id == current_bp_id);
+            std::string display_label = id + " [Lua]";
+            if (ImGui::Selectable(display_label.c_str(), is_selected)) {
+              field_obj["blueprint_id"] = ReflectionLibrary::GenericValue(id);
+              local_modified = true;
 
-                // Reuse existing state data if it exists (preserves animation/audio/collider)
-                auto ex_it = existing_states.find(sb.state_name);
-                if (ex_it != existing_states.end()) {
-                  pair_obj["second"] = ex_it->second;
+              // ---- Sync states from the newly selected Lua blueprint ----
+              const auto* bp = bp_registry.get_blueprint(id);
+              if (bp) {
+                std::map<std::string, ReflectionLibrary::GenericValue> existing_states;
+                auto st_it = field_obj.find("states");
+                if (st_it != field_obj.end()) {
+                  auto existing_map = ReflectionLibrary::convert_array_of_pairs_to_map(st_it->second);
+                  if (existing_map.isObject()) {
+                    existing_states = existing_map.getObject();
+                  }
                 }
-                else {
-                  // Create a minimal state object with empty fields
+
+                ReflectionLibrary::Array new_states_array;
+                for (const auto& sb : bp->states) {
+                  ReflectionLibrary::Object pair_obj;
+                  pair_obj["first"] = ReflectionLibrary::GenericValue(sb.state_name);
+
+                  auto ex_it = existing_states.find(sb.state_name);
+                  if (ex_it != existing_states.end()) {
+                    pair_obj["second"] = ex_it->second;
+                  }
+                  else {
+                    ReflectionLibrary::Object state_obj;
+                    state_obj["name"] = ReflectionLibrary::GenericValue(sb.state_name);
+                    state_obj["animation"] = ReflectionLibrary::GenericValue();
+                    state_obj["audio"] = ReflectionLibrary::GenericValue();
+
+                    ReflectionLibrary::Object enter_cb;
+                    enter_cb["name"] = ReflectionLibrary::GenericValue(sb.on_enter);
+                    state_obj["on_enter_callback"] = ReflectionLibrary::GenericValue(std::move(enter_cb));
+
+                    ReflectionLibrary::Object update_cb;
+                    update_cb["name"] = ReflectionLibrary::GenericValue(sb.on_update);
+                    state_obj["on_update_callback"] = ReflectionLibrary::GenericValue(std::move(update_cb));
+
+                    ReflectionLibrary::Object exit_cb;
+                    exit_cb["name"] = ReflectionLibrary::GenericValue(sb.on_exit);
+                    state_obj["on_exit_callback"] = ReflectionLibrary::GenericValue(std::move(exit_cb));
+
+                    pair_obj["second"] = ReflectionLibrary::GenericValue(std::move(state_obj));
+                  }
+                  new_states_array.push_back(ReflectionLibrary::GenericValue(std::move(pair_obj)));
+                }
+
+                field_obj["states"] = ReflectionLibrary::GenericValue(std::move(new_states_array));
+
+                auto csn_it = field_obj.find("current_state_name");
+                bool needs_initial = !csn_it->second.isString() || csn_it->second.getString().empty();
+                if (needs_initial && !bp->initial_state.empty()) {
+                  field_obj["current_state_name"] = ReflectionLibrary::GenericValue(bp->initial_state);
+                }
+              }
+            }
+            if (is_selected) ImGui::SetItemDefaultFocus();
+          }
+        }
+
+        ImGui::EndCombo();
+      }
+
+      // ── Lua blueprint action buttons ────────────────────────────────
+      // Show [Edit] and [Delete] if current blueprint is Lua-sourced
+      if (current_is_lua && !current_bp_id.empty()) {
+        ImGui::SameLine();
+        if (ImGui::Button("Edit##lua_bp_edit")) {
+          Engine::LuaManager::instance().open_lua_blueprint_in_editor(current_bp_id);
+        }
+        if (ImGui::IsItemHovered()) {
+          auto path = Engine::LuaManager::instance().get_lua_blueprint_path(current_bp_id);
+          ImGui::SetTooltip("Open %s in editor", path.c_str());
+        }
+
+        ImGui::SameLine();
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.15f, 0.15f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
+        if (ImGui::Button("Delete##lua_bp_delete")) {
+          ImGui::OpenPopup("ConfirmDeleteLuaBP");
+        }
+        ImGui::PopStyleColor(2);
+
+        // Confirmation popup for delete
+        if (ImGui::BeginPopup("ConfirmDeleteLuaBP")) {
+          ImGui::Text("Delete Lua blueprint '%s'?", current_bp_id.c_str());
+          ImGui::Text("This will delete the .lua file from disk.");
+          if (ImGui::Button("Yes, Delete")) {
+            Engine::LuaManager::instance().delete_lua_blueprint(current_bp_id);
+            field_obj["blueprint_id"] = ReflectionLibrary::GenericValue(std::string(""));
+            field_obj["states"] = ReflectionLibrary::GenericValue(ReflectionLibrary::Array{});
+            field_obj["current_state_name"] = ReflectionLibrary::GenericValue(std::string(""));
+            local_modified = true;
+            ImGui::CloseCurrentPopup();
+          }
+          ImGui::SameLine();
+          if (ImGui::Button("Cancel")) {
+            ImGui::CloseCurrentPopup();
+          }
+          ImGui::EndPopup();
+        }
+      }
+
+      // ── Create New Lua Blueprint button ──────────────────────────────
+      {
+        static char new_bp_name[128] = "";
+        if (ImGui::Button("Create Lua Blueprint", ImVec2(160.0f, 0.0f))) {
+          memset(new_bp_name, 0, sizeof(new_bp_name));
+          ImGui::OpenPopup("CreateLuaBP");
+        }
+        if (ImGui::IsItemHovered()) {
+          ImGui::SetTooltip("Create a new Lua blueprint file with a template");
+        }
+
+        if (ImGui::BeginPopup("CreateLuaBP")) {
+          ImGui::Text("Blueprint Name:");
+          ImGui::InputText("##new_lua_bp_name", new_bp_name, sizeof(new_bp_name));
+
+          bool name_valid = strlen(new_bp_name) > 0;
+          if (name_valid && bp_registry.has_blueprint(new_bp_name)) {
+            ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "Blueprint '%s' already exists!", new_bp_name);
+            name_valid = false;
+          }
+
+          if (!name_valid) ImGui::BeginDisabled();
+          if (ImGui::Button("Create")) {
+            std::string path = Engine::LuaManager::instance().create_lua_blueprint(new_bp_name);
+            if (!path.empty()) {
+              // Auto-select the newly created blueprint
+              std::string bp_id_str(new_bp_name);
+              field_obj["blueprint_id"] = ReflectionLibrary::GenericValue(bp_id_str);
+              local_modified = true;
+
+              // Sync states from the new blueprint
+              const auto* bp = bp_registry.get_blueprint(bp_id_str);
+              if (bp) {
+                ReflectionLibrary::Array new_states_array;
+                for (const auto& sb : bp->states) {
+                  ReflectionLibrary::Object pair_obj;
+                  pair_obj["first"] = ReflectionLibrary::GenericValue(sb.state_name);
                   ReflectionLibrary::Object state_obj;
                   state_obj["name"] = ReflectionLibrary::GenericValue(sb.state_name);
-                  state_obj["animation"] = ReflectionLibrary::GenericValue();  // null
-                  state_obj["audio"] = ReflectionLibrary::GenericValue();      // null
+                  state_obj["animation"] = ReflectionLibrary::GenericValue();
+                  state_obj["audio"] = ReflectionLibrary::GenericValue();
 
                   ReflectionLibrary::Object enter_cb;
                   enter_cb["name"] = ReflectionLibrary::GenericValue(sb.on_enter);
                   state_obj["on_enter_callback"] = ReflectionLibrary::GenericValue(std::move(enter_cb));
-
                   ReflectionLibrary::Object update_cb;
                   update_cb["name"] = ReflectionLibrary::GenericValue(sb.on_update);
                   state_obj["on_update_callback"] = ReflectionLibrary::GenericValue(std::move(update_cb));
-
                   ReflectionLibrary::Object exit_cb;
                   exit_cb["name"] = ReflectionLibrary::GenericValue(sb.on_exit);
                   state_obj["on_exit_callback"] = ReflectionLibrary::GenericValue(std::move(exit_cb));
 
                   pair_obj["second"] = ReflectionLibrary::GenericValue(std::move(state_obj));
+                  new_states_array.push_back(ReflectionLibrary::GenericValue(std::move(pair_obj)));
                 }
-                new_states_array.push_back(ReflectionLibrary::GenericValue(std::move(pair_obj)));
-              }
+                field_obj["states"] = ReflectionLibrary::GenericValue(std::move(new_states_array));
 
-              field_obj["states"] = ReflectionLibrary::GenericValue(std::move(new_states_array));
-
-              // Set initial state from blueprint if not already set
-              auto csn_it = field_obj.find("current_state_name");
-              bool needs_initial = !csn_it->second.isString() || csn_it->second.getString().empty();
-              if (needs_initial && !bp->initial_state.empty()) {
-                field_obj["current_state_name"] = ReflectionLibrary::GenericValue(bp->initial_state);
+                if (!bp->initial_state.empty()) {
+                  field_obj["current_state_name"] = ReflectionLibrary::GenericValue(bp->initial_state);
+                }
               }
             }
+            ImGui::CloseCurrentPopup();
           }
-          if (is_selected) ImGui::SetItemDefaultFocus();
+          if (!name_valid) ImGui::EndDisabled();
+
+          ImGui::SameLine();
+          if (ImGui::Button("Cancel##create_lua_bp")) {
+            ImGui::CloseCurrentPopup();
+          }
+          ImGui::EndPopup();
         }
-        ImGui::EndCombo();
+      }
+
+      // ── Reload Lua Scripts button ────────────────────────────────────
+      ImGui::SameLine();
+      if (ImGui::Button("Reload Lua")) {
+        Engine::LuaManager::instance().reload_scripts();
+      }
+      if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Force-reload all Lua scripts and blueprints");
       }
     }
 
@@ -785,6 +992,11 @@ namespace ImGuiWidgets {
       return true;
     }
 
+    // Shared buffer for adding new state (used by both tab item button and Add State button)
+    static char new_state_name[64] = "";
+    // Deferred flag: set inside tab bar, consumed after EndTabBar to avoid popup ID scope mismatch
+    static bool request_open_add_state_popup = false;
+
     // Create a tab bar for all states
     if (ImGui::BeginTabBar("StatesTabBar", ImGuiTabBarFlags_None)) {
       // Iterate through all states in the state machine
@@ -796,6 +1008,73 @@ namespace ImGuiWidgets {
         if (ImGui::BeginTabItem(state_name.c_str())) {
           // Display state name (read-only for now, as it's the key)
           ImGui::Text("State Name: %s", state_name.c_str());
+
+          // Remove State button at the top (Lua blueprints only)
+          if (current_is_lua && !current_bp_id.empty()) {
+            ImGui::SameLine();
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.15f, 0.15f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
+            std::string remove_state_label = "Delete State##remove_" + state_name;
+            if (ImGui::Button(remove_state_label.c_str())) {
+              ImGui::OpenPopup(("ConfirmRemoveState_" + state_name).c_str());
+            }
+            ImGui::PopStyleColor(2);
+
+            if (ImGui::BeginPopup(("ConfirmRemoveState_" + state_name).c_str())) {
+              ImGui::Text("Delete state '%s' from blueprint '%s'?", state_name.c_str(), current_bp_id.c_str());
+              ImGui::Text("Callback functions will be kept in the .lua file.");
+              if (ImGui::Button("Yes, Delete")) {
+                Engine::LuaManager::instance().remove_state_from_lua_blueprint(current_bp_id, state_name);
+                // Re-sync states from the updated registry
+                const auto* bp = bp_registry.get_blueprint(current_bp_id);
+                if (bp) {
+                  std::map<std::string, ReflectionLibrary::GenericValue> existing_states;
+                  auto st_it2 = field_obj.find("states");
+                  if (st_it2 != field_obj.end()) {
+                    auto existing_map = ReflectionLibrary::convert_array_of_pairs_to_map(st_it2->second);
+                    if (existing_map.isObject()) {
+                      existing_states = existing_map.getObject();
+                    }
+                  }
+                  ReflectionLibrary::Array new_states_array;
+                  for (const auto& sb : bp->states) {
+                    ReflectionLibrary::Object pair_obj;
+                    pair_obj["first"] = ReflectionLibrary::GenericValue(sb.state_name);
+                    auto ex_it2 = existing_states.find(sb.state_name);
+                    if (ex_it2 != existing_states.end()) {
+                      pair_obj["second"] = ex_it2->second;
+                    }
+                    else {
+                      ReflectionLibrary::Object state_obj2;
+                      state_obj2["name"] = ReflectionLibrary::GenericValue(sb.state_name);
+                      state_obj2["animation"] = ReflectionLibrary::GenericValue();
+                      state_obj2["audio"] = ReflectionLibrary::GenericValue();
+                      ReflectionLibrary::Object enter_cb;
+                      enter_cb["name"] = ReflectionLibrary::GenericValue(sb.on_enter);
+                      state_obj2["on_enter_callback"] = ReflectionLibrary::GenericValue(std::move(enter_cb));
+                      ReflectionLibrary::Object update_cb;
+                      update_cb["name"] = ReflectionLibrary::GenericValue(sb.on_update);
+                      state_obj2["on_update_callback"] = ReflectionLibrary::GenericValue(std::move(update_cb));
+                      ReflectionLibrary::Object exit_cb;
+                      exit_cb["name"] = ReflectionLibrary::GenericValue(sb.on_exit);
+                      state_obj2["on_exit_callback"] = ReflectionLibrary::GenericValue(std::move(exit_cb));
+                      pair_obj["second"] = ReflectionLibrary::GenericValue(std::move(state_obj2));
+                    }
+                    new_states_array.push_back(ReflectionLibrary::GenericValue(std::move(pair_obj)));
+                  }
+                  field_obj["states"] = ReflectionLibrary::GenericValue(std::move(new_states_array));
+                  local_modified = true;
+                }
+                ImGui::CloseCurrentPopup();
+              }
+              ImGui::SameLine();
+              if (ImGui::Button(("Cancel##remove_state_" + state_name).c_str())) {
+                ImGui::CloseCurrentPopup();
+              }
+              ImGui::EndPopup();
+            }
+          }
+
           ImGui::Separator();
 
           // Check if state has animation
@@ -1091,7 +1370,102 @@ namespace ImGuiWidgets {
         }
       }
 
+      // "+" tab button to add new state (Lua blueprints only) — outside the state loop so it
+      // appears once, trailing after all state tabs. Uses deferred flag instead of OpenPopup
+      // here because BeginPopup("AddLuaState") lives outside the tab bar (different ID scope).
+      if (current_is_lua && !current_bp_id.empty()) {
+        if (ImGui::TabItemButton("+", ImGuiTabItemFlags_Trailing | ImGuiTabItemFlags_NoTooltip)) {
+          memset(new_state_name, 0, sizeof(new_state_name));
+          request_open_add_state_popup = true;
+        }
+        if (ImGui::IsItemHovered()) {
+          ImGui::SetTooltip("Add a new state with stub callbacks to the Lua blueprint");
+        }
+      }
+
       ImGui::EndTabBar();
+    }
+
+    // Consume deferred flag here (outer scope) so popup ID matches BeginPopup below
+    if (request_open_add_state_popup) {
+      ImGui::OpenPopup("AddLuaState");
+      request_open_add_state_popup = false;
+    }
+
+    // ── Add State button (Lua blueprints only) ──────────────────────────
+    if (current_is_lua && !current_bp_id.empty()) {
+      if (ImGui::Button("+ Add State##lua_add_state", ImVec2(120.0f, 0.0f))) {
+        memset(new_state_name, 0, sizeof(new_state_name));
+        ImGui::OpenPopup("AddLuaState");
+      }
+      if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Add a new state with stub callbacks to the Lua blueprint");
+      }
+
+      if (ImGui::BeginPopup("AddLuaState")) {
+        ImGui::Text("New State Name:");
+        ImGui::InputText("##new_lua_state_name", new_state_name, sizeof(new_state_name));
+
+        bool name_valid = strlen(new_state_name) > 0;
+        // Check if state already exists
+        if (name_valid && states_map.count(new_state_name)) {
+          ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "State '%s' already exists!", new_state_name);
+          name_valid = false;
+        }
+
+        if (!name_valid) ImGui::BeginDisabled();
+        if (ImGui::Button("Add")) {
+          Engine::LuaManager::instance().add_state_to_lua_blueprint(current_bp_id, new_state_name);
+          // Re-sync states from the updated registry
+          const auto* bp = bp_registry.get_blueprint(current_bp_id);
+          if (bp) {
+            std::map<std::string, ReflectionLibrary::GenericValue> existing_states;
+            auto st_it2 = field_obj.find("states");
+            if (st_it2 != field_obj.end()) {
+              auto existing_map = ReflectionLibrary::convert_array_of_pairs_to_map(st_it2->second);
+              if (existing_map.isObject()) {
+                existing_states = existing_map.getObject();
+              }
+            }
+            ReflectionLibrary::Array new_states_array;
+            for (const auto& sb : bp->states) {
+              ReflectionLibrary::Object pair_obj;
+              pair_obj["first"] = ReflectionLibrary::GenericValue(sb.state_name);
+              auto ex_it2 = existing_states.find(sb.state_name);
+              if (ex_it2 != existing_states.end()) {
+                pair_obj["second"] = ex_it2->second;
+              }
+              else {
+                ReflectionLibrary::Object state_obj2;
+                state_obj2["name"] = ReflectionLibrary::GenericValue(sb.state_name);
+                state_obj2["animation"] = ReflectionLibrary::GenericValue();
+                state_obj2["audio"] = ReflectionLibrary::GenericValue();
+                ReflectionLibrary::Object enter_cb;
+                enter_cb["name"] = ReflectionLibrary::GenericValue(sb.on_enter);
+                state_obj2["on_enter_callback"] = ReflectionLibrary::GenericValue(std::move(enter_cb));
+                ReflectionLibrary::Object update_cb;
+                update_cb["name"] = ReflectionLibrary::GenericValue(sb.on_update);
+                state_obj2["on_update_callback"] = ReflectionLibrary::GenericValue(std::move(update_cb));
+                ReflectionLibrary::Object exit_cb;
+                exit_cb["name"] = ReflectionLibrary::GenericValue(sb.on_exit);
+                state_obj2["on_exit_callback"] = ReflectionLibrary::GenericValue(std::move(exit_cb));
+                pair_obj["second"] = ReflectionLibrary::GenericValue(std::move(state_obj2));
+              }
+              new_states_array.push_back(ReflectionLibrary::GenericValue(std::move(pair_obj)));
+            }
+            field_obj["states"] = ReflectionLibrary::GenericValue(std::move(new_states_array));
+            local_modified = true;
+          }
+          ImGui::CloseCurrentPopup();
+        }
+        if (!name_valid) ImGui::EndDisabled();
+
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel##add_lua_state")) {
+          ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+      }
     }
 
     // Write back changes if modified
