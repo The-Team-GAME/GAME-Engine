@@ -37,3 +37,9 @@ namespace Components {
 }
 
 REGISTER_COMPONENT(Components::EnemyHealth, current_hp, max_hp)
+
+LUA_BIND_METHODS(Components::EnemyHealth, {
+    lua["EnemyHealth"]["take_damage"] = &Components::EnemyHealth::take_damage;
+    lua["EnemyHealth"]["heal"]        = &Components::EnemyHealth::heal;
+    lua["EnemyHealth"]["is_dead"]     = &Components::EnemyHealth::is_dead;
+})

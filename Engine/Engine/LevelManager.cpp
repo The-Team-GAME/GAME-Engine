@@ -670,15 +670,22 @@ namespace Engine {
       if (state.has_live_entities) {
         // Fast path: reactivate deactivated entities
         activate_level(state);
+        // Rebuild quadtree bounds for the newly activated level.
+        // The previous level's open_level/instantiate_entities call may have set
+        // smaller bounds (e.g. main-menu window size). Without this the collision
+        // quadtree is too small and tile colliders outside it are never found.
+        TilemapManager::broadcast_world_bounds();
       }
       else if (has_preloaded_snapshot(level_id)) {
         for (ECS::EntityID id : preloaded_snapshots[level_id]) {
           ECS::activate_entity(id);
         }
         preloaded_snapshots.erase(level_id);
+        TilemapManager::broadcast_world_bounds();
       }
       else {
         // Cold path: instantiate from resident preloaded data when available
+        // (instantiate_entities already calls broadcast_world_bounds internally)
         EntityList entities = get_preloaded_or_disk(state, level_id);
         instantiate_entities(entities, true);
         state.cached_entities = entities;
@@ -745,6 +752,8 @@ namespace Engine {
           ECS::activate_entity(id);
         }
         preloaded_snapshots.erase(level_id);
+        // Rebuild quadtree bounds after snapshot reactivation (same reason as switch_to_level)
+        TilemapManager::broadcast_world_bounds();
 
         current_level_path = level_id;
         call_level_init();

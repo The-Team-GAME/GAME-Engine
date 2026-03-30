@@ -76,7 +76,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>ENGINE_EXPORTS;GLEW_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\Lua\include;$(SolutionDir)Dependencies\Sol2\include;$(SolutionDir)Dependencies\FMOD Studio\inc;$(SolutionDir)Dependencies\pl_mpeg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\Lua\src;$(SolutionDir)Dependencies\Sol2\include;$(SolutionDir)Dependencies\FMOD Studio\inc;$(SolutionDir)Dependencies\pl_mpeg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/bigobj /Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
@@ -86,8 +86,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\FMOD\lib;$(SolutionDir)Dependencies\FreeType\objs;$(SolutionDir)Dependencies\GLFW\lib-vc2022;$(SolutionDir)Dependencies\GLEW\lib;$(SolutionDir)Dependencies\ImGui\out-debug;$(SolutionDir)Dependencies\Lua;$(SolutionDir)Dependencies\FMOD Studio\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glew32s.lib;glfw3.lib;opengl32.lib;freetype.lib;fmod_vc.lib;imgui.obj;imgui_demo.obj;imgui_draw.obj;imgui_impl_glfw.obj;imgui_impl_opengl3.obj;imgui_tables.obj;imgui_widgets.obj;lua54.lib;fmodstudio_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\FMOD\lib;$(SolutionDir)Dependencies\FreeType\objs;$(SolutionDir)Dependencies\GLFW\lib-vc2022;$(SolutionDir)Dependencies\GLEW\lib;$(SolutionDir)Dependencies\ImGui\out-debug;$(SolutionDir)Dependencies\Lua\src;$(SolutionDir)Dependencies\FMOD Studio\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;glfw3.lib;opengl32.lib;freetype.lib;fmod_vc.lib;imgui.obj;imgui_demo.obj;imgui_draw.obj;imgui_impl_glfw.obj;imgui_impl_opengl3.obj;imgui_tables.obj;imgui_widgets.obj;lua.lib;fmodstudio_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCMT;MSVCRT</IgnoreSpecificDefaultLibraries>
       <ImportLibrary>$(OutDir)Engine.lib</ImportLibrary>
     </Link>
@@ -105,8 +105,8 @@ xcopy "$(SafeSolutionDir)\Dependencies\FMOD\lib\fmod.dll" "$(SafeOutDir)" /s /r 
 
 xcopy "$(SafeSolutionDir)\Dependencies\FMOD Studio\lib\fmodstudio.dll" "$(SafeOutDir)" /s /r /y /q /i
 
+xcopy "$(SafeSolutionDir)\Dependencies\Lua\src\lua.dll" "$(SafeOutDir)" /s /r /y /q /i
 
-xcopy "$(SafeSolutionDir)\Dependencies\Lua\lua54.dll" "$(SafeOutDir)" /s /r /y /q /i
 
 
 "$(MSBuildBinPath)\MSBuild.exe" "$(SafeSolutionDir)\Engine\GameLogic\GameLogic.vcxproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform) "/p:SolutionDir=$(SafeSolutionDir)\\" /v:minimal
@@ -121,7 +121,7 @@ xcopy "$(SafeSolutionDir)\Dependencies\Lua\lua54.dll" "$(SafeOutDir)" /s /r /y /
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>ENGINE_EXPORTS;GLEW_STATIC;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\Lua\include;$(SolutionDir)Dependencies\Sol2\include;$(SolutionDir)Dependencies\FMOD Studio\inc;$(SolutionDir)Dependencies\pl_mpeg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\Lua\src;$(SolutionDir)Dependencies\Sol2\include;$(SolutionDir)Dependencies\FMOD Studio\inc;$(SolutionDir)Dependencies\pl_mpeg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
@@ -131,8 +131,8 @@ xcopy "$(SafeSolutionDir)\Dependencies\Lua\lua54.dll" "$(SafeOutDir)" /s /r /y /
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\FMOD\lib;$(SolutionDir)Dependencies\FreeType\objs;$(SolutionDir)Dependencies\GLFW\lib-vc2022;$(SolutionDir)Dependencies\GLEW\lib;$(SolutionDir)Dependencies\ImGui\out-release;$(SolutionDir)Dependencies\Lua;$(SolutionDir)Dependencies\FMOD Studio\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glew32s.lib;glfw3.lib;opengl32.lib;freetype.lib;fmod_vc.lib;imgui.obj;imgui_demo.obj;imgui_draw.obj;imgui_impl_glfw.obj;imgui_impl_opengl3.obj;imgui_tables.obj;imgui_widgets.obj;lua54.lib;fmodstudio_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\FMOD\lib;$(SolutionDir)Dependencies\FreeType\objs;$(SolutionDir)Dependencies\GLFW\lib-vc2022;$(SolutionDir)Dependencies\GLEW\lib;$(SolutionDir)Dependencies\ImGui\out-release;$(SolutionDir)Dependencies\Lua\src;$(SolutionDir)Dependencies\FMOD Studio\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;glfw3.lib;opengl32.lib;freetype.lib;fmod_vc.lib;imgui.obj;imgui_demo.obj;imgui_draw.obj;imgui_impl_glfw.obj;imgui_impl_opengl3.obj;imgui_tables.obj;imgui_widgets.obj;lua.lib;fmodstudio_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCMTD;MSVCRTD;LIBCMT</IgnoreSpecificDefaultLibraries>
       <ImportLibrary>$(OutDir)Engine.lib</ImportLibrary>
     </Link>
@@ -150,8 +150,8 @@ xcopy "$(SafeSolutionDir)\Dependencies\FMOD\lib\fmod.dll" "$(SafeOutDir)" /s /r 
 
 xcopy "$(SafeSolutionDir)\Dependencies\FMOD Studio\lib\fmodstudio.dll" "$(SafeOutDir)" /s /r /y /q /i
 
+xcopy "$(SafeSolutionDir)\Dependencies\Lua\src\lua.dll" "$(SafeOutDir)" /s /r /y /q /i
 
-xcopy "$(SafeSolutionDir)\Dependencies\Lua\lua54.dll" "$(SafeOutDir)" /s /r /y /q /i
 
 
 "$(MSBuildBinPath)\MSBuild.exe" "$(SafeSolutionDir)\Engine\GameLogic\GameLogic.vcxproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform) "/p:SolutionDir=$(SafeSolutionDir)\\" /v:minimal
@@ -166,7 +166,7 @@ xcopy "$(SafeSolutionDir)\Dependencies\Lua\lua54.dll" "$(SafeOutDir)" /s /r /y /
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>ENGINE_EXPORTS;GLEW_STATIC;NDEBUG;_CONSOLE;GAME_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\Lua\include;$(SolutionDir)Dependencies\Sol2\include;$(SolutionDir)Dependencies\FMOD Studio\inc;$(SolutionDir)Dependencies\pl_mpeg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\Lua\src;$(SolutionDir)Dependencies\Sol2\include;$(SolutionDir)Dependencies\FMOD Studio\inc;$(SolutionDir)Dependencies\pl_mpeg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
@@ -176,8 +176,8 @@ xcopy "$(SafeSolutionDir)\Dependencies\Lua\lua54.dll" "$(SafeOutDir)" /s /r /y /
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\FMOD\lib;$(SolutionDir)Dependencies\FreeType\objs;$(SolutionDir)Dependencies\GLFW\lib-vc2022;$(SolutionDir)Dependencies\GLEW\lib;$(SolutionDir)Dependencies\ImGui\out-release;$(SolutionDir)Dependencies\Lua;$(SolutionDir)Dependencies\FMOD Studio\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glew32s.lib;glfw3.lib;opengl32.lib;freetype.lib;fmod_vc.lib;imgui.obj;imgui_demo.obj;imgui_draw.obj;imgui_impl_glfw.obj;imgui_impl_opengl3.obj;imgui_tables.obj;imgui_widgets.obj;lua54.lib;fmodstudio_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\FMOD\lib;$(SolutionDir)Dependencies\FreeType\objs;$(SolutionDir)Dependencies\GLFW\lib-vc2022;$(SolutionDir)Dependencies\GLEW\lib;$(SolutionDir)Dependencies\ImGui\out-release;$(SolutionDir)Dependencies\Lua\src;$(SolutionDir)Dependencies\FMOD Studio\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;glfw3.lib;opengl32.lib;freetype.lib;fmod_vc.lib;imgui.obj;imgui_demo.obj;imgui_draw.obj;imgui_impl_glfw.obj;imgui_impl_opengl3.obj;imgui_tables.obj;imgui_widgets.obj;lua.lib;fmodstudio_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCMTD;MSVCRTD;LIBCMT</IgnoreSpecificDefaultLibraries>
       <ImportLibrary>$(OutDir)Engine.lib</ImportLibrary>
     </Link>
@@ -195,8 +195,8 @@ xcopy "$(SafeSolutionDir)\Dependencies\FMOD\lib\fmod.dll" "$(SafeOutDir)" /s /r 
 
 xcopy "$(SafeSolutionDir)\Dependencies\FMOD Studio\lib\fmodstudio.dll" "$(SafeOutDir)" /s /r /y /q /i
 
+xcopy "$(SafeSolutionDir)\Dependencies\Lua\src\lua.dll" "$(SafeOutDir)" /s /r /y /q /i
 
-xcopy "$(SafeSolutionDir)\Dependencies\Lua\lua54.dll" "$(SafeOutDir)" /s /r /y /q /i
 
 
 "$(MSBuildBinPath)\MSBuild.exe" "$(SafeSolutionDir)\Engine\GameLogic\GameLogic.vcxproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform) "/p:SolutionDir=$(SafeSolutionDir)\\" /v:minimal
@@ -235,7 +235,6 @@ xcopy "$(SafeSolutionDir)\Dependencies\Lua\lua54.dll" "$(SafeOutDir)" /s /r /y /
     <ClCompile Include="TempUpgradeUIManager.cpp" />
     <ClCompile Include="Components\StateMachineBlueprintRegistry.cpp" />
     <ClCompile Include="Systems\DebugDrawSystem.cpp" />
-    <ClCompile Include="Lua\GameAPI.cpp" />
     <ClCompile Include="ECS\Types.cpp" />
     <ClCompile Include="FileIO\FileDialog.cpp" />
     <ClCompile Include="FileIO\Helpers.cpp" />
@@ -283,9 +282,10 @@ xcopy "$(SafeSolutionDir)\Dependencies\Lua\lua54.dll" "$(SafeOutDir)" /s /r /y /
     <ClCompile Include="Math\Vector3D.cpp" />
     <ClCompile Include="Math\Vector4D.cpp" />
     <ClCompile Include="WindowManager.cpp" />
-    <ClCompile Include="Lua\LuaManager.cpp" />
     <ClCompile Include="Systems\LogicSystem.cpp" />
     <ClCompile Include="Systems\PostPhysicsSystem.cpp" />
+    <ClCompile Include="LuaBindingRegistry.cpp" />
+    <ClCompile Include="LuaManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Audio\AudioSystem.h" />
@@ -294,7 +294,6 @@ xcopy "$(SafeSolutionDir)\Dependencies\Lua\lua54.dll" "$(SafeOutDir)" /s /r /y /
     <ClInclude Include="Firebase\FirebaseHTTP.h" />
     <ClInclude Include="Firebase\FirebaseManager.h" />
     <ClInclude Include="Firebase\FirebaseListener.h" />
-    <ClInclude Include="Firebase\FirebaseLuaBindings.h" />
     <ClInclude Include="Firebase\FirebaseAuth.h" />
     <ClInclude Include="GUI\ConfigurationPanel.h" />
     <ClInclude Include="GUI\LogConsolePanel.h" />
@@ -326,7 +325,6 @@ xcopy "$(SafeSolutionDir)\Dependencies\Lua\lua54.dll" "$(SafeOutDir)" /s /r /y /
     <ClInclude Include="KeyCodes.h" />
     <ClInclude Include="LevelManager.h" />
     <ClInclude Include="LevelTabManager.h" />
-    <ClInclude Include="Lua\LuaComponentBindings.h" />
     <ClInclude Include="ProjectSaveManager.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="Systems\ChatBoxSystem.h" />
@@ -341,7 +339,6 @@ xcopy "$(SafeSolutionDir)\Dependencies\Lua\lua54.dll" "$(SafeOutDir)" /s /r /y /
     <ClInclude Include="FileIO\Settings.h" />
     <ClInclude Include="GUI\PerformanceViewerPanel.h" />
     <ClInclude Include="GUI\SceneChooserPanel.h" />
-    <ClInclude Include="Lua\GameAPI.h" />
     <ClInclude Include="Systems\CollisionSystem.h" />
     <ClInclude Include="Components\GraphicsComponents.h" />
     <ClInclude Include="Components\PhysicsComponents.h" />
@@ -415,15 +412,14 @@ xcopy "$(SafeSolutionDir)\Dependencies\Lua\lua54.dll" "$(SafeOutDir)" /s /r /y /
     <ClInclude Include="Math\Vector3D.h" />
     <ClInclude Include="Math\Vector4D.h" />
     <ClInclude Include="WindowManager.h" />
-    <ClInclude Include="Lua\LuaManager.h" />
     <ClInclude Include="Systems\LogicSystem.h" />
     <ClInclude Include="UndoManager\UndoManager.h" />
     <ClInclude Include="Systems\PostPhysicsSystem.h" />
+    <ClInclude Include="LuaBindingRegistry.h" />
+    <ClInclude Include="LuaBindings.h" />
+    <ClInclude Include="LuaManager.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Assets\scripts\behaviour_test.lua" />
-    <None Include="..\Assets\scripts\buttons_test.lua" />
-    <None Include="..\Assets\scripts\player_logic.lua" />
     <None Include="cpp.hint" />
     <None Include="ECS\ComponentArray.inl" />
     <None Include="ECS\ComponentManager.inl" />
