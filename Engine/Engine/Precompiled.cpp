@@ -15,6 +15,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+// Suppress external library warnings
+// 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
 #pragma warning(disable: 4996)
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
