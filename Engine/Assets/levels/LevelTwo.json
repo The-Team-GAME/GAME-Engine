@@ -33,7 +33,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 4786,
+                            "parent_id": 15800,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -56,7 +56,7 @@
                         "type": "Components::TileMap"
                     }
                 ],
-                "id": 4784,
+                "id": 15798,
                 "layers": [
                     "default"
                 ],
@@ -89,7 +89,7 @@
                                 "y": -641.6915283203125
                             },
                             "offset_initialized": true,
-                            "parent_id": 4793,
+                            "parent_id": 15807,
                             "prev_parent_pos": {
                                 "x": 514.4136962890625,
                                 "y": 641.9970092773438
@@ -112,7 +112,7 @@
                         "type": "Components::Transform2D"
                     }
                 ],
-                "id": 4785,
+                "id": 15799,
                 "layers": [
                     "default"
                 ],
@@ -136,7 +136,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 4786,
+                "id": 15800,
                 "layers": [
                     "default"
                 ],
@@ -156,7 +156,7 @@
                                 0.07999999821186066
                             ],
                             "is_looping": true,
-                            "startTime": 461.72747802734375,
+                            "startTime": 89.1216049194336,
                             "totalDuration": 0.07999999821186066
                         },
                         "type": "Components::Animation"
@@ -177,7 +177,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 4786,
+                            "parent_id": 15800,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -206,7 +206,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -897,7 +897,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -1588,7 +1588,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -2279,7 +2279,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -2970,7 +2970,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -3661,7 +3661,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -4352,7 +4352,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -5043,7 +5043,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -5734,7 +5734,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -6503,7 +6503,7 @@
                                                     0.02500000037252903
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.6749998927116394
                                             },
                                             "collider_data": null,
@@ -7194,7 +7194,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -8560,7 +8560,7 @@
                         "type": "Components::UI"
                     }
                 ],
-                "id": 4787,
+                "id": 15801,
                 "layers": [
                     "default",
                     "main_menu_6"
@@ -8590,7 +8590,7 @@
                                 0.07999999821186066
                             ],
                             "is_looping": true,
-                            "startTime": 461.72747802734375,
+                            "startTime": 89.1216049194336,
                             "totalDuration": 0.07999999821186066
                         },
                         "type": "Components::Animation"
@@ -8611,7 +8611,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 4786,
+                            "parent_id": 15800,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -8640,7 +8640,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -9331,7 +9331,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -10022,7 +10022,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -10713,7 +10713,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -11404,7 +11404,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -12095,7 +12095,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -12786,7 +12786,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -13477,7 +13477,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -14168,7 +14168,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -14937,7 +14937,7 @@
                                                     0.02500000037252903
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.6749998927116394
                                             },
                                             "collider_data": null,
@@ -15628,7 +15628,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -16994,7 +16994,7 @@
                         "type": "Components::UI"
                     }
                 ],
-                "id": 4788,
+                "id": 15802,
                 "layers": [
                     "default",
                     "main_menu_6"
@@ -17024,7 +17024,7 @@
                                 0.07999999821186066
                             ],
                             "is_looping": true,
-                            "startTime": 461.72747802734375,
+                            "startTime": 89.1216049194336,
                             "totalDuration": 0.07999999821186066
                         },
                         "type": "Components::Animation"
@@ -17045,7 +17045,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 4786,
+                            "parent_id": 15800,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -17074,7 +17074,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -17765,7 +17765,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -18456,7 +18456,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -19147,7 +19147,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -19838,7 +19838,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -20529,7 +20529,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -21220,7 +21220,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -21911,7 +21911,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -22602,7 +22602,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -23371,7 +23371,7 @@
                                                     0.02500000037252903
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.6749998927116394
                                             },
                                             "collider_data": null,
@@ -24062,7 +24062,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.07999999821186066
                                             },
                                             "collider_data": null,
@@ -25428,7 +25428,7 @@
                         "type": "Components::UI"
                     }
                 ],
-                "id": 4789,
+                "id": 15803,
                 "layers": [
                     "default",
                     "main_menu_6"
@@ -25471,7 +25471,7 @@
                                 "y": -452.346435546875
                             },
                             "offset_initialized": true,
-                            "parent_id": 4792,
+                            "parent_id": 15806,
                             "prev_parent_pos": {
                                 "x": 512.1565551757813,
                                 "y": 378.5860290527344
@@ -25494,7 +25494,7 @@
                         "type": "Components::Transform2D"
                     }
                 ],
-                "id": 4790,
+                "id": 15804,
                 "layers": [
                     "default"
                 ],
@@ -25532,7 +25532,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 4786,
+                            "parent_id": 15800,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -25601,10 +25601,10 @@
                                     }
                                 },
                                 {
-                                    "first": 55834574845,
+                                    "first": 17179869178,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1249
+                                        "tile_index": 598
                                     }
                                 },
                                 {
@@ -25615,10 +25615,10 @@
                                     }
                                 },
                                 {
-                                    "first": 17179869178,
+                                    "first": 55834574845,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 598
+                                        "tile_index": 1249
                                     }
                                 },
                                 {
@@ -25629,13 +25629,6 @@
                                     }
                                 },
                                 {
-                                    "first": 25769803773,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 745
-                                    }
-                                },
-                                {
                                     "first": 47244640264,
                                     "second": {
                                         "atlas_index": 37,
@@ -25643,17 +25636,10 @@
                                     }
                                 },
                                 {
-                                    "first": 55834574842,
+                                    "first": 25769803773,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1246
-                                    }
-                                },
-                                {
-                                    "first": 17179869181,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 601
+                                        "tile_index": 745
                                     }
                                 },
                                 {
@@ -25664,10 +25650,17 @@
                                     }
                                 },
                                 {
-                                    "first": 21474836497,
+                                    "first": 17179869181,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 765
+                                        "tile_index": 601
+                                    }
+                                },
+                                {
+                                    "first": 55834574842,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 1246
                                     }
                                 },
                                 {
@@ -25678,10 +25671,10 @@
                                     }
                                 },
                                 {
-                                    "first": 47244640268,
+                                    "first": 21474836497,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1192
+                                        "tile_index": 765
                                     }
                                 },
                                 {
@@ -25692,17 +25685,17 @@
                                     }
                                 },
                                 {
+                                    "first": 47244640268,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 1192
+                                    }
+                                },
+                                {
                                     "first": 34359738385,
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 837
-                                    }
-                                },
-                                {
-                                    "first": 51539607556,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1256
                                     }
                                 },
                                 {
@@ -25713,10 +25706,17 @@
                                     }
                                 },
                                 {
-                                    "first": 47244640256,
+                                    "first": 51539607556,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1180
+                                        "tile_index": 1256
+                                    }
+                                },
+                                {
+                                    "first": 42949672977,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 1125
                                     }
                                 },
                                 {
@@ -25727,10 +25727,10 @@
                                     }
                                 },
                                 {
-                                    "first": 42949672977,
+                                    "first": 47244640256,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1125
+                                        "tile_index": 1180
                                     }
                                 },
                                 {
@@ -25783,17 +25783,17 @@
                                     }
                                 },
                                 {
-                                    "first": 25769803772,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 744
-                                    }
-                                },
-                                {
                                     "first": 47244640265,
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 1189
+                                    }
+                                },
+                                {
+                                    "first": 25769803772,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 744
                                     }
                                 },
                                 {
@@ -25804,10 +25804,10 @@
                                     }
                                 },
                                 {
-                                    "first": 55834574841,
+                                    "first": 47244640269,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1245
+                                        "tile_index": 1193
                                     }
                                 },
                                 {
@@ -25818,10 +25818,10 @@
                                     }
                                 },
                                 {
-                                    "first": 47244640269,
+                                    "first": 55834574841,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1193
+                                        "tile_index": 1245
                                     }
                                 },
                                 {
@@ -25839,10 +25839,10 @@
                                     }
                                 },
                                 {
-                                    "first": 51539607559,
+                                    "first": 47244640272,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1259
+                                        "tile_index": 1196
                                     }
                                 },
                                 {
@@ -25853,10 +25853,10 @@
                                     }
                                 },
                                 {
-                                    "first": 47244640272,
+                                    "first": 51539607559,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1196
+                                        "tile_index": 1259
                                     }
                                 },
                                 {
@@ -25895,13 +25895,6 @@
                                     }
                                 },
                                 {
-                                    "first": 12884901910,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 626
-                                    }
-                                },
-                                {
                                     "first": 51539607561,
                                     "second": {
                                         "atlas_index": 37,
@@ -25909,10 +25902,10 @@
                                     }
                                 },
                                 {
-                                    "first": 21474836499,
+                                    "first": 12884901910,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 767
+                                        "tile_index": 626
                                     }
                                 },
                                 {
@@ -25920,6 +25913,13 @@
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 1262
+                                    }
+                                },
+                                {
+                                    "first": 21474836499,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 767
                                     }
                                 },
                                 {
@@ -25951,13 +25951,6 @@
                                     }
                                 },
                                 {
-                                    "first": 51539607549,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1177
-                                    }
-                                },
-                                {
                                     "first": 51539607569,
                                     "second": {
                                         "atlas_index": 37,
@@ -25965,17 +25958,10 @@
                                     }
                                 },
                                 {
-                                    "first": 55834574840,
+                                    "first": 51539607549,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1244
-                                    }
-                                },
-                                {
-                                    "first": 12884901924,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 640
+                                        "tile_index": 1177
                                     }
                                 },
                                 {
@@ -25986,10 +25972,17 @@
                                     }
                                 },
                                 {
-                                    "first": 51539607536,
+                                    "first": 12884901924,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1164
+                                        "tile_index": 640
+                                    }
+                                },
+                                {
+                                    "first": 55834574840,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 1244
                                     }
                                 },
                                 {
@@ -25997,6 +25990,13 @@
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 1126
+                                    }
+                                },
+                                {
+                                    "first": 51539607536,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 1164
                                     }
                                 },
                                 {
@@ -27250,7 +27250,7 @@
                         "type": "Components::TileMap"
                     }
                 ],
-                "id": 4791,
+                "id": 15805,
                 "layers": [
                     "tilemap_foreground_mid"
                 ],
@@ -27309,7 +27309,7 @@
                                 0.20000000298023224
                             ],
                             "is_looping": true,
-                            "startTime": 461.72747802734375,
+                            "startTime": 89.1216049194336,
                             "totalDuration": 2.8000004291534424
                         },
                         "type": "Components::Animation"
@@ -27436,7 +27436,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 4786,
+                            "parent_id": 15800,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -27770,7 +27770,7 @@
                                                     0.019999999552965164
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 1.7599989175796509
                                             },
                                             "collider_data": null,
@@ -28350,7 +28350,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 2.319999933242798
                                             },
                                             "collider_data": null,
@@ -28867,7 +28867,7 @@
                                                     0.20000000298023224
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 2.8000004291534424
                                             },
                                             "collider_data": null,
@@ -29414,7 +29414,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 2.3999998569488525
                                             },
                                             "collider_data": null,
@@ -29904,7 +29904,7 @@
                                                     0.20000000298023224
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": null,
@@ -30394,7 +30394,7 @@
                                                     0.20000000298023224
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": null,
@@ -31322,7 +31322,7 @@
                         "type": "Components::Transform2D"
                     }
                 ],
-                "id": 4792,
+                "id": 15806,
                 "layers": [
                     "enemy"
                 ],
@@ -31420,7 +31420,7 @@
                                 0.10000000149011612
                             ],
                             "is_looping": true,
-                            "startTime": 461.72747802734375,
+                            "startTime": 89.1216049194336,
                             "totalDuration": 2.3999998569488525
                         },
                         "type": "Components::Animation"
@@ -31512,7 +31512,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 4786,
+                            "parent_id": 15800,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -31737,7 +31737,7 @@
                                                     0.032999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.4049999713897705
                                             },
                                             "collider_data": {
@@ -31991,7 +31991,7 @@
                                                     0.5
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 2.1499998569488525
                                             },
                                             "collider_data": {
@@ -32287,7 +32287,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
@@ -32514,7 +32514,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.30000001192092896
                                             },
                                             "collider_data": {
@@ -32728,7 +32728,7 @@
                                                     0.03500000014901161
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.3449999988079071
                                             },
                                             "collider_data": {
@@ -33021,7 +33021,7 @@
                                                     0.11999999731779099
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.11999999731779099
                                             },
                                             "collider_data": {
@@ -33236,7 +33236,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.5
                                             },
                                             "collider_data": {
@@ -33619,7 +33619,7 @@
                                                     1.0
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": {
@@ -33911,7 +33911,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.20000000298023224
                                             },
                                             "collider_data": null,
@@ -34200,7 +34200,7 @@
                                                     0.05000000074505806
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.20000000298023224
                                             },
                                             "collider_data": {
@@ -34499,7 +34499,7 @@
                                                     0.05000000074505806
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.15000000596046448
                                             },
                                             "collider_data": null,
@@ -34938,7 +34938,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 2.3999998569488525
                                             },
                                             "collider_data": {
@@ -35437,7 +35437,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.5
                                             },
                                             "collider_data": null,
@@ -35579,7 +35579,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.30000001192092896
                                             },
                                             "collider_data": {
@@ -35787,7 +35787,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
@@ -36050,7 +36050,7 @@
                                                     0.05000000074505806
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.15000000596046448
                                             },
                                             "collider_data": {
@@ -36313,7 +36313,7 @@
                                                     0.20000000298023224
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": {
@@ -36422,7 +36422,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.10000000149011612
                                             },
                                             "collider_data": {
@@ -36642,7 +36642,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": {
@@ -37295,7 +37295,7 @@
                         "type": "Components::Transform2D"
                     }
                 ],
-                "id": 4793,
+                "id": 15807,
                 "layers": [
                     "player"
                 ],
@@ -37324,7 +37324,7 @@
                                 0.10000000149011612
                             ],
                             "is_looping": true,
-                            "startTime": 461.72747802734375,
+                            "startTime": 89.1216049194336,
                             "totalDuration": 0.10000000149011612
                         },
                         "type": "Components::Animation"
@@ -37345,7 +37345,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 4786,
+                            "parent_id": 15800,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -37374,7 +37374,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.10000000149011612
                                             },
                                             "collider_data": null,
@@ -38173,7 +38173,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.7000000476837158
                                             },
                                             "collider_data": null,
@@ -38972,7 +38972,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.7000000476837158
                                             },
                                             "collider_data": null,
@@ -39771,7 +39771,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.7000000476837158
                                             },
                                             "collider_data": null,
@@ -40570,7 +40570,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.7000000476837158
                                             },
                                             "collider_data": null,
@@ -41351,7 +41351,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.10000000149011612
                                             },
                                             "collider_data": null,
@@ -42132,7 +42132,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.10000000149011612
                                             },
                                             "collider_data": null,
@@ -42913,7 +42913,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.10000000149011612
                                             },
                                             "collider_data": null,
@@ -43694,7 +43694,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.10000000149011612
                                             },
                                             "collider_data": null,
@@ -44493,7 +44493,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.7000000476837158
                                             },
                                             "collider_data": null,
@@ -45274,7 +45274,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.10000000149011612
                                             },
                                             "collider_data": null,
@@ -46820,7 +46820,7 @@
                         "type": "Components::UI"
                     }
                 ],
-                "id": 4794,
+                "id": 15808,
                 "layers": [
                     "main_menu_3"
                 ],
@@ -46918,7 +46918,7 @@
                                 0.10000000149011612
                             ],
                             "is_looping": true,
-                            "startTime": 461.72747802734375,
+                            "startTime": 89.1216049194336,
                             "totalDuration": 2.3999998569488525
                         },
                         "type": "Components::Animation"
@@ -46939,7 +46939,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 4786,
+                            "parent_id": 15800,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -46968,7 +46968,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 0.10000000149011612
                                             },
                                             "collider_data": null,
@@ -48466,7 +48466,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 2.3999998569488525
                                             },
                                             "collider_data": null,
@@ -49892,7 +49892,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 2.3999998569488525
                                             },
                                             "collider_data": null,
@@ -51318,7 +51318,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 2.3999998569488525
                                             },
                                             "collider_data": null,
@@ -52744,7 +52744,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 2.3999998569488525
                                             },
                                             "collider_data": null,
@@ -54188,7 +54188,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 461.72747802734375,
+                                                "startTime": 89.1216049194336,
                                                 "totalDuration": 2.3999998569488525
                                             },
                                             "collider_data": null,
@@ -55734,7 +55734,7 @@
                         "type": "Components::UI"
                     }
                 ],
-                "id": 4795,
+                "id": 15809,
                 "layers": [
                     "main_menu_5"
                 ],
@@ -55754,7 +55754,7 @@
                     {
                         "data": {
                             "dead_zone_radius": 0.0,
-                            "is_active": false,
+                            "is_active": true,
                             "is_smooth": true,
                             "look_ahead_distance": 300.0,
                             "look_ahead_smooth": 6.0,
@@ -55776,7 +55776,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 4786,
+                            "parent_id": 15800,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -55799,7 +55799,7 @@
                         "type": "Components::Transform2D"
                     }
                 ],
-                "id": 4796,
+                "id": 15810,
                 "layers": [
                     "default"
                 ],
@@ -55837,7 +55837,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 4786,
+                            "parent_id": 15800,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -55856,20 +55856,6 @@
                                 "y": 64.0
                             },
                             "tiles": [
-                                {
-                                    "first": 47244640255,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1107
-                                    }
-                                },
-                                {
-                                    "first": 38654705687,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1059
-                                    }
-                                },
                                 {
                                     "first": 34359738362,
                                     "second": {
@@ -55892,6 +55878,20 @@
                                     }
                                 },
                                 {
+                                    "first": 47244640255,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 1107
+                                    }
+                                },
+                                {
+                                    "first": 38654705687,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 1059
+                                    }
+                                },
+                                {
                                     "first": 25769803788,
                                     "second": {
                                         "atlas_index": 37,
@@ -55906,13 +55906,6 @@
                                     }
                                 },
                                 {
-                                    "first": 25769803789,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 833
-                                    }
-                                },
-                                {
                                     "first": 42949672961,
                                     "second": {
                                         "atlas_index": 37,
@@ -55920,10 +55913,10 @@
                                     }
                                 },
                                 {
-                                    "first": 42949672962,
+                                    "first": 25769803789,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1110
+                                        "tile_index": 833
                                     }
                                 },
                                 {
@@ -55934,24 +55927,10 @@
                                     }
                                 },
                                 {
-                                    "first": 42949672963,
+                                    "first": 42949672962,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1111
-                                    }
-                                },
-                                {
-                                    "first": 38654705680,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1052
-                                    }
-                                },
-                                {
-                                    "first": 38654705650,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 950
+                                        "tile_index": 1110
                                     }
                                 },
                                 {
@@ -55962,17 +55941,24 @@
                                     }
                                 },
                                 {
-                                    "first": 42949672965,
+                                    "first": 38654705650,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1113
+                                        "tile_index": 950
                                     }
                                 },
                                 {
-                                    "first": 38654705686,
+                                    "first": 38654705680,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1058
+                                        "tile_index": 1052
+                                    }
+                                },
+                                {
+                                    "first": 42949672963,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 1111
                                     }
                                 },
                                 {
@@ -55983,24 +55969,17 @@
                                     }
                                 },
                                 {
-                                    "first": 42949672966,
+                                    "first": 38654705686,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1114
+                                        "tile_index": 1058
                                     }
                                 },
                                 {
-                                    "first": 25769803786,
+                                    "first": 42949672965,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 830
-                                    }
-                                },
-                                {
-                                    "first": 34359738360,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 884
+                                        "tile_index": 1113
                                     }
                                 },
                                 {
@@ -56011,24 +55990,24 @@
                                     }
                                 },
                                 {
-                                    "first": 42949672967,
+                                    "first": 34359738360,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1115
+                                        "tile_index": 884
                                     }
                                 },
                                 {
-                                    "first": 34359738405,
+                                    "first": 25769803786,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1001
+                                        "tile_index": 830
                                     }
                                 },
                                 {
-                                    "first": 25769803771,
+                                    "first": 42949672966,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 743
+                                        "tile_index": 1114
                                     }
                                 },
                                 {
@@ -56039,17 +56018,31 @@
                                     }
                                 },
                                 {
+                                    "first": 25769803771,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 743
+                                    }
+                                },
+                                {
+                                    "first": 34359738405,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 1001
+                                    }
+                                },
+                                {
+                                    "first": 42949672967,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 1115
+                                    }
+                                },
+                                {
                                     "first": 42949672968,
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 1116
-                                    }
-                                },
-                                {
-                                    "first": 21474836502,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 770
                                     }
                                 },
                                 {
@@ -56060,10 +56053,10 @@
                                     }
                                 },
                                 {
-                                    "first": 42949672970,
+                                    "first": 21474836502,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1118
+                                        "tile_index": 770
                                     }
                                 },
                                 {
@@ -56074,10 +56067,17 @@
                                     }
                                 },
                                 {
-                                    "first": 42949672971,
+                                    "first": 42949672970,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1119
+                                        "tile_index": 1118
+                                    }
+                                },
+                                {
+                                    "first": 17179869221,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 713
                                     }
                                 },
                                 {
@@ -56088,10 +56088,10 @@
                                     }
                                 },
                                 {
-                                    "first": 17179869221,
+                                    "first": 42949672971,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 713
+                                        "tile_index": 1119
                                     }
                                 },
                                 {
@@ -56116,10 +56116,10 @@
                                     }
                                 },
                                 {
-                                    "first": 42949672975,
+                                    "first": 21474836496,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1123
+                                        "tile_index": 764
                                     }
                                 },
                                 {
@@ -56130,24 +56130,10 @@
                                     }
                                 },
                                 {
-                                    "first": 21474836496,
+                                    "first": 42949672975,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 764
-                                    }
-                                },
-                                {
-                                    "first": 38654705679,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1051
-                                    }
-                                },
-                                {
-                                    "first": 34359738354,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 878
+                                        "tile_index": 1123
                                     }
                                 },
                                 {
@@ -56158,10 +56144,17 @@
                                     }
                                 },
                                 {
-                                    "first": 38654705678,
+                                    "first": 34359738354,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1050
+                                        "tile_index": 878
+                                    }
+                                },
+                                {
+                                    "first": 38654705679,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 1051
                                     }
                                 },
                                 {
@@ -56169,6 +56162,13 @@
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 603
+                                    }
+                                },
+                                {
+                                    "first": 38654705678,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 1050
                                     }
                                 },
                                 {
@@ -56186,10 +56186,10 @@
                                     }
                                 },
                                 {
-                                    "first": 38654705675,
+                                    "first": 47244640251,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1047
+                                        "tile_index": 1103
                                     }
                                 },
                                 {
@@ -56200,24 +56200,10 @@
                                     }
                                 },
                                 {
-                                    "first": 47244640251,
+                                    "first": 38654705675,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1103
-                                    }
-                                },
-                                {
-                                    "first": 38654705674,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 1046
-                                    }
-                                },
-                                {
-                                    "first": 38654705656,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 956
+                                        "tile_index": 1047
                                     }
                                 },
                                 {
@@ -56228,10 +56214,17 @@
                                     }
                                 },
                                 {
-                                    "first": 25769803798,
+                                    "first": 38654705656,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 842
+                                        "tile_index": 956
+                                    }
+                                },
+                                {
+                                    "first": 38654705674,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 1046
                                     }
                                 },
                                 {
@@ -56242,10 +56235,10 @@
                                     }
                                 },
                                 {
-                                    "first": 38654705672,
+                                    "first": 25769803798,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1044
+                                        "tile_index": 842
                                     }
                                 },
                                 {
@@ -56256,17 +56249,10 @@
                                     }
                                 },
                                 {
-                                    "first": 38654705671,
+                                    "first": 38654705672,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1043
-                                    }
-                                },
-                                {
-                                    "first": 30064771067,
-                                    "second": {
-                                        "atlas_index": 37,
-                                        "tile_index": 815
+                                        "tile_index": 1044
                                     }
                                 },
                                 {
@@ -56277,10 +56263,17 @@
                                     }
                                 },
                                 {
-                                    "first": 42949672976,
+                                    "first": 30064771067,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 1124
+                                        "tile_index": 815
+                                    }
+                                },
+                                {
+                                    "first": 38654705671,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 1043
                                     }
                                 },
                                 {
@@ -56291,10 +56284,10 @@
                                     }
                                 },
                                 {
-                                    "first": 34359738384,
+                                    "first": 42949672976,
                                     "second": {
                                         "atlas_index": 37,
-                                        "tile_index": 980
+                                        "tile_index": 1124
                                     }
                                 },
                                 {
@@ -56302,6 +56295,13 @@
                                     "second": {
                                         "atlas_index": 37,
                                         "tile_index": 615
+                                    }
+                                },
+                                {
+                                    "first": 34359738384,
+                                    "second": {
+                                        "atlas_index": 37,
+                                        "tile_index": 980
                                     }
                                 },
                                 {
@@ -58633,7 +58633,7 @@
                         "type": "Components::TileMap"
                     }
                 ],
-                "id": 4797,
+                "id": 15811,
                 "layers": [
                     "tilemap_background_near"
                 ],

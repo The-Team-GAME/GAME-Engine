@@ -686,6 +686,8 @@ namespace Engine {
 
       Log::info("Switched to level: {}", level_id);
 
+      TilemapManager::broadcast_world_bounds();
+
       // Call on_init (via Level component if present)
       call_level_init();
 
@@ -747,6 +749,9 @@ namespace Engine {
         preloaded_snapshots.erase(level_id);
 
         current_level_path = level_id;
+
+        TilemapManager::broadcast_world_bounds();
+
         call_level_init();
 
         // Defer snapshot rebuild to next frame so reload returns instantly
