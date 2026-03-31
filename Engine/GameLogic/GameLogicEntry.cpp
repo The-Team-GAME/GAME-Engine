@@ -127,7 +127,6 @@ void apply_knockback_from_player(ECS::Entity attack_entity, ECS::Entity enemy_en
   // First we check which direction the enemy is wrt to the player
   
   Vec2D knockback_val;
-  knockback_val.y = atk_data->knockback.y;
   if (atk_data->directional)
   {
     knockback_val.x = atk->knockback.x * player_flip->value.x;
@@ -137,6 +136,8 @@ void apply_knockback_from_player(ECS::Entity attack_entity, ECS::Entity enemy_en
     f32 dir = (player_xform->position.x < enemy_xform->position.x) ? 1.f : -1.f;
     knockback_val.x = atk->knockback.x * dir;
   }
+
+  knockback_val.y = -atk_data->knockback.y;
 
   // Then we zero the forces and velocity of the monkey before they change state
   enemy_rigid->velocity.zero();
