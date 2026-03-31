@@ -20,7 +20,9 @@
 #include <vector>
 #include <string>
 #include <algorithm>
-#include <unordered_set>
+#include <unordered_set>#include <atomic>
+#include <thread>
+#include <mutex>
 
 #include <rapidjson/document.h>
 
@@ -50,6 +52,13 @@ namespace {
   int                              selected_file_count = 0;
   bool                             assets_loaded       = false;
   char                             search_filter[256]  = "";
+
+  // Build + export state
+  bool                             build_include_executable = false;
+  std::atomic<bool>                build_in_progress{ false };
+  std::string                      build_status_msg;
+  std::mutex                       build_status_mutex;
+  std::thread                      build_worker;
 
   // -----------------------------------------------------------------------
   // Helpers
@@ -295,7 +304,7 @@ namespace {
   }
 
   // -----------------------------------------------------------------------
-  // Export
+  // Export + Build
   // -----------------------------------------------------------------------
 
 #ifdef _WIN32
@@ -322,13 +331,28 @@ namespace {
   }
 #endif
 
-  void do_export(const std::string& dest_folder) {
-    int success_count = 0;
-    int fail_count = 0;
+  void set_build_status(const std::string& msg) {
+    std::lock_guard<std::mutex> lk(build_status_mutex);
+    build_status_msg = msg;
+  }
 
-    for (const auto& rel : selected_assets) {
+  std::string get_build_status() {
+    std::lock_guard<std::mutex> lk(build_status_mutex);
+    return build_status_msg;
+  }
+
+  // Export a snapshot of assets to dest_folder.
+  // asset_subdir: if non-empty, assets are placed under dest_folder/asset_subdir/<rel>.
+  void do_export_snapshot(const std::unordered_set<std::string>& snapshot,
+                          const std::string& dest_folder,
+                          const std::string& asset_subdir = "") {
+    int success_count = 0;
+    int fail_count    = 0;
+
+    for (const auto& rel : snapshot) {
       std::string src = Engine::Path(Engine::Resources::resource_path).join(rel).to_string();
-      std::string dst = Engine::Path(dest_folder).join(rel).to_string();
+      std::string dst_rel = asset_subdir.empty() ? rel : (asset_subdir + "/" + rel);
+      std::string dst = Engine::Path(dest_folder).join(dst_rel).to_string();
 
       try {
         std::filesystem::path dst_path(dst);
@@ -341,8 +365,116 @@ namespace {
         ++fail_count;
       }
     }
+    Log::info("BuildSizeAnalyzer: exported {} files ({} failed) to {}",
+              success_count, fail_count, dest_folder);
+  }
 
-    Log::info("BuildSizeAnalyzer: exported {} files ({} failed) to {}", success_count, fail_count, dest_folder);
+  // Returns the solution root (two levels above Assets/).
+  std::string get_solution_root() {
+    std::string rp = Engine::Resources::resource_path;
+    // Strip trailing slash(es)
+    while (!rp.empty() && (rp.back() == '/' || rp.back() == '\\'))
+      rp.pop_back();
+    // rp is now .../Engine/Assets — go up twice
+    namespace fs = std::filesystem;
+    return fs::path(rp).parent_path().parent_path().string();
+  }
+
+  // Launches build_game.bat synchronously. Returns the process exit code, or -1 on failure.
+  int run_build_bat(const std::string& solution_root) {
+#ifdef _WIN32
+    std::string bat = Engine::Path(solution_root).join("build_game.bat").to_string();
+    std::replace(bat.begin(), bat.end(), '/', '\\');
+
+    // cmd /c "path\build_game.bat"
+    std::string cmd_line = "cmd.exe /c \"" + bat + "\"";
+
+    STARTUPINFOA si = {};
+    si.cb = sizeof(si);
+    PROCESS_INFORMATION pi = {};
+
+    if (!CreateProcessA(nullptr, cmd_line.data(), nullptr, nullptr, FALSE,
+                        CREATE_NO_WINDOW, nullptr, solution_root.c_str(), &si, &pi)) {
+      Log::error("BuildSizeAnalyzer: CreateProcess failed ({})", GetLastError());
+      return -1;
+    }
+
+    WaitForSingleObject(pi.hProcess, INFINITE);
+    DWORD exit_code = 1;
+    GetExitCodeProcess(pi.hProcess, &exit_code);
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+    return static_cast<int>(exit_code);
+#else
+    return -1;
+#endif
+  }
+
+  // Background worker: export assets (optionally into Assets/ subdir), build game, copy binaries.
+  void worker_export_and_build(const std::unordered_set<std::string> snapshot,
+                               std::string dest_folder,
+                               bool include_exe) {
+    // --- Step 1: Export assets ---
+    set_build_status("Exporting assets...");
+    const std::string subdir = include_exe ? "Assets" : "";
+    do_export_snapshot(snapshot, dest_folder, subdir);
+
+    if (!include_exe) {
+      set_build_status("Export complete.");
+      build_in_progress.store(false);
+      return;
+    }
+
+    // --- Step 2: Build game ---
+    set_build_status("Building game — this may take a minute...");
+    const std::string solution_root = get_solution_root();
+    const int build_result = run_build_bat(solution_root);
+
+    if (build_result != 0) {
+      set_build_status("Build FAILED (exit code " + std::to_string(build_result) +
+                       "). Check the Output or build_game.bat output.");
+      build_in_progress.store(false);
+      return;
+    }
+
+    // --- Step 3: Copy exe + DLLs ---
+    set_build_status("Copying game executable and DLLs...");
+    static const std::vector<std::string> game_outputs = {
+      "x64/Game/Engine.exe",
+      "x64/Game/fmod.dll",
+      "x64/Game/fmodstudio.dll",
+      "x64/Game/lua54.dll",
+    };
+
+    namespace fs = std::filesystem;
+    int copy_fails = 0;
+    for (const auto& rel : game_outputs) {
+      std::string src = Engine::Path(solution_root).join(rel).to_string();
+      std::string filename = fs::path(src).filename().string();
+      std::string dst = Engine::Path(dest_folder).join(filename).to_string();
+
+      if (!fs::exists(src)) {
+        Log::error("BuildSizeAnalyzer: expected build output not found: {}", src);
+        ++copy_fails;
+        continue;
+      }
+      try {
+        fs::copy(src, dst, fs::copy_options::overwrite_existing);
+      }
+      catch (const fs::filesystem_error& e) {
+        Log::error("BuildSizeAnalyzer: failed to copy {} — {}", filename, e.what());
+        ++copy_fails;
+      }
+    }
+
+    if (copy_fails == 0) {
+      set_build_status("Done! Game built and exported to: " + dest_folder);
+    }
+    else {
+      set_build_status("Done with " + std::to_string(copy_fails) +
+                       " copy error(s). Check the log for details.");
+    }
+    build_in_progress.store(false);
   }
 
 } // anonymous namespace
@@ -372,7 +504,6 @@ void BuildSizeAnalyzerPanel() {
     ImGui::TextWrapped("Select levels to auto-detect their referenced assets:");
     ImGui::Spacing();
 
-    // Level checkboxes
     for (const auto& level : available_levels) {
       bool checked = selected_levels.contains(level);
       if (ImGui::Checkbox(level.c_str(), &checked)) {
@@ -401,12 +532,11 @@ void BuildSizeAnalyzerPanel() {
   // =================================================================
   // Section 2: Asset List
   // =================================================================
+  const bool is_building = build_in_progress.load();
 
-  // Toolbar
   if (ImGui::Button("Refresh")) {
     scan_all_assets();
     scan_available_levels();
-    // Re-validate selection against actual files
     std::unordered_set<std::string> valid;
     for (const auto& ae : all_assets) {
       if (selected_assets.contains(ae.relative_path))
@@ -416,11 +546,10 @@ void BuildSizeAnalyzerPanel() {
     recalculate_total_size();
     save_selection();
   }
-
   ImGui::SameLine();
-  ImGui::Text("Total: %s across %d file(s)", format_file_size(total_selected_size).c_str(), selected_file_count);
+  ImGui::Text("Total: %s across %d file(s)",
+              format_file_size(total_selected_size).c_str(), selected_file_count);
 
-  // Select All / Deselect All
   if (ImGui::Button("Select All")) {
     for (const auto& ae : all_assets) selected_assets.insert(ae.relative_path);
     recalculate_total_size();
@@ -432,16 +561,14 @@ void BuildSizeAnalyzerPanel() {
     recalculate_total_size();
     save_selection();
   }
-
-  // Search filter
   ImGui::SameLine();
   ImGui::SetNextItemWidth(200.0f);
   ImGui::InputTextWithHint("##filter", "Filter assets...", search_filter, sizeof(search_filter));
 
   ImGui::Spacing();
 
-  // Asset table
-  const float footer_height = ImGui::GetFrameHeightWithSpacing() + 4.0f;
+  // Reserve space for the separator + export controls at the bottom
+  const float footer_height = ImGui::GetFrameHeightWithSpacing() * 3.0f + 8.0f;
   if (ImGui::BeginTable("##assets_table", 3,
     ImGuiTableFlags_ScrollY | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersInnerV |
     ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp,
@@ -450,10 +577,9 @@ void BuildSizeAnalyzerPanel() {
     ImGui::TableSetupScrollFreeze(0, 1);
     ImGui::TableSetupColumn("##check", ImGuiTableColumnFlags_WidthFixed, 30.0f);
     ImGui::TableSetupColumn("Asset Path", ImGuiTableColumnFlags_WidthStretch);
-    ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_WidthFixed, 90.0f);
+    ImGui::TableSetupColumn("Size",       ImGuiTableColumnFlags_WidthFixed, 90.0f);
     ImGui::TableHeadersRow();
 
-    // Build filter lowercase
     std::string filter_lower;
     if (search_filter[0] != '\0') {
       filter_lower = search_filter;
@@ -461,7 +587,6 @@ void BuildSizeAnalyzerPanel() {
     }
 
     for (const auto& ae : all_assets) {
-      // Apply filter
       if (!filter_lower.empty()) {
         std::string name_lower = ae.relative_path;
         std::transform(name_lower.begin(), name_lower.end(), name_lower.begin(), ::tolower);
@@ -470,7 +595,6 @@ void BuildSizeAnalyzerPanel() {
 
       ImGui::TableNextRow();
 
-      // Checkbox column
       ImGui::TableSetColumnIndex(0);
       bool checked = selected_assets.contains(ae.relative_path);
       std::string id = "##" + ae.relative_path;
@@ -481,11 +605,9 @@ void BuildSizeAnalyzerPanel() {
         save_selection();
       }
 
-      // Path column
       ImGui::TableSetColumnIndex(1);
       ImGui::TextUnformatted(ae.relative_path.c_str());
 
-      // Size column
       ImGui::TableSetColumnIndex(2);
       ImGui::TextUnformatted(format_file_size(ae.file_size).c_str());
     }
@@ -494,22 +616,67 @@ void BuildSizeAnalyzerPanel() {
   }
 
   // =================================================================
-  // Section 3: Export
+  // Section 3: Export / Build
   // =================================================================
   ImGui::Separator();
-  if (ImGui::Button("Export Selected Assets...")) {
-    if (selected_assets.empty()) {
-      Log::info("BuildSizeAnalyzer: no assets selected for export");
-    }
-    else {
-      auto folder = pick_folder_dialog();
-      if (folder.has_value()) {
-        do_export(folder.value());
+
+  // Option: include game executable
+  ImGui::Checkbox("Build game executable (Game config)", &build_include_executable);
+  if (build_include_executable) {
+    ImGui::SameLine();
+    ImGui::TextDisabled("  Assets -> dest/Assets/   |   Engine.exe + DLLs -> dest/");
+  }
+
+  ImGui::Spacing();
+
+  if (is_building) {
+    ImGui::BeginDisabled();
+    ImGui::Button("Working...");
+    ImGui::EndDisabled();
+    ImGui::SameLine();
+    ImGui::Text("%s", get_build_status().c_str());
+  }
+  else {
+    const char* btn_label = build_include_executable
+                            ? "Export Assets & Build Game..."
+                            : "Export Selected Assets...";
+
+    if (ImGui::Button(btn_label)) {
+      if (selected_assets.empty() && !build_include_executable) {
+        Log::info("BuildSizeAnalyzer: no assets selected for export");
+        set_build_status("Nothing selected.");
+      }
+      else {
+        auto folder = pick_folder_dialog();
+        if (folder.has_value()) {
+          // Join any previous worker before launching a new one
+          if (build_worker.joinable()) build_worker.join();
+
+          build_in_progress.store(true);
+          set_build_status("Starting...");
+
+          // Snapshot current selection so the thread has its own copy
+          auto snapshot     = selected_assets;
+          auto dest         = folder.value();
+          bool inc_exe      = build_include_executable;
+
+          build_worker = std::thread([snapshot, dest, inc_exe]() {
+            worker_export_and_build(snapshot, dest, inc_exe);
+          });
+        }
       }
     }
+
+    ImGui::SameLine();
+    ImGui::TextDisabled("(%d files, %s)", selected_file_count,
+                        format_file_size(total_selected_size).c_str());
+
+    // Show last status message (success / error from previous run)
+    std::string status = get_build_status();
+    if (!status.empty()) {
+      ImGui::TextDisabled("%s", status.c_str());
+    }
   }
-  ImGui::SameLine();
-  ImGui::TextDisabled("(%d files, %s)", selected_file_count, format_file_size(total_selected_size).c_str());
 
   ImGui::End();
 }
