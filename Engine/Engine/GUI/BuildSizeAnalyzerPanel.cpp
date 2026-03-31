@@ -106,13 +106,6 @@ namespace {
     return std::filesystem::exists(full_path);
   }
 
-  void insert_existing_asset(std::unordered_set<std::string>& snapshot, const std::string& relative_path) {
-    const std::string normalized = normalize_relative(relative_path);
-    if (!normalized.empty() && resource_asset_exists(normalized)) {
-      snapshot.insert(normalized);
-    }
-  }
-
   bool is_resource_managed_asset(const std::string& relative_path) {
     const std::string normalized = normalize_relative(relative_path);
     const std::string lower = lowercase_copy(normalized);
@@ -135,43 +128,14 @@ namespace {
     return false;
   }
 
-  std::unordered_set<std::string> scan_level_for_assets(const std::string& level_relative_path);
-
-  void collect_assets_from_json_directory(const std::string& relative_dir,
-                                          std::unordered_set<std::string>& out);
-
-  void collect_all_files_from_directory(const std::string& relative_dir,
-                                        std::unordered_set<std::string>& out);
-
-  std::unordered_set<std::string> build_runtime_export_snapshot(const std::unordered_set<std::string>& selected_snapshot) {
+  // Build export snapshot: selected assets + all non-resource-managed assets.
+  std::unordered_set<std::string> build_export_snapshot(const std::unordered_set<std::string>& selected_snapshot) {
     std::unordered_set<std::string> export_snapshot = selected_snapshot;
 
     for (const auto& asset : all_assets) {
       if (!is_resource_managed_asset(asset.relative_path)) {
         export_snapshot.insert(asset.relative_path);
       }
-    }
-
-    // Game builds always need global settings-driven assets and bootstrap UI/fonts
-    // even when they are not discoverable from the selected levels alone.
-    collect_assets_from_json_directory("settings", export_snapshot);
-
-    const char* bootstrap_directories[] = {
-      "fonts",
-      "images/UI",
-      "images/Upgrades"
-    };
-    for (const char* relative_dir : bootstrap_directories) {
-      collect_all_files_from_directory(relative_dir, export_snapshot);
-    }
-
-    const char* bootstrap_levels[] = {
-      "levels/LevelOneTestingExtra.json"
-    };
-    for (const char* level_path : bootstrap_levels) {
-      insert_existing_asset(export_snapshot, level_path);
-      auto level_assets = scan_level_for_assets(level_path);
-      export_snapshot.insert(level_assets.begin(), level_assets.end());
     }
 
     return export_snapshot;
@@ -340,57 +304,6 @@ namespace {
 
   std::unordered_set<std::string> scan_level_for_assets(const std::string& level_relative_path) {
     return scan_json_for_assets(level_relative_path, true);
-  }
-
-  void collect_assets_from_json_directory(const std::string& relative_dir,
-                                          std::unordered_set<std::string>& out) {
-    const std::string dir_path = Engine::Path(Engine::Resources::resource_path).join(relative_dir).to_string();
-    if (!std::filesystem::exists(dir_path)) {
-      return;
-    }
-
-    try {
-      for (const auto& entry : std::filesystem::recursive_directory_iterator(dir_path)) {
-        if (!entry.is_regular_file()) {
-          continue;
-        }
-
-        std::string ext = lowercase_copy(entry.path().extension().string());
-        if (ext != ".json") {
-          continue;
-        }
-
-        const std::string rel_path = normalize_relative(
-          Engine::Path(entry.path().string()).to_relative(Engine::Resources::resource_path));
-        auto discovered_assets = scan_json_for_assets(rel_path, false);
-        out.insert(discovered_assets.begin(), discovered_assets.end());
-      }
-    }
-    catch (const std::filesystem::filesystem_error& e) {
-      Log::error("BuildSizeAnalyzer: failed to scan JSON directory {} — {}", relative_dir, e.what());
-    }
-  }
-
-  void collect_all_files_from_directory(const std::string& relative_dir,
-                                        std::unordered_set<std::string>& out) {
-    const std::string dir_path = Engine::Path(Engine::Resources::resource_path).join(relative_dir).to_string();
-    if (!std::filesystem::exists(dir_path)) {
-      return;
-    }
-
-    try {
-      for (const auto& entry : std::filesystem::recursive_directory_iterator(dir_path)) {
-        if (!entry.is_regular_file()) {
-          continue;
-        }
-
-        out.insert(normalize_relative(
-          Engine::Path(entry.path().string()).to_relative(Engine::Resources::resource_path)));
-      }
-    }
-    catch (const std::filesystem::filesystem_error& e) {
-      Log::error("BuildSizeAnalyzer: failed to scan bootstrap directory {} — {}", relative_dir, e.what());
-    }
   }
 
   std::vector<std::string> get_fmod_bank_paths() {
@@ -623,57 +536,43 @@ namespace {
 #endif
   }
 
-  // Background worker: export selected assets or mirror the built Game output.
+  // Background worker: export selected assets (and optionally build the game first).
   void worker_export_and_build(const std::unordered_set<std::string> snapshot,
                                std::string dest_folder,
                                bool include_exe) {
-    if (!include_exe) {
-      set_build_status("Exporting assets...");
-      do_export_snapshot(snapshot, Engine::Resources::resource_path, dest_folder);
-      set_build_status("Export complete.");
-      build_in_progress.store(false);
-      return;
+    std::string assets_source = Engine::Resources::resource_path;
+
+    if (include_exe) {
+      set_build_status("Building game \xe2\x80\x94 this may take a minute...");
+      const std::string solution_root = get_solution_root();
+      const int build_result = run_build_bat(solution_root);
+
+      if (build_result != 0) {
+        set_build_status("Build FAILED (exit code " + std::to_string(build_result) +
+                         "). Check the Output or build_game.bat output.");
+        build_in_progress.store(false);
+        return;
+      }
+
+      const std::filesystem::path game_build_root = get_game_build_root(solution_root);
+
+      if (!std::filesystem::exists(game_build_root / "Engine.exe")) {
+        set_build_status("Build completed, but x64/Game/Engine.exe was not found.");
+        build_in_progress.store(false);
+        return;
+      }
+
+      set_build_status("Copying game runtime files...");
+      copy_runtime_outputs(game_build_root, std::filesystem::path(dest_folder));
+
+      // Use the built assets as the copy source so patched settings are included.
+      assets_source = (game_build_root / "Assets").string() + "/";
     }
 
-    set_build_status("Building game — this may take a minute...");
-    const std::string solution_root = get_solution_root();
-    const int build_result = run_build_bat(solution_root);
+    set_build_status("Exporting assets...");
+    do_export_snapshot(snapshot, assets_source, dest_folder, "Assets");
 
-    if (build_result != 0) {
-      set_build_status("Build FAILED (exit code " + std::to_string(build_result) +
-                       "). Check the Output or build_game.bat output.");
-      build_in_progress.store(false);
-      return;
-    }
-
-    const std::filesystem::path game_build_root = get_game_build_root(solution_root);
-    const std::filesystem::path game_assets_root = game_build_root / "Assets";
-
-    if (!std::filesystem::exists(game_build_root / "Engine.exe")) {
-      set_build_status("Build completed, but x64/Game/Engine.exe was not found.");
-      build_in_progress.store(false);
-      return;
-    }
-
-    set_build_status("Copying game runtime files...");
-    int copy_fails = copy_runtime_outputs(game_build_root, std::filesystem::path(dest_folder));
-
-    set_build_status("Copying built assets...");
-    if (snapshot.empty()) {
-      copy_fails += copy_directory_tree(game_assets_root,
-                                        std::filesystem::path(dest_folder) / "Assets");
-    }
-    else {
-      do_export_snapshot(snapshot, game_assets_root.string(), dest_folder, "Assets");
-    }
-
-    if (copy_fails == 0) {
-      set_build_status("Done! Game built and exported to: " + dest_folder);
-    }
-    else {
-      set_build_status("Done with " + std::to_string(copy_fails) +
-                       " copy error(s). Check the log for details.");
-    }
+    set_build_status("Done! Exported to: " + dest_folder);
     build_in_progress.store(false);
   }
 
@@ -838,7 +737,7 @@ void BuildSizeAnalyzerPanel() {
   ImGui::Checkbox("Build game executable (Game config)", &build_include_executable);
   if (build_include_executable) {
     ImGui::SameLine();
-    ImGui::TextDisabled("  Selected assets are supplemented with startup assets and unmanaged runtime files");
+    ImGui::TextDisabled("  Builds game, then exports selected + unmanaged assets");
   }
 
   ImGui::Spacing();
@@ -869,14 +768,10 @@ void BuildSizeAnalyzerPanel() {
           build_in_progress.store(true);
           set_build_status("Starting...");
 
-          // Snapshot current selection so the thread has its own copy
-          auto snapshot     = selected_assets;
+          // Snapshot: selected assets + all unmanaged runtime assets
+          auto snapshot     = build_export_snapshot(selected_assets);
           auto dest         = folder.value();
           bool inc_exe      = build_include_executable;
-
-          if (inc_exe && !snapshot.empty()) {
-            snapshot = build_runtime_export_snapshot(snapshot);
-          }
 
           build_worker = std::thread([snapshot, dest, inc_exe]() {
             worker_export_and_build(snapshot, dest, inc_exe);
