@@ -178,6 +178,7 @@
     <ClCompile Include="GameStates\TipsBookState.cpp" />
     <ClCompile Include="GameStates\UpgradePickerState.cpp" />
     <ClCompile Include="GameStates\VictoryState.cpp" />
+    <ClCompile Include="States\BananaProjectileCallbacks.cpp" />
     <ClCompile Include="States\CheckpointCallbacks.cpp" />
     <ClCompile Include="States\CatMonkeyBossRuntime.cpp" />
     <ClCompile Include="States\CatMonkeySpawnSystem.cpp" />

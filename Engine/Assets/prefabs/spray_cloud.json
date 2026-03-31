@@ -61,7 +61,7 @@
                         0.20000000298023224
                     ],
                     "is_looping": true,
-                    "startTime": 483.1925354003906,
+                    "startTime": 0.0,
                     "totalDuration": 4.0
                 },
                 "type": "Components::Animation"
@@ -331,6 +331,7 @@
         "filepath": "prefabs/spray_cloud.json",
         "layers": [
             "hazard",
+            "damage_player",
             "spray"
         ],
         "uuid": "53762d03-a26f-409e3-82e6-4d0943344032"

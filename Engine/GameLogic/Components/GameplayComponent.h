@@ -65,9 +65,10 @@ namespace Components
     f32 life_time;
     f32 dmg;
     Vec2D knockback;
+    bool directional;
 
-    AttackData(f32 offset_x = 0.0f, f32 offset_y = 0.0f, f32 width = 0.0f, f32 height = 0.0f, f32 dur = 0.f, f32 damage = 0.0f, Vec2D kb = Vec2D())
-      : hitbox_offset_x(offset_x), hitbox_offset_y(offset_y), hitbox_width(width), hitbox_height(height), life_time(dur), dmg(damage), knockback(kb) {
+    AttackData(f32 offset_x = 0.0f, f32 offset_y = 0.0f, f32 width = 0.0f, f32 height = 0.0f, f32 dur = 0.f, f32 damage = 0.0f, Vec2D kb = Vec2D(), bool dir = true)
+      : hitbox_offset_x(offset_x), hitbox_offset_y(offset_y), hitbox_width(width), hitbox_height(height), life_time(dur), dmg(damage), knockback(kb), directional(dir)  {
     }
   };
 
@@ -102,11 +103,11 @@ namespace Components
     Action smash    { 0.f, 7.f, 2500.f, 0.f };
 
     // hitbox_offset_x hitbox_offset_y hitbox_width hitbox_height life_time dmg knockback
-    AttackData uppercut_data  { 60.0f, 0.0f, 100.0f, 128.0f, 1.0f, 5.0f, Vec2D(5000.0f, 20000.0f)};
-    AttackData smash_data     { 0.0f, 48.0f, 384.0f, 32.0f, 0.1f, 5.0f, Vec2D(1000.0f, 5000.0f) };
-    AttackData attack1_data   { 60.0f, 0.0f, 100.0f, 64.0f, 0.1f, 1.0f, Vec2D(5000.0f, 0.0f) };
-    AttackData attack2_data   { 60.0f, 0.0f, 100.0f, 64.0f, 0.1f, 1.0f, Vec2D(5000.0f, 0.0f) };
-    AttackData attack3_data   { 60.0f, 0.0f, 100.0f, 64.0f, 0.1f, 3.0f, Vec2D(5000.0f, 0.0f) };
+    AttackData uppercut_data  { 60.0f, 0.0f, 100.0f, 128.0f, 1.0f, 5.0f, Vec2D(5000.0f, 20000.0f), true};
+    AttackData smash_data     { 0.0f, 48.0f, 384.0f, 32.0f, 0.1f, 5.0f, Vec2D(1000.0f, 5000.0f), false };
+    AttackData attack1_data   { 60.0f, 0.0f, 100.0f, 64.0f, 0.1f, 1.0f, Vec2D(5000.0f, 0.0f), true };
+    AttackData attack2_data   { 60.0f, 0.0f, 100.0f, 64.0f, 0.1f, 1.0f, Vec2D(5000.0f, 0.0f), true };
+    AttackData attack3_data   { 60.0f, 0.0f, 100.0f, 64.0f, 0.1f, 3.0f, Vec2D(5000.0f, 0.0f), true };
 
   };
 
@@ -302,7 +303,7 @@ namespace Components
 
 //REFLECT_FIELDS(Components::Player::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, dash_speed, damage, heartrate_cost, knockback)
 REFLECT_FIELDS(Components::Action, no_cooldown, duration, timer, cooldown, cd_timer, speed, impulse)
-REFLECT_FIELDS(Components::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, dmg, knockback, life_time)
+REFLECT_FIELDS(Components::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, dmg, knockback, life_time, directional)
 
 
 REGISTER_COMPONENT(Components::Player, 

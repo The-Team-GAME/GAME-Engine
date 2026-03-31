@@ -84,29 +84,63 @@ namespace CatMonkeyStateCallbacks {
 // Knockback Helper Function
 // =============================================================================
 // Helper function to apply knockback to the enemy (any maybe vise versa -> not tested yet )
-void apply_knockback_from_player(ECS::Entity entity)
+//void apply_knockback_from_player(ECS::Entity entity)
+//{
+//  ECS::Entity player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+//  Components::Transform2D* player_xform = player_entity.get_component<Components::Transform2D>();
+//  Components::Player* player_comp = player_entity.get_component<Components::Player>();
+//  Components::Flip* player_flip = player_entity.get_component<Components::Flip>();
+//  assert(player_xform && player_comp && player_flip);
+//
+//  Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
+//  Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+//  assert(xform && rigid);
+//
+//  // First we check which direction to apply knockback for the enemy
+//  // If the player is to the right we want the knockback to be to the left
+//  player_comp->knockback_value.x = 
+//    player_xform->position.x - player_flip->value.x * (player_xform->scale.x / 2.f)> xform->position.x ?
+//    player_comp->knockback_value.x * (-player_flip->value.x) : 
+//    player_comp->knockback_value.x * player_flip->value.x;
+//
+//  // Doing the flip here so on editor side we dont need to deal with negative values
+//  player_comp->knockback_value.y = -player_comp->knockback_value.y;
+//
+//  // Then we zero the forces and velocity of the monkey before they change state
+//  rigid->velocity.zero();
+//  rigid->force = player_comp->knockback_value;
+//}
+void apply_knockback_from_player(ECS::Entity attack_entity, ECS::Entity enemy_entity)
 {
   ECS::Entity player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
   Components::Transform2D* player_xform = player_entity.get_component<Components::Transform2D>();
-  Components::Player* player_comp = player_entity.get_component<Components::Player>();
   Components::Flip* player_flip = player_entity.get_component<Components::Flip>();
   assert(player_xform && player_comp && player_flip);
 
-  Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
-  Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
-  assert(xform && rigid);
+  Components::Transform2D* enemy_xform = enemy_entity.get_component<Components::Transform2D>();
+  Components::RigidBody* enemy_rigid = enemy_entity.get_component<Components::RigidBody>();
+  assert(enemy_xform && enemy_rigid);
 
-  // First we check which direction to apply knockback for the enemy
-  // If the player is to the right we want the knockback to be to the left
-  player_comp->knockback_value.x = player_xform->position.x - player_flip->value.x * (player_xform->scale.x / 2.f)> xform->position.x ?
-    -player_comp->knockback_value.x : player_comp->knockback_value.x;
+  Components::AttackData* atk_data = attack_entity.get_component<Components::AttackData>();
+  Components::Attack* atk = attack_entity.get_component<Components::Attack>();
+  // First we check which direction the enemy is wrt to the player
+  
+  Vec2D knockback_val;
+  if (atk_data->directional)
+  {
+    knockback_val.x = atk->knockback.x * player_flip->value.x;
+  }
+  else
+  {
+    f32 dir = (player_xform->position.x < enemy_xform->position.x) ? 1.f : -1.f;
+    knockback_val.x = atk->knockback.x * dir;
+  }
 
-  // Doing the flip here so on editor side we dont need to deal with negative values
-  player_comp->knockback_value.y = -player_comp->knockback_value.y;
+  knockback_val.y = -atk_data->knockback.y;
 
   // Then we zero the forces and velocity of the monkey before they change state
-  rigid->velocity.zero();
-  rigid->force = player_comp->knockback_value;
+  enemy_rigid->velocity.zero();
+  enemy_rigid->force = knockback_val;
 }
 
 void apply_knockback_to_player(ECS::Entity player_entity, ECS::Entity attack_entity)
@@ -182,7 +216,7 @@ static void register_collision_callbacks()
         else if (state_machine->get_current_state() != "Hit") {
           state_machine->change_state("Hit");
         }
-        apply_knockback_from_player(enemy_entity);
+        apply_knockback_from_player(attack_entity, enemy_entity);
 
         // Spawn Impact VFX
         if (attack->impact_vfx_texture.texture_handle) {
@@ -302,6 +336,16 @@ static void register_collision_callbacks()
   Engine::ECS::LayerRegistry::register_collision_callback("projectiles", "player",
     [](Engine::ECS::Entity projectile_entity, [[maybe_unused]] Engine::ECS::Entity player_entity)
     {
+      auto* sm = projectile_entity.get_component<Components::StateMachine>();
+
+      // Only banana projectiles use this hit state flow
+      if (sm && sm->get_current_state() == "Flying")
+      {
+        Log::info("Banana projectile hit player, changing to HitPlayer state");
+        sm->change_state("HitPlayer");
+        return;
+      }
+
       Log::info("Projectile hit player, destroying");
       projectile_entity.destroy();
     });

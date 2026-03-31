@@ -217,6 +217,7 @@ namespace PlayerStateCallbacks
     assert(flip);
     ECS::Entity hitbox = Engine::ECS::create_entity()
       .add_component<Components::Attack>(static_cast<s32>(atk_data.dmg))
+      .add_component<Components::AttackData>(atk_data)
       .add_component<Components::Transform2D>( 
         xform->position.x + flip->value.x * atk_data.hitbox_offset_x,
         xform->position.y + atk_data.hitbox_offset_y,
@@ -230,7 +231,8 @@ namespace PlayerStateCallbacks
 
     Components::Attack* attack = hitbox.get_component<Components::Attack>();
     assert(attack);
-    attack->knockback = atk_data.knockback * flip->value.x;
+    attack->knockback = atk_data.knockback; // we set the knockback direction on the callback function instead of here
+
     // Knockback Y is always positive (up) in our config, but physics needs negative for up
     attack->knockback.y = -std::abs(attack->knockback.y);
     return hitbox;

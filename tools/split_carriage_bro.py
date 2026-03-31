@@ -1,10 +1,10 @@
 """
 Split "Carriage" entity into:
-  - Carriage (main_menu_3): static Carriage.png, no atlas/animation
-  - Bro     (main_menu_4): Carriage-Sheet.png 9-frame atlas animation
-               Start      -> frame 0, looping
-               Transition -> frames 0-8, non-looping + prop-anim timer
-               Menu       -> frame 8, looping
+    - Carriage (main_menu_3): static Carriage.png, no atlas/animation
+    - Bro     (main_menu_4): Carriage-Sheet.png 9-frame atlas animation
+                             Start      -> frame 0, looping
+                             Transition -> frames 0-8, non-looping + prop-anim timer
+                             Menu       -> frame 8, looping
 """
 
 import json, copy, os
