@@ -3744,12 +3744,12 @@
             "texture_path": "images/Tilemaps/AdditionalProps_TilemapM1.png",
             "tile_collider_configs": [
                 {
-                    "first": 18,
+                    "first": 2,
                     "second": {
-                        "aabb_height": 64.0,
+                        "aabb_height": 14.2626953125,
                         "aabb_offset": {
-                            "x": 51.187110900878906,
-                            "y": -1.7706242799758911
+                            "x": 0.0,
+                            "y": 24.86865234375
                         },
                         "aabb_width": 64.0,
                         "collider_type": "AABB",
@@ -3757,12 +3757,12 @@
                     }
                 },
                 {
-                    "first": 2,
+                    "first": 18,
                     "second": {
-                        "aabb_height": 14.2626953125,
+                        "aabb_height": 64.0,
                         "aabb_offset": {
-                            "x": 0.0,
-                            "y": 24.86865234375
+                            "x": 51.187110900878906,
+                            "y": -1.7706242799758911
                         },
                         "aabb_width": 64.0,
                         "collider_type": "AABB",
@@ -3796,19 +3796,6 @@
                     }
                 },
                 {
-                    "first": 1,
-                    "second": {
-                        "aabb_height": 14.262687683105469,
-                        "aabb_offset": {
-                            "x": 0.0,
-                            "y": 24.868656158447266
-                        },
-                        "aabb_width": 64.0,
-                        "collider_type": "AABB",
-                        "custom_vertices": []
-                    }
-                },
-                {
                     "first": 9,
                     "second": {
                         "aabb_height": 64.0,
@@ -3817,6 +3804,19 @@
                             "y": 0.0
                         },
                         "aabb_width": 28.273204803466797,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 1,
+                    "second": {
+                        "aabb_height": 14.262687683105469,
+                        "aabb_offset": {
+                            "x": 0.0,
+                            "y": 24.868656158447266
+                        },
+                        "aabb_width": 64.0,
                         "collider_type": "AABB",
                         "custom_vertices": []
                     }
@@ -4578,6 +4578,19 @@
             "texture_path": "images/Tilemaps/Ground_TilemapM1.png",
             "tile_collider_configs": [
                 {
+                    "first": 20,
+                    "second": {
+                        "aabb_height": 0.0,
+                        "aabb_offset": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "aabb_width": 0.0,
+                        "collider_type": "Default",
+                        "custom_vertices": []
+                    }
+                },
+                {
                     "first": 12,
                     "second": {
                         "aabb_height": 0.0,
@@ -4604,7 +4617,7 @@
                     }
                 },
                 {
-                    "first": 20,
+                    "first": 21,
                     "second": {
                         "aabb_height": 0.0,
                         "aabb_offset": {
@@ -4614,6 +4627,32 @@
                         "aabb_width": 0.0,
                         "collider_type": "Default",
                         "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 13,
+                    "second": {
+                        "aabb_height": 0.0,
+                        "aabb_offset": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "aabb_width": 0.0,
+                        "collider_type": "Polygon",
+                        "custom_vertices": [
+                            {
+                                "x": -32.0,
+                                "y": -32.0
+                            },
+                            {
+                                "x": 21.376253128051758,
+                                "y": -32.321929931640625
+                            },
+                            {
+                                "x": -32.0,
+                                "y": 21.215307235717773
+                            }
+                        ]
                     }
                 },
                 {
@@ -4647,7 +4686,7 @@
                     }
                 },
                 {
-                    "first": 13,
+                    "first": 14,
                     "second": {
                         "aabb_height": 0.0,
                         "aabb_offset": {
@@ -4658,31 +4697,18 @@
                         "collider_type": "Polygon",
                         "custom_vertices": [
                             {
-                                "x": -32.0,
+                                "x": -21.69818687438965,
+                                "y": -32.48289489746094
+                            },
+                            {
+                                "x": 32.0,
                                 "y": -32.0
                             },
                             {
-                                "x": 21.376253128051758,
-                                "y": -32.321929931640625
-                            },
-                            {
-                                "x": -32.0,
-                                "y": 21.215307235717773
+                                "x": 32.16096496582031,
+                                "y": 22.34206771850586
                             }
                         ]
-                    }
-                },
-                {
-                    "first": 21,
-                    "second": {
-                        "aabb_height": 0.0,
-                        "aabb_offset": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "aabb_width": 0.0,
-                        "collider_type": "Default",
-                        "custom_vertices": []
                     }
                 },
                 {
@@ -4711,32 +4737,6 @@
                             {
                                 "x": -32.03217315673828,
                                 "y": 20.60362434387207
-                            }
-                        ]
-                    }
-                },
-                {
-                    "first": 14,
-                    "second": {
-                        "aabb_height": 0.0,
-                        "aabb_offset": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "aabb_width": 0.0,
-                        "collider_type": "Polygon",
-                        "custom_vertices": [
-                            {
-                                "x": -21.69818687438965,
-                                "y": -32.48289489746094
-                            },
-                            {
-                                "x": 32.0,
-                                "y": -32.0
-                            },
-                            {
-                                "x": 32.16096496582031,
-                                "y": 22.34206771850586
                             }
                         ]
                     }
@@ -12307,14 +12307,14 @@
             "texture_path": "images/Tilemaps/BoardsPostersTVTrashCanFenceStairsTrainNewWall.png",
             "tile_collider_configs": [
                 {
-                    "first": 260,
+                    "first": 155,
                     "second": {
-                        "aabb_height": 48.027976989746094,
+                        "aabb_height": 64.0,
                         "aabb_offset": {
-                            "x": 1.4711017608642578,
-                            "y": 7.986011505126953
+                            "x": 0.0,
+                            "y": 0.0
                         },
-                        "aabb_width": 61.057796478271484,
+                        "aabb_width": 64.0,
                         "collider_type": "AABB",
                         "custom_vertices": []
                     }
@@ -12333,14 +12333,14 @@
                     }
                 },
                 {
-                    "first": 155,
+                    "first": 260,
                     "second": {
-                        "aabb_height": 64.0,
+                        "aabb_height": 48.027976989746094,
                         "aabb_offset": {
-                            "x": 0.0,
-                            "y": 0.0
+                            "x": 1.4711017608642578,
+                            "y": 7.986011505126953
                         },
-                        "aabb_width": 64.0,
+                        "aabb_width": 61.057796478271484,
                         "collider_type": "AABB",
                         "custom_vertices": []
                     }
@@ -47493,19 +47493,6 @@
                     }
                 },
                 {
-                    "first": 105,
-                    "second": {
-                        "aabb_height": 64.0,
-                        "aabb_offset": {
-                            "x": -5.876012802124023,
-                            "y": 0.0
-                        },
-                        "aabb_width": 52.24797439575195,
-                        "collider_type": "AABB",
-                        "custom_vertices": []
-                    }
-                },
-                {
                     "first": 1,
                     "second": {
                         "aabb_height": 14.188667297363281,
@@ -47514,6 +47501,19 @@
                             "y": 24.90566635131836
                         },
                         "aabb_width": 52.24797058105469,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 105,
+                    "second": {
+                        "aabb_height": 64.0,
+                        "aabb_offset": {
+                            "x": -5.876012802124023,
+                            "y": 0.0
+                        },
+                        "aabb_width": 52.24797439575195,
                         "collider_type": "AABB",
                         "custom_vertices": []
                     }
@@ -119554,7 +119554,86 @@
                 }
             ],
             "texture_path": "images/TilesFix.png",
-            "tile_collider_configs": []
+            "tile_collider_configs": [
+                {
+                    "first": 10,
+                    "second": {
+                        "aabb_height": 23.758586883544922,
+                        "aabb_offset": {
+                            "x": 18.028167724609375,
+                            "y": -20.12070655822754
+                        },
+                        "aabb_width": 27.94366455078125,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 2,
+                    "second": {
+                        "aabb_height": 13.7786865234375,
+                        "aabb_offset": {
+                            "x": 23.17906379699707,
+                            "y": 25.11065673828125
+                        },
+                        "aabb_width": 17.64187240600586,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 11,
+                    "second": {
+                        "aabb_height": 26.494979858398438,
+                        "aabb_offset": {
+                            "x": -18.752513885498047,
+                            "y": -18.75251007080078
+                        },
+                        "aabb_width": 26.494972229003906,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 3,
+                    "second": {
+                        "aabb_height": 22.470870971679688,
+                        "aabb_offset": {
+                            "x": -20.04022789001465,
+                            "y": 20.764564514160156
+                        },
+                        "aabb_width": 23.919544219970703,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 6,
+                    "second": {
+                        "aabb_height": 0.0,
+                        "aabb_offset": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "aabb_width": 0.0,
+                        "collider_type": "Default",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 4,
+                    "second": {
+                        "aabb_height": 0.0,
+                        "aabb_offset": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "aabb_width": 0.0,
+                        "collider_type": "Default",
+                        "custom_vertices": []
+                    }
+                }
+            ]
         },
         {
             "animation_config": {

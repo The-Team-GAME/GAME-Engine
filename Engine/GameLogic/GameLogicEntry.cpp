@@ -99,8 +99,10 @@ void apply_knockback_from_player(ECS::Entity entity)
 
   // First we check which direction to apply knockback for the enemy
   // If the player is to the right we want the knockback to be to the left
-  player_comp->knockback_value.x = player_xform->position.x - player_flip->value.x * (player_xform->scale.x / 2.f)> xform->position.x ?
-    -player_comp->knockback_value.x : player_comp->knockback_value.x;
+  player_comp->knockback_value.x = 
+    player_xform->position.x - player_flip->value.x * (player_xform->scale.x / 2.f)> xform->position.x ?
+    player_comp->knockback_value.x * (-player_flip->value.x) : 
+    player_comp->knockback_value.x * player_flip->value.x;
 
   // Doing the flip here so on editor side we dont need to deal with negative values
   player_comp->knockback_value.y = -player_comp->knockback_value.y;
