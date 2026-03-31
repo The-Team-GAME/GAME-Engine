@@ -41,6 +41,7 @@
 #include "GameStates/VictoryState.h"
 #include "GameStates/VideoPlaybackState.h"
 #include "GameStates/OpeningCutsceneState.h"
+#include "GameStates/CreditsCutsceneState.h"
 #include "GameStates/EnteringTrainCutsceneState.h"
 
 // Game systems
@@ -545,6 +546,7 @@ static void register_scenes()
   Engine::SceneManager::register_scene<VictoryState>("VictoryState");
   Engine::SceneManager::register_scene<VideoPlaybackState>("VideoPlaybackState");
   Engine::SceneManager::register_scene<OpeningCutsceneState>("OpeningCutsceneState");
+  Engine::SceneManager::register_scene<CreditsCutsceneState>("CreditsCutsceneState");
   Engine::SceneManager::register_scene<EnteringTrainCutsceneState>("EnteringTrainCutsceneState");
 }
 
