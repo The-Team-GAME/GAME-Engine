@@ -1087,6 +1087,29 @@ namespace Engine {
   }
 
   // ============================================================================
+  // restore_after_dll_reload — re-populate FunctionRegistry and blueprints
+  // after an external clear_all() caused by GameLogic DLL hot-reload.
+  // Does NOT call fr.unregister_function (entries are already gone) and does
+  // NOT nil the Lua globals (they are still valid in the Lua state).
+  // ============================================================================
+
+  void LuaManager::restore_after_dll_reload() {
+    if (!lua_) return;
+
+    // The DLL reload wiped all blueprints; clear our tracking so re-running
+    // the scripts can re-register them cleanly.
+    StateMachineBlueprintRegistry::instance().clear_lua_blueprints();
+    blueprint_source_files_.clear();
+
+    // FunctionRegistry::clear_all() already removed the Lua entries, so just
+    // reset the tracking set and let load_scripts() rebuild everything.
+    lua_registered_functions_.clear();
+
+    load_scripts();
+
+    Log::info("[LuaManager] Lua state restored after DLL reload.");
+  }
+
   // reload_scripts — hot-reload all Lua scripts and blueprints
   // ============================================================================
 

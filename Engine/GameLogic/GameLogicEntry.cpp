@@ -70,6 +70,7 @@
 #include "Components/HealthComponents.h"
 #include "Components/InteractableComponents.h"
 #include "../Engine/LevelManager.h"
+#include "../Engine/LuaManager.h"
 
 namespace {
   static constexpr const char* PLAYER_HEARTBEAT_EVENT = "event:/SFX/PlayerHeartBeat";
@@ -633,6 +634,12 @@ extern "C" __declspec(dllexport) void RegisterGameLogic()
   register_upgrade_applicators();
   register_scenes();
   register_systems();
+
+  // Re-register Lua blueprints (e.g. "MainMenu") and Lua functions that were
+  // cleared by UnregisterGameLogic's clear_all() during DLL hot-reload.
+  // Uses restore_after_dll_reload() which skips the unregister step (entries
+  // are already gone) to avoid touching dangling std::function vtables.
+  Engine::LuaManager::instance().restore_after_dll_reload();
 
   Log::info("[GameLogic] Game logic registered successfully");
 }

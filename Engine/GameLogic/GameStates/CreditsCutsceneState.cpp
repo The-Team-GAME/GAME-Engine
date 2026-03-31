@@ -2,6 +2,8 @@
 // file:    CreditsCutsceneState.cpp
 // project: Monkey Stole My GPA
 //
+// author:  Ryan Ang An Kiat (100%)
+//
 // brief:   Implementation of the ending/credits cutscene state.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
@@ -10,8 +12,9 @@
 #include "CreditsCutsceneState.h"
 
 namespace {
-  static constexpr const char* NEXT_SCENE    = "MainMenuState";
-  static constexpr const char* CREDITS_VIDEO = "videos/Credit_Scene.mpg";
+  static constexpr const char* NEXT_SCENE      = "MainMenuState";
+  static constexpr const char* CREDITS_VIDEO   = "videos/Credit_Scene.mpg";
+  static constexpr double      FADE_OUT_DURATION = 4.0; // seconds before end to begin fading
 }
 
 void CreditsCutsceneState::load()
@@ -40,6 +43,7 @@ void CreditsCutsceneState::init()
   player.set_looping(false);
 
   last_video_time_ = -1.0;
+  fade_alpha_       = 0.0f;
 }
 
 void CreditsCutsceneState::update()
@@ -60,6 +64,19 @@ void CreditsCutsceneState::update()
   // Robust end detection (mirrors EnteringTrainCutsceneState)
   const double duration = player.get_duration();
   const double t        = player.get_time();
+
+  // Fade-out overlay: ramp alpha from 0 -> 1 over the last FADE_OUT_DURATION seconds
+  if (duration > 0.0 && t >= 0.0)
+  {
+    const double time_remaining = duration - t;
+    if (time_remaining < FADE_OUT_DURATION)
+    {
+      fade_alpha_ = static_cast<float>(1.0 - time_remaining / FADE_OUT_DURATION);
+      if (fade_alpha_ < 0.0f) fade_alpha_ = 0.0f;
+      if (fade_alpha_ > 1.0f) fade_alpha_ = 1.0f;
+    }
+  }
+
   if (duration > 0.0)
   {
     if (t >= duration - 0.05)
@@ -91,6 +108,13 @@ void CreditsCutsceneState::draw()
   // Render the video centered in the virtual resolution
   Math::Vec2D vres = Engine::Graphics::get_virtual_resolution();
   player.render(vres.x, vres.y);
+
+  // Black fade-out overlay
+  if (fade_alpha_ > 0.0f)
+  {
+    Math::Vec2D center{ vres.x * 0.5f, vres.y * 0.5f };
+    Engine::Graphics::draw_rect_ui(center, vres, 0.0f, { 0.0f, 0.0f, 0.0f, fade_alpha_ });
+  }
 }
 
 void CreditsCutsceneState::free()
