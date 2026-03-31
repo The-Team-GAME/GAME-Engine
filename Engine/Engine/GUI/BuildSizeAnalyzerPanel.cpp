@@ -81,52 +81,6 @@ namespace {
     return out;
   }
 
-  std::string lowercase_copy(std::string value) {
-    std::transform(value.begin(), value.end(), value.begin(), ::tolower);
-    return value;
-  }
-
-  bool resource_asset_exists(const std::string& relative_path) {
-    const std::string normalized = normalize_relative(relative_path);
-    const std::string full_path = Engine::Path(Engine::Resources::resource_path).join(normalized).to_string();
-    return std::filesystem::exists(full_path);
-  }
-
-  bool is_resource_managed_asset(const std::string& relative_path) {
-    const std::string normalized = normalize_relative(relative_path);
-    const std::string lower = lowercase_copy(normalized);
-
-    auto dot = lower.rfind('.');
-    if (dot == std::string::npos) {
-      return false;
-    }
-
-    const std::string ext = lower.substr(dot);
-    if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" ||
-        ext == ".tga" || ext == ".gif" || ext == ".ttf" || ext == ".otf") {
-      return true;
-    }
-
-    if (ext == ".json") {
-      return lower.starts_with("prefabs/") || lower.starts_with("levels/");
-    }
-
-    return false;
-  }
-
-  // Build export snapshot: selected assets + all non-resource-managed assets.
-  std::unordered_set<std::string> build_export_snapshot(const std::unordered_set<std::string>& selected_snapshot) {
-    std::unordered_set<std::string> export_snapshot = selected_snapshot;
-
-    for (const auto& asset : all_assets) {
-      if (!is_resource_managed_asset(asset.relative_path)) {
-        export_snapshot.insert(asset.relative_path);
-      }
-    }
-
-    return export_snapshot;
-  }
-
   // -----------------------------------------------------------------------
   // Scanning
   // -----------------------------------------------------------------------
@@ -362,8 +316,7 @@ void BuildSizeAnalyzerPanel() {
     else {
       auto folder = pick_folder_dialog();
       if (folder.has_value()) {
-        auto snapshot = build_export_snapshot(selected_assets);
-        do_export_snapshot(snapshot, Engine::Resources::resource_path, folder.value(), "Assets");
+        do_export_snapshot(selected_assets, Engine::Resources::resource_path, folder.value(), "Assets");
         export_status_msg = "Done! Exported to: " + folder.value();
       }
     }
