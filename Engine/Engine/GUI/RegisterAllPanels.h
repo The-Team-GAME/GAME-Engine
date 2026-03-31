@@ -39,6 +39,7 @@
 #include "FirebasePanel.h"
 #include "DiceMiniGamePanel.h"
 #include "ManualColliderPanel.h"
+#include "BuildSizeAnalyzerPanel.h"
 
 void register_all_panels()
 {
@@ -65,4 +66,5 @@ void register_all_panels()
   ImGuiManager::register_panel("Firebase", FirebasePanel::draw_panel);
   ImGuiManager::register_panel("Dice Mini Game", DiceMiniGamePanel::draw_panel);
   ImGuiManager::register_panel("Manual Colliders", ManualColliderPanel::draw_panel);
+  ImGuiManager::register_panel("Build Size Analyzer", BuildSizeAnalyzerPanel);
 }

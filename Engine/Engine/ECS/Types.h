@@ -43,7 +43,7 @@ namespace Engine {
     inline constexpr LayerID DEFAULT_LAYER = 1;
     inline constexpr WorldID INVALID_WORLD = 0;
     inline constexpr size_t MAX_COMPONENTS = 64;
-    inline constexpr size_t MAX_LAYERS = 32;
+    inline constexpr size_t MAX_LAYERS = 64;
 
     /* ======================== //
     // Bitset signatures        //

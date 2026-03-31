@@ -60,7 +60,7 @@
 	<object class="MarkerTrack" id="{71a097e3-a245-49c9-9604-112af32522e1}" />
 	<object class="GroupTrack" id="{dbc663b4-2347-486e-a868-40b8db855148}">
 		<relationship name="modules">
-			<destination>{de7cb8fb-e0e6-48ea-86a8-7aa81f3f4c3f}</destination>
+			<destination>{725320df-5757-4ca2-810a-070b0a621e5a}</destination>
 		</relationship>
 		<relationship name="mixerGroup">
 			<destination>{33313c9d-2c1f-4f1f-9c83-21e6529958f2}</destination>
@@ -68,7 +68,7 @@
 	</object>
 	<object class="Timeline" id="{4bebbf38-fd1a-4961-90bc-2656933b95c3}">
 		<relationship name="modules">
-			<destination>{de7cb8fb-e0e6-48ea-86a8-7aa81f3f4c3f}</destination>
+			<destination>{725320df-5757-4ca2-810a-070b0a621e5a}</destination>
 		</relationship>
 	</object>
 	<object class="EventMixerMaster" id="{79c8a798-8b46-49eb-9cb0-c58fe7282794}">
@@ -88,12 +88,12 @@
 		</relationship>
 	</object>
 	<object class="MixerBusPanner" id="{4ac203b9-b6da-4407-a05a-93a3befdf1a0}" />
-	<object class="SingleSound" id="{de7cb8fb-e0e6-48ea-86a8-7aa81f3f4c3f}">
+	<object class="SingleSound" id="{725320df-5757-4ca2-810a-070b0a621e5a}">
 		<property name="length">
-			<value>1.1588229166666666</value>
+			<value>1.9453333333333334</value>
 		</property>
 		<relationship name="audioFile">
-			<destination>{75c6a8a2-2910-4009-a0a8-650156f71691}</destination>
+			<destination>{319b4456-be68-46ba-8bad-b5251758aca5}</destination>
 		</relationship>
 	</object>
 	<object class="EventMixerGroup" id="{33313c9d-2c1f-4f1f-9c83-21e6529958f2}">
@@ -117,8 +117,6 @@
 		<relationship name="effects">
 			<destination>{12e3851b-c6da-496e-b1af-0693c6f8602c}</destination>
 			<destination>{e3cac7fb-732c-47b0-948d-afaa5cbd4c28}</destination>
-			<destination>{1fb986a6-d390-4312-8a56-0f1fd0a5b1fa}</destination>
-			<destination>{e2025ff5-4b3e-42f1-b0ac-89e5f65bfcff}</destination>
 		</relationship>
 	</object>
 	<object class="MixerBusPanner" id="{917ea15d-eece-47a2-bffb-d3ce09bb8c9b}">
@@ -152,31 +150,6 @@
 		</property>
 	</object>
 	<object class="MixerBusFader" id="{e3cac7fb-732c-47b0-948d-afaa5cbd4c28}" />
-	<object class="DistortionEffect" id="{1fb986a6-d390-4312-8a56-0f1fd0a5b1fa}">
-		<property name="level">
-			<value>0.214999989</value>
-		</property>
-	</object>
-	<object class="SFXReverbEffect" id="{e2025ff5-4b3e-42f1-b0ac-89e5f65bfcff}">
-		<property name="decayTime">
-			<value>1000</value>
-		</property>
-		<property name="lowShelfFrequency">
-			<value>650</value>
-		</property>
-		<property name="lowShelfGain">
-			<value>12</value>
-		</property>
-		<property name="highCut">
-			<value>7000</value>
-		</property>
-		<property name="wetLevel">
-			<value>-1.5</value>
-		</property>
-		<property name="dryLevel">
-			<value>-5.5</value>
-		</property>
-	</object>
 	<object class="PitchShifterEffect" id="{79b92efd-349a-44c6-951b-0785b5a79e3c}">
 		<property name="pitch">
 			<value>1.09000003</value>

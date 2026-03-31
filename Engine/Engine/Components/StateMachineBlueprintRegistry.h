@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 #include "../Logger.h"
 #include "../EngineExport.h"
 #include "../FunctionRegistry.h"
@@ -105,11 +106,47 @@ namespace Engine
       return ids;
     }
 
+    /// Remove a single blueprint by id. Returns true if it was found and removed.
+    bool remove_blueprint(const std::string& id) {
+      lua_blueprint_ids_.erase(id);
+      return blueprints_.erase(id) > 0;
+    }
+
+    /// Register a blueprint and mark it as Lua-sourced
+    void register_lua_blueprint(const std::string& id, const StateMachineBlueprint& blueprint) {
+      register_blueprint(id, blueprint);
+      lua_blueprint_ids_.insert(id);
+    }
+
+    /// Check whether a blueprint was registered from Lua (vs C++)
+    bool is_lua_blueprint(const std::string& id) const {
+      return lua_blueprint_ids_.count(id) > 0;
+    }
+
+    /// Get all Lua-sourced blueprint ids
+    std::vector<std::string> get_lua_blueprint_ids() const {
+      std::vector<std::string> ids;
+      ids.reserve(lua_blueprint_ids_.size());
+      for (const auto& id : lua_blueprint_ids_) {
+        ids.push_back(id);
+      }
+      return ids;
+    }
+
+    /// Remove all Lua-sourced blueprints (called before Lua reload)
+    void clear_lua_blueprints() {
+      for (const auto& id : lua_blueprint_ids_) {
+        blueprints_.erase(id);
+      }
+      lua_blueprint_ids_.clear();
+    }
+
     /// Clear all registered blueprints.
     /// Called before unloading a DLL; static constructors in the new DLL
     /// will re-register everything on reload.
     void clear_all_blueprints() {
       blueprints_.clear();
+      lua_blueprint_ids_.clear();
     }
 
     /// Delete the leaked singleton. Call at final shutdown AFTER DLL unload.
@@ -117,6 +154,7 @@ namespace Engine
 
   private:
     std::unordered_map<std::string, StateMachineBlueprint> blueprints_;
+    std::unordered_set<std::string> lua_blueprint_ids_;
 
     StateMachineBlueprintRegistry() = default;
     StateMachineBlueprintRegistry(const StateMachineBlueprintRegistry&) = delete;

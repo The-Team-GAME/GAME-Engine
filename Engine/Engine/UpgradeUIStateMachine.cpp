@@ -63,6 +63,35 @@ namespace Engine
       Engine::AudioSystem::releaseEventInstance(UPGRADE_LOWPASS_SNAPSHOT_INSTANCE);
       gUpgradeLowpassSnapshotActive = false;
     }
+
+    static constexpr const char* UPGRADE_BUZZ_INSTANCE = "upgrade_buzz";
+    static constexpr const char* UPGRADE_BUZZ_EVENT = "event:/SFXUI/UpgradeBuzz";
+    static bool gUpgradeBuzzActive = false;
+
+    void start_upgrade_buzz()
+    {
+      if (gUpgradeBuzzActive) return;
+
+      if (!Engine::AudioSystem::createEventInstance(UPGRADE_BUZZ_INSTANCE, UPGRADE_BUZZ_EVENT)) {
+        return;
+      }
+
+      if (!Engine::AudioSystem::startEventInstance(UPGRADE_BUZZ_INSTANCE)) {
+        Engine::AudioSystem::releaseEventInstance(UPGRADE_BUZZ_INSTANCE);
+        return;
+      }
+
+      gUpgradeBuzzActive = true;
+    }
+
+    void stop_upgrade_buzz()
+    {
+      if (!gUpgradeBuzzActive) return;
+
+      Engine::AudioSystem::stopEventInstance(UPGRADE_BUZZ_INSTANCE, false);
+      Engine::AudioSystem::releaseEventInstance(UPGRADE_BUZZ_INSTANCE);
+      gUpgradeBuzzActive = false;
+    }
   }
 
   UpgradeUIStateMachine& UpgradeUIStateMachine::instance()
@@ -121,6 +150,7 @@ namespace Engine
       destroy_picker_entities();
       Time::set_time_scale(1.0f);
       stop_upgrade_lowpass_snapshot();
+      stop_upgrade_buzz();
       break;
     }
     default:
@@ -142,6 +172,7 @@ namespace Engine
     case UpgradeFlowState::Rolling:
     {
       // Roll cards immediately
+      Engine::AudioSystem::playEvent("event:/SFXUI/UpgradePopup");
       mgr.roll_cards();
       break;
     }
@@ -151,6 +182,7 @@ namespace Engine
       Time::set_time_scale(0.0001f);
       spawn_picker_entities();
       start_upgrade_lowpass_snapshot();
+      start_upgrade_buzz();
       if (picker_open_cb_) picker_open_cb_();
       break;
     }
@@ -287,6 +319,7 @@ namespace Engine
         {
           if (Input::is_pressed(KeyCode::MouseLeft))
           {
+            Engine::AudioSystem::playEvent("event:/SFXUI/UpgradeButtonClick");
             if (cfg.enable_selection_stamp)
             {
               stamp_card_ = 0; stamp_time_ = 0.0f;
@@ -314,6 +347,7 @@ namespace Engine
         {
           if (Input::is_pressed(KeyCode::MouseLeft))
           {
+            Engine::AudioSystem::playEvent("event:/SFXUI/UpgradeButtonClick");
             if (cfg.enable_selection_stamp)
             {
               stamp_card_ = 1; stamp_time_ = 0.0f;
@@ -554,6 +588,7 @@ namespace Engine
     }
 
     // ---- Hover Lift (only after flip completes) ----
+    int prev_hovered = hovered_card_;
     if (cfg.enable_hover_lift && flip_done_)
     {
       const float hover_lift_y = cfg.hover_lift_y;
@@ -590,6 +625,9 @@ namespace Engine
         scale_y[i] *= boost;
       }
     }
+
+    if (flip_done_ && hovered_card_ >= 0 && hovered_card_ != prev_hovered)
+      Engine::AudioSystem::playEvent("event:/SFXUI/UpgradeButtonHover");
 
     if (cfg.enable_idle_tilt && flip_done_)
     {

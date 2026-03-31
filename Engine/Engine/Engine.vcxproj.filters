@@ -41,8 +41,6 @@
     <ClCompile Include="GUI\ResourcePicker.cpp" />
     <ClCompile Include="GUI\widgets\ReflectionFieldWidgets.cpp" />
     <ClCompile Include="GUI\widgets\TextureAtlasWidget.cpp" />
-    <ClCompile Include="Lua\GameAPI.cpp" />
-    <ClCompile Include="Lua\LuaManager.cpp" />
     <ClCompile Include="Math\Vector2D.cpp" />
     <ClCompile Include="Math\Vector3D.cpp" />
     <ClCompile Include="Math\Vector4D.cpp" />
@@ -83,6 +81,7 @@
     <ClCompile Include="GUI\DiceMiniGamePanel.cpp" />
     <ClCompile Include="UpgradeUIStateMachine.cpp" />
     <ClCompile Include="GUI\ManualColliderPanel.cpp" />
+    <ClCompile Include="GUI\BuildSizeAnalyzerPanel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Audio\AudioSystem.h" />
@@ -151,9 +150,6 @@
     <ClInclude Include="GUI\PrefabEditorPanel.h" />
     <ClInclude Include="GUI\ResourcePicker.h" />
     <ClInclude Include="GUI\PerformanceViewer.h" />
-    <ClInclude Include="Lua\LuaComponentBindings.h" />
-    <ClInclude Include="Lua\GameAPI.h" />
-    <ClInclude Include="Lua\LuaManager.h" />
     <ClInclude Include="Math\Vector2D.h" />
     <ClInclude Include="Math\Vector3D.h" />
     <ClInclude Include="Math\Vector4D.h" />
@@ -214,13 +210,11 @@
     <ClInclude Include="GUI\DiceMiniGamePanel.h" />
     <ClInclude Include="UpgradeUIStateMachine.h" />
     <ClInclude Include="GUI\ManualColliderPanel.h" />
+    <ClInclude Include="GUI\BuildSizeAnalyzerPanel.h" />
     <ClInclude Include="GUI\LogConsolePanel.h" />
     <ClInclude Include="GUI\ConfigurationPanel.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Assets\scripts\behaviour_test.lua" />
-    <None Include="..\Assets\scripts\buttons_test.lua" />
-    <None Include="..\Assets\scripts\player_logic.lua" />
     <None Include="cpp.hint" />
     <None Include="ECS\ComponentArray.inl" />
     <None Include="ECS\ComponentManager.inl" />

@@ -83,7 +83,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\Lua\include;$(SolutionDir)Dependencies\Sol2\include;$(SolutionDir)Dependencies\FMOD Studio\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\Lua\src;$(SolutionDir)Dependencies\Sol2\include;$(SolutionDir)Dependencies\FMOD Studio\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/bigobj /Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
@@ -95,8 +95,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)x64\$(Configuration);$(SolutionDir)Dependencies\FMOD\lib;$(SolutionDir)Dependencies\FreeType\objs;$(SolutionDir)Dependencies\GLFW\lib-vc2022;$(SolutionDir)Dependencies\GLEW\lib;$(SolutionDir)Dependencies\ImGui\out-debug;$(SolutionDir)Dependencies\Lua;$(SolutionDir)Dependencies\FMOD Studio\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Engine.lib;glew32s.lib;glfw3.lib;opengl32.lib;freetype.lib;fmod_vc.lib;imgui.obj;imgui_demo.obj;imgui_draw.obj;imgui_impl_glfw.obj;imgui_impl_opengl3.obj;imgui_tables.obj;imgui_widgets.obj;lua54.lib;fmodstudio_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)x64\$(Configuration);$(SolutionDir)Dependencies\FMOD\lib;$(SolutionDir)Dependencies\FreeType\objs;$(SolutionDir)Dependencies\GLFW\lib-vc2022;$(SolutionDir)Dependencies\GLEW\lib;$(SolutionDir)Dependencies\ImGui\out-debug;$(SolutionDir)Dependencies\Lua\src;$(SolutionDir)Dependencies\FMOD Studio\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Engine.lib;glew32s.lib;glfw3.lib;opengl32.lib;freetype.lib;fmod_vc.lib;imgui.obj;imgui_demo.obj;imgui_draw.obj;imgui_impl_glfw.obj;imgui_impl_opengl3.obj;imgui_tables.obj;imgui_widgets.obj;lua.lib;fmodstudio_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCMT;MSVCRT</IgnoreSpecificDefaultLibraries>
       <ProgramDatabaseFile>$(HotReloadPDB)</ProgramDatabaseFile>
     </Link>
@@ -112,7 +112,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\Lua\include;$(SolutionDir)Dependencies\Sol2\include;$(SolutionDir)Dependencies\FMOD Studio\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\Lua\src;$(SolutionDir)Dependencies\Sol2\include;$(SolutionDir)Dependencies\FMOD Studio\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
@@ -124,8 +124,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)x64\$(Configuration);$(SolutionDir)Dependencies\FMOD\lib;$(SolutionDir)Dependencies\FreeType\objs;$(SolutionDir)Dependencies\GLFW\lib-vc2022;$(SolutionDir)Dependencies\GLEW\lib;$(SolutionDir)Dependencies\ImGui\out-release;$(SolutionDir)Dependencies\Lua;$(SolutionDir)Dependencies\FMOD Studio\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Engine.lib;glew32s.lib;glfw3.lib;opengl32.lib;freetype.lib;fmod_vc.lib;imgui.obj;imgui_demo.obj;imgui_draw.obj;imgui_impl_glfw.obj;imgui_impl_opengl3.obj;imgui_tables.obj;imgui_widgets.obj;lua54.lib;fmodstudio_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)x64\$(Configuration);$(SolutionDir)Dependencies\FMOD\lib;$(SolutionDir)Dependencies\FreeType\objs;$(SolutionDir)Dependencies\GLFW\lib-vc2022;$(SolutionDir)Dependencies\GLEW\lib;$(SolutionDir)Dependencies\ImGui\out-release;$(SolutionDir)Dependencies\Lua\src;$(SolutionDir)Dependencies\FMOD Studio\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Engine.lib;glew32s.lib;glfw3.lib;opengl32.lib;freetype.lib;fmod_vc.lib;imgui.obj;imgui_demo.obj;imgui_draw.obj;imgui_impl_glfw.obj;imgui_impl_opengl3.obj;imgui_tables.obj;imgui_widgets.obj;lua.lib;fmodstudio_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCMTD;MSVCRTD;LIBCMT</IgnoreSpecificDefaultLibraries>
       <ProgramDatabaseFile>$(HotReloadPDB)</ProgramDatabaseFile>
     </Link>
@@ -141,7 +141,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;NDEBUG;_CONSOLE;GAME_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\Lua\include;$(SolutionDir)Dependencies\Sol2\include;$(SolutionDir)Dependencies\FMOD Studio\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\Lua\src;$(SolutionDir)Dependencies\Sol2\include;$(SolutionDir)Dependencies\FMOD Studio\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
@@ -153,8 +153,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)x64\$(Configuration);$(SolutionDir)Dependencies\FMOD\lib;$(SolutionDir)Dependencies\FreeType\objs;$(SolutionDir)Dependencies\GLFW\lib-vc2022;$(SolutionDir)Dependencies\GLEW\lib;$(SolutionDir)Dependencies\ImGui\out-release;$(SolutionDir)Dependencies\Lua;$(SolutionDir)Dependencies\FMOD Studio\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Engine.lib;glew32s.lib;glfw3.lib;opengl32.lib;freetype.lib;fmod_vc.lib;imgui.obj;imgui_demo.obj;imgui_draw.obj;imgui_impl_glfw.obj;imgui_impl_opengl3.obj;imgui_tables.obj;imgui_widgets.obj;lua54.lib;fmodstudio_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)x64\$(Configuration);$(SolutionDir)Dependencies\FMOD\lib;$(SolutionDir)Dependencies\FreeType\objs;$(SolutionDir)Dependencies\GLFW\lib-vc2022;$(SolutionDir)Dependencies\GLEW\lib;$(SolutionDir)Dependencies\ImGui\out-release;$(SolutionDir)Dependencies\Lua\src;$(SolutionDir)Dependencies\FMOD Studio\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Engine.lib;glew32s.lib;glfw3.lib;opengl32.lib;freetype.lib;fmod_vc.lib;imgui.obj;imgui_demo.obj;imgui_draw.obj;imgui_impl_glfw.obj;imgui_impl_opengl3.obj;imgui_tables.obj;imgui_widgets.obj;lua.lib;fmodstudio_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCMTD;MSVCRTD;LIBCMT</IgnoreSpecificDefaultLibraries>
       <ProgramDatabaseFile>$(HotReloadPDB)</ProgramDatabaseFile>
     </Link>
@@ -170,7 +170,6 @@
     <ClCompile Include="GameStates\BasicState.cpp" />
     <ClCompile Include="GameStates\EnteringTrainCutsceneState.cpp" />
     <ClCompile Include="GameStates\OpeningCutsceneState.cpp" />
-    <ClCompile Include="GameStates\OptionsState.cpp" />
     <ClCompile Include="GameStates\OldManDialogueState.cpp" />
     <ClCompile Include="GameStates\VideoPlaybackState.cpp" />
     <ClCompile Include="GameStates\PauseState.cpp" />
@@ -178,6 +177,7 @@
     <ClCompile Include="GameStates\TipsBookState.cpp" />
     <ClCompile Include="GameStates\UpgradePickerState.cpp" />
     <ClCompile Include="GameStates\VictoryState.cpp" />
+    <ClCompile Include="States\BananaProjectileCallbacks.cpp" />
     <ClCompile Include="States\CheckpointCallbacks.cpp" />
     <ClCompile Include="States\CatMonkeyBossRuntime.cpp" />
     <ClCompile Include="States\CatMonkeySpawnSystem.cpp" />
@@ -188,7 +188,6 @@
     <ClCompile Include="States\HealthBarStateCallbacks.cpp" />
     <ClCompile Include="States\EnemyHealthBarStateCallbacks.cpp" />
     <ClCompile Include="States\LazyMonkeyStateCallbacks.cpp" />
-    <ClCompile Include="States\MainMenuCallbacks.cpp" />
     <ClCompile Include="States\PlayerStateCallbacks.cpp" />
     <ClCompile Include="States\SkillCooldownStateCallbacks.cpp" />
     <ClCompile Include="States\SpawnpointCallbacks.cpp" />
@@ -215,10 +214,8 @@
     <ClInclude Include="GameStates\GameMonkeyTestState.h" />
     <ClInclude Include="GameStates\GameplayState.h" />
     <ClInclude Include="GameStates\LevelTestState.h" />
-    <ClInclude Include="GameStates\LuaState.h" />
     <ClInclude Include="GameStates\MainMenuState.h" />
     <ClInclude Include="GameStates\OldManDialogueState.h" />
-    <ClInclude Include="GameStates\OptionsState.h" />
     <ClInclude Include="GameStates\PauseState.h" />
     <ClInclude Include="GameStates\PhysicsTestState.h" />
     <ClInclude Include="GameStates\Rubric2500ParticlesState.h" />

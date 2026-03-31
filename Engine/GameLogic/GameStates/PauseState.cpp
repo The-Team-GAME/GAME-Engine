@@ -68,8 +68,9 @@ namespace {
 
 void PauseState::load()
 {
+  
   start_pause_lowpass_snapshot();
-
+  Engine::AudioSystem::playEvent("event:/SFXUI/ButtonPause");
   // Load textures
   nothing_selected_tex = Engine::Resources::load_texture("images/UI/In-Game Pause/States/NothingSelectedPausedMenu.png");
   resume_selected_tex = Engine::Resources::load_texture("images/UI/In-Game Pause/States/ResumeButton.png");
@@ -201,7 +202,7 @@ void PauseState::free()
 void PauseState::unload()
 {
   stop_pause_lowpass_snapshot();
-
+  Engine::AudioSystem::playEvent("event:/SFXUI/ButtonClick");
   // Destroy pause menu entities
   if (background_id != 0) {
     Engine::ECS::destroy_entity(Engine::ECS::Entity(background_id));

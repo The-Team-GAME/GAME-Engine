@@ -2,7 +2,10 @@
 // file:    ColliderEditorPanel.cpp
 // project: Monkey Stole My GPA
 //
-// author:  Antigravity
+// author:  Chew Shee Yang (70%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   This file implements the ColliderEditorPanel ImGui interface for visualizing
 //          and editing entity colliders. It renders the entity's sprite and overlays

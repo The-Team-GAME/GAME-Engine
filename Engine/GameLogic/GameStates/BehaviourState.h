@@ -7,9 +7,8 @@
 //
 // email:   hongchinryan.how@digipen.edu
 //
-// brief:   Declares the BehaviourState scene for the game engine. Integrates Lua
-//          scripting for entity creation and behavior logic. Handles resource
-//          management, scene lifecycle, and cleanup of physics-related entities.
+// brief:   Declares the BehaviourState scene for the game engine.
+//          A placeholder scene for physics-related entity testing.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
@@ -26,14 +25,11 @@ private:
 
 public:
   void load() {
-    Engine::LuaManager::call_function("create_physics_entities");
   };
 
   void init() {};
 
   void update() {
-    /*Engine::LuaManager::call_function("update_movement", static_cast<f32>(Engine::Time::get_fixed_dt()));
-    Engine::LuaManager::call_function("chase", static_cast<f32>(Engine::Time::get_fixed_dt()));*/
   };
 
   void draw() {
@@ -45,6 +41,5 @@ public:
 
   void unload() {
     Engine::ECS::destroy_entities_with<Components::Tag<"BehaviourState">>();
-    Engine::LuaManager::call_function("free_resources");
   };
 };

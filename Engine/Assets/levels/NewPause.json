@@ -36,7 +36,7 @@
                 "id": 370,
                 "layers": [
                     "default",
-                    "main_menu_4"
+                    "gameplay_ui_2"
                 ]
             },
             {
@@ -74,7 +74,7 @@
                 "id": 371,
                 "layers": [
                     "default",
-                    "main_menu_5"
+                    "gameplay_ui_3"
                 ]
             },
             {
@@ -165,7 +165,7 @@
                 "id": 372,
                 "layers": [
                     "default",
-                    "main_menu_5"
+                    "gameplay_ui_3"
                 ]
             },
             {
@@ -256,7 +256,7 @@
                 "id": 373,
                 "layers": [
                     "default",
-                    "main_menu_5"
+                    "gameplay_ui_3"
                 ]
             },
             {
@@ -347,7 +347,7 @@
                 "id": 374,
                 "layers": [
                     "default",
-                    "main_menu_5"
+                    "gameplay_ui_3"
                 ]
             },
             {
@@ -438,7 +438,7 @@
                 "id": 375,
                 "layers": [
                     "default",
-                    "main_menu_5"
+                    "gameplay_ui_3"
                 ]
             }
         ]

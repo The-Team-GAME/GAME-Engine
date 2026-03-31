@@ -40,6 +40,10 @@
 #include "../Logger.h"
 #include "../Time.h"
 #include "ResourcePicker.h"
+#include <stb_image.h>
+#include <stb_image_write.h>
+#include <filesystem>
+#include <algorithm>
 
 namespace TilemapPanel {
   // Internal state
@@ -70,6 +74,7 @@ namespace TilemapPanel {
     int anim_frame_rows = 1;   // How many rows of animation frames
     float anim_frame_duration = 0.1f;
     bool anim_is_looping = true;
+    int editing_atlas_index = -1; // -1 means creating new, >= 0 means editing existing atlas
 
     // Painting state
     bool enable_tilemap_mode = false;
@@ -864,6 +869,7 @@ namespace TilemapPanel {
         ImGui::CloseCurrentPopup();
         ImGui::EndPopup();
         modal_open = true;
+        editing_atlas_index = -1;
         return;
       }
 
@@ -910,11 +916,109 @@ namespace TilemapPanel {
           std::string current_path = preview_texture.texture_handle ? preview_texture.texture_handle->path : "";
           ImGui::Text("Selected: %s", current_path.empty() ? "(none)" : current_path.c_str());
 
-          if (ImGui::Button("Select Texture...", ImVec2(-1, 0))) {
-            ImGui::OpenPopup("Atlas Texture Picker");
+          if (is_animated_atlas) {
+            if (ImGui::Button("Select Texture...", ImVec2(ImGui::GetContentRegionAvail().x / 2 - 5, 0))) {
+              ImGui::OpenPopup("Atlas Texture Picker");
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Multiple Frames...", ImVec2(-1, 0))) {
+              ImGui::OpenPopup("Multi Atlas Texture Picker");
+            }
+          } else {
+            if (ImGui::Button("Select Texture...", ImVec2(-1, 0))) {
+              ImGui::OpenPopup("Atlas Texture Picker");
+            }
           }
 
-          // Handle texture picker popup
+          // Handle multi texture picker popup
+          std::vector<std::string> selected_paths;
+          if (ResourcePicker::texture_picker_popup_multi("Multi Atlas Texture Picker", selected_paths)) {
+            if (!selected_paths.empty() && selected_paths.size() > 1) { // Process if we have multiple
+              std::vector<std::string> sorted_paths = selected_paths;
+              std::sort(sorted_paths.begin(), sorted_paths.end()); // Keep frame sequence
+
+              std::vector<unsigned char*> images_data;
+              int max_w = 0, max_h = 0, channels = 4;
+              bool success = true;
+              
+              for (const auto& path : sorted_paths) {
+                int w, h, c;
+                unsigned char* data = stbi_load(path.c_str(), &w, &h, &c, 4);
+                if (data) {
+                  images_data.push_back(data);
+                  if (w > max_w) max_w = w;
+                  if (max_h == 0) max_h = h; // Assume height uniformity or take first
+                } else {
+                  Log::error("Failed to load multi-sequence frame: {}", path);
+                  success = false;
+                  break;
+                }
+              }
+
+              if (success && !images_data.empty()) {
+                int out_w = max_w * static_cast<int>(images_data.size());
+                int out_h = max_h;
+                unsigned char* out_data = new unsigned char[out_w * out_h * 4];
+                memset(out_data, 0, out_w * out_h * 4);
+
+                for (size_t i = 0; i < images_data.size(); ++i) {
+                  for (int y = 0; y < out_h; ++y) {
+                    for (int x = 0; x < max_w; ++x) {
+                      int in_idx = (y * max_w + x) * 4;
+                      int out_idx = (y * out_w + (static_cast<int>(i) * max_w + x)) * 4;
+                      out_data[out_idx]   = images_data[i][in_idx];
+                      out_data[out_idx+1] = images_data[i][in_idx+1];
+                      out_data[out_idx+2] = images_data[i][in_idx+2];
+                      out_data[out_idx+3] = images_data[i][in_idx+3];
+                    }
+                  }
+                  stbi_image_free(images_data[i]);
+                }
+
+                // Save stitched image
+                std::filesystem::path first_p(sorted_paths[0]);
+                std::string out_filename = first_p.stem().string() + "_multi_anim.png";
+                std::string out_dir = first_p.parent_path().string();
+                std::string full_out_path = out_dir + "/" + out_filename;
+
+                stbi_write_png(full_out_path.c_str(), out_w, out_h, 4, out_data, out_w * 4);
+                delete[] out_data;
+                
+                Log::info("Saved multi-frame generated atlas to: {}", full_out_path);
+
+                // Load the new texture
+                auto tex = Engine::Resources::load_texture(Engine::Resources::get_relative_path(full_out_path));
+                if (tex) {
+                  preview_texture = Components::Texture(tex);
+                  
+                  anim_sheet_cols = static_cast<int>(images_data.size());
+                  anim_sheet_rows = 1;
+                  
+                  if (anim_sheet_cols < 1) anim_sheet_cols = 1;
+
+                  anim_frame_cols = static_cast<int>(images_data.size());
+                  anim_frame_rows = 1;
+                  
+                  regenerate_animated_atlas();
+                }
+              } else {
+                for (auto* data : images_data) stbi_image_free(data);
+              }
+            } else if (selected_paths.size() == 1) { // Single selection via multi-picker
+              auto tex = Engine::Resources::load_texture(Engine::Resources::get_relative_path(selected_paths[0]));
+              if (tex) {
+                preview_texture = Components::Texture(tex);
+                anim_sheet_cols = preview_texture.texture_handle->width / 32;
+                anim_sheet_rows = preview_texture.texture_handle->height / 32;
+                if (anim_sheet_cols < 1) anim_sheet_cols = 1;
+                if (anim_sheet_rows < 1) anim_sheet_rows = 1;
+                anim_frame_cols = 1; anim_frame_rows = 1;
+                regenerate_animated_atlas();
+              }
+            }
+          }
+
+          // Handle single texture picker popup
           std::string selected_path;
           if (ResourcePicker::texture_picker_popup("Atlas Texture Picker", selected_path, current_path)) {
             // Load the selected texture
@@ -1184,10 +1288,16 @@ namespace TilemapPanel {
                 entry.animation_config.is_looping = anim_is_looping;
               }
 
-              loaded_tilemaps.push_back(entry);
-
-              // Add a new widget state for this atlas
-              atlas_widget_states.push_back(ImGuiWidgets::TextureAtlasState());
+              if (editing_atlas_index >= 0 && editing_atlas_index < static_cast<int>(loaded_tilemaps.size())) {
+                // Preserve active_frames from the old entry
+                entry.animation_config.active_frames = loaded_tilemaps[editing_atlas_index].animation_config.active_frames;
+                loaded_tilemaps[editing_atlas_index] = entry;
+                editing_atlas_index = -1;
+              } else {
+                loaded_tilemaps.push_back(entry);
+                // Add a new widget state for this atlas
+                atlas_widget_states.push_back(ImGuiWidgets::TextureAtlasState());
+              }
 
               // Save to project settings
               save_loaded_tilemaps_to_project_settings();
@@ -1761,7 +1871,7 @@ namespace TilemapPanel {
 
         // Display all submitted atlases
         for (int i = 0; i < static_cast<int>(loaded_tilemaps.size()); ++i) {
-          const Engine::Graphics::AtlasEntry& entry = loaded_tilemaps[i];
+          Engine::Graphics::AtlasEntry& entry = loaded_tilemaps[i];
 
           ImGui::PushID(i);
 
@@ -1802,6 +1912,8 @@ namespace TilemapPanel {
             float time_in_anim = fmod(current_time, total_duration);
             int current_frame = static_cast<int>(time_in_anim / anim_config.frame_duration);
             current_frame = std::clamp(current_frame, 0, total_frames - 1);
+            
+            int actual_frame = anim_config.get_actual_frame_index(current_frame);
 
             // Calculate which tiles make up this frame
             int tiles_per_frame = anim_config.prop_cols * anim_config.prop_rows;
@@ -1811,8 +1923,8 @@ namespace TilemapPanel {
             int sheet_rows = anim_config.sheet_rows;
 
             // Calculate frame position in the animation grid
-            int frame_col = current_frame % anim_config.anim_cols;
-            int frame_row = current_frame / anim_config.anim_cols;
+            int frame_col = actual_frame % anim_config.anim_cols;
+            int frame_row = actual_frame / anim_config.anim_cols;
 
             // Calculate UV coordinates for the current frame (prop)
             float uv_tile_width = 1.0f / static_cast<float>(sheet_cols);
@@ -1841,6 +1953,88 @@ namespace TilemapPanel {
               ImVec4(1, 1, 1, 1),
               is_selected ? ImVec4(0.0f, 1.0f, 0.0f, 1.0f) : ImVec4(0.5f, 0.5f, 0.5f, 0.5f) // Green border if selected
             );
+
+            // Edit button to re-open the atlas setup modal for this entry
+            if (ImGui::Button("Edit Animation Settings")) {
+              editing_atlas_index = i;
+              is_animated_atlas = true;
+              anim_sheet_cols = entry.animation_config.sheet_cols;
+              anim_sheet_rows = entry.animation_config.sheet_rows;
+              anim_frame_cols = entry.animation_config.anim_cols;
+              anim_frame_rows = entry.animation_config.anim_rows;
+              anim_frame_duration = entry.animation_config.frame_duration;
+              anim_is_looping = entry.animation_config.is_looping;
+              preview_texture.texture_handle = entry.texture_handle;
+              preview_atlas.subTextures = entry.subTextures;
+              preview_atlas.drawIndex = entry.drawIndex;
+              ImGui::OpenPopup("Atlas Selection");
+            }
+
+            // Frame selection UI
+            if (ImGui::TreeNodeEx((void*)(intptr_t)(&entry), 0, "Active Frames Config")) {
+                int total_possible_frames = anim_config.anim_cols * anim_config.anim_rows;
+                
+                // If vector is empty, it means all frames are active implicitly
+                // Let's populate it with all frames if they choose to edit it
+                bool has_custom_frames = !entry.animation_config.active_frames.empty();
+                
+                if (ImGui::Checkbox("Use Custom Frame Set", &has_custom_frames)) {
+                    if (has_custom_frames) {
+                        // Initialize with all frames 
+                        for (int f = 0; f < total_possible_frames; ++f) {
+                            entry.animation_config.active_frames.push_back(f);
+                        }
+                    } else {
+                        entry.animation_config.active_frames.clear();
+                    }
+                    save_loaded_tilemaps_to_project_settings();
+                }
+
+                if (has_custom_frames) {
+                    ImGui::Text("Select which frames to include:");
+                    ImGui::BeginChild("FrameSelector", ImVec2(0, 150), true);
+                    
+                    for (int f = 0; f < total_possible_frames; ++f) {
+                        // Check if frame is currently active
+                        auto it = std::find(entry.animation_config.active_frames.begin(), entry.animation_config.active_frames.end(), f);
+                        bool is_active = (it != entry.animation_config.active_frames.end());
+                        
+                        // Draw checkbox
+                        ImGui::PushID(f);
+                        if (ImGui::Checkbox((std::string("Frame ") + std::to_string(f)).c_str(), &is_active)) {
+                            if (is_active) {
+                                // Add back (keeping sorted order)
+                                entry.animation_config.active_frames.push_back(f);
+                                std::sort(entry.animation_config.active_frames.begin(), entry.animation_config.active_frames.end());
+                            } else {
+                                // Remove
+                                entry.animation_config.active_frames.erase(it);
+                            }
+                            save_loaded_tilemaps_to_project_settings();
+                        }
+                        
+                        // Small preview thumbnail for the frame next to checkbox
+                        ImGui::SameLine();
+                        int f_col = f % anim_config.anim_cols;
+                        int f_row = f / anim_config.anim_cols;
+                        float tf_uv_x0 = f_col * anim_config.prop_cols * uv_tile_width;
+                        float tf_uv_y0 = f_row * anim_config.prop_rows * uv_tile_height;
+                        float tf_uv_x1 = tf_uv_x0 + anim_config.prop_cols * uv_tile_width;
+                        float tf_uv_y1 = tf_uv_y0 + anim_config.prop_rows * uv_tile_height;
+                        
+                        ImGui::Image(
+                            (ImTextureID)(intptr_t)entry.texture_handle->id,
+                            ImVec2(32, 32),
+                            ImVec2(tf_uv_x0, tf_uv_y0),
+                            ImVec2(tf_uv_x1, tf_uv_y1)
+                        );
+                        
+                        ImGui::PopID();
+                    }
+                    ImGui::EndChild();
+                }
+                ImGui::TreePop();
+            }
 
             // Handle selection - clicking on animated atlas selects all tiles in the prop
             if (ImGui::IsItemClicked()) {

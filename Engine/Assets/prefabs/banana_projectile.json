@@ -3,63 +3,6 @@
         "components": [
             {
                 "data": {
-                    "a": 1.0,
-                    "b": 1.0,
-                    "g": 1.0,
-                    "r": 1.0
-                },
-                "type": "Components::Color"
-            },
-            {
-                "data": {
-                    "path": "images/banana-projectile.png"
-                },
-                "type": "Components::Texture"
-            },
-            {
-                "data": {
-                    "acceleration": {
-                        "x": 0.0,
-                        "y": 0.0
-                    },
-                    "force_view": {
-                        "x": 0.0,
-                        "y": 0.0
-                    },
-                    "gravity": {
-                        "x": 0.0,
-                        "y": 1000.0
-                    },
-                    "is_jumping": false,
-                    "is_static": false,
-                    "mass": 1.0,
-                    "on_ground": false,
-                    "use_gravity": false,
-                    "velocity": {
-                        "x": -298.2402648925781,
-                        "y": 32.446014404296875
-                    },
-                    "x_terminal_velocity": 500.0,
-                    "y_terminal_velocity": 500.0
-                },
-                "type": "Components::RigidBody"
-            },
-            {
-                "data": {
-                    "position": {
-                        "x": 1885.105712890625,
-                        "y": 1184.3739013671875
-                    },
-                    "rotation": 324.0000305175781,
-                    "scale": {
-                        "x": 70.0,
-                        "y": 70.0
-                    }
-                },
-                "type": "Components::Transform2D"
-            },
-            {
-                "data": {
                     "damage": 15,
                     "damage_interval": 0.10000000149011612,
                     "impact_vfx_texture": {
@@ -69,7 +12,8 @@
                     "knockback": {
                         "x": -506.9109802246094,
                         "y": 55.147621154785156
-                    }
+                    },
+                    "play_punch_hit_sfx": true
                 },
                 "type": "Components::Attack"
             },
@@ -83,6 +27,7 @@
                             "y": 1182.7515869140625
                         }
                     },
+                    "collided": false,
                     "height": 15.238842010498047,
                     "kinetic_friction": 1.0,
                     "offset": {
@@ -103,9 +48,110 @@
                     "width": 16.030994415283203
                 },
                 "type": "Components::BoxCollider"
+            },
+            {
+                "data": {
+                    "a": 1.0,
+                    "b": 1.0,
+                    "g": 1.0,
+                    "r": 1.0
+                },
+                "type": "Components::Color"
+            },
+            {
+                "data": {
+                    "acceleration": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "air_time": 0.0,
+                    "apply_force": true,
+                    "gravity": {
+                        "x": 0.0,
+                        "y": 1000.0
+                    },
+                    "is_jumping": false,
+                    "is_static": false,
+                    "mass": 1.0,
+                    "on_ground": false,
+                    "use_gravity": false,
+                    "velocity": {
+                        "x": -298.2402648925781,
+                        "y": 32.446014404296875
+                    },
+                    "x_terminal_velocity": 500.0,
+                    "y_terminal_velocity": 500.0
+                },
+                "type": "Components::RigidBody"
+            },
+            {
+                "data": {
+                    "blueprint_id": "BananaProjectile",
+                    "current_state_name": "Flying",
+                    "property_anim_playing": false,
+                    "states": [
+                        {
+                            "first": "Flying",
+                            "second": {
+                                "animation": null,
+                                "audio": null,
+                                "name": "Flying",
+                                "on_enter_callback": {
+                                    "name": "BananaProjectileCallbacks::flying_on_enter"
+                                },
+                                "on_exit_callback": {
+                                    "name": "BananaProjectileCallbacks::flying_on_exit"
+                                },
+                                "on_update_callback": {
+                                    "name": "BananaProjectileCallbacks::flying_on_update"
+                                },
+                                "property_animation": null
+                            }
+                        },
+                        {
+                            "first": "HitPlayer",
+                            "second": {
+                                "animation": null,
+                                "audio": null,
+                                "name": "HitPlayer",
+                                "on_enter_callback": {
+                                    "name": "BananaProjectileCallbacks::hit_player_on_enter"
+                                },
+                                "on_exit_callback": {
+                                    "name": "BananaProjectileCallbacks::hit_player_on_exit"
+                                },
+                                "on_update_callback": {
+                                    "name": "BananaProjectileCallbacks::hit_player_on_update"
+                                },
+                                "property_animation": null
+                            }
+                        }
+                    ]
+                },
+                "type": "Components::StateMachine"
+            },
+            {
+                "data": {
+                    "path": "images/banana-projectile.png"
+                },
+                "type": "Components::Texture"
+            },
+            {
+                "data": {
+                    "position": {
+                        "x": 1885.105712890625,
+                        "y": 1184.3739013671875
+                    },
+                    "rotation": 324.0000305175781,
+                    "scale": {
+                        "x": 70.0,
+                        "y": 70.0
+                    }
+                },
+                "type": "Components::Transform2D"
             }
         ],
-        "filepath": "",
+        "filepath": "prefabs/banana_projectile.json",
         "layers": [
             "damage_player",
             "projectiles",

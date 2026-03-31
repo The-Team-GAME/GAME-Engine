@@ -100,7 +100,7 @@ namespace Engine {
     {
       FMOD_VECTOR fv;
       fv.x = -v.x / 10.0f;  // Negate X to match FMOD left/right orientation with world space
-      fv.y = v.y / 10.0f;
+      fv.y = v.y / 10.0f; // The bigger the divider value the less sensitive the volume/panning is to position changes. 
       fv.z = 0.0f;
       return fv;
     }
