@@ -80,7 +80,7 @@ namespace OldManCallbacks
 
   void old_man_on_update(Engine::ECS::Entity oldman_entity, Engine::ECS::Entity player_entity) {
     if (TipsBookState::is_open || Engine::SceneManager::get_current_scene_name() == "TipsBookState") {
-      e_key_was_down = Engine::Input::is_held_raw(Engine::KeyCode::E);
+      e_key_was_down = Engine::Input::is_held_raw(Engine::KeyCode::E) || Engine::Input::is_held(Engine::KeyCode::E);
       return;
     }
 
@@ -93,7 +93,7 @@ namespace OldManCallbacks
     oldman_entity.add_to_layer("player");
 
     if (Engine::Time::get_unscaled_time() < OldManDialogueState::block_oldman_reopen_until_unscaled) {
-      e_key_was_down = Engine::Input::is_held_raw(Engine::KeyCode::E);
+      e_key_was_down = Engine::Input::is_held_raw(Engine::KeyCode::E) || Engine::Input::is_held(Engine::KeyCode::E);
       return;
     }
 
@@ -105,7 +105,7 @@ namespace OldManCallbacks
 
     if (OldManDialogueState::is_open) {
       destroy_press_e_prompt();
-      e_key_was_down = Engine::Input::is_held_raw(Engine::KeyCode::E);
+      e_key_was_down = Engine::Input::is_held_raw(Engine::KeyCode::E) || Engine::Input::is_held(Engine::KeyCode::E);
       return;
     }
 
@@ -132,7 +132,7 @@ namespace OldManCallbacks
       }
     }
 
-    bool e_key_down = Engine::Input::is_held_raw(Engine::KeyCode::E);
+    bool e_key_down = Engine::Input::is_held_raw(Engine::KeyCode::E) || Engine::Input::is_held(Engine::KeyCode::E);
     bool e_key_pressed = Engine::Input::is_pressed_raw(Engine::KeyCode::E) || Engine::Input::is_pressed(Engine::KeyCode::E);
 
     if (suppress_open_until_e_release) {

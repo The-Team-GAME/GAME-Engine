@@ -27,7 +27,11 @@
 #include "../InputManager.h"
 #include "../FunctionRegistry.h"
 #include "../Time.h"
+#include "../Graphics/Renderer.h"
+#include <cmath>
+#include <limits>
 #include <unordered_set>
+#include <vector>
 
 namespace Engine
 {
@@ -45,90 +49,107 @@ namespace Engine
         require_components<Components::Clickable, Components::Transform2D, Components::BoxCollider>();
       }
 
-      void update_entity(Engine::ECS::Entity entity) override {
-        auto* clickable = entity.get_component<Components::Clickable>();
-        auto* tr = entity.get_component<Components::Transform2D>();
-        auto* box_collider = entity.get_component<Components::BoxCollider>();
-
-        if (!clickable || !tr || !box_collider) return;
-        if (Engine::Time::get_paused()) return;
-
-        const Engine::ECS::EntityID id = entity.get_id();
-        const bool was_hovered = hovered_entities_.find(id) != hovered_entities_.end();
-
-        // UI entities use screen-space coordinates (not affected by camera)
-        const auto mouse_opt = entity.has_component<Components::UI>()
-          ? Engine::Input::get_mouse_position_if_in_viewport()
-          : Engine::Input::get_mouse_world_position_if_in_viewport();
-
-        if (!mouse_opt.has_value()) {
-          if (was_hovered) {
-            hovered_entities_.erase(id);
-            if (!clickable->exit_hover.empty()) {
-              auto exit_func = clickable->exit_hover.get<void(Engine::ECS::Entity)>();
-              if (exit_func) {
-                exit_func(entity);
-              }
-            }
-          }
+      void update() override {
+        if (Engine::Time::get_paused()) {
+          clear_hover_state();
           return;
         }
 
-        const Math::Vec2D& mouse = mouse_opt.value();
+        const auto mouse_screen_opt = Engine::Input::get_mouse_position_if_in_viewport();
+        const auto mouse_world_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+        const auto raw_mouse = Engine::Input::get_mouse_position();
 
-        // Update the collider position before checking collision
-        update_collider_position(*box_collider, *tr, entity);
-
-        // Use precise collision detection based on collider type
-        bool inside = is_point_inside_collider(mouse, *box_collider);
-
-        // mouse click detection
-        if (inside) {
-          if (!was_hovered) {
-            hovered_entities_.insert(id);
-            if (!clickable->on_click.empty()) {
-              Engine::AudioSystem::playEvent(UI_BUTTON_HOVER_EVENT);
-            }
-          }
-
-          // Call on_hover if function is set
-          if (!clickable->on_hover.empty()) {
-            auto hover_func = clickable->on_hover.get<void(Engine::ECS::Entity)>();
-            if (hover_func) {
-              hover_func(entity);
-            }
-          }
-
-          if (Engine::Input::is_pressed(KeyCode::MouseLeft)) {
-            // Call on_click if function is set
-            if (!clickable->on_click.empty()) {
-              Engine::AudioSystem::playEvent(UI_BUTTON_CLICK_EVENT);
-
-              auto click_func = clickable->on_click.get<void()>();
-              if (click_func) {
-                click_func();
-
-                Engine::ECS::process_housekeeping(); // TODO: just so resuming from pause works, remove later
-              }
-            }
+        if (last_mouse_position_.has_value()) {
+          float dx = raw_mouse.x - last_mouse_position_->x;
+          float dy = raw_mouse.y - last_mouse_position_->y;
+          if ((dx * dx + dy * dy) > 0.25f) {
+            navigation_focus_active_ = false;
           }
         }
-        else {
-          if (was_hovered) {
-            hovered_entities_.erase(id);
+        last_mouse_position_ = raw_mouse;
+
+        std::vector<NavigationCandidate> candidates;
+        Engine::ECS::EntityID mouse_hovered_id = Engine::ECS::INVALID_ENTITY;
+
+        for (Engine::ECS::EntityID entity_id : entities) {
+          Engine::ECS::Entity entity(entity_id);
+          auto* clickable = entity.get_component<Components::Clickable>();
+          auto* tr = entity.get_component<Components::Transform2D>();
+          auto* box_collider = entity.get_component<Components::BoxCollider>();
+
+          if (!clickable || !tr || !box_collider) {
+            continue;
           }
 
-          // Call exit_hover if function is set
-          if (!clickable->exit_hover.empty()) {
-            auto exit_func = clickable->exit_hover.get<void(Engine::ECS::Entity)>();
-            if (exit_func) {
-              exit_func(entity);
-            }
+          update_collider_position(*box_collider, *tr, entity);
+
+          const auto& mouse_opt = entity.has_component<Components::UI>() ? mouse_screen_opt : mouse_world_opt;
+          bool inside = mouse_opt.has_value() && is_point_inside_collider(mouse_opt.value(), *box_collider);
+          if (inside) {
+            mouse_hovered_id = entity_id;
           }
+
+          if (!is_navigable(entity, *clickable, *box_collider)) {
+            continue;
+          }
+
+          candidates.push_back({ entity, clickable, get_collider_center(*box_collider), inside });
+        }
+
+        if (!contains_candidate(candidates, focused_entity_id_)) {
+          focused_entity_id_ = Engine::ECS::INVALID_ENTITY;
+        }
+
+        if (!navigation_focus_active_ && mouse_hovered_id != Engine::ECS::INVALID_ENTITY) {
+          focused_entity_id_ = mouse_hovered_id;
+        }
+
+        if (handle_navigation_input(candidates)) {
+          navigation_focus_active_ = true;
+        }
+
+        if (focused_entity_id_ == Engine::ECS::INVALID_ENTITY) {
+          focused_entity_id_ = choose_default_candidate(candidates);
+        }
+
+        Engine::ECS::EntityID active_hovered_id = Engine::ECS::INVALID_ENTITY;
+        if (navigation_focus_active_ && focused_entity_id_ != Engine::ECS::INVALID_ENTITY) {
+          active_hovered_id = focused_entity_id_;
+        }
+        else if (mouse_hovered_id != Engine::ECS::INVALID_ENTITY) {
+          active_hovered_id = mouse_hovered_id;
+        }
+
+        sync_hover_state(active_hovered_id);
+
+        if (mouse_hovered_id != Engine::ECS::INVALID_ENTITY && Engine::Input::is_pressed(KeyCode::MouseLeft)) {
+          navigation_focus_active_ = false;
+          focused_entity_id_ = mouse_hovered_id;
+          invoke_click(mouse_hovered_id);
+          return;
+        }
+
+        const bool focus_activate = Engine::Input::is_pressed(KeyCode::Space) || Engine::Input::is_pressed(KeyCode::Enter);
+        if (navigation_focus_active_ && focus_activate && focused_entity_id_ != Engine::ECS::INVALID_ENTITY) {
+          invoke_click(focused_entity_id_);
         }
       }
 
     private:
+      struct NavigationCandidate {
+        Engine::ECS::Entity entity;
+        Components::Clickable* clickable;
+        Math::Vec2D center;
+        bool mouse_inside;
+      };
+
+      enum class NavigationDirection {
+        Left,
+        Right,
+        Up,
+        Down
+      };
+
       // Update collider position to match transform
       void update_collider_position(Components::BoxCollider& collider,
         const Components::Transform2D& transform,
@@ -185,7 +206,270 @@ namespace Engine
         return inside;
       }
 
+      Math::Vec2D get_collider_center(const Components::BoxCollider& collider) const {
+        std::vector<Vec2D> vertices;
+        if (collider.type == Components::ColliderType::AABB) {
+          Polygon poly(collider.aabb);
+          vertices = poly.get_transformed_vertices();
+        }
+        else {
+          vertices = collider.polygon.get_transformed_vertices();
+        }
+
+        Math::Vec2D center(0.0f, 0.0f);
+        if (vertices.empty()) {
+          return center;
+        }
+
+        for (const auto& vertex : vertices) {
+          center += vertex;
+        }
+        const float inverse_count = 1.0f / static_cast<float>(vertices.size());
+        center.x *= inverse_count;
+        center.y *= inverse_count;
+        return center;
+      }
+
+      bool is_navigable(Engine::ECS::Entity entity,
+        const Components::Clickable& clickable,
+        const Components::BoxCollider& collider) const {
+        if (clickable.on_click.empty()) {
+          return false;
+        }
+
+        if (auto* color = entity.get_component<Components::Color>()) {
+          if (color->a <= 0.01f) {
+            return false;
+          }
+        }
+
+        const auto center = get_collider_center(collider);
+        const auto vres = Engine::Graphics::get_virtual_resolution();
+        constexpr float margin = 96.0f;
+        return center.x >= -margin
+          && center.x <= vres.x + margin
+          && center.y >= -margin
+          && center.y <= vres.y + margin;
+      }
+
+      bool contains_candidate(const std::vector<NavigationCandidate>& candidates, Engine::ECS::EntityID id) const {
+        for (const auto& candidate : candidates) {
+          if (candidate.entity.get_id() == id) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      Engine::ECS::EntityID choose_default_candidate(const std::vector<NavigationCandidate>& candidates) const {
+        Engine::ECS::EntityID best_id = Engine::ECS::INVALID_ENTITY;
+        float best_y = std::numeric_limits<float>::max();
+        float best_x = std::numeric_limits<float>::max();
+
+        for (const auto& candidate : candidates) {
+          if (candidate.center.y < best_y ||
+            (std::abs(candidate.center.y - best_y) < 0.5f && candidate.center.x < best_x)) {
+            best_id = candidate.entity.get_id();
+            best_y = candidate.center.y;
+            best_x = candidate.center.x;
+          }
+        }
+
+        return best_id;
+      }
+
+      Engine::ECS::EntityID find_navigation_target(const std::vector<NavigationCandidate>& candidates,
+        Engine::ECS::EntityID current_id,
+        NavigationDirection direction) const {
+        const NavigationCandidate* current = nullptr;
+        for (const auto& candidate : candidates) {
+          if (candidate.entity.get_id() == current_id) {
+            current = &candidate;
+            break;
+          }
+        }
+
+        if (!current) {
+          return choose_default_candidate(candidates);
+        }
+
+        Engine::ECS::EntityID best_id = Engine::ECS::INVALID_ENTITY;
+        float best_score = std::numeric_limits<float>::max();
+
+        for (const auto& candidate : candidates) {
+          if (candidate.entity.get_id() == current_id) {
+            continue;
+          }
+
+          const float dx = candidate.center.x - current->center.x;
+          const float dy = candidate.center.y - current->center.y;
+          float primary = 0.0f;
+          float secondary = 0.0f;
+
+          switch (direction) {
+          case NavigationDirection::Left:
+            if (dx >= -0.01f) continue;
+            primary = -dx;
+            secondary = std::abs(dy);
+            break;
+          case NavigationDirection::Right:
+            if (dx <= 0.01f) continue;
+            primary = dx;
+            secondary = std::abs(dy);
+            break;
+          case NavigationDirection::Up:
+            if (dy >= -0.01f) continue;
+            primary = -dy;
+            secondary = std::abs(dx);
+            break;
+          case NavigationDirection::Down:
+            if (dy <= 0.01f) continue;
+            primary = dy;
+            secondary = std::abs(dx);
+            break;
+          }
+
+          const float score = primary + secondary * 2.5f;
+          if (score < best_score) {
+            best_score = score;
+            best_id = candidate.entity.get_id();
+          }
+        }
+
+        return best_id == Engine::ECS::INVALID_ENTITY ? current_id : best_id;
+      }
+
+      bool handle_navigation_input(const std::vector<NavigationCandidate>& candidates) {
+        NavigationDirection direction = NavigationDirection::Left;
+        bool has_direction = false;
+
+        if (Engine::Input::is_pressed(KeyCode::Left)) {
+          direction = NavigationDirection::Left;
+          has_direction = true;
+        }
+        else if (Engine::Input::is_pressed(KeyCode::Right)) {
+          direction = NavigationDirection::Right;
+          has_direction = true;
+        }
+        else if (Engine::Input::is_pressed(KeyCode::Up)) {
+          direction = NavigationDirection::Up;
+          has_direction = true;
+        }
+        else if (Engine::Input::is_pressed(KeyCode::Down)) {
+          direction = NavigationDirection::Down;
+          has_direction = true;
+        }
+
+        if (!has_direction || candidates.empty()) {
+          return false;
+        }
+
+        if (focused_entity_id_ == Engine::ECS::INVALID_ENTITY) {
+          focused_entity_id_ = choose_default_candidate(candidates);
+          return true;
+        }
+
+        focused_entity_id_ = find_navigation_target(candidates, focused_entity_id_, direction);
+        return true;
+      }
+
+      void clear_hover_state() {
+        for (Engine::ECS::EntityID id : hovered_entities_) {
+          call_exit_hover(id);
+        }
+        hovered_entities_.clear();
+        focused_entity_id_ = Engine::ECS::INVALID_ENTITY;
+        navigation_focus_active_ = false;
+      }
+
+      void sync_hover_state(Engine::ECS::EntityID active_hovered_id) {
+        std::unordered_set<Engine::ECS::EntityID> next_hovered;
+        if (active_hovered_id != Engine::ECS::INVALID_ENTITY) {
+          next_hovered.insert(active_hovered_id);
+        }
+
+        for (Engine::ECS::EntityID id : hovered_entities_) {
+          if (!next_hovered.contains(id)) {
+            call_exit_hover(id);
+          }
+        }
+
+        if (active_hovered_id != Engine::ECS::INVALID_ENTITY) {
+          if (!hovered_entities_.contains(active_hovered_id)) {
+            auto entity = Engine::ECS::Entity(active_hovered_id);
+            if (entity.is_valid()) {
+              if (auto* clickable = entity.get_component<Components::Clickable>()) {
+                if (!clickable->on_click.empty()) {
+                  Engine::AudioSystem::playEvent(UI_BUTTON_HOVER_EVENT);
+                }
+              }
+            }
+          }
+          call_hover(active_hovered_id);
+        }
+
+        hovered_entities_ = std::move(next_hovered);
+      }
+
+      void call_hover(Engine::ECS::EntityID id) {
+        auto entity = Engine::ECS::Entity(id);
+        if (!entity.is_valid()) {
+          return;
+        }
+
+        auto* clickable = entity.get_component<Components::Clickable>();
+        if (!clickable || clickable->on_hover.empty()) {
+          return;
+        }
+
+        auto hover_func = clickable->on_hover.get<void(Engine::ECS::Entity)>();
+        if (hover_func) {
+          hover_func(entity);
+        }
+      }
+
+      void call_exit_hover(Engine::ECS::EntityID id) {
+        auto entity = Engine::ECS::Entity(id);
+        if (!entity.is_valid()) {
+          return;
+        }
+
+        auto* clickable = entity.get_component<Components::Clickable>();
+        if (!clickable || clickable->exit_hover.empty()) {
+          return;
+        }
+
+        auto exit_func = clickable->exit_hover.get<void(Engine::ECS::Entity)>();
+        if (exit_func) {
+          exit_func(entity);
+        }
+      }
+
+      void invoke_click(Engine::ECS::EntityID id) {
+        auto entity = Engine::ECS::Entity(id);
+        if (!entity.is_valid()) {
+          return;
+        }
+
+        auto* clickable = entity.get_component<Components::Clickable>();
+        if (!clickable || clickable->on_click.empty()) {
+          return;
+        }
+
+        auto click_func = clickable->on_click.get<void()>();
+        if (!click_func) {
+          return;
+        }
+
+        Engine::AudioSystem::playEvent(UI_BUTTON_CLICK_EVENT);
+        click_func();
+        Engine::ECS::process_housekeeping();
+      }
+
       std::unordered_set<Engine::ECS::EntityID> hovered_entities_;
+      Engine::ECS::EntityID focused_entity_id_ = Engine::ECS::INVALID_ENTITY;
+      bool navigation_focus_active_ = false;
+      std::optional<glm::vec2> last_mouse_position_;
     };
 
     // System to handle dynamic button collider updates

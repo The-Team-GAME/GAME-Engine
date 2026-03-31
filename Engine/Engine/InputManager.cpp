@@ -18,6 +18,7 @@
 #include "Precompiled.h"
 #include "Logger.h"
 #include <array>
+#include <cmath>
 #include <glm/glm.hpp>
 #include "Perf.h"
 #include "WindowManager.h"
@@ -30,11 +31,37 @@
 
 namespace
 {
+  constexpr int kInputStateCount = GLFW_MOUSE_BUTTON_LAST + GLFW_KEY_LAST + 2;
+  constexpr int kGamepadButtonCount = GLFW_GAMEPAD_BUTTON_LAST + 1;
+  constexpr int kGamepadAxisCount = GLFW_GAMEPAD_AXIS_LAST + 1;
+  constexpr float kStickPressThreshold = 0.55f;
+  constexpr float kStickReleaseThreshold = 0.35f;
+
+  enum class GamepadDirection : size_t
+  {
+    Left = 0,
+    Right,
+    Up,
+    Down,
+    Count
+  };
+
+  constexpr size_t gamepad_direction_index(GamepadDirection direction)
+  {
+    return static_cast<size_t>(direction);
+  }
+
   /* =================== //
   // Input state arrays  //
   // =================== */
-  std::array<bool, GLFW_MOUSE_BUTTON_LAST + GLFW_KEY_LAST + 2> currentKeys;
-  std::array<bool, GLFW_MOUSE_BUTTON_LAST + GLFW_KEY_LAST + 2> previousKeys;
+  std::array<bool, kInputStateCount> currentKeys;
+  std::array<bool, kInputStateCount> previousKeys;
+  std::array<bool, kGamepadButtonCount> currentGamepadButtons;
+  std::array<bool, kGamepadButtonCount> previousGamepadButtons;
+  std::array<float, kGamepadAxisCount> currentGamepadAxes;
+  std::array<float, kGamepadAxisCount> previousGamepadAxes;
+  std::array<bool, gamepad_direction_index(GamepadDirection::Count)> currentGamepadDirections;
+  std::array<bool, gamepad_direction_index(GamepadDirection::Count)> previousGamepadDirections;
   bool any_key_pressed_this_frame = false;
 
   /* =================== //
@@ -42,6 +69,245 @@ namespace
   // =================== */
   glm::vec2 mousePosition;
   glm::vec2 scrollOffset;
+
+  inline bool gamepad_axis_active(float axis_value, bool was_active, bool positive_direction)
+  {
+    float signed_value = positive_direction ? axis_value : -axis_value;
+    float threshold = was_active ? kStickReleaseThreshold : kStickPressThreshold;
+    return signed_value >= threshold;
+  }
+
+  void update_gamepad_state()
+  {
+    previousGamepadButtons = currentGamepadButtons;
+    previousGamepadAxes = currentGamepadAxes;
+    previousGamepadDirections = currentGamepadDirections;
+
+    currentGamepadButtons.fill(false);
+    currentGamepadAxes.fill(0.0f);
+    currentGamepadDirections.fill(false);
+
+    GLFWgamepadstate state{};
+    for (int joystick = GLFW_JOYSTICK_1; joystick <= GLFW_JOYSTICK_LAST; ++joystick)
+    {
+      if (!glfwJoystickIsGamepad(joystick))
+      {
+        continue;
+      }
+
+      if (!glfwGetGamepadState(joystick, &state))
+      {
+        continue;
+      }
+
+      for (int button = 0; button < kGamepadButtonCount; ++button)
+      {
+        currentGamepadButtons[button] = (state.buttons[button] == GLFW_PRESS);
+      }
+
+      for (int axis = 0; axis < kGamepadAxisCount; ++axis)
+      {
+        currentGamepadAxes[axis] = state.axes[axis];
+      }
+
+      currentGamepadDirections[gamepad_direction_index(GamepadDirection::Left)] =
+        gamepad_axis_active(currentGamepadAxes[GLFW_GAMEPAD_AXIS_LEFT_X],
+          previousGamepadDirections[gamepad_direction_index(GamepadDirection::Left)], false);
+      currentGamepadDirections[gamepad_direction_index(GamepadDirection::Right)] =
+        gamepad_axis_active(currentGamepadAxes[GLFW_GAMEPAD_AXIS_LEFT_X],
+          previousGamepadDirections[gamepad_direction_index(GamepadDirection::Right)], true);
+      currentGamepadDirections[gamepad_direction_index(GamepadDirection::Up)] =
+        gamepad_axis_active(currentGamepadAxes[GLFW_GAMEPAD_AXIS_LEFT_Y],
+          previousGamepadDirections[gamepad_direction_index(GamepadDirection::Up)], false);
+      currentGamepadDirections[gamepad_direction_index(GamepadDirection::Down)] =
+        gamepad_axis_active(currentGamepadAxes[GLFW_GAMEPAD_AXIS_LEFT_Y],
+          previousGamepadDirections[gamepad_direction_index(GamepadDirection::Down)], true);
+      return;
+    }
+  }
+
+  inline bool is_gamepad_button_held(int button)
+  {
+    return currentGamepadButtons[button];
+  }
+
+  inline bool is_gamepad_button_pressed(int button)
+  {
+    return currentGamepadButtons[button] && !previousGamepadButtons[button];
+  }
+
+  inline bool is_gamepad_button_released(int button)
+  {
+    return !currentGamepadButtons[button] && previousGamepadButtons[button];
+  }
+
+  inline bool is_gamepad_direction_held(GamepadDirection direction)
+  {
+    return currentGamepadDirections[gamepad_direction_index(direction)];
+  }
+
+  inline bool is_gamepad_direction_pressed(GamepadDirection direction)
+  {
+    size_t index = gamepad_direction_index(direction);
+    return currentGamepadDirections[index] && !previousGamepadDirections[index];
+  }
+
+  inline bool is_gamepad_direction_released(GamepadDirection direction)
+  {
+    size_t index = gamepad_direction_index(direction);
+    return !currentGamepadDirections[index] && previousGamepadDirections[index];
+  }
+
+  bool is_controller_mapping_held(Engine::KeyCode key)
+  {
+    using Engine::KeyCode;
+
+    switch (key)
+    {
+    case KeyCode::A:
+      return is_gamepad_direction_held(GamepadDirection::Left);
+    case KeyCode::D:
+      return is_gamepad_direction_held(GamepadDirection::Right);
+    case KeyCode::Left:
+      return is_gamepad_direction_held(GamepadDirection::Left) || is_gamepad_button_held(GLFW_GAMEPAD_BUTTON_DPAD_LEFT);
+    case KeyCode::Right:
+      return is_gamepad_direction_held(GamepadDirection::Right) || is_gamepad_button_held(GLFW_GAMEPAD_BUTTON_DPAD_RIGHT);
+    case KeyCode::Up:
+      return is_gamepad_direction_held(GamepadDirection::Up) || is_gamepad_button_held(GLFW_GAMEPAD_BUTTON_DPAD_UP);
+    case KeyCode::Down:
+      return is_gamepad_direction_held(GamepadDirection::Down) || is_gamepad_button_held(GLFW_GAMEPAD_BUTTON_DPAD_DOWN);
+    case KeyCode::Space:
+    case KeyCode::Enter:
+      return is_gamepad_button_held(GLFW_GAMEPAD_BUTTON_A);
+    case KeyCode::Escape:
+      return is_gamepad_button_held(GLFW_GAMEPAD_BUTTON_START);
+    case KeyCode::Tab:
+      return is_gamepad_button_held(GLFW_GAMEPAD_BUTTON_DPAD_UP);
+    case KeyCode::I:
+      return is_gamepad_button_held(GLFW_GAMEPAD_BUTTON_BACK);
+    case KeyCode::E:
+    case KeyCode::F:
+      return is_gamepad_button_held(GLFW_GAMEPAD_BUTTON_LEFT_BUMPER);
+    case KeyCode::J:
+      return is_gamepad_button_held(GLFW_GAMEPAD_BUTTON_X);
+    case KeyCode::K:
+      return is_gamepad_button_held(GLFW_GAMEPAD_BUTTON_Y);
+    case KeyCode::L:
+      return is_gamepad_button_held(GLFW_GAMEPAD_BUTTON_B);
+    case KeyCode::ShiftLeft:
+    case KeyCode::ShiftRight:
+      return is_gamepad_button_held(GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER);
+    default:
+      return false;
+    }
+  }
+
+  bool is_controller_mapping_pressed(Engine::KeyCode key)
+  {
+    using Engine::KeyCode;
+
+    switch (key)
+    {
+    case KeyCode::A:
+      return is_gamepad_direction_pressed(GamepadDirection::Left);
+    case KeyCode::D:
+      return is_gamepad_direction_pressed(GamepadDirection::Right);
+    case KeyCode::Left:
+      return is_gamepad_direction_pressed(GamepadDirection::Left) || is_gamepad_button_pressed(GLFW_GAMEPAD_BUTTON_DPAD_LEFT);
+    case KeyCode::Right:
+      return is_gamepad_direction_pressed(GamepadDirection::Right) || is_gamepad_button_pressed(GLFW_GAMEPAD_BUTTON_DPAD_RIGHT);
+    case KeyCode::Up:
+      return is_gamepad_direction_pressed(GamepadDirection::Up) || is_gamepad_button_pressed(GLFW_GAMEPAD_BUTTON_DPAD_UP);
+    case KeyCode::Down:
+      return is_gamepad_direction_pressed(GamepadDirection::Down) || is_gamepad_button_pressed(GLFW_GAMEPAD_BUTTON_DPAD_DOWN);
+    case KeyCode::Space:
+    case KeyCode::Enter:
+      return is_gamepad_button_pressed(GLFW_GAMEPAD_BUTTON_A);
+    case KeyCode::Escape:
+      return is_gamepad_button_pressed(GLFW_GAMEPAD_BUTTON_START);
+    case KeyCode::Tab:
+      return is_gamepad_button_pressed(GLFW_GAMEPAD_BUTTON_DPAD_UP);
+    case KeyCode::I:
+      return is_gamepad_button_pressed(GLFW_GAMEPAD_BUTTON_BACK);
+    case KeyCode::E:
+    case KeyCode::F:
+      return is_gamepad_button_pressed(GLFW_GAMEPAD_BUTTON_LEFT_BUMPER);
+    case KeyCode::J:
+      return is_gamepad_button_pressed(GLFW_GAMEPAD_BUTTON_X);
+    case KeyCode::K:
+      return is_gamepad_button_pressed(GLFW_GAMEPAD_BUTTON_Y);
+    case KeyCode::L:
+      return is_gamepad_button_pressed(GLFW_GAMEPAD_BUTTON_B);
+    case KeyCode::ShiftLeft:
+    case KeyCode::ShiftRight:
+      return is_gamepad_button_pressed(GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER);
+    default:
+      return false;
+    }
+  }
+
+  bool is_controller_mapping_released(Engine::KeyCode key)
+  {
+    using Engine::KeyCode;
+
+    switch (key)
+    {
+    case KeyCode::A:
+      return is_gamepad_direction_released(GamepadDirection::Left);
+    case KeyCode::D:
+      return is_gamepad_direction_released(GamepadDirection::Right);
+    case KeyCode::Left:
+      return is_gamepad_direction_released(GamepadDirection::Left) || is_gamepad_button_released(GLFW_GAMEPAD_BUTTON_DPAD_LEFT);
+    case KeyCode::Right:
+      return is_gamepad_direction_released(GamepadDirection::Right) || is_gamepad_button_released(GLFW_GAMEPAD_BUTTON_DPAD_RIGHT);
+    case KeyCode::Up:
+      return is_gamepad_direction_released(GamepadDirection::Up) || is_gamepad_button_released(GLFW_GAMEPAD_BUTTON_DPAD_UP);
+    case KeyCode::Down:
+      return is_gamepad_direction_released(GamepadDirection::Down) || is_gamepad_button_released(GLFW_GAMEPAD_BUTTON_DPAD_DOWN);
+    case KeyCode::Space:
+    case KeyCode::Enter:
+      return is_gamepad_button_released(GLFW_GAMEPAD_BUTTON_A);
+    case KeyCode::Escape:
+      return is_gamepad_button_released(GLFW_GAMEPAD_BUTTON_START);
+    case KeyCode::Tab:
+      return is_gamepad_button_released(GLFW_GAMEPAD_BUTTON_DPAD_UP);
+    case KeyCode::I:
+      return is_gamepad_button_released(GLFW_GAMEPAD_BUTTON_BACK);
+    case KeyCode::E:
+    case KeyCode::F:
+      return is_gamepad_button_released(GLFW_GAMEPAD_BUTTON_LEFT_BUMPER);
+    case KeyCode::J:
+      return is_gamepad_button_released(GLFW_GAMEPAD_BUTTON_X);
+    case KeyCode::K:
+      return is_gamepad_button_released(GLFW_GAMEPAD_BUTTON_Y);
+    case KeyCode::L:
+      return is_gamepad_button_released(GLFW_GAMEPAD_BUTTON_B);
+    case KeyCode::ShiftLeft:
+    case KeyCode::ShiftRight:
+      return is_gamepad_button_released(GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER);
+    default:
+      return false;
+    }
+  }
+
+  bool is_non_escape_controller_input_pressed()
+  {
+    return is_gamepad_button_pressed(GLFW_GAMEPAD_BUTTON_A)
+      || is_gamepad_button_pressed(GLFW_GAMEPAD_BUTTON_B)
+      || is_gamepad_button_pressed(GLFW_GAMEPAD_BUTTON_X)
+      || is_gamepad_button_pressed(GLFW_GAMEPAD_BUTTON_Y)
+      || is_gamepad_button_pressed(GLFW_GAMEPAD_BUTTON_LEFT_BUMPER)
+      || is_gamepad_button_pressed(GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER)
+      || is_gamepad_button_pressed(GLFW_GAMEPAD_BUTTON_BACK)
+      || is_gamepad_button_pressed(GLFW_GAMEPAD_BUTTON_DPAD_LEFT)
+      || is_gamepad_button_pressed(GLFW_GAMEPAD_BUTTON_DPAD_RIGHT)
+      || is_gamepad_button_pressed(GLFW_GAMEPAD_BUTTON_DPAD_UP)
+      || is_gamepad_button_pressed(GLFW_GAMEPAD_BUTTON_DPAD_DOWN)
+      || is_gamepad_direction_pressed(GamepadDirection::Left)
+      || is_gamepad_direction_pressed(GamepadDirection::Right)
+      || is_gamepad_direction_pressed(GamepadDirection::Up)
+      || is_gamepad_direction_pressed(GamepadDirection::Down);
+  }
 
   // Helper function to convert KeyCode to array index
   inline int key_to_index(Engine::KeyCode key)
@@ -97,6 +363,12 @@ namespace Engine
         any_key_pressed_this_frame = true;
     }
 
+    update_gamepad_state();
+    if (is_non_escape_controller_input_pressed())
+    {
+      any_key_pressed_this_frame = true;
+    }
+
 
     // Update mouse position
     f64 xpos, ypos;
@@ -119,7 +391,7 @@ namespace Engine
       return false;
 #endif
     int idx = key_to_index(key);
-    return currentKeys[idx] && !previousKeys[idx];
+  return (currentKeys[idx] && !previousKeys[idx]) || is_controller_mapping_pressed(key);
   }
 
   bool Input::is_released(KeyCode key)
@@ -129,7 +401,7 @@ namespace Engine
       return false;
 #endif
     int idx = key_to_index(key);
-    return !currentKeys[idx] && previousKeys[idx];
+  return (!currentKeys[idx] && previousKeys[idx]) || is_controller_mapping_released(key);
   }
 
   bool Input::is_held(KeyCode key)
@@ -139,7 +411,7 @@ namespace Engine
       return false;
 #endif
     int idx = key_to_index(key);
-    return currentKeys[idx];
+  return currentKeys[idx] || is_controller_mapping_held(key);
   }
 
   bool Input::is_pressed_raw(KeyCode key)
