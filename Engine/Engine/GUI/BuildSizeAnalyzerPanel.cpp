@@ -13,7 +13,6 @@
 #include "../Resources.h"
 #include "../Path.h"
 #include "../Logger.h"
-#include "../FileIO/Helpers.h"
 #include "../FileIO/Settings.h"
 
 #include <filesystem>
@@ -24,8 +23,6 @@
 #include <atomic>
 #include <thread>
 #include <mutex>
-
-#include <rapidjson/document.h>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -47,8 +44,6 @@ namespace {
   // -----------------------------------------------------------------------
   std::vector<AssetEntry>          all_assets;
   std::unordered_set<std::string>  selected_assets;
-  std::vector<std::string>         available_levels;
-  std::unordered_set<std::string>  selected_levels;
   size_t                           total_selected_size = 0;
   int                              selected_file_count = 0;
   bool                             assets_loaded       = false;
@@ -169,28 +164,6 @@ namespace {
       [](const AssetEntry& a, const AssetEntry& b) { return a.relative_path < b.relative_path; });
   }
 
-  void scan_available_levels() {
-    available_levels.clear();
-    const std::string levels_dir = Engine::Path(Engine::Resources::resource_path).join("levels").to_string();
-    if (!std::filesystem::exists(levels_dir)) return;
-
-    try {
-      for (const auto& entry : std::filesystem::directory_iterator(levels_dir)) {
-        if (entry.is_directory()) continue;
-        std::string ext = entry.path().extension().string();
-        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-        if (ext == ".json") {
-          available_levels.push_back(
-            normalize_relative(Engine::Path(entry.path().string()).to_relative(Engine::Resources::resource_path)));
-        }
-      }
-    }
-    catch (const std::filesystem::filesystem_error& e) {
-      Log::error("BuildSizeAnalyzer: failed to scan levels — {}", e.what());
-    }
-    std::sort(available_levels.begin(), available_levels.end());
-  }
-
   void recalculate_total_size() {
     total_selected_size = 0;
     selected_file_count = 0;
@@ -209,7 +182,6 @@ namespace {
   void save_selection() {
     auto& ls = Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::get_mutable();
     ls.build_export_selected_assets.assign(selected_assets.begin(), selected_assets.end());
-    ls.build_analyzer_selected_levels.assign(selected_levels.begin(), selected_levels.end());
     Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::save();
   }
 
@@ -217,133 +189,7 @@ namespace {
     const auto& ls = Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::get();
     selected_assets.clear();
     selected_assets.insert(ls.build_export_selected_assets.begin(), ls.build_export_selected_assets.end());
-    selected_levels.clear();
-    selected_levels.insert(ls.build_analyzer_selected_levels.begin(), ls.build_analyzer_selected_levels.end());
     recalculate_total_size();
-  }
-
-  // -----------------------------------------------------------------------
-  // JSON dependency scanner
-  // -----------------------------------------------------------------------
-
-  bool has_asset_extension(const std::string& s) {
-    auto dot = s.rfind('.');
-    if (dot == std::string::npos) return false;
-    std::string ext = s.substr(dot);
-    std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-    return ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" ||
-           ext == ".tga" || ext == ".gif" || ext == ".ttf" || ext == ".otf" ||
-           ext == ".lua" || ext == ".json" || ext == ".wav" || ext == ".ogg" ||
-           ext == ".mp3" || ext == ".mpeg" || ext == ".mpg" || ext == ".glsl" ||
-           ext == ".vert" || ext == ".frag";
-  }
-
-  void collect_paths_from_json(const rapidjson::Value& val, std::unordered_set<std::string>& out) {
-    if (val.IsString()) {
-      std::string s = val.GetString();
-      // Skip FMOD event paths and empty strings
-      if (s.empty() || s.starts_with("event:/")) return;
-      // Normalise and check
-      s = normalize_relative(s);
-      if (s.find('/') != std::string::npos && has_asset_extension(s)) {
-        out.insert(s);
-      }
-    }
-    else if (val.IsObject()) {
-      for (auto it = val.MemberBegin(); it != val.MemberEnd(); ++it) {
-        collect_paths_from_json(it->value, out);
-      }
-    }
-    else if (val.IsArray()) {
-      for (rapidjson::SizeType i = 0; i < val.Size(); ++i) {
-        collect_paths_from_json(val[i], out);
-      }
-    }
-  }
-
-  std::unordered_set<std::string> scan_json_for_assets(const std::string& json_relative_path,
-                                                       bool expand_prefabs) {
-    std::unordered_set<std::string> result;
-    const std::string abs_path = Engine::Path(Engine::Resources::resource_path).join(json_relative_path).to_string();
-
-    auto contents = Engine::FileIO::read_string_from_file(abs_path);
-    if (!contents.has_value()) return result;
-
-    rapidjson::Document doc;
-    doc.Parse(contents->c_str());
-    if (doc.HasParseError()) {
-      Log::error("BuildSizeAnalyzer: JSON parse error in {}", json_relative_path);
-      return result;
-    }
-
-    collect_paths_from_json(doc, result);
-
-    if (expand_prefabs) {
-      std::vector<std::string> prefabs_to_scan;
-      for (const auto& p : result) {
-        std::string lower = lowercase_copy(p);
-        if (lower.starts_with("prefabs/") && lower.ends_with(".json")) {
-          prefabs_to_scan.push_back(p);
-        }
-      }
-
-      for (const auto& prefab_path : prefabs_to_scan) {
-        auto prefab_assets = scan_json_for_assets(prefab_path, false);
-        result.insert(prefab_assets.begin(), prefab_assets.end());
-      }
-    }
-
-    std::unordered_set<std::string> validated;
-    for (const auto& p : result) {
-      if (resource_asset_exists(p)) {
-        validated.insert(p);
-      }
-    }
-    return validated;
-  }
-
-  std::unordered_set<std::string> scan_level_for_assets(const std::string& level_relative_path) {
-    return scan_json_for_assets(level_relative_path, true);
-  }
-
-  std::vector<std::string> get_fmod_bank_paths() {
-    std::vector<std::string> banks;
-    std::string fmod_dir = Engine::Path(Engine::Resources::resource_path).join("fmodstudio").to_string();
-    if (!std::filesystem::exists(fmod_dir)) return banks;
-
-    try {
-      for (const auto& entry : std::filesystem::recursive_directory_iterator(fmod_dir)) {
-        if (entry.is_directory()) continue;
-        std::string ext = entry.path().extension().string();
-        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-        if (ext == ".bank" || entry.path().string().ends_with(".strings.bank")) {
-          banks.push_back(normalize_relative(
-            Engine::Path(entry.path().string()).to_relative(Engine::Resources::resource_path)));
-        }
-      }
-    }
-    catch (const std::filesystem::filesystem_error&) {}
-    return banks;
-  }
-
-  void auto_detect_from_levels() {
-    selected_assets.clear();
-
-    for (const auto& level : selected_levels) {
-      // Add the level file itself
-      selected_assets.insert(level);
-
-      // Scan the level JSON for asset references
-      auto deps = scan_level_for_assets(level);
-      selected_assets.insert(deps.begin(), deps.end());
-    }
-
-    // Always include all FMOD bank files
-    auto banks = get_fmod_bank_paths();
-    selected_assets.insert(banks.begin(), banks.end());
-
-    recalculate_total_size();
-    save_selection();
   }
 
   // -----------------------------------------------------------------------
@@ -591,60 +437,17 @@ void BuildSizeAnalyzerPanel() {
   // --- Lazy init ---
   if (!assets_loaded) {
     scan_all_assets();
-    scan_available_levels();
     load_selection();
     assets_loaded = true;
   }
 
   // =================================================================
-  // Section 1: Level Analysis
-  // =================================================================
-  if (ImGui::CollapsingHeader("Level Analysis", ImGuiTreeNodeFlags_DefaultOpen)) {
-    ImGui::TextWrapped("Select levels to auto-detect their referenced assets:");
-    ImGui::Spacing();
-
-    float level_list_height = 96.0f;
-    if (!available_levels.empty()) {
-      level_list_height = (std::min)(156.0f,
-        ImGui::GetTextLineHeightWithSpacing() * static_cast<float>(available_levels.size() + 1));
-    }
-
-    if (ImGui::BeginChild("##level_list", ImVec2(0.0f, level_list_height), true)) {
-      for (const auto& level : available_levels) {
-        bool checked = selected_levels.contains(level);
-        if (ImGui::Checkbox(level.c_str(), &checked)) {
-          if (checked) selected_levels.insert(level);
-          else         selected_levels.erase(level);
-          save_selection();
-        }
-      }
-      if (available_levels.empty()) {
-        ImGui::TextDisabled("No level files found in levels/");
-      }
-    }
-    ImGui::EndChild();
-
-    ImGui::Spacing();
-    if (ImGui::Button("Auto-Select from Levels")) {
-      if (!selected_levels.empty()) {
-        auto_detect_from_levels();
-      }
-    }
-    if (!selected_levels.empty()) {
-      ImGui::SameLine();
-      ImGui::Text("(%zu level(s) chosen)", selected_levels.size());
-    }
-    ImGui::Separator();
-  }
-
-  // =================================================================
-  // Section 2: Asset List
+  // Asset List
   // =================================================================
   const bool is_building = build_in_progress.load();
 
   if (ImGui::Button("Refresh")) {
     scan_all_assets();
-    scan_available_levels();
     std::unordered_set<std::string> valid;
     for (const auto& ae : all_assets) {
       if (selected_assets.contains(ae.relative_path))
