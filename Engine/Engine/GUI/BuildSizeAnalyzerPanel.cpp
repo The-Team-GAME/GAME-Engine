@@ -20,7 +20,8 @@
 #include <vector>
 #include <string>
 #include <algorithm>
-#include <unordered_set>#include <atomic>
+#include <unordered_set>
+#include <atomic>
 #include <thread>
 #include <mutex>
 
@@ -52,6 +53,7 @@ namespace {
   int                              selected_file_count = 0;
   bool                             assets_loaded       = false;
   char                             search_filter[256]  = "";
+  bool                             show_selected_only  = false;
 
   // Build + export state
   bool                             build_include_executable = false;
@@ -91,6 +93,88 @@ namespace {
     std::replace(out.begin(), out.end(), '\\', '/');
     while (out.starts_with("./")) out = out.substr(2);
     return out;
+  }
+
+  std::string lowercase_copy(std::string value) {
+    std::transform(value.begin(), value.end(), value.begin(), ::tolower);
+    return value;
+  }
+
+  bool resource_asset_exists(const std::string& relative_path) {
+    const std::string normalized = normalize_relative(relative_path);
+    const std::string full_path = Engine::Path(Engine::Resources::resource_path).join(normalized).to_string();
+    return std::filesystem::exists(full_path);
+  }
+
+  void insert_existing_asset(std::unordered_set<std::string>& snapshot, const std::string& relative_path) {
+    const std::string normalized = normalize_relative(relative_path);
+    if (!normalized.empty() && resource_asset_exists(normalized)) {
+      snapshot.insert(normalized);
+    }
+  }
+
+  bool is_resource_managed_asset(const std::string& relative_path) {
+    const std::string normalized = normalize_relative(relative_path);
+    const std::string lower = lowercase_copy(normalized);
+
+    auto dot = lower.rfind('.');
+    if (dot == std::string::npos) {
+      return false;
+    }
+
+    const std::string ext = lower.substr(dot);
+    if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" ||
+        ext == ".tga" || ext == ".gif" || ext == ".ttf" || ext == ".otf") {
+      return true;
+    }
+
+    if (ext == ".json") {
+      return lower.starts_with("prefabs/") || lower.starts_with("levels/");
+    }
+
+    return false;
+  }
+
+  std::unordered_set<std::string> scan_level_for_assets(const std::string& level_relative_path);
+
+  void collect_assets_from_json_directory(const std::string& relative_dir,
+                                          std::unordered_set<std::string>& out);
+
+  void collect_all_files_from_directory(const std::string& relative_dir,
+                                        std::unordered_set<std::string>& out);
+
+  std::unordered_set<std::string> build_runtime_export_snapshot(const std::unordered_set<std::string>& selected_snapshot) {
+    std::unordered_set<std::string> export_snapshot = selected_snapshot;
+
+    for (const auto& asset : all_assets) {
+      if (!is_resource_managed_asset(asset.relative_path)) {
+        export_snapshot.insert(asset.relative_path);
+      }
+    }
+
+    // Game builds always need global settings-driven assets and bootstrap UI/fonts
+    // even when they are not discoverable from the selected levels alone.
+    collect_assets_from_json_directory("settings", export_snapshot);
+
+    const char* bootstrap_directories[] = {
+      "fonts",
+      "images/UI",
+      "images/Upgrades"
+    };
+    for (const char* relative_dir : bootstrap_directories) {
+      collect_all_files_from_directory(relative_dir, export_snapshot);
+    }
+
+    const char* bootstrap_levels[] = {
+      "levels/LevelOneTestingExtra.json"
+    };
+    for (const char* level_path : bootstrap_levels) {
+      insert_existing_asset(export_snapshot, level_path);
+      auto level_assets = scan_level_for_assets(level_path);
+      export_snapshot.insert(level_assets.begin(), level_assets.end());
+    }
+
+    return export_snapshot;
   }
 
   // -----------------------------------------------------------------------
@@ -213,9 +297,10 @@ namespace {
     }
   }
 
-  std::unordered_set<std::string> scan_level_for_assets(const std::string& level_relative_path) {
+  std::unordered_set<std::string> scan_json_for_assets(const std::string& json_relative_path,
+                                                       bool expand_prefabs) {
     std::unordered_set<std::string> result;
-    const std::string abs_path = Engine::Path(Engine::Resources::resource_path).join(level_relative_path).to_string();
+    const std::string abs_path = Engine::Path(Engine::Resources::resource_path).join(json_relative_path).to_string();
 
     auto contents = Engine::FileIO::read_string_from_file(abs_path);
     if (!contents.has_value()) return result;
@@ -223,44 +308,89 @@ namespace {
     rapidjson::Document doc;
     doc.Parse(contents->c_str());
     if (doc.HasParseError()) {
-      Log::error("BuildSizeAnalyzer: JSON parse error in {}", level_relative_path);
+      Log::error("BuildSizeAnalyzer: JSON parse error in {}", json_relative_path);
       return result;
     }
 
-    // Collect all string paths from the level JSON
     collect_paths_from_json(doc, result);
 
-    // One level of prefab expansion: for each prefab/*.json found, scan it too
-    std::vector<std::string> prefabs_to_scan;
-    for (const auto& p : result) {
-      std::string lower = p;
-      std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
-      if (lower.starts_with("prefabs/") && lower.ends_with(".json")) {
-        prefabs_to_scan.push_back(p);
+    if (expand_prefabs) {
+      std::vector<std::string> prefabs_to_scan;
+      for (const auto& p : result) {
+        std::string lower = lowercase_copy(p);
+        if (lower.starts_with("prefabs/") && lower.ends_with(".json")) {
+          prefabs_to_scan.push_back(p);
+        }
+      }
+
+      for (const auto& prefab_path : prefabs_to_scan) {
+        auto prefab_assets = scan_json_for_assets(prefab_path, false);
+        result.insert(prefab_assets.begin(), prefab_assets.end());
       }
     }
 
-    for (const auto& prefab_path : prefabs_to_scan) {
-      std::string prefab_abs = Engine::Path(Engine::Resources::resource_path).join(prefab_path).to_string();
-      auto prefab_contents = Engine::FileIO::read_string_from_file(prefab_abs);
-      if (!prefab_contents.has_value()) continue;
-
-      rapidjson::Document prefab_doc;
-      prefab_doc.Parse(prefab_contents->c_str());
-      if (prefab_doc.HasParseError()) continue;
-
-      collect_paths_from_json(prefab_doc, result);
-    }
-
-    // Validate that each discovered path actually exists on disk
     std::unordered_set<std::string> validated;
     for (const auto& p : result) {
-      std::string full = Engine::Path(Engine::Resources::resource_path).join(p).to_string();
-      if (std::filesystem::exists(full)) {
+      if (resource_asset_exists(p)) {
         validated.insert(p);
       }
     }
     return validated;
+  }
+
+  std::unordered_set<std::string> scan_level_for_assets(const std::string& level_relative_path) {
+    return scan_json_for_assets(level_relative_path, true);
+  }
+
+  void collect_assets_from_json_directory(const std::string& relative_dir,
+                                          std::unordered_set<std::string>& out) {
+    const std::string dir_path = Engine::Path(Engine::Resources::resource_path).join(relative_dir).to_string();
+    if (!std::filesystem::exists(dir_path)) {
+      return;
+    }
+
+    try {
+      for (const auto& entry : std::filesystem::recursive_directory_iterator(dir_path)) {
+        if (!entry.is_regular_file()) {
+          continue;
+        }
+
+        std::string ext = lowercase_copy(entry.path().extension().string());
+        if (ext != ".json") {
+          continue;
+        }
+
+        const std::string rel_path = normalize_relative(
+          Engine::Path(entry.path().string()).to_relative(Engine::Resources::resource_path));
+        auto discovered_assets = scan_json_for_assets(rel_path, false);
+        out.insert(discovered_assets.begin(), discovered_assets.end());
+      }
+    }
+    catch (const std::filesystem::filesystem_error& e) {
+      Log::error("BuildSizeAnalyzer: failed to scan JSON directory {} — {}", relative_dir, e.what());
+    }
+  }
+
+  void collect_all_files_from_directory(const std::string& relative_dir,
+                                        std::unordered_set<std::string>& out) {
+    const std::string dir_path = Engine::Path(Engine::Resources::resource_path).join(relative_dir).to_string();
+    if (!std::filesystem::exists(dir_path)) {
+      return;
+    }
+
+    try {
+      for (const auto& entry : std::filesystem::recursive_directory_iterator(dir_path)) {
+        if (!entry.is_regular_file()) {
+          continue;
+        }
+
+        out.insert(normalize_relative(
+          Engine::Path(entry.path().string()).to_relative(Engine::Resources::resource_path)));
+      }
+    }
+    catch (const std::filesystem::filesystem_error& e) {
+      Log::error("BuildSizeAnalyzer: failed to scan bootstrap directory {} — {}", relative_dir, e.what());
+    }
   }
 
   std::vector<std::string> get_fmod_bank_paths() {
@@ -341,16 +471,17 @@ namespace {
     return build_status_msg;
   }
 
-  // Export a snapshot of assets to dest_folder.
+  // Export a snapshot of assets from source_root to dest_folder.
   // asset_subdir: if non-empty, assets are placed under dest_folder/asset_subdir/<rel>.
   void do_export_snapshot(const std::unordered_set<std::string>& snapshot,
+                          const std::string& source_root,
                           const std::string& dest_folder,
                           const std::string& asset_subdir = "") {
     int success_count = 0;
     int fail_count    = 0;
 
     for (const auto& rel : snapshot) {
-      std::string src = Engine::Path(Engine::Resources::resource_path).join(rel).to_string();
+      std::string src = Engine::Path(source_root).join(rel).to_string();
       std::string dst_rel = asset_subdir.empty() ? rel : (asset_subdir + "/" + rel);
       std::string dst = Engine::Path(dest_folder).join(dst_rel).to_string();
 
@@ -365,6 +496,7 @@ namespace {
         ++fail_count;
       }
     }
+
     Log::info("BuildSizeAnalyzer: exported {} files ({} failed) to {}",
               success_count, fail_count, dest_folder);
   }
@@ -372,12 +504,94 @@ namespace {
   // Returns the solution root (two levels above Assets/).
   std::string get_solution_root() {
     std::string rp = Engine::Resources::resource_path;
-    // Strip trailing slash(es)
-    while (!rp.empty() && (rp.back() == '/' || rp.back() == '\\'))
+    while (!rp.empty() && (rp.back() == '/' || rp.back() == '\\')) {
       rp.pop_back();
-    // rp is now .../Engine/Assets — go up twice
+    }
+
     namespace fs = std::filesystem;
     return fs::path(rp).parent_path().parent_path().string();
+  }
+
+  std::filesystem::path get_game_build_root(const std::string& solution_root) {
+    return std::filesystem::path(solution_root) / "x64" / "Game";
+  }
+
+  int copy_runtime_outputs(const std::filesystem::path& source_root,
+                           const std::filesystem::path& dest_root) {
+    int copy_fails = 0;
+
+    try {
+      std::filesystem::create_directories(dest_root);
+
+      for (const auto& entry : std::filesystem::directory_iterator(source_root)) {
+        if (!entry.is_regular_file()) {
+          continue;
+        }
+
+        std::string ext = entry.path().extension().string();
+        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+        if (ext != ".exe" && ext != ".dll") {
+          continue;
+        }
+
+        try {
+          std::filesystem::copy_file(entry.path(), dest_root / entry.path().filename(),
+                                     std::filesystem::copy_options::overwrite_existing);
+        }
+        catch (const std::filesystem::filesystem_error& e) {
+          Log::error("BuildSizeAnalyzer: failed to copy {} — {}",
+                     entry.path().filename().string(), e.what());
+          ++copy_fails;
+        }
+      }
+    }
+    catch (const std::filesystem::filesystem_error& e) {
+      Log::error("BuildSizeAnalyzer: failed to enumerate runtime outputs — {}", e.what());
+      return copy_fails + 1;
+    }
+
+    return copy_fails;
+  }
+
+  int copy_directory_tree(const std::filesystem::path& source_root,
+                          const std::filesystem::path& dest_root) {
+    if (!std::filesystem::exists(source_root)) {
+      return 0;
+    }
+
+    int copy_fails = 0;
+
+    try {
+      std::filesystem::create_directories(dest_root);
+
+      for (const auto& entry : std::filesystem::recursive_directory_iterator(source_root)) {
+        const auto rel_path  = std::filesystem::relative(entry.path(), source_root);
+        const auto dest_path = dest_root / rel_path;
+
+        if (entry.is_directory()) {
+          std::filesystem::create_directories(dest_path);
+          continue;
+        }
+
+        try {
+          std::filesystem::create_directories(dest_path.parent_path());
+          std::filesystem::copy_file(entry.path(), dest_path,
+                                     std::filesystem::copy_options::overwrite_existing);
+        }
+        catch (const std::filesystem::filesystem_error& e) {
+          Log::error("BuildSizeAnalyzer: failed to copy {} — {}",
+                     entry.path().string(), e.what());
+          ++copy_fails;
+        }
+      }
+    }
+    catch (const std::filesystem::filesystem_error& e) {
+      Log::error("BuildSizeAnalyzer: failed to copy directory {} — {}",
+                 source_root.string(), e.what());
+      return copy_fails + 1;
+    }
+
+    return copy_fails;
   }
 
   // Launches build_game.bat synchronously. Returns the process exit code, or -1 on failure.
@@ -386,7 +600,6 @@ namespace {
     std::string bat = Engine::Path(solution_root).join("build_game.bat").to_string();
     std::replace(bat.begin(), bat.end(), '/', '\\');
 
-    // cmd /c "path\build_game.bat"
     std::string cmd_line = "cmd.exe /c \"" + bat + "\"";
 
     STARTUPINFOA si = {};
@@ -410,22 +623,18 @@ namespace {
 #endif
   }
 
-  // Background worker: export assets (optionally into Assets/ subdir), build game, copy binaries.
+  // Background worker: export selected assets or mirror the built Game output.
   void worker_export_and_build(const std::unordered_set<std::string> snapshot,
                                std::string dest_folder,
                                bool include_exe) {
-    // --- Step 1: Export assets ---
-    set_build_status("Exporting assets...");
-    const std::string subdir = include_exe ? "Assets" : "";
-    do_export_snapshot(snapshot, dest_folder, subdir);
-
     if (!include_exe) {
+      set_build_status("Exporting assets...");
+      do_export_snapshot(snapshot, Engine::Resources::resource_path, dest_folder);
       set_build_status("Export complete.");
       build_in_progress.store(false);
       return;
     }
 
-    // --- Step 2: Build game ---
     set_build_status("Building game — this may take a minute...");
     const std::string solution_root = get_solution_root();
     const int build_result = run_build_bat(solution_root);
@@ -437,34 +646,25 @@ namespace {
       return;
     }
 
-    // --- Step 3: Copy exe + DLLs ---
-    set_build_status("Copying game executable and DLLs...");
-    static const std::vector<std::string> game_outputs = {
-      "x64/Game/Engine.exe",
-      "x64/Game/fmod.dll",
-      "x64/Game/fmodstudio.dll",
-      "x64/Game/lua54.dll",
-    };
+    const std::filesystem::path game_build_root = get_game_build_root(solution_root);
+    const std::filesystem::path game_assets_root = game_build_root / "Assets";
 
-    namespace fs = std::filesystem;
-    int copy_fails = 0;
-    for (const auto& rel : game_outputs) {
-      std::string src = Engine::Path(solution_root).join(rel).to_string();
-      std::string filename = fs::path(src).filename().string();
-      std::string dst = Engine::Path(dest_folder).join(filename).to_string();
+    if (!std::filesystem::exists(game_build_root / "Engine.exe")) {
+      set_build_status("Build completed, but x64/Game/Engine.exe was not found.");
+      build_in_progress.store(false);
+      return;
+    }
 
-      if (!fs::exists(src)) {
-        Log::error("BuildSizeAnalyzer: expected build output not found: {}", src);
-        ++copy_fails;
-        continue;
-      }
-      try {
-        fs::copy(src, dst, fs::copy_options::overwrite_existing);
-      }
-      catch (const fs::filesystem_error& e) {
-        Log::error("BuildSizeAnalyzer: failed to copy {} — {}", filename, e.what());
-        ++copy_fails;
-      }
+    set_build_status("Copying game runtime files...");
+    int copy_fails = copy_runtime_outputs(game_build_root, std::filesystem::path(dest_folder));
+
+    set_build_status("Copying built assets...");
+    if (snapshot.empty()) {
+      copy_fails += copy_directory_tree(game_assets_root,
+                                        std::filesystem::path(dest_folder) / "Assets");
+    }
+    else {
+      do_export_snapshot(snapshot, game_assets_root.string(), dest_folder, "Assets");
     }
 
     if (copy_fails == 0) {
@@ -504,17 +704,26 @@ void BuildSizeAnalyzerPanel() {
     ImGui::TextWrapped("Select levels to auto-detect their referenced assets:");
     ImGui::Spacing();
 
-    for (const auto& level : available_levels) {
-      bool checked = selected_levels.contains(level);
-      if (ImGui::Checkbox(level.c_str(), &checked)) {
-        if (checked) selected_levels.insert(level);
-        else         selected_levels.erase(level);
-        save_selection();
+    float level_list_height = 96.0f;
+    if (!available_levels.empty()) {
+      level_list_height = (std::min)(156.0f,
+        ImGui::GetTextLineHeightWithSpacing() * static_cast<float>(available_levels.size() + 1));
+    }
+
+    if (ImGui::BeginChild("##level_list", ImVec2(0.0f, level_list_height), true)) {
+      for (const auto& level : available_levels) {
+        bool checked = selected_levels.contains(level);
+        if (ImGui::Checkbox(level.c_str(), &checked)) {
+          if (checked) selected_levels.insert(level);
+          else         selected_levels.erase(level);
+          save_selection();
+        }
+      }
+      if (available_levels.empty()) {
+        ImGui::TextDisabled("No level files found in levels/");
       }
     }
-    if (available_levels.empty()) {
-      ImGui::TextDisabled("No level files found in levels/");
-    }
+    ImGui::EndChild();
 
     ImGui::Spacing();
     if (ImGui::Button("Auto-Select from Levels")) {
@@ -562,6 +771,8 @@ void BuildSizeAnalyzerPanel() {
     save_selection();
   }
   ImGui::SameLine();
+  ImGui::Checkbox("Selected only", &show_selected_only);
+  ImGui::SameLine();
   ImGui::SetNextItemWidth(200.0f);
   ImGui::InputTextWithHint("##filter", "Filter assets...", search_filter, sizeof(search_filter));
 
@@ -587,6 +798,9 @@ void BuildSizeAnalyzerPanel() {
     }
 
     for (const auto& ae : all_assets) {
+      const bool is_selected = selected_assets.contains(ae.relative_path);
+      if (show_selected_only && !is_selected) continue;
+
       if (!filter_lower.empty()) {
         std::string name_lower = ae.relative_path;
         std::transform(name_lower.begin(), name_lower.end(), name_lower.begin(), ::tolower);
@@ -596,7 +810,7 @@ void BuildSizeAnalyzerPanel() {
       ImGui::TableNextRow();
 
       ImGui::TableSetColumnIndex(0);
-      bool checked = selected_assets.contains(ae.relative_path);
+      bool checked = is_selected;
       std::string id = "##" + ae.relative_path;
       if (ImGui::Checkbox(id.c_str(), &checked)) {
         if (checked) selected_assets.insert(ae.relative_path);
@@ -624,7 +838,7 @@ void BuildSizeAnalyzerPanel() {
   ImGui::Checkbox("Build game executable (Game config)", &build_include_executable);
   if (build_include_executable) {
     ImGui::SameLine();
-    ImGui::TextDisabled("  Assets -> dest/Assets/   |   Engine.exe + DLLs -> dest/");
+    ImGui::TextDisabled("  Selected assets are supplemented with startup assets and unmanaged runtime files");
   }
 
   ImGui::Spacing();
@@ -659,6 +873,10 @@ void BuildSizeAnalyzerPanel() {
           auto snapshot     = selected_assets;
           auto dest         = folder.value();
           bool inc_exe      = build_include_executable;
+
+          if (inc_exe && !snapshot.empty()) {
+            snapshot = build_runtime_export_snapshot(snapshot);
+          }
 
           build_worker = std::thread([snapshot, dest, inc_exe]() {
             worker_export_and_build(snapshot, dest, inc_exe);
