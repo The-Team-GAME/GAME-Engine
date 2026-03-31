@@ -301,6 +301,16 @@ static void register_collision_callbacks()
   Engine::ECS::LayerRegistry::register_collision_callback("projectiles", "player",
     [](Engine::ECS::Entity projectile_entity, [[maybe_unused]] Engine::ECS::Entity player_entity)
     {
+      auto* sm = projectile_entity.get_component<Components::StateMachine>();
+
+      // Only banana projectiles use this hit state flow
+      if (sm && sm->get_current_state() == "Flying")
+      {
+        Log::info("Banana projectile hit player, changing to HitPlayer state");
+        sm->change_state("HitPlayer");
+        return;
+      }
+
       Log::info("Projectile hit player, destroying");
       projectile_entity.destroy();
     });
