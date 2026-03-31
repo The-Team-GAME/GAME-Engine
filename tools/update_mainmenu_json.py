@@ -2,11 +2,11 @@
 One-shot script to update MainMenu.json for the new sprites in images/NewMainMenu/.
 
 Changes:
-  1. BackSky: new texture, wider scale (8000), updated scroll animation keyframes
-  2. BackCarriage (Window): new texture path
-  3. Train Overlay → Carriage-Sheet.png with 9-frame TextureAtlas + per-state animation
-  4. Hide unused entities: player_sleeping, Red, Any key, Monkey, Bro (clear layers)
-  5. MainMenuImpact + all buttons: texture paths → NewMainMenu/Buttons/
+    1. BackSky: new texture, wider scale (8000), updated scroll animation keyframes
+    2. BackCarriage (Window): new texture path
+    3. Train Overlay → Carriage-Sheet.png with 9-frame TextureAtlas + per-state animation
+    4. Hide unused entities: player_sleeping, Red, Any key, Monkey, Bro (clear layers)
+    5. MainMenuImpact + all buttons: texture paths → NewMainMenu/Buttons/
 """
 
 import json, sys, os, copy

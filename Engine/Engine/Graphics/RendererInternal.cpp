@@ -17,6 +17,11 @@
 #include "RendererInternal.h"
 #include "../Resources.h"
 #include <stdexcept>
+#include <algorithm>
+#include <vector>
+
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include "../../../Dependencies/stb/stb_image_resize2.h"
 
 struct FreeTypeDeleter
 {
@@ -77,6 +82,63 @@ Engine::Graphics::TextureData::TextureData(const std::string& path, TextureFilte
     return;
   }
 
+  const int source_width = width;
+  const int source_height = height;
+  const unsigned char* upload_pixels = data;
+  std::vector<unsigned char> resized_pixels;
+
+  GLint max_texture_size = 0;
+  glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+  if (max_texture_size > 0 && (width > max_texture_size || height > max_texture_size))
+  {
+    float scale = std::min(
+      static_cast<float>(max_texture_size) / static_cast<float>(width),
+      static_cast<float>(max_texture_size) / static_cast<float>(height)
+    );
+    int resized_width = std::max(1, static_cast<int>(width * scale));
+    int resized_height = std::max(1, static_cast<int>(height * scale));
+    resized_pixels.resize(static_cast<size_t>(resized_width) * static_cast<size_t>(resized_height) * 4u);
+
+    if (!stbir_resize_uint8_linear(
+      data,
+      width,
+      height,
+      0,
+      resized_pixels.data(),
+      resized_width,
+      resized_height,
+      0,
+      STBIR_RGBA))
+    {
+      Log::warning(
+        "Failed to resize oversized texture before upload ({}x{}, max {}): {}",
+        source_width,
+        source_height,
+        max_texture_size,
+        path
+      );
+      stbi_image_free(data);
+      id = 0;
+      width = 0;
+      height = 0;
+      return;
+    }
+
+    Log::warning(
+      "Texture exceeds GL_MAX_TEXTURE_SIZE ({}x{}, max {}). Downscaling to {}x{}: {}",
+      source_width,
+      source_height,
+      max_texture_size,
+      resized_width,
+      resized_height,
+      path
+    );
+
+    width = resized_width;
+    height = resized_height;
+    upload_pixels = resized_pixels.data();
+  }
+
   // Generate OpenGL texture
   glGenTextures(1, &id);
   glBindTexture(GL_TEXTURE_2D, id);
@@ -96,7 +158,19 @@ Engine::Graphics::TextureData::TextureData(const std::string& path, TextureFilte
   }
 
   // Upload texture data to GPU
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, upload_pixels);
+
+  GLenum upload_error = glGetError();
+  if (upload_error != GL_NO_ERROR)
+  {
+    Log::warning("Failed to upload texture to GPU (OpenGL error {}): {}", static_cast<unsigned int>(upload_error), path);
+    glDeleteTextures(1, &id);
+    stbi_image_free(data);
+    id = 0;
+    width = 0;
+    height = 0;
+    return;
+  }
 
   // Only generate mipmaps for linear filtering
   if (filtering == TextureFilter::Linear) {
