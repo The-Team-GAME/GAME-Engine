@@ -211,6 +211,7 @@ xcopy "$(SafeSolutionDir)\Dependencies\Lua\src\lua.dll" "$(SafeOutDir)" /s /r /y
     <ClCompile Include="Firebase\FirebaseListener.cpp" />
     <ClCompile Include="Firebase\FirebaseAuth.cpp" />
     <ClCompile Include="GUI\ManualColliderPanel.cpp" />
+    <ClCompile Include="GUI\BuildSizeAnalyzerPanel.cpp" />
     <ClCompile Include="Video\VideoPlayer.cpp" />
     <ClCompile Include="ECS\PrefabMergeUtils.cpp" />
     <ClCompile Include="FileIO\ColliderMeshFileIO.cpp" />
@@ -298,6 +299,7 @@ xcopy "$(SafeSolutionDir)\Dependencies\Lua\src\lua.dll" "$(SafeOutDir)" /s /r /y
     <ClInclude Include="GUI\ConfigurationPanel.h" />
     <ClInclude Include="GUI\LogConsolePanel.h" />
     <ClInclude Include="GUI\ManualColliderPanel.h" />
+    <ClInclude Include="GUI\BuildSizeAnalyzerPanel.h" />
     <ClInclude Include="Video\VideoPlayer.h" />
     <ClInclude Include="HotReloadManager.h" />
     <ClInclude Include="ECS\PrefabMergeUtils.h" />

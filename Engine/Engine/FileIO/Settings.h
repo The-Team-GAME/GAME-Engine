@@ -85,6 +85,7 @@ namespace Engine
       std::string imgui_theme = "ayu-dark";
       std::string imgui_layout = "default"; // Last active ImGui layout (saved in Assets/layouts/)
       bool auto_reload = true; // Automatically rebuild & reload when source files change
+      std::vector<std::string> build_export_selected_assets{};  // Build Size Analyzer: remembered asset selections
     };
 
     // Game settings (Window mode, Audio volumes)
@@ -257,7 +258,7 @@ namespace Engine
 
 REFLECT_FIELDS(Engine::FileIO::EngineSettings, window_title, window_width, window_height, panel_viewport_mode, load_all_assets_on_startup)
 REFLECT_FIELDS(Engine::FileIO::ProjectSettings, loaded_tilemaps, layer_collision_pairs)
-REFLECT_FIELDS(Engine::FileIO::LocalSettings, imgui_theme, imgui_layout, auto_reload)
+REFLECT_FIELDS(Engine::FileIO::LocalSettings, imgui_theme, imgui_layout, auto_reload, build_export_selected_assets)
 REFLECT_FIELDS(Engine::FileIO::GameSettings, fullscreen, vsync, bgm_volume, sfx_volume)
 REFLECT_FIELDS(Engine::FileIO::FirebaseSettings, database_url, api_key, client_id, client_secret)
 
