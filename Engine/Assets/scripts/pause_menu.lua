@@ -142,40 +142,25 @@ local ENTITY_VISIBLE_ALPHA = {
   [PAUSE_DIMMER_NAME] = 0.5,
 }
 
-local HITBOXES = {
-  resume = { left = -504.802399, top = -354.316132, right = -51.975685, bottom = -165.866135 },
-  restart = { left = -522.644531, top = -158.237122, right = -54.62006, bottom = 15.015185 },
-  options = { left = -521.763062, top = -43.130722, right = -57.264435, bottom = 209.149017 },
-  quit = { left = -527.447083, top = 63.829796, right = -53.829784, bottom = 386.018311 },
-  bgm_decrease = { left = -115.833, top = -218.333, right = -67.5, bottom = -138.333 },
-  bgm_increase = { left = 709.167, top = -219.167, right = 757.5, bottom = -139.167 },
-  sfx_decrease = { left = -116.667, top = 22.5, right = -68.333, bottom = 102.5 },
-  sfx_increase = { left = 708.333, top = 21.667, right = 756.667, bottom = 101.667 },
-  windowed = { left = -115.833, top = 260.0, right = -67.5, bottom = 340.0 },
-  fullscreen = { left = 705.0, top = 260.0, right = 753.333, bottom = 340.0 },
-  confirm_yes = { left = -337.5, top = 45.0, right = -102.5, bottom = 159.167 },
-  confirm_no = { left = 125.833, top = 45.0, right = 297.5, bottom = 159.167 },
-}
-
 local LEFT_HOVER_TARGETS = {
-  { key = "resume", rect = HITBOXES.resume },
-  { key = "restart", rect = HITBOXES.restart },
-  { key = "options", rect = HITBOXES.options },
-  { key = "quit", rect = HITBOXES.quit },
+  { key = "resume", entity_name = RESUME_BUTTON_NAME },
+  { key = "restart", entity_name = RESTART_BUTTON_NAME },
+  { key = "options", entity_name = OPTIONS_BUTTON_NAME },
+  { key = "quit", entity_name = EXIT_BUTTON_NAME },
 }
 
 local OPTIONS_HOVER_TARGETS = {
-  { key = OPTIONS_TEXTURES.bgm_decrease, rect = HITBOXES.bgm_decrease },
-  { key = OPTIONS_TEXTURES.bgm_increase, rect = HITBOXES.bgm_increase },
-  { key = OPTIONS_TEXTURES.sfx_decrease, rect = HITBOXES.sfx_decrease },
-  { key = OPTIONS_TEXTURES.sfx_increase, rect = HITBOXES.sfx_increase },
-  { key = OPTIONS_TEXTURES.screen_left, rect = HITBOXES.windowed },
-  { key = OPTIONS_TEXTURES.screen_right, rect = HITBOXES.fullscreen },
+  { key = OPTIONS_TEXTURES.bgm_decrease, entity_name = BGM_DECREASE_BUTTON_NAME },
+  { key = OPTIONS_TEXTURES.bgm_increase, entity_name = BGM_INCREASE_BUTTON_NAME },
+  { key = OPTIONS_TEXTURES.sfx_decrease, entity_name = SFX_DECREASE_BUTTON_NAME },
+  { key = OPTIONS_TEXTURES.sfx_increase, entity_name = SFX_INCREASE_BUTTON_NAME },
+  { key = OPTIONS_TEXTURES.screen_left, entity_name = WINDOWED_BUTTON_NAME },
+  { key = OPTIONS_TEXTURES.screen_right, entity_name = FULLSCREEN_BUTTON_NAME },
 }
 
 local CONFIRM_HOVER_TARGETS = {
-  { key = "yes", rect = HITBOXES.confirm_yes },
-  { key = "no", rect = HITBOXES.confirm_no },
+  { key = "yes", entity_name = CONFIRM_YES_BUTTON_NAME },
+  { key = "no", entity_name = CONFIRM_NO_BUTTON_NAME },
 }
 
 local hovered_left_button = nil
@@ -274,31 +259,44 @@ local function set_entity_y(name, y)
   end
 end
 
-local function get_mouse_local_position()
+local function get_mouse_screen_position()
   local mouse = Input.get_mouse_position_if_in_viewport()
   if not mouse then
     return nil
   end
 
-  return {
-    x = mouse.x - FULLSCREEN_CENTER_X,
-    y = mouse.y - FULLSCREEN_CENTER_Y,
-  }
+  return mouse
 end
 
-local function point_in_rect(point, rect)
-  return point.x >= rect.left and point.x <= rect.right
-    and point.y >= rect.top and point.y <= rect.bottom
+local function is_mouse_over_button(entity_name, mouse)
+  local entity = get_named_entity(entity_name)
+  if not entity or not entity:is_valid() then
+    return false
+  end
+
+  local tr = entity.Transform2D
+  local box = entity.BoxCollider
+  if not tr or not box then
+    return false
+  end
+
+  local half_width = box.width * 0.5
+  local half_height = box.height * 0.5
+  local center_x = tr.position.x + box.offset.x
+  local center_y = tr.position.y + box.offset.y
+
+  return mouse.x >= center_x - half_width and mouse.x <= center_x + half_width
+    and mouse.y >= center_y - half_height and mouse.y <= center_y + half_height
 end
 
 local function get_hover_target(entries)
-  local mouse = get_mouse_local_position()
+  local mouse = get_mouse_screen_position()
   if mouse == nil then
     return nil
   end
 
   for _, entry in ipairs(entries) do
-    if point_in_rect(mouse, entry.rect) then
+    if is_mouse_over_button(entry.entity_name, mouse) then
       return entry.key
     end
   end

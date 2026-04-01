@@ -812,19 +812,25 @@
                     },
                     {
                         "data": {
+                            "path": "images/UI/In-Game Pause/States/ResumeButton.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
                             "aabb": {
-                                "half_height": 0.0,
-                                "half_width": 0.0,
+                                "half_height": 94.224998,
+                                "half_width": 226.413357,
                                 "pos": {
                                     "x": 0.0,
                                     "y": 0.0
                                 }
                             },
-                            "height": 0.0,
+                            "height": 188.449997,
                             "kinetic_friction": 1.0,
                             "offset": {
-                                "x": 0.0,
-                                "y": 0.0
+                                "x": -278.389042,
+                                "y": -260.091134
                             },
                             "polygon": {
                                 "position": {
@@ -853,8 +859,8 @@
                             },
                             "radius": 0.0,
                             "resolve_collisions": false,
-                            "type": "POLYGON",
-                            "width": 0.0
+                            "type": "AABB",
+                            "width": 452.826714
                         },
                         "type": "Components::BoxCollider"
                     },
@@ -902,19 +908,25 @@
                     },
                     {
                         "data": {
+                            "path": "images/UI/In-Game Pause/States/RestartButton.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
                             "aabb": {
-                                "half_height": 0.0,
-                                "half_width": 0.0,
+                                "half_height": 86.626154,
+                                "half_width": 234.012236,
                                 "pos": {
                                     "x": 0.0,
                                     "y": 0.0
                                 }
                             },
-                            "height": 0.0,
+                            "height": 173.252307,
                             "kinetic_friction": 1.0,
                             "offset": {
-                                "x": 0.0,
-                                "y": 0.0
+                                "x": -288.632296,
+                                "y": -71.610968
                             },
                             "polygon": {
                                 "position": {
@@ -943,8 +955,8 @@
                             },
                             "radius": 0.0,
                             "resolve_collisions": false,
-                            "type": "POLYGON",
-                            "width": 0.0
+                            "type": "AABB",
+                            "width": 468.024471
                         },
                         "type": "Components::BoxCollider"
                     },
@@ -992,19 +1004,25 @@
                     },
                     {
                         "data": {
+                            "path": "images/UI/In-Game Pause/States/OptionsButtons.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
                             "aabb": {
-                                "half_height": 0.0,
-                                "half_width": 0.0,
+                                "half_height": 126.13987,
+                                "half_width": 232.249314,
                                 "pos": {
                                     "x": 0.0,
                                     "y": 0.0
                                 }
                             },
-                            "height": 0.0,
+                            "height": 252.279739,
                             "kinetic_friction": 1.0,
                             "offset": {
-                                "x": 0.0,
-                                "y": 0.0
+                                "x": -289.513749,
+                                "y": 83.009148
                             },
                             "polygon": {
                                 "position": {
@@ -1033,8 +1051,8 @@
                             },
                             "radius": 0.0,
                             "resolve_collisions": false,
-                            "type": "POLYGON",
-                            "width": 0.0
+                            "type": "AABB",
+                            "width": 464.498627
                         },
                         "type": "Components::BoxCollider"
                     },
@@ -1082,19 +1100,25 @@
                     },
                     {
                         "data": {
+                            "path": "images/UI/In-Game Pause/States/ExitButton.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
                             "aabb": {
-                                "half_height": 0.0,
-                                "half_width": 0.0,
+                                "half_height": 161.094257,
+                                "half_width": 236.80865,
                                 "pos": {
                                     "x": 0.0,
                                     "y": 0.0
                                 }
                             },
-                            "height": 0.0,
+                            "height": 322.188515,
                             "kinetic_friction": 1.0,
                             "offset": {
-                                "x": 0.0,
-                                "y": 0.0
+                                "x": -290.638434,
+                                "y": 224.924054
                             },
                             "polygon": {
                                 "position": {
@@ -1123,8 +1147,8 @@
                             },
                             "radius": 0.0,
                             "resolve_collisions": false,
-                            "type": "POLYGON",
-                            "width": 0.0
+                            "type": "AABB",
+                            "width": 473.617299
                         },
                         "type": "Components::BoxCollider"
                     },
@@ -1172,19 +1196,25 @@
                     },
                     {
                         "data": {
+                            "path": "images/UI/In-Game Pause/Options/BGM/BGMVolumeDecrease.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
                             "aabb": {
-                                "half_height": 0.0,
-                                "half_width": 0.0,
+                                "half_height": 40.0,
+                                "half_width": 24.1665,
                                 "pos": {
                                     "x": 0.0,
                                     "y": 0.0
                                 }
                             },
-                            "height": 0.0,
+                            "height": 80.0,
                             "kinetic_friction": 1.0,
                             "offset": {
-                                "x": 0.0,
-                                "y": 0.0
+                                "x": -91.6665,
+                                "y": -178.333
                             },
                             "polygon": {
                                 "position": {
@@ -1213,8 +1243,8 @@
                             },
                             "radius": 0.0,
                             "resolve_collisions": false,
-                            "type": "POLYGON",
-                            "width": 0.0
+                            "type": "AABB",
+                            "width": 48.333
                         },
                         "type": "Components::BoxCollider"
                     },
@@ -1262,19 +1292,25 @@
                     },
                     {
                         "data": {
+                            "path": "images/UI/In-Game Pause/Options/BGM/BGMVolumeIncrease.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
                             "aabb": {
-                                "half_height": 0.0,
-                                "half_width": 0.0,
+                                "half_height": 40.0,
+                                "half_width": 24.1665,
                                 "pos": {
                                     "x": 0.0,
                                     "y": 0.0
                                 }
                             },
-                            "height": 0.0,
+                            "height": 80.0,
                             "kinetic_friction": 1.0,
                             "offset": {
-                                "x": 0.0,
-                                "y": 0.0
+                                "x": 733.3335,
+                                "y": -179.167
                             },
                             "polygon": {
                                 "position": {
@@ -1303,8 +1339,8 @@
                             },
                             "radius": 0.0,
                             "resolve_collisions": false,
-                            "type": "POLYGON",
-                            "width": 0.0
+                            "type": "AABB",
+                            "width": 48.333
                         },
                         "type": "Components::BoxCollider"
                     },
@@ -1352,19 +1388,25 @@
                     },
                     {
                         "data": {
+                            "path": "images/UI/In-Game Pause/Options/SFX/SFXVolumeDecrease.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
                             "aabb": {
-                                "half_height": 0.0,
-                                "half_width": 0.0,
+                                "half_height": 40.0,
+                                "half_width": 24.167,
                                 "pos": {
                                     "x": 0.0,
                                     "y": 0.0
                                 }
                             },
-                            "height": 0.0,
+                            "height": 80.0,
                             "kinetic_friction": 1.0,
                             "offset": {
-                                "x": 0.0,
-                                "y": 0.0
+                                "x": -92.5,
+                                "y": 62.5
                             },
                             "polygon": {
                                 "position": {
@@ -1393,8 +1435,8 @@
                             },
                             "radius": 0.0,
                             "resolve_collisions": false,
-                            "type": "POLYGON",
-                            "width": 0.0
+                            "type": "AABB",
+                            "width": 48.334
                         },
                         "type": "Components::BoxCollider"
                     },
@@ -1442,19 +1484,25 @@
                     },
                     {
                         "data": {
+                            "path": "images/UI/In-Game Pause/Options/SFX/SFXVolumeIncrease.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
                             "aabb": {
-                                "half_height": 0.0,
-                                "half_width": 0.0,
+                                "half_height": 40.0,
+                                "half_width": 24.167,
                                 "pos": {
                                     "x": 0.0,
                                     "y": 0.0
                                 }
                             },
-                            "height": 0.0,
+                            "height": 80.0,
                             "kinetic_friction": 1.0,
                             "offset": {
-                                "x": 0.0,
-                                "y": 0.0
+                                "x": 732.5,
+                                "y": 61.667
                             },
                             "polygon": {
                                 "position": {
@@ -1483,8 +1531,8 @@
                             },
                             "radius": 0.0,
                             "resolve_collisions": false,
-                            "type": "POLYGON",
-                            "width": 0.0
+                            "type": "AABB",
+                            "width": 48.334
                         },
                         "type": "Components::BoxCollider"
                     },
@@ -1532,19 +1580,25 @@
                     },
                     {
                         "data": {
+                            "path": "images/UI/In-Game Pause/Options/Screen/LeftArrowScreen.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
                             "aabb": {
-                                "half_height": 0.0,
-                                "half_width": 0.0,
+                                "half_height": 40.0,
+                                "half_width": 24.1665,
                                 "pos": {
                                     "x": 0.0,
                                     "y": 0.0
                                 }
                             },
-                            "height": 0.0,
+                            "height": 80.0,
                             "kinetic_friction": 1.0,
                             "offset": {
-                                "x": 0.0,
-                                "y": 0.0
+                                "x": -91.6665,
+                                "y": 300.0
                             },
                             "polygon": {
                                 "position": {
@@ -1573,8 +1627,8 @@
                             },
                             "radius": 0.0,
                             "resolve_collisions": false,
-                            "type": "POLYGON",
-                            "width": 0.0
+                            "type": "AABB",
+                            "width": 48.333
                         },
                         "type": "Components::BoxCollider"
                     },
@@ -1622,19 +1676,25 @@
                     },
                     {
                         "data": {
+                            "path": "images/UI/In-Game Pause/Options/Screen/RightArrowScreen.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
                             "aabb": {
-                                "half_height": 0.0,
-                                "half_width": 0.0,
+                                "half_height": 40.0,
+                                "half_width": 24.1665,
                                 "pos": {
                                     "x": 0.0,
                                     "y": 0.0
                                 }
                             },
-                            "height": 0.0,
+                            "height": 80.0,
                             "kinetic_friction": 1.0,
                             "offset": {
-                                "x": 0.0,
-                                "y": 0.0
+                                "x": 729.1665,
+                                "y": 300.0
                             },
                             "polygon": {
                                 "position": {
@@ -1663,8 +1723,8 @@
                             },
                             "radius": 0.0,
                             "resolve_collisions": false,
-                            "type": "POLYGON",
-                            "width": 0.0
+                            "type": "AABB",
+                            "width": 48.333
                         },
                         "type": "Components::BoxCollider"
                     },
@@ -1712,19 +1772,25 @@
                     },
                     {
                         "data": {
+                            "path": "images/UI/In-Game Pause/QuitGame/YesHover.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
                             "aabb": {
-                                "half_height": 0.0,
-                                "half_width": 0.0,
+                                "half_height": 57.0835,
+                                "half_width": 117.5,
                                 "pos": {
                                     "x": 0.0,
                                     "y": 0.0
                                 }
                             },
-                            "height": 0.0,
+                            "height": 114.167,
                             "kinetic_friction": 1.0,
                             "offset": {
-                                "x": 0.0,
-                                "y": 0.0
+                                "x": -220.0,
+                                "y": 102.0835
                             },
                             "polygon": {
                                 "position": {
@@ -1753,8 +1819,8 @@
                             },
                             "radius": 0.0,
                             "resolve_collisions": false,
-                            "type": "POLYGON",
-                            "width": 0.0
+                            "type": "AABB",
+                            "width": 235.0
                         },
                         "type": "Components::BoxCollider"
                     },
@@ -1802,19 +1868,25 @@
                     },
                     {
                         "data": {
+                            "path": "images/UI/In-Game Pause/QuitGame/NoHover.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
                             "aabb": {
-                                "half_height": 0.0,
-                                "half_width": 0.0,
+                                "half_height": 57.0835,
+                                "half_width": 85.8335,
                                 "pos": {
                                     "x": 0.0,
                                     "y": 0.0
                                 }
                             },
-                            "height": 0.0,
+                            "height": 114.167,
                             "kinetic_friction": 1.0,
                             "offset": {
-                                "x": 0.0,
-                                "y": 0.0
+                                "x": 211.6665,
+                                "y": 102.0835
                             },
                             "polygon": {
                                 "position": {
@@ -1843,8 +1915,8 @@
                             },
                             "radius": 0.0,
                             "resolve_collisions": false,
-                            "type": "POLYGON",
-                            "width": 0.0
+                            "type": "AABB",
+                            "width": 171.667
                         },
                         "type": "Components::BoxCollider"
                     },
