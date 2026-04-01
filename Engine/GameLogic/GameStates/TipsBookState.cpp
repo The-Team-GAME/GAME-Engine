@@ -15,6 +15,7 @@ namespace {
     Engine::ECS::Entity found;
     Engine::ECS::for_each_entity([&](Engine::ECS::Entity entity) {
       if (found.is_valid()) return;
+      if (!Engine::ECS::is_entity_active(entity)) return;
       if (entity.get_name() == "TipsButtonHUD") {
         found = entity;
       }
@@ -24,6 +25,7 @@ namespace {
 
     Engine::ECS::for_each_entity([&](Engine::ECS::Entity entity) {
       if (found.is_valid()) return;
+      if (!Engine::ECS::is_entity_active(entity)) return;
       if (!entity.has_component<Components::UI>()) return;
       auto* tex = entity.get_component<Components::Texture>();
       if (!tex || !tex->texture_handle) return;
