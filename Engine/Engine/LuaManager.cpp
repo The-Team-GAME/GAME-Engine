@@ -586,6 +586,19 @@ namespace Engine {
       return t;
     };
 
+    input["get_mouse_position_if_in_viewport"] = [](sol::this_state ts) -> sol::object {
+      auto pos = Engine::Input::get_mouse_position_if_in_viewport();
+      sol::state_view lua(ts);
+      if (!pos.has_value()) {
+        return sol::make_object(lua, sol::nil);
+      }
+
+      sol::table t = lua.create_table();
+      t["x"] = pos->x;
+      t["y"] = pos->y;
+      return t;
+    };
+
     input["get_mouse_world_position"] = [](sol::this_state ts) -> sol::object {
       auto pos = Engine::Input::get_mouse_world_position();
       sol::state_view lua(ts);

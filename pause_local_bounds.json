@@ -1,0 +1,100 @@
+[
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\Options\\BGM\\BGMVolumeDecrease.png",
+        "Left":  -115.833,
+        "Top":  -218.333,
+        "Right":  -67.5,
+        "Bottom":  -138.333
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\Options\\BGM\\BGMVolumeIncrease.png",
+        "Left":  709.167,
+        "Top":  -219.167,
+        "Right":  757.5,
+        "Bottom":  -139.167
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\Options\\SFX\\SFXVolumeDecrease.png",
+        "Left":  -116.667,
+        "Top":  22.5,
+        "Right":  -68.333,
+        "Bottom":  102.5
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\Options\\SFX\\SFXVolumeIncrease.png",
+        "Left":  708.333,
+        "Top":  21.667,
+        "Right":  756.667,
+        "Bottom":  101.667
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\Options\\Screen\\LeftArrowScreen.png",
+        "Left":  -115.833,
+        "Top":  260,
+        "Right":  -67.5,
+        "Bottom":  340
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\Options\\Screen\\RightArrowScreen.png",
+        "Left":  705,
+        "Top":  260,
+        "Right":  753.333,
+        "Bottom":  340
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\Options\\Screen\\WindowedSelected.png",
+        "Left":  16.667,
+        "Top":  278.333,
+        "Right":  616.667,
+        "Bottom":  322.5
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\Options\\Screen\\FullScreenSelected.png",
+        "Left":  16.667,
+        "Top":  278.333,
+        "Right":  616.667,
+        "Bottom":  322.5
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\QuitGame\\YesHover.png",
+        "Left":  -337.5,
+        "Top":  45,
+        "Right":  -102.5,
+        "Bottom":  159.167
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\QuitGame\\NoHover.png",
+        "Left":  125.833,
+        "Top":  45,
+        "Right":  297.5,
+        "Bottom":  159.167
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\Options\\BGM\\BGMVolumeBar\\BGM1.png",
+        "Left":  -54.167,
+        "Top":  -195,
+        "Right":  690,
+        "Bottom":  -161.667
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\Options\\SFX\\SFXVolume\\SFX1.png",
+        "Left":  -54.167,
+        "Top":  47.5,
+        "Right":  690,
+        "Bottom":  80.833
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\RESTART\\YesNotSelected.png",
+        "Left":  70,
+        "Top":  -346.667,
+        "Right":  305.833,
+        "Bottom":  1349.167
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\RESTART\\NoGray.png",
+        "Left":  486.667,
+        "Top":  -450,
+        "Right":  660,
+        "Bottom":  1349.167
+    }
+]

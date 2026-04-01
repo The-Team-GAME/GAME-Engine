@@ -39,6 +39,15 @@ namespace {
   std::mutex preload_mutex;
   std::unordered_map<std::string, Engine::EntityList> preload_results;
 
+  struct OverlayLevelState {
+    std::string source_level_id;
+    std::vector<Engine::ECS::EntityID> live_entity_ids;
+    Engine::ECS::EntityID level_entity_id = Engine::ECS::INVALID_ENTITY;
+  };
+
+  std::unordered_map<std::string, OverlayLevelState> open_overlay_levels;
+  size_t next_overlay_instance_id = 1;
+
 
   // (Stored as a filepath relative to Resources::resource_path when append_resource_path=true.)
   std::string pending_start_level_path;
@@ -230,6 +239,81 @@ namespace {
 
     remap_cloned_hierarchy_ids(id_remap, cloned_ids);
     return cloned_ids;
+  }
+
+  void call_overlay_level_init(const OverlayLevelState& overlay_state)
+  {
+    if (overlay_state.level_entity_id == Engine::ECS::INVALID_ENTITY) {
+      return;
+    }
+
+    Engine::ECS::Entity level_entity(overlay_state.level_entity_id);
+    if (!level_entity.is_valid()) {
+      return;
+    }
+
+    auto* level_comp = level_entity.get_component<Components::Level>();
+    if (level_comp) {
+      level_comp->call_init();
+    }
+  }
+
+  void call_overlay_level_exit(const OverlayLevelState& overlay_state)
+  {
+    if (overlay_state.level_entity_id == Engine::ECS::INVALID_ENTITY) {
+      return;
+    }
+
+    Engine::ECS::Entity level_entity(overlay_state.level_entity_id);
+    if (!level_entity.is_valid()) {
+      return;
+    }
+
+    auto* level_comp = level_entity.get_component<Components::Level>();
+    if (level_comp) {
+      level_comp->call_exit();
+    }
+  }
+
+  void destroy_overlay_level_entities(OverlayLevelState& overlay_state)
+  {
+    call_overlay_level_exit(overlay_state);
+
+    for (Engine::ECS::EntityID entity_id : overlay_state.live_entity_ids) {
+      if (entity_id == overlay_state.level_entity_id) {
+        continue;
+      }
+
+      Engine::ECS::Entity entity(entity_id);
+      if (entity.is_valid()) {
+        entity.destroy();
+      }
+    }
+
+    if (overlay_state.level_entity_id != Engine::ECS::INVALID_ENTITY) {
+      Engine::ECS::Entity level_entity(overlay_state.level_entity_id);
+      if (level_entity.is_valid()) {
+        level_entity.destroy();
+      }
+    }
+
+    overlay_state.live_entity_ids.clear();
+    overlay_state.level_entity_id = Engine::ECS::INVALID_ENTITY;
+  }
+
+  void destroy_all_overlay_levels()
+  {
+    if (open_overlay_levels.empty()) {
+      return;
+    }
+
+    for (auto& [overlay_id, overlay_state] : open_overlay_levels) {
+      (void)overlay_id;
+      destroy_overlay_level_entities(overlay_state);
+    }
+
+    open_overlay_levels.clear();
+    Engine::ECS::process_housekeeping();
   }
 }
 
@@ -551,6 +635,65 @@ namespace Engine {
       );
 
       return full_path;
+    }
+
+    std::string open_overlay_level(const std::string& filepath, bool append_resource_path, bool mark_runtime_only)
+    {
+      std::string full_path = normalize_level_path(filepath, append_resource_path);
+
+      if (append_resource_path && !std::filesystem::exists(full_path)) {
+        Log::warning("[LevelManager] Failed to open overlay level (file not found): {}", full_path);
+        return "";
+      }
+
+      EntityList entities = Resources::load_level(filepath, append_resource_path, false);
+      if (entities.empty()) {
+        Log::warning("[LevelManager] Failed to open overlay level (0 entities): {}", full_path);
+        return "";
+      }
+
+      std::unordered_set<ECS::EntityID> existing_ids;
+      ECS::for_each_entity([&](ECS::Entity entity) {
+        existing_ids.insert(entity.get_id());
+        });
+
+      instantiate_entities(entities, false);
+
+      OverlayLevelState overlay_state;
+      overlay_state.source_level_id = full_path;
+
+      ECS::for_each_entity([&](ECS::Entity entity) {
+        if (existing_ids.find(entity.get_id()) != existing_ids.end()) {
+          return;
+        }
+
+        overlay_state.live_entity_ids.push_back(entity.get_id());
+        if (overlay_state.level_entity_id == ECS::INVALID_ENTITY && entity.has_component<Components::Level>()) {
+          overlay_state.level_entity_id = entity.get_id();
+        }
+
+        if (mark_runtime_only && !entity.has_component<Components::RuntimeOnly>()) {
+          entity.add_component<Components::RuntimeOnly>();
+        }
+        });
+
+      if (overlay_state.level_entity_id != ECS::INVALID_ENTITY) {
+        Engine::ECS::Entity level_entity(overlay_state.level_entity_id);
+        if (level_entity.is_valid()) {
+          auto* level_comp = level_entity.get_component<Components::Level>();
+          if (level_comp) {
+            level_comp->level_path = filepath;
+          }
+        }
+      }
+
+      std::string overlay_id = full_path + "#overlay_" + std::to_string(next_overlay_instance_id++);
+      open_overlay_levels[overlay_id] = std::move(overlay_state);
+
+      call_overlay_level_init(open_overlay_levels[overlay_id]);
+
+      Log::info("[LevelManager] Opened overlay level: {}", overlay_id);
+      return overlay_id;
     }
 
     std::string preload_level(const std::string& filepath, bool append_resource_path)
@@ -886,6 +1029,22 @@ namespace Engine {
       return true;
     }
 
+    bool close_overlay_level(const std::string& overlay_id)
+    {
+      auto it = open_overlay_levels.find(overlay_id);
+      if (it == open_overlay_levels.end()) {
+        Log::warning("[LevelManager] Cannot close overlay level - not open: {}", overlay_id);
+        return false;
+      }
+
+      destroy_overlay_level_entities(it->second);
+      open_overlay_levels.erase(it);
+      ECS::process_housekeeping();
+
+      Log::info("[LevelManager] Closed overlay level: {}", overlay_id);
+      return true;
+    }
+
     bool save_level(const std::string& level_id)
     {
       if (!is_level_open(level_id)) {
@@ -1113,6 +1272,8 @@ namespace Engine {
       level_order = std::move(preserved_order);
       active_level_id = "";
       current_level_path = "";
+
+      destroy_all_overlay_levels();
 
       ECS::for_each_entity([](ECS::Entity entity) {
         entity.destroy();

@@ -1,0 +1,92 @@
+[
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\Options\\BGM\\BGMVolumeDecrease.png",
+        "MinX":  821,
+        "MinY":  278,
+        "MaxX":  879,
+        "MaxY":  374,
+        "Width":  59,
+        "Height":  97
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\Options\\BGM\\BGMVolumeIncrease.png",
+        "MinX":  1811,
+        "MinY":  277,
+        "MaxX":  1869,
+        "MaxY":  373,
+        "Width":  59,
+        "Height":  97
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\Options\\SFX\\SFXVolumeDecrease.png",
+        "MinX":  820,
+        "MinY":  567,
+        "MaxX":  878,
+        "MaxY":  663,
+        "Width":  59,
+        "Height":  97
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\Options\\SFX\\SFXVolumeIncrease.png",
+        "MinX":  1810,
+        "MinY":  566,
+        "MaxX":  1868,
+        "MaxY":  662,
+        "Width":  59,
+        "Height":  97
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\Options\\Screen\\LeftArrowScreen.png",
+        "MinX":  821,
+        "MinY":  852,
+        "MaxX":  879,
+        "MaxY":  948,
+        "Width":  59,
+        "Height":  97
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\Options\\Screen\\RightArrowScreen.png",
+        "MinX":  1806,
+        "MinY":  852,
+        "MaxX":  1864,
+        "MaxY":  948,
+        "Width":  59,
+        "Height":  97
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\Options\\Screen\\WindowedSelected.png",
+        "MinX":  980,
+        "MinY":  874,
+        "MaxX":  1700,
+        "MaxY":  927,
+        "Width":  721,
+        "Height":  54
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\Options\\Screen\\FullScreenSelected.png",
+        "MinX":  980,
+        "MinY":  874,
+        "MaxX":  1700,
+        "MaxY":  927,
+        "Width":  721,
+        "Height":  54
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\QuitGame\\YesHover.png",
+        "MinX":  555,
+        "MinY":  594,
+        "MaxX":  837,
+        "MaxY":  731,
+        "Width":  283,
+        "Height":  138
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\QuitGame\\NoHover.png",
+        "MinX":  1111,
+        "MinY":  594,
+        "MaxX":  1317,
+        "MaxY":  731,
+        "Width":  207,
+        "Height":  138
+    }
+]

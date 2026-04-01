@@ -1,0 +1,38 @@
+[
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\Options\\BGM\\BGMVolumeBar\\BGM1.png",
+        "MinX":  895,
+        "MinY":  306,
+        "MaxX":  1788,
+        "MaxY":  346,
+        "Width":  894,
+        "Height":  41
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\Options\\SFX\\SFXVolume\\SFX1.png",
+        "MinX":  895,
+        "MinY":  597,
+        "MaxX":  1788,
+        "MaxY":  637,
+        "Width":  894,
+        "Height":  41
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\RESTART\\YesNotSelected.png",
+        "MinX":  1044,
+        "MinY":  124,
+        "MaxX":  1327,
+        "MaxY":  2159,
+        "Width":  284,
+        "Height":  2036
+    },
+    {
+        "File":  "Engine\\Assets\\images\\UI\\In-Game Pause\\RESTART\\NoGray.png",
+        "MinX":  1544,
+        "MinY":  0,
+        "MaxX":  1752,
+        "MaxY":  2159,
+        "Width":  209,
+        "Height":  2160
+    }
+]
