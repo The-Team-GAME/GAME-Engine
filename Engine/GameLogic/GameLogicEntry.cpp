@@ -289,10 +289,11 @@ static void register_collision_callbacks()
         Engine::Systems::DamageVignette::trigger(0.8f);
 
         Engine::Systems::Physics2DSystem::add_force(*rigid, attack->knockback);
-
-        Engine::AudioSystem::playEvent("event:/SFX/PlayerHurt");
-        Log::info("Playing FMOD event: event:/SFX/PlayerHurt");
-
+        if (health->value > 0) {
+          Engine::AudioSystem::playEvent("event:/SFX/PlayerHurt");
+          Log::info("Playing FMOD event: event:/SFX/PlayerHurt");
+        }
+        
         if (previous_health > 2 && health->value > 0 && health->value <= 2)
         {
           Engine::AudioSystem::playEvent(PLAYER_HEARTBEAT_EVENT);
