@@ -146,6 +146,8 @@ public:
     Engine::UpgradeUIStateMachine::instance().set_picker_open_callback([]() {
       Engine::SceneManager::push_scene("UpgradePickerState");
       });
+
+    Engine::LevelManager::rebuild_active_snapshot();
   };
 
   void init() {

@@ -118,6 +118,10 @@ namespace Engine {
     // Clears the preloaded snapshot for a level, destroying its deactivated entities.
     ENGINE_API void clear_preloaded_snapshot(const std::string& level_id);
 
+    // Rebuilds the active level's preloaded snapshot from the current live world.
+    // Use this after scene code adds runtime baseline entities that should survive level reload.
+    ENGINE_API void rebuild_active_snapshot();
+
     // ============================================================================
     // Lifecycle Callbacks
     // ============================================================================

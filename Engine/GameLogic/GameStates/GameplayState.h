@@ -165,6 +165,8 @@ public:
       Engine::SceneManager::push_scene("UpgradePickerState");
       });
 
+    Engine::LevelManager::rebuild_active_snapshot();
+
   };
 
   void init() {
