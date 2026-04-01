@@ -30,9 +30,13 @@ local RESTART_NO_SCROLL_NAMES = { "PauseRestartNoScrollA", "PauseRestartNoScroll
 
 local FULLSCREEN_CENTER_X = 800.0
 local FULLSCREEN_CENTER_Y = 450.0
+local SCREEN_HEIGHT = 900.0
 local SCROLL_HEIGHT = 1800.0
 local SCROLL_SPEED = 90.0
 local VOLUME_STEPS = 10
+local LEFT_CLUSTER_TOP_MARGIN = 20.0
+local LEFT_CLUSTER_HIDDEN_MARGIN = 40.0
+local LEFT_CLUSTER_SLIDE_DURATION = 0.32
 
 local LEFT_PANEL_TEXTURES = {
   menu = "images/UI/In-Game Pause/States/NothingSelectedPausedMenu.png",
@@ -87,6 +91,14 @@ local RIGHT_PANEL_NAMES = {
 }
 
 local LEFT_BUTTON_NAMES = {
+  RESUME_BUTTON_NAME,
+  RESTART_BUTTON_NAME,
+  OPTIONS_BUTTON_NAME,
+  EXIT_BUTTON_NAME,
+}
+
+local LEFT_CLUSTER_ENTITY_NAMES = {
+  LEFT_PANEL_NAME,
   RESUME_BUTTON_NAME,
   RESTART_BUTTON_NAME,
   OPTIONS_BUTTON_NAME,
@@ -166,9 +178,18 @@ local CONFIRM_HOVER_TARGETS = {
 local hovered_left_button = nil
 local hovered_options_overlay = nil
 local hovered_confirm_button = nil
+local left_cluster_base_positions = {}
+local left_cluster_base_bounds = nil
+local left_cluster_anim = {}
+local left_cluster_has_opened = false
 
 local function clamp(value, min_value, max_value)
   return math.min(math.max(value, min_value), max_value)
+end
+
+local function ease_out_cubic(t)
+  local u = 1.0 - t
+  return 1.0 - u * u * u
 end
 
 local function get_named_entity(name)
@@ -247,6 +268,19 @@ local function set_entity_texture(name, path)
   end
 end
 
+local function set_entity_position(name, x, y)
+  local entity = get_named_entity(name)
+  if not entity or not entity:is_valid() then
+    return
+  end
+
+  local tr = entity.Transform2D
+  if tr then
+    tr.position.x = x
+    tr.position.y = y
+  end
+end
+
 local function set_entity_y(name, y)
   local entity = get_named_entity(name)
   if not entity or not entity:is_valid() then
@@ -256,6 +290,142 @@ local function set_entity_y(name, y)
   local tr = entity.Transform2D
   if tr then
     tr.position.y = y
+  end
+end
+
+local function cache_left_cluster_layout()
+  if left_cluster_base_bounds ~= nil then
+    return
+  end
+
+  local min_top = nil
+  local max_bottom = nil
+
+  for _, entity_name in ipairs(LEFT_CLUSTER_ENTITY_NAMES) do
+    local entity = get_named_entity(entity_name)
+    if entity and entity:is_valid() then
+      local tr = entity.Transform2D
+      if tr then
+        left_cluster_base_positions[entity_name] = {
+          x = tr.position.x,
+          y = tr.position.y,
+        }
+      end
+    end
+  end
+
+  for _, entity_name in ipairs(LEFT_BUTTON_NAMES) do
+    local entity = get_named_entity(entity_name)
+    local base = left_cluster_base_positions[entity_name]
+    if entity and entity:is_valid() and base ~= nil then
+      local box = entity.BoxCollider
+      if box then
+        local top = base.y + box.offset.y - box.height * 0.5
+        local bottom = base.y + box.offset.y + box.height * 0.5
+        if min_top == nil or top < min_top then
+          min_top = top
+        end
+        if max_bottom == nil or bottom > max_bottom then
+          max_bottom = bottom
+        end
+      end
+    end
+  end
+
+  left_cluster_base_bounds = {
+    top = min_top or 0.0,
+    bottom = max_bottom or SCREEN_HEIGHT,
+  }
+end
+
+local function get_left_cluster_target_offset(mode)
+  cache_left_cluster_layout()
+  local bounds = left_cluster_base_bounds
+  if bounds == nil then
+    return 0.0
+  end
+
+  if mode == "hidden" then
+    return (SCREEN_HEIGHT + LEFT_CLUSTER_HIDDEN_MARGIN) - bounds.top
+  end
+
+  if mode == "confirm" then
+    return LEFT_CLUSTER_TOP_MARGIN - bounds.top
+  end
+
+  return 0.0
+end
+
+local function set_left_cluster_mode(mode, instant)
+  local offset = get_left_cluster_target_offset(mode)
+
+  if instant then
+    for _, entity_name in ipairs(LEFT_CLUSTER_ENTITY_NAMES) do
+      local base = left_cluster_base_positions[entity_name]
+      if base ~= nil then
+        set_entity_position(entity_name, base.x, base.y + offset)
+      end
+      left_cluster_anim[entity_name] = nil
+    end
+    return
+  end
+
+  local now = Time.get_unscaled_time()
+  for _, entity_name in ipairs(LEFT_CLUSTER_ENTITY_NAMES) do
+    local base = left_cluster_base_positions[entity_name]
+    local entity = get_named_entity(entity_name)
+    if base ~= nil and entity and entity:is_valid() then
+      local tr = entity.Transform2D
+      if tr then
+        left_cluster_anim[entity_name] = {
+          start_x = tr.position.x,
+          start_y = tr.position.y,
+          target_x = base.x,
+          target_y = base.y + offset,
+          start_time = now,
+          duration = LEFT_CLUSTER_SLIDE_DURATION,
+        }
+      end
+    end
+  end
+end
+
+local function show_left_cluster_at_menu_position()
+  if not left_cluster_has_opened then
+    set_left_cluster_mode("hidden", true)
+    left_cluster_has_opened = true
+  end
+
+  set_left_cluster_mode("menu", false)
+end
+
+local function show_left_cluster_at_confirm_position()
+  left_cluster_has_opened = true
+  set_left_cluster_mode("confirm", false)
+end
+
+local function update_left_cluster_animation()
+  local now = Time.get_unscaled_time()
+
+  for entity_name, anim in pairs(left_cluster_anim) do
+    local entity = get_named_entity(entity_name)
+    if not entity or not entity:is_valid() then
+      left_cluster_anim[entity_name] = nil
+    else
+      local tr = entity.Transform2D
+      if not tr then
+        left_cluster_anim[entity_name] = nil
+      else
+        local t = clamp((now - anim.start_time) / anim.duration, 0.0, 1.0)
+        local eased = ease_out_cubic(t)
+        tr.position.x = anim.start_x + (anim.target_x - anim.start_x) * eased
+        tr.position.y = anim.start_y + (anim.target_y - anim.start_y) * eased
+
+        if t >= 1.0 then
+          left_cluster_anim[entity_name] = nil
+        end
+      end
+    end
   end
 end
 
@@ -395,20 +565,10 @@ local function reset_confirm_quit_visuals()
   set_entity_texture(CONFIRM_QUIT_NO_NAME, CONFIRM_TEXTURES.quit_no_default)
 end
 
-local function reset_confirm_restart_visuals()
-  for _, entity_name in ipairs(RESTART_YES_SCROLL_NAMES) do
-    set_entity_texture(entity_name, CONFIRM_TEXTURES.restart_yes_default)
-  end
-
-  for _, entity_name in ipairs(RESTART_NO_SCROLL_NAMES) do
-    set_entity_texture(entity_name, CONFIRM_TEXTURES.restart_no_default)
-  end
-end
-
 local function apply_confirm_hover(choice)
   hovered_confirm_button = choice
 
-  if is_pause_state("ConfirmQuit") then
+  if is_pause_state("ConfirmRestart") or is_pause_state("ConfirmQuit") then
     if choice == "yes" then
       set_entity_texture(CONFIRM_QUIT_YES_NAME, CONFIRM_TEXTURES.quit_yes_hover)
       set_entity_texture(CONFIRM_QUIT_NO_NAME, CONFIRM_TEXTURES.quit_no_default)
@@ -417,27 +577,6 @@ local function apply_confirm_hover(choice)
       set_entity_texture(CONFIRM_QUIT_NO_NAME, CONFIRM_TEXTURES.quit_no_hover)
     else
       reset_confirm_quit_visuals()
-    end
-    return
-  end
-
-  if is_pause_state("ConfirmRestart") then
-    if choice == "yes" then
-      for _, entity_name in ipairs(RESTART_YES_SCROLL_NAMES) do
-        set_entity_texture(entity_name, CONFIRM_TEXTURES.restart_yes_hover)
-      end
-      for _, entity_name in ipairs(RESTART_NO_SCROLL_NAMES) do
-        set_entity_texture(entity_name, CONFIRM_TEXTURES.restart_no_default)
-      end
-    elseif choice == "no" then
-      for _, entity_name in ipairs(RESTART_YES_SCROLL_NAMES) do
-        set_entity_texture(entity_name, CONFIRM_TEXTURES.restart_yes_default)
-      end
-      for _, entity_name in ipairs(RESTART_NO_SCROLL_NAMES) do
-        set_entity_texture(entity_name, CONFIRM_TEXTURES.restart_no_hover)
-      end
-    else
-      reset_confirm_restart_visuals()
     end
   end
 end
@@ -501,12 +640,7 @@ local function show_confirm_quit_panel()
 end
 
 local function show_confirm_restart_panel()
-  set_entity_visible(CONFIRM_PROMPT_NAME, true)
-  set_entities_visible(RESTART_YES_SCROLL_NAMES, true)
-  set_entities_visible(RESTART_NO_SCROLL_NAMES, true)
-  reset_confirm_restart_visuals()
-  update_scroll_pair(RESTART_YES_SCROLL_NAMES)
-  update_scroll_pair(RESTART_NO_SCROLL_NAMES)
+  show_confirm_quit_panel()
 end
 
 local function show_menu_panel()
@@ -673,6 +807,7 @@ function pause_menu_menu_on_enter(entity)
   hovered_left_button = nil
   hovered_options_overlay = nil
   hovered_confirm_button = nil
+  show_left_cluster_at_menu_position()
   show_base_pause_entities()
   hide_right_panels()
   hide_state_specific_buttons()
@@ -682,6 +817,7 @@ function pause_menu_menu_on_enter(entity)
 end
 
 function pause_menu_menu_on_update(entity)
+  update_left_cluster_animation()
   update_scroll_pair(MENU_SCROLL_NAMES)
   update_left_hover_from_mouse()
 
@@ -697,6 +833,7 @@ function pause_menu_options_on_enter(entity)
   hovered_left_button = nil
   hovered_options_overlay = nil
   hovered_confirm_button = nil
+  show_left_cluster_at_menu_position()
   show_base_pause_entities()
   hide_right_panels()
   hide_state_specific_buttons()
@@ -708,6 +845,7 @@ function pause_menu_options_on_enter(entity)
 end
 
 function pause_menu_options_on_update(entity)
+  update_left_cluster_animation()
   update_left_hover_from_mouse()
   update_options_hover_from_mouse()
 
@@ -724,6 +862,7 @@ function pause_menu_confirm_restart_on_enter(entity)
   hovered_left_button = nil
   hovered_options_overlay = nil
   hovered_confirm_button = nil
+  show_left_cluster_at_confirm_position()
   show_base_pause_entities()
   hide_right_panels()
   hide_state_specific_buttons()
@@ -735,8 +874,7 @@ function pause_menu_confirm_restart_on_enter(entity)
 end
 
 function pause_menu_confirm_restart_on_update(entity)
-  update_scroll_pair(RESTART_YES_SCROLL_NAMES)
-  update_scroll_pair(RESTART_NO_SCROLL_NAMES)
+  update_left_cluster_animation()
   update_left_hover_from_mouse()
   update_confirm_hover_from_mouse()
 
@@ -752,6 +890,7 @@ function pause_menu_confirm_quit_on_enter(entity)
   hovered_left_button = nil
   hovered_options_overlay = nil
   hovered_confirm_button = nil
+  show_left_cluster_at_menu_position()
   show_base_pause_entities()
   hide_right_panels()
   hide_state_specific_buttons()
@@ -763,6 +902,7 @@ function pause_menu_confirm_quit_on_enter(entity)
 end
 
 function pause_menu_confirm_quit_on_update(entity)
+  update_left_cluster_animation()
   update_left_hover_from_mouse()
   update_confirm_hover_from_mouse()
 
