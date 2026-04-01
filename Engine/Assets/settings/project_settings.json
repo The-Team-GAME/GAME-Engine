@@ -119589,7 +119589,60 @@
                 }
             ],
             "texture_path": "images/TilesFix.png",
-            "tile_collider_configs": []
+            "tile_collider_configs": [
+                {
+                    "first": 2,
+                    "second": {
+                        "aabb_height": 3.897369384765625,
+                        "aabb_offset": {
+                            "x": 30.503002166748047,
+                            "y": 30.422496795654297
+                        },
+                        "aabb_width": 3.575439453125,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 3,
+                    "second": {
+                        "aabb_height": 19.2515869140625,
+                        "aabb_offset": {
+                            "x": -21.166988372802734,
+                            "y": 22.37420654296875
+                        },
+                        "aabb_width": 21.66602325439453,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 10,
+                    "second": {
+                        "aabb_height": 20.539291381835938,
+                        "aabb_offset": {
+                            "x": 20.20117950439453,
+                            "y": -21.73035430908203
+                        },
+                        "aabb_width": 23.597640991210938,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 11,
+                    "second": {
+                        "aabb_height": 16.67609405517578,
+                        "aabb_offset": {
+                            "x": -23.983877182006836,
+                            "y": -23.66195297241211
+                        },
+                        "aabb_width": 16.032245635986328,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                }
+            ]
         },
         {
             "animation_config": {
