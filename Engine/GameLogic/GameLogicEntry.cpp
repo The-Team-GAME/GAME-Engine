@@ -43,6 +43,7 @@
 #include "GameStates/OpeningCutsceneState.h"
 #include "GameStates/CreditsCutsceneState.h"
 #include "GameStates/EnteringTrainCutsceneState.h"
+#include "GameStates/EndCutsceneState.h"
 
 // Game systems
 #include "Systems/HealthSystem.h"
@@ -526,6 +527,7 @@ static void register_scenes()
   Engine::SceneManager::register_scene<OpeningCutsceneState>("OpeningCutsceneState");
   Engine::SceneManager::register_scene<CreditsCutsceneState>("CreditsCutsceneState");
   Engine::SceneManager::register_scene<EnteringTrainCutsceneState>("EnteringTrainCutsceneState");
+  Engine::SceneManager::register_scene<EndCutsceneState>("EndCutsceneState");
 }
 
 static void register_systems()
