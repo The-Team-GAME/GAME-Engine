@@ -187,8 +187,20 @@ local CONFIRM_HOVER_KEY_BY_ENTITY_NAME = {
   [CONFIRM_NO_BUTTON_NAME] = "no",
 }
 
+local OPTION_ROW_ENTITIES = {
+  { OPTIONS_BGM_LABEL_NAME, OPTIONS_BGM_BAR_NAME, BGM_DECREASE_BUTTON_NAME, BGM_INCREASE_BUTTON_NAME },
+  { OPTIONS_SFX_LABEL_NAME, OPTIONS_SFX_BAR_NAME, SFX_DECREASE_BUTTON_NAME, SFX_INCREASE_BUTTON_NAME },
+  { OPTIONS_SCREEN_LABEL_NAME, SCREEN_LEFT_BUTTON_NAME, WINDOWED_BUTTON_NAME, FULLSCREEN_BUTTON_NAME, SCREEN_RIGHT_BUTTON_NAME },
+}
+
+local OPTION_ROW_FOCUSED_ALPHA = 1.0
+local OPTION_ROW_UNFOCUSED_ALPHA = 0.72
+
 local hovered_left_button = nil
+local selected_left_button = LEFT_HOVER_TARGETS[1].key
 local hovered_confirm_button = nil
+local selected_confirm_button = CONFIRM_HOVER_TARGETS[1].key
+local pause_options_selected_index = 1
 local left_cluster_base_positions = {}
 local left_cluster_base_bounds = nil
 local left_cluster_anim = {}
@@ -197,6 +209,36 @@ local options_textures_warmed = false
 
 local function clamp(value, min_value, max_value)
   return math.min(math.max(value, min_value), max_value)
+end
+
+local function wrap_index(index, count)
+  if count <= 0 then
+    return 1
+  end
+  if index < 1 then
+    return count
+  end
+  if index > count then
+    return 1
+  end
+  return index
+end
+
+local function get_target_index(entries, key)
+  for index, entry in ipairs(entries) do
+    if entry.key == key then
+      return index
+    end
+  end
+  return 1
+end
+
+local function is_confirm_pressed()
+  return Input.is_pressed(Key.Enter) or Input.is_pressed(Key.Space)
+end
+
+local function should_show_selection_hover()
+  return not Input.was_last_input_mouse()
 end
 
 local function ease_out_cubic(t)
@@ -210,6 +252,10 @@ end
 
 local function get_pause_controller()
   return get_named_entity(PAUSE_CONTROLLER_NAME)
+end
+
+local function is_pause_controller(entity)
+  return entity and entity:is_valid() and entity:get_name() == PAUSE_CONTROLLER_NAME
 end
 
 local function get_pause_state_machine()
@@ -570,10 +616,24 @@ local function get_default_left_panel_texture()
   return LEFT_PANEL_TEXTURES.menu
 end
 
+local function get_active_left_button()
+  return hovered_left_button or selected_left_button
+end
+
 local function refresh_left_panel()
   local path = get_default_left_panel_texture()
-  if hovered_left_button ~= nil then
-    path = LEFT_PANEL_TEXTURES[hovered_left_button] or path
+  if hovered_left_button == nil and not should_show_selection_hover() then
+    restore_entity_base_layer(LEFT_PANEL_NAME)
+    set_entity_texture(LEFT_PANEL_NAME, path)
+    return
+  end
+
+  local active_button = get_active_left_button()
+  if active_button ~= nil then
+    path = LEFT_PANEL_TEXTURES[active_button] or path
+    raise_entity_to_hover_layer(LEFT_PANEL_NAME)
+  else
+    restore_entity_base_layer(LEFT_PANEL_NAME)
   end
 
   set_entity_texture(LEFT_PANEL_NAME, path)
@@ -651,6 +711,8 @@ local function warm_options_texture_variants()
   options_textures_warmed = true
 end
 
+local sync_option_focus_visuals
+
 local function sync_options_visuals()
   set_entity_texture(OPTIONS_BGM_BAR_NAME, get_volume_bar_path(volume_to_step(Settings.get_bgm_volume())))
   set_entity_texture(OPTIONS_SFX_BAR_NAME, get_volume_bar_path(volume_to_step(Settings.get_sfx_volume())))
@@ -658,37 +720,89 @@ local function sync_options_visuals()
   local is_fullscreen = Settings.get_fullscreen()
   set_entity_texture(WINDOWED_BUTTON_NAME, is_fullscreen and OPTIONS_TEXTURES.windowed_unselected or OPTIONS_TEXTURES.windowed)
   set_entity_texture(FULLSCREEN_BUTTON_NAME, is_fullscreen and OPTIONS_TEXTURES.fullscreen or OPTIONS_TEXTURES.fullscreen_unselected)
+
+  sync_option_focus_visuals()
+end
+
+sync_option_focus_visuals = function()
+  local show_focus = should_show_selection_hover()
+  for row_index, entity_names in ipairs(OPTION_ROW_ENTITIES) do
+    local alpha = 1.0
+    if show_focus then
+      alpha = row_index == pause_options_selected_index and OPTION_ROW_FOCUSED_ALPHA or OPTION_ROW_UNFOCUSED_ALPHA
+    end
+    for _, entity_name in ipairs(entity_names) do
+      set_entity_alpha(entity_name, alpha)
+    end
+  end
+end
+
+local function set_option_selection(index)
+  pause_options_selected_index = wrap_index(index, #OPTION_ROW_ENTITIES)
+  sync_option_focus_visuals()
 end
 
 local function hide_options_hover_overlay()
   return
 end
 
+local function get_confirm_texture_set()
+  return {
+    yes_default = CONFIRM_TEXTURES.quit_yes_default,
+    yes_hover = CONFIRM_TEXTURES.quit_yes_hover,
+    no_default = CONFIRM_TEXTURES.quit_no_default,
+    no_hover = CONFIRM_TEXTURES.quit_no_hover,
+  }
+end
+
+local function get_active_confirm_choice()
+  return hovered_confirm_button or selected_confirm_button
+end
+
 local function reset_confirm_quit_visuals()
-  set_entity_texture(CONFIRM_QUIT_YES_NAME, CONFIRM_TEXTURES.quit_yes_default)
-  set_entity_texture(CONFIRM_QUIT_NO_NAME, CONFIRM_TEXTURES.quit_no_default)
+  local textures = get_confirm_texture_set()
+  set_entity_texture(CONFIRM_QUIT_YES_NAME, textures.yes_default)
+  set_entity_texture(CONFIRM_QUIT_NO_NAME, textures.no_default)
   restore_entity_base_layer(CONFIRM_QUIT_YES_NAME)
   restore_entity_base_layer(CONFIRM_QUIT_NO_NAME)
 end
 
-local function apply_confirm_hover(choice)
-  hovered_confirm_button = choice
+local function apply_confirm_visual(choice)
+  if hovered_confirm_button == nil and not should_show_selection_hover() then
+    reset_confirm_quit_visuals()
+    return
+  end
 
-  if is_pause_state("ConfirmRestart") or is_pause_state("ConfirmQuit") then
-    if choice == "yes" then
-      set_entity_texture(CONFIRM_QUIT_YES_NAME, CONFIRM_TEXTURES.quit_yes_hover)
-      set_entity_texture(CONFIRM_QUIT_NO_NAME, CONFIRM_TEXTURES.quit_no_default)
+  local textures = get_confirm_texture_set()
+
+  if choice == "yes" then
+      set_entity_texture(CONFIRM_QUIT_YES_NAME, textures.yes_hover)
+      set_entity_texture(CONFIRM_QUIT_NO_NAME, textures.no_default)
       raise_entity_to_hover_layer(CONFIRM_QUIT_YES_NAME)
       restore_entity_base_layer(CONFIRM_QUIT_NO_NAME)
-    elseif choice == "no" then
-      set_entity_texture(CONFIRM_QUIT_YES_NAME, CONFIRM_TEXTURES.quit_yes_default)
-      set_entity_texture(CONFIRM_QUIT_NO_NAME, CONFIRM_TEXTURES.quit_no_hover)
+  elseif choice == "no" then
+      set_entity_texture(CONFIRM_QUIT_YES_NAME, textures.yes_default)
+      set_entity_texture(CONFIRM_QUIT_NO_NAME, textures.no_hover)
       restore_entity_base_layer(CONFIRM_QUIT_YES_NAME)
       raise_entity_to_hover_layer(CONFIRM_QUIT_NO_NAME)
-    else
-      reset_confirm_quit_visuals()
-    end
+  else
+    reset_confirm_quit_visuals()
   end
+end
+
+local function apply_confirm_hover(choice)
+  hovered_confirm_button = choice
+  if choice ~= nil then
+    selected_confirm_button = choice
+  end
+
+  apply_confirm_visual(get_active_confirm_choice())
+end
+
+local function set_confirm_selection(choice)
+  hovered_confirm_button = nil
+  selected_confirm_button = choice
+  apply_confirm_visual(selected_confirm_button)
 end
 
 local function update_left_hover_from_mouse()
@@ -733,15 +847,33 @@ end
 local function set_left_hover(button_name)
   hovered_left_button = button_name
   if button_name ~= nil then
-    raise_entity_to_hover_layer(LEFT_PANEL_NAME)
-  else
-    restore_entity_base_layer(LEFT_PANEL_NAME)
+    selected_left_button = button_name
   end
   refresh_left_panel()
 end
 
 local function clear_left_hover()
   set_left_hover(nil)
+end
+
+local function set_left_selection(button_name)
+  hovered_left_button = nil
+  if button_name ~= nil then
+    selected_left_button = button_name
+  end
+  refresh_left_panel()
+end
+
+local function move_left_selection(delta)
+  local current_index = get_target_index(LEFT_HOVER_TARGETS, selected_left_button)
+  local next_index = wrap_index(current_index + delta, #LEFT_HOVER_TARGETS)
+  set_left_selection(LEFT_HOVER_TARGETS[next_index].key)
+end
+
+local function move_confirm_selection(delta)
+  local current_index = get_target_index(CONFIRM_HOVER_TARGETS, selected_confirm_button)
+  local next_index = wrap_index(current_index + delta, #CONFIRM_HOVER_TARGETS)
+  set_confirm_selection(CONFIRM_HOVER_TARGETS[next_index].key)
 end
 
 local function change_bgm_step(delta)
@@ -796,16 +928,19 @@ local function handle_bar_click(entity_name, is_bgm)
 end
 
 function pause_menu_resume()
+  set_left_selection("resume")
   Scene.pop()
 end
 
 function pause_menu_restart()
+  set_left_selection("restart")
   if not is_pause_state("ConfirmRestart") then
     change_pause_state("ConfirmRestart")
   end
 end
 
 function pause_menu_options()
+  set_left_selection("options")
   if is_pause_state("Options") then
     change_pause_state("Menu")
   else
@@ -814,32 +949,39 @@ function pause_menu_options()
 end
 
 function pause_menu_exit()
+  set_left_selection("quit")
   if not is_pause_state("ConfirmQuit") then
     change_pause_state("ConfirmQuit")
   end
 end
 
 function pause_bgm_decrease()
+  set_option_selection(1)
   change_bgm_step(-1)
 end
 
 function pause_bgm_increase()
+  set_option_selection(1)
   change_bgm_step(1)
 end
 
 function pause_bgm_bar_click()
+  set_option_selection(1)
   handle_bar_click(OPTIONS_BGM_BAR_NAME, true)
 end
 
 function pause_sfx_decrease()
+  set_option_selection(2)
   change_sfx_step(-1)
 end
 
 function pause_sfx_increase()
+  set_option_selection(2)
   change_sfx_step(1)
 end
 
 function pause_sfx_bar_click()
+  set_option_selection(2)
   handle_bar_click(OPTIONS_SFX_BAR_NAME, false)
 end
 
@@ -848,6 +990,7 @@ function pause_set_windowed()
     return
   end
 
+  set_option_selection(3)
   Settings.set_fullscreen(false)
   sync_options_visuals()
 end
@@ -857,11 +1000,25 @@ function pause_set_fullscreen()
     return
   end
 
+  set_option_selection(3)
   Settings.set_fullscreen(true)
   sync_options_visuals()
 end
 
+local function adjust_selected_option(delta)
+  if pause_options_selected_index == 1 then
+    change_bgm_step(delta)
+  elseif pause_options_selected_index == 2 then
+    change_sfx_step(delta)
+  elseif delta < 0 then
+    pause_set_windowed()
+  elseif delta > 0 then
+    pause_set_fullscreen()
+  end
+end
+
 function pause_confirm_yes()
+  set_confirm_selection("yes")
   if is_pause_state("ConfirmRestart") then
     local level_id = Level.get_active_id()
     Scene.pop()
@@ -878,8 +1035,31 @@ function pause_confirm_yes()
 end
 
 function pause_confirm_no()
+  set_confirm_selection("no")
   if is_pause_state("ConfirmRestart") or is_pause_state("ConfirmQuit") then
     change_pause_state("Menu")
+  end
+end
+
+local function activate_selected_left_button()
+  local active_button = get_active_left_button()
+  if active_button == "resume" then
+    pause_menu_resume()
+  elseif active_button == "restart" then
+    pause_menu_restart()
+  elseif active_button == "options" then
+    pause_menu_options()
+  elseif active_button == "quit" then
+    pause_menu_exit()
+  end
+end
+
+local function activate_selected_confirm_button()
+  local choice = get_active_confirm_choice()
+  if choice == "yes" then
+    pause_confirm_yes()
+  else
+    pause_confirm_no()
   end
 end
 
@@ -966,12 +1146,30 @@ function pause_menu_menu_on_enter(entity)
 end
 
 function pause_menu_menu_on_update(entity)
+  if not is_pause_controller(entity) then
+    return
+  end
+
   update_left_cluster_animation()
   update_scroll_pair(MENU_SCROLL_NAMES)
   update_left_hover_from_mouse()
+  refresh_left_panel()
 
   if Input.is_pressed(Key.Escape) then
     pause_menu_resume()
+    return
+  end
+
+  if Input.is_pressed(Key.W) or Input.is_pressed(Key.A) then
+    move_left_selection(-1)
+  end
+
+  if Input.is_pressed(Key.S) or Input.is_pressed(Key.D) then
+    move_left_selection(1)
+  end
+
+  if is_confirm_pressed() then
+    activate_selected_left_button()
   end
 end
 
@@ -981,11 +1179,13 @@ end
 function pause_menu_options_on_enter(entity)
   hovered_left_button = nil
   hovered_confirm_button = nil
+  selected_left_button = "options"
   show_base_pause_entities()
   hide_left_cluster()
   hide_right_panels()
   hide_state_specific_buttons()
   set_entities_visible(OPTIONS_BUTTON_NAMES, true)
+  set_option_selection(1)
   show_options_panel()
   refresh_left_panel()
   update_left_hover_from_mouse()
@@ -993,12 +1193,35 @@ function pause_menu_options_on_enter(entity)
 end
 
 function pause_menu_options_on_update(entity)
+  if not is_pause_controller(entity) then
+    return
+  end
+
   update_left_cluster_animation()
   update_left_hover_from_mouse()
   update_options_hover_from_mouse()
+  refresh_left_panel()
+  sync_options_visuals()
 
   if Input.is_pressed(Key.Escape) then
     change_pause_state("Menu")
+    return
+  end
+
+  if Input.is_pressed(Key.W) then
+    set_option_selection(pause_options_selected_index - 1)
+  end
+
+  if Input.is_pressed(Key.S) then
+    set_option_selection(pause_options_selected_index + 1)
+  end
+
+  if Input.is_pressed(Key.A) then
+    adjust_selected_option(-1)
+  end
+
+  if Input.is_pressed(Key.D) then
+    adjust_selected_option(1)
   end
 end
 
@@ -1009,24 +1232,45 @@ end
 function pause_menu_confirm_restart_on_enter(entity)
   hovered_left_button = nil
   hovered_confirm_button = nil
+  selected_left_button = "restart"
   show_base_pause_entities()
   hide_left_cluster()
   hide_right_panels()
   hide_state_specific_buttons()
   set_entities_visible(CONFIRM_BUTTON_NAMES, true)
   show_confirm_restart_panel()
+  set_confirm_selection(CONFIRM_HOVER_TARGETS[1].key)
   refresh_left_panel()
   update_left_hover_from_mouse()
   update_confirm_hover_from_mouse()
 end
 
 function pause_menu_confirm_restart_on_update(entity)
+  if not is_pause_controller(entity) then
+    return
+  end
+
   update_left_cluster_animation()
   update_left_hover_from_mouse()
   update_confirm_hover_from_mouse()
+  refresh_left_panel()
+  apply_confirm_visual(get_active_confirm_choice())
 
   if Input.is_pressed(Key.Escape) then
     change_pause_state("Menu")
+    return
+  end
+
+  if Input.is_pressed(Key.W) or Input.is_pressed(Key.A) then
+    move_confirm_selection(-1)
+  end
+
+  if Input.is_pressed(Key.S) or Input.is_pressed(Key.D) then
+    move_confirm_selection(1)
+  end
+
+  if is_confirm_pressed() then
+    activate_selected_confirm_button()
   end
 end
 
@@ -1036,24 +1280,45 @@ end
 function pause_menu_confirm_quit_on_enter(entity)
   hovered_left_button = nil
   hovered_confirm_button = nil
+  selected_left_button = "quit"
   show_base_pause_entities()
   hide_left_cluster()
   hide_right_panels()
   hide_state_specific_buttons()
   set_entities_visible(CONFIRM_BUTTON_NAMES, true)
   show_confirm_quit_panel()
+  set_confirm_selection(CONFIRM_HOVER_TARGETS[1].key)
   refresh_left_panel()
   update_left_hover_from_mouse()
   update_confirm_hover_from_mouse()
 end
 
 function pause_menu_confirm_quit_on_update(entity)
+  if not is_pause_controller(entity) then
+    return
+  end
+
   update_left_cluster_animation()
   update_left_hover_from_mouse()
   update_confirm_hover_from_mouse()
+  refresh_left_panel()
+  apply_confirm_visual(get_active_confirm_choice())
 
   if Input.is_pressed(Key.Escape) then
     change_pause_state("Menu")
+    return
+  end
+
+  if Input.is_pressed(Key.W) or Input.is_pressed(Key.A) then
+    move_confirm_selection(-1)
+  end
+
+  if Input.is_pressed(Key.S) or Input.is_pressed(Key.D) then
+    move_confirm_selection(1)
+  end
+
+  if is_confirm_pressed() then
+    activate_selected_confirm_button()
   end
 end
 
