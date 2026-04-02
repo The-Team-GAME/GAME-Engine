@@ -36,6 +36,7 @@ namespace Engine {
   {
     namespace {
       static constexpr const char* PLAYER_HEARTBEAT_EVENT = "event:/SFX/PlayerHeartBeat";
+      static constexpr const char* PLAYER_HEARTBEAT_INSTANCE = "player_heartbeat";
     }
 
     // ---------------------------------------------------------------------------
@@ -93,6 +94,7 @@ namespace Engine {
       // Tick damage vignette fade-out once per frame before processing entities.
       void update() override {
         DamageVignette::update(Engine::Time::get_fixed_dt());
+        Engine::ECS::System::update();
       }
 
       void update_entity(Engine::ECS::Entity e) override {
@@ -100,6 +102,8 @@ namespace Engine {
 
         auto* hp = e.get_component<Health>();
         if (!hp) return;
+
+        const bool is_player = e.has_component<Player>();
 
         const float dt = Engine::Time::get_fixed_dt();
         const int health_before_regen = hp->value;
@@ -116,10 +120,18 @@ namespace Engine {
 
           while (cfg->carry >= 1.0f) { hp->heal(1);   cfg->carry -= 1.0f; }
           while (cfg->carry <= -1.0f) { hp->damage(1); cfg->carry += 1.0f; }
+        }
 
-          // Heartbeat starts at low health (<=2). Stop it once the player regens above that threshold.
-          if (e.has_component<Player>() && hp->value > 2) {
-            Engine::AudioSystem::stopEvent(PLAYER_HEARTBEAT_EVENT, true);
+        if (is_player) {
+          const bool should_play_heartbeat = hp->value > 0 && hp->value <= 2;
+          const bool heartbeat_is_playing = Engine::AudioSystem::isEventInstancePlaying(PLAYER_HEARTBEAT_INSTANCE);
+
+          if (should_play_heartbeat && !heartbeat_is_playing) {
+            Engine::AudioSystem::createEventInstance(PLAYER_HEARTBEAT_INSTANCE, PLAYER_HEARTBEAT_EVENT);
+            Engine::AudioSystem::startEventInstance(PLAYER_HEARTBEAT_INSTANCE);
+          }
+          else if (!should_play_heartbeat && heartbeat_is_playing) {
+            Engine::AudioSystem::stopEventInstance(PLAYER_HEARTBEAT_INSTANCE, true);
           }
         }
 
@@ -153,7 +165,6 @@ namespace Engine {
             }
           }
         }
-        bool is_player = e.has_component<Player>();
 
         // Don't destroy the player here — let the Death state machine handle it
         if (!is_player && hp->value <= 0) {

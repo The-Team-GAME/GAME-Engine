@@ -75,6 +75,7 @@
 
 namespace {
   static constexpr const char* PLAYER_HEARTBEAT_EVENT = "event:/SFX/PlayerHeartBeat";
+  static constexpr const char* PLAYER_HEARTBEAT_INSTANCE = "player_heartbeat";
 }
 
 // Defined in States/CatMonkeyStateCallbacks.cpp
@@ -282,7 +283,6 @@ static void register_collision_callbacks()
           return;
         }
         Log::info("Player took damage!");
-        const int previous_health = health->value;
 
         // Decrease HP by 1 per hit
         health->damage(1);
@@ -296,23 +296,11 @@ static void register_collision_callbacks()
           Engine::AudioSystem::playEvent("event:/SFX/PlayerHurt");
           Log::info("Playing FMOD event: event:/SFX/PlayerHurt");
         }
-        
-        
-        if (previous_health > 2 && health->value > 0 && health->value <= 2)
-        {
-          Engine::AudioSystem::playEvent(PLAYER_HEARTBEAT_EVENT);
-          Log::info("Playing FMOD event: {}", PLAYER_HEARTBEAT_EVENT);
-        }
-        else if (health->value > 2)
-        {
-          Engine::AudioSystem::stopEvent(PLAYER_HEARTBEAT_EVENT, true);
-          Log::info("Stopping FMOD event: {}", PLAYER_HEARTBEAT_EVENT);
-        }
-        
 
         // Trigger death state immediately when HP reaches 0
         if (health->is_dead())
         {
+          Engine::AudioSystem::stopEventInstance(PLAYER_HEARTBEAT_INSTANCE, true);
           Engine::AudioSystem::stopEvent(PLAYER_HEARTBEAT_EVENT, true);
           Log::info("Player is dead!");
           Components::StateMachine* state_machine = player_entity.get_component<Components::StateMachine>();
