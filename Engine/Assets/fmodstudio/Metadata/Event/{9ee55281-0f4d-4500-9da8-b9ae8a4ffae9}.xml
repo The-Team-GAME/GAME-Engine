@@ -5,7 +5,7 @@
 			<value>PlayerHeartBeat</value>
 		</property>
 		<property name="outputFormat">
-			<value>2</value>
+			<value>1</value>
 		</property>
 		<relationship name="folder">
 			<destination>{f1471c80-c6c5-42c6-a7c4-35d81a229e0e}</destination>
@@ -129,7 +129,6 @@
 	</object>
 	<object class="MixerBusEffectChain" id="{7690acfa-76cb-461b-adaf-55a0dd0d7266}">
 		<relationship name="effects">
-			<destination>{ce519dfd-4fab-4ac4-a449-5a216a265268}</destination>
 			<destination>{d8b158d4-43d6-419b-8b92-ed1812df6384}</destination>
 		</relationship>
 	</object>
@@ -141,23 +140,6 @@
 		</relationship>
 	</object>
 	<object class="MixerBusPanner" id="{f20c66a0-f3b9-4abf-a19c-fb2f8d497e97}" />
-	<object class="SpatialiserEffect" id="{ce519dfd-4fab-4ac4-a449-5a216a265268}">
-		<property name="minimumDistance">
-			<value>0</value>
-		</property>
-		<property name="maximumDistance">
-			<value>10000</value>
-		</property>
-		<property name="overrideRange">
-			<value>true</value>
-		</property>
-		<property name="extentMode">
-			<value>1</value>
-		</property>
-		<property name="soundSize">
-			<value>160</value>
-		</property>
-	</object>
 	<object class="MixerBusFader" id="{d8b158d4-43d6-419b-8b92-ed1812df6384}" />
 	<object class="MixerBusFader" id="{44a43132-d8bf-42b7-b1bc-23888639024b}" />
 </objects>

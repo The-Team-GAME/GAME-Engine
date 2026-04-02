@@ -167,12 +167,12 @@ namespace Engine
     {
     case UpgradeFlowState::Available:
     {
+      Engine::AudioSystem::playEvent("event:/SFXUI/UpgradePopup");
       break;
     }
     case UpgradeFlowState::Rolling:
     {
       // Roll cards immediately
-      Engine::AudioSystem::playEvent("event:/SFXUI/UpgradePopup");
       mgr.roll_cards();
       break;
     }
