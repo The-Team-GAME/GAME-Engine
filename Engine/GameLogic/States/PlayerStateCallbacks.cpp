@@ -4,6 +4,8 @@
 //
 // author:  Cheng Ming Xian (100%)
 //          Primary author
+//          Chew Shee Yang
+//          Initial Author
 // 
 // email:   c.mingxian@digipen.edu
 //          chew.s@digipen.edu
