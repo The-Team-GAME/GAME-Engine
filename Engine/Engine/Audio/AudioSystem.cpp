@@ -486,7 +486,7 @@ namespace Engine {
       return allOk;
     }
 
-    bool playEventAtPosition(const ::std::string& eventPath, const Math::Vec2D& position, float minDistance, float maxDistance, float soundSpread)
+    bool playEventAtPosition(const ::std::string& eventPath, const Math::Vec2D& position, float minDistance, float maxDistance, float soundSpread, float volume)
     {
       if (!gStudioSystem)
         return false;
@@ -519,6 +519,7 @@ namespace Engine {
       attributes.up = { 0.0f, 0.0f, 1.0f };
 
       FMOD_Check(instance->set3DAttributes(&attributes), "set3DAttributes");
+      FMOD_Check(instance->setVolume(std::max(0.0f, volume)), "setVolume");
       
       // Set min/max distance for volume falloff:
       // - Within minDistance: full volume, mostly centered
