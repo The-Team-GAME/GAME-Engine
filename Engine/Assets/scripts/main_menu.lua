@@ -6,11 +6,14 @@ local SPLASH_SFX_SNORE_EVENT = "event:/SFX/SplashSnoreSFX"
 local SPLASH_SFX_TRAIN_EVENT = "event:/SFX/SplashTrainSFX"
 
 local OPTIONS_CONTROLLER_NAME = "Whole train"
+local OPTIONS_CAT_PREFAB_PATH = "prefabs/cat_options_idle.json"
+local MAIN_MENU_OPTIONS_CAT_NAME = "MainMenuOptionsCat"
 
 local button_anim = {}
 local menu_anim = {}
 local options_active = false
 local options_transition = nil
+local options_cat_prefab = nil
 
 local MENU_BUTTON_NAMES = {
   "PlayButton",
@@ -58,6 +61,7 @@ local MAIN_MENU_ENTITY_NAMES = {
 
 local OPTIONS_ENTITY_NAMES = {
   "OptionsPanel",
+  MAIN_MENU_OPTIONS_CAT_NAME,
   "OptionsBGMLabel",
   "OptionsSFXLabel",
   "OptionsScreenLabel",
@@ -108,6 +112,7 @@ local BUTTON_START_POSITIONS = {
 
 local OPTIONS_TARGETS = {
   OptionsPanel = { x = 933.2921, y = 394.4612, delay = 0.00 },
+  MainMenuOptionsCat = { x = 483.2921, y = 579.4612, delay = 0.02 },
   OptionsBGMLabel = { x = 645.8967, y = 256.8189, delay = 0.03 },
   OptionsBGMBar = { x = 877.0935, y = 303.8838, delay = 0.05 },
   OptionsBGMLeft = { x = 626.0000, y = 303.8838, delay = 0.07 },
@@ -168,6 +173,31 @@ end
 
 local function get_named_entity(name)
   return ECS.get_entity_by_name(name)
+end
+
+local function get_options_cat_prefab()
+  if options_cat_prefab == nil then
+    options_cat_prefab = Resources.load_prefab(OPTIONS_CAT_PREFAB_PATH)
+  end
+  return options_cat_prefab
+end
+
+local function ensure_main_menu_options_cat()
+  local cat = get_named_entity(MAIN_MENU_OPTIONS_CAT_NAME)
+  if cat and cat:is_valid() then
+    return cat
+  end
+
+  cat = ECS.instantiate_prefab(get_options_cat_prefab())
+  if not cat or not cat:is_valid() then
+    return nil
+  end
+
+  cat:set_name(MAIN_MENU_OPTIONS_CAT_NAME)
+  cat:clear_layers()
+  cat:add_to_layer("default")
+  cat:add_to_layer("overlay_items_1")
+  return cat
 end
 
 local function wrap_index(index, count)
@@ -676,6 +706,7 @@ end
 
 function main_menu_start_on_enter(entity)
   if is_options_controller(entity) then
+    ensure_main_menu_options_cat()
     options_active = false
     options_transition = nil
     hovered_menu_button_index = nil
