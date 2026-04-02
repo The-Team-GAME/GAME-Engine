@@ -18,6 +18,7 @@
 #include "Precompiled.h"
 #include "Logger.h"
 #include <array>
+#include <cstddef>
 #include <glm/glm.hpp>
 #include "Perf.h"
 #include "WindowManager.h"
@@ -30,7 +31,8 @@
 
 namespace
 {
-  using InputStateArray = std::array<bool, GLFW_MOUSE_BUTTON_LAST + GLFW_KEY_LAST + 2>;
+  constexpr std::size_t INPUT_STATE_COUNT = static_cast<std::size_t>(GLFW_MOUSE_BUTTON_LAST + GLFW_KEY_LAST + 2);
+  using InputStateArray = std::array<bool, INPUT_STATE_COUNT>;
 
   constexpr float GAMEPAD_AXIS_PRESS_THRESHOLD = 0.45f;
 
@@ -82,17 +84,22 @@ namespace
     return raw_states[idx] || virtual_states[idx];
   }
 
-  struct GamepadNavigationState
+  struct GamepadInputState
   {
     bool up = false;
     bool down = false;
     bool left = false;
     bool right = false;
-    bool confirm = false;
-    bool cancel = false;
+    bool jump = false;
+    bool attack = false;
+    bool downsmash = false;
+    bool uppercut = false;
+    bool dash = false;
+    bool upgrades = false;
+    bool pause = false;
   };
 
-  GamepadNavigationState poll_gamepad_navigation()
+  GamepadInputState poll_gamepad_input()
   {
 #if GLFW_HAS_GAMEPAD_API && !defined(EMSCRIPTEN_USE_EMBEDDED_GLFW3)
     for (int joystick_id = GLFW_JOYSTICK_1; joystick_id <= GLFW_JOYSTICK_LAST; ++joystick_id)
@@ -108,7 +115,7 @@ namespace
         continue;
       }
 
-      GamepadNavigationState state{};
+      GamepadInputState state{};
       state.up = gamepad_state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_UP] == GLFW_PRESS
         || gamepad_state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y] <= -GAMEPAD_AXIS_PRESS_THRESHOLD;
       state.down = gamepad_state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_DOWN] == GLFW_PRESS
@@ -117,9 +124,13 @@ namespace
         || gamepad_state.axes[GLFW_GAMEPAD_AXIS_LEFT_X] <= -GAMEPAD_AXIS_PRESS_THRESHOLD;
       state.right = gamepad_state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] == GLFW_PRESS
         || gamepad_state.axes[GLFW_GAMEPAD_AXIS_LEFT_X] >= GAMEPAD_AXIS_PRESS_THRESHOLD;
-      state.confirm = gamepad_state.buttons[GLFW_GAMEPAD_BUTTON_A] == GLFW_PRESS;
-      state.cancel = gamepad_state.buttons[GLFW_GAMEPAD_BUTTON_B] == GLFW_PRESS
-        || gamepad_state.buttons[GLFW_GAMEPAD_BUTTON_BACK] == GLFW_PRESS
+      state.jump = gamepad_state.buttons[GLFW_GAMEPAD_BUTTON_A] == GLFW_PRESS;
+      state.downsmash = gamepad_state.buttons[GLFW_GAMEPAD_BUTTON_B] == GLFW_PRESS;
+      state.attack = gamepad_state.buttons[GLFW_GAMEPAD_BUTTON_X] == GLFW_PRESS;
+      state.uppercut = gamepad_state.buttons[GLFW_GAMEPAD_BUTTON_Y] == GLFW_PRESS;
+      state.upgrades = gamepad_state.buttons[GLFW_GAMEPAD_BUTTON_LEFT_BUMPER] == GLFW_PRESS;
+      state.dash = gamepad_state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER] == GLFW_PRESS;
+      state.pause = gamepad_state.buttons[GLFW_GAMEPAD_BUTTON_BACK] == GLFW_PRESS
         || gamepad_state.buttons[GLFW_GAMEPAD_BUTTON_START] == GLFW_PRESS;
       return state;
     }
@@ -141,7 +152,7 @@ namespace
         continue;
       }
 
-      GamepadNavigationState state{};
+      GamepadInputState state{};
       state.up = (buttons_count > 10 && buttons[10] == GLFW_PRESS)
         || (axes_count > 1 && axes[1] <= -GAMEPAD_AXIS_PRESS_THRESHOLD);
       state.down = (buttons_count > 12 && buttons[12] == GLFW_PRESS)
@@ -150,9 +161,13 @@ namespace
         || (axes_count > 0 && axes[0] <= -GAMEPAD_AXIS_PRESS_THRESHOLD);
       state.right = (buttons_count > 11 && buttons[11] == GLFW_PRESS)
         || (axes_count > 0 && axes[0] >= GAMEPAD_AXIS_PRESS_THRESHOLD);
-      state.confirm = buttons_count > 0 && buttons[0] == GLFW_PRESS;
-      state.cancel = (buttons_count > 1 && buttons[1] == GLFW_PRESS)
-        || (buttons_count > 6 && buttons[6] == GLFW_PRESS)
+      state.jump = buttons_count > 0 && buttons[0] == GLFW_PRESS;
+      state.downsmash = buttons_count > 1 && buttons[1] == GLFW_PRESS;
+      state.attack = buttons_count > 2 && buttons[2] == GLFW_PRESS;
+      state.uppercut = buttons_count > 3 && buttons[3] == GLFW_PRESS;
+      state.upgrades = buttons_count > 4 && buttons[4] == GLFW_PRESS;
+      state.dash = buttons_count > 5 && buttons[5] == GLFW_PRESS;
+      state.pause = (buttons_count > 6 && buttons[6] == GLFW_PRESS)
         || (buttons_count > 7 && buttons[7] == GLFW_PRESS);
       return state;
     }
@@ -164,7 +179,7 @@ namespace
   {
     currentVirtualKeys.fill(false);
 
-    const GamepadNavigationState gamepad_state = poll_gamepad_navigation();
+    const GamepadInputState gamepad_state = poll_gamepad_input();
 
     set_virtual_key(currentVirtualKeys, Engine::KeyCode::W, gamepad_state.up);
     set_virtual_key(currentVirtualKeys, Engine::KeyCode::Up, gamepad_state.up);
@@ -174,9 +189,13 @@ namespace
     set_virtual_key(currentVirtualKeys, Engine::KeyCode::Left, gamepad_state.left);
     set_virtual_key(currentVirtualKeys, Engine::KeyCode::D, gamepad_state.right);
     set_virtual_key(currentVirtualKeys, Engine::KeyCode::Right, gamepad_state.right);
-    set_virtual_key(currentVirtualKeys, Engine::KeyCode::Enter, gamepad_state.confirm);
-    set_virtual_key(currentVirtualKeys, Engine::KeyCode::Space, gamepad_state.confirm);
-    set_virtual_key(currentVirtualKeys, Engine::KeyCode::Escape, gamepad_state.cancel);
+    set_virtual_key(currentVirtualKeys, Engine::KeyCode::Space, gamepad_state.jump);
+    set_virtual_key(currentVirtualKeys, Engine::KeyCode::J, gamepad_state.attack);
+    set_virtual_key(currentVirtualKeys, Engine::KeyCode::L, gamepad_state.downsmash);
+    set_virtual_key(currentVirtualKeys, Engine::KeyCode::K, gamepad_state.uppercut);
+    set_virtual_key(currentVirtualKeys, Engine::KeyCode::ShiftLeft, gamepad_state.dash);
+    set_virtual_key(currentVirtualKeys, Engine::KeyCode::Tab, gamepad_state.upgrades);
+    set_virtual_key(currentVirtualKeys, Engine::KeyCode::Escape, gamepad_state.pause);
   }
 
   void update_any_key_pressed_state()
