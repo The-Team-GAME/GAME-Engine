@@ -19,6 +19,7 @@
 #include <unordered_map>
 #include <memory>
 #include <type_traits>
+#include <vector>
 #include "EngineExport.h"
 
 
@@ -99,6 +100,16 @@ namespace Engine
      * @brief Pops the top scene from the stack and resumes the previous one.
      */
     ENGINE_API void pop_scene();
+
+    /**
+     * @brief Defers scene stack mutations until flush_deferred_scene_changes() is called.
+     */
+    ENGINE_API void begin_deferred_scene_changes();
+
+    /**
+     * @brief Applies queued scene mutations once deferral ends.
+     */
+    ENGINE_API void flush_deferred_scene_changes();
 
     /**
      * @brief Unloads the current scene and performs cleanup.

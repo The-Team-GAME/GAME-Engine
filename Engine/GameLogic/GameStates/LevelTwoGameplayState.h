@@ -446,7 +446,9 @@ public:
       return;
     }
 
-    if (Engine::Input::is_pressed(Engine::KeyCode::Escape)) {
+    const bool pause_shortcut_pressed = Engine::Input::is_pressed_raw(Engine::KeyCode::Escape) ||
+      Engine::Input::is_pressed(Engine::KeyCode::Escape);
+    if (pause_shortcut_pressed) {
       Engine::SceneManager::push_scene("PauseState");
       return;
     }

@@ -399,11 +399,17 @@ namespace Engine
 
         // Two-phase ECS update:
         // 1. Game systems only run when not paused (or during single-step)
+        Engine::SceneManager::begin_deferred_scene_changes();
+
         if (!Engine::Time::get_paused() || single_step_requested)
         {
           Engine::SceneManager::update(); // LEgacy: Scene update
           Engine::ECS::update_game();
         }
+
+        // Apply scene mutations after the fixed-step game update so newly
+        // pushed scenes do not consume the same input edge immediately.
+        Engine::SceneManager::flush_deferred_scene_changes();
 
         // 2. Editor systems always run (gizmo, camera control, etc.)
         Engine::ECS::update_editor();
