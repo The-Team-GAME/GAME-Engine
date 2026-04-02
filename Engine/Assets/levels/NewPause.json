@@ -312,6 +312,15 @@
                         "type": "Components::Clickable"
                     },
                     {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
                         "data": {},
                         "type": "Components::UI"
                     }
@@ -398,6 +407,15 @@
                             }
                         },
                         "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
                     },
                     {
                         "data": {},
@@ -1336,6 +1354,15 @@
                         "type": "Components::Clickable"
                     },
                     {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
                         "data": {},
                         "type": "Components::UI"
                     }
@@ -1413,6 +1440,15 @@
                             }
                         },
                         "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
                     },
                     {
                         "data": {},
@@ -1494,6 +1530,15 @@
                         "type": "Components::Clickable"
                     },
                     {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
                         "data": {},
                         "type": "Components::UI"
                     }
@@ -1571,6 +1616,15 @@
                             }
                         },
                         "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
                     },
                     {
                         "data": {},
@@ -1652,6 +1706,15 @@
                         "type": "Components::Clickable"
                     },
                     {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
                         "data": {},
                         "type": "Components::UI"
                     }
@@ -1729,6 +1792,15 @@
                             }
                         },
                         "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
                     },
                     {
                         "data": {},
