@@ -8,7 +8,7 @@
 //
 // brief:   Banana projectile state machine callbacks
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 
 #include "pch.h"
@@ -43,7 +43,7 @@ namespace BananaProjectileCallbacks
     Log::info("Banana Projectile: Entered Flying state");
   }
 
-  inline void flying_on_update(Engine::ECS::Entity entity)
+  inline void flying_on_update([[maybe_unused]] Engine::ECS::Entity entity)
   {
     
   }

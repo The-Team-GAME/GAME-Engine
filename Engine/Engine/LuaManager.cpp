@@ -575,6 +575,7 @@ namespace Engine {
     input["is_pressed"]  = [](Engine::KeyCode k) { return Engine::Input::is_pressed(k);  };
     input["is_held"]     = [](Engine::KeyCode k) { return Engine::Input::is_held(k);     };
     input["is_released"] = [](Engine::KeyCode k) { return Engine::Input::is_released(k); };
+    input["was_last_input_mouse"] = []() { return Engine::Input::was_last_input_mouse(); };
 
     // Mouse position — returns x, y as two values
     input["get_mouse_position"] = [](sol::this_state ts) -> sol::object {
@@ -583,6 +584,19 @@ namespace Engine {
       sol::table t = lua.create_table();
       t["x"] = pos.x;
       t["y"] = pos.y;
+      return t;
+    };
+
+    input["get_mouse_position_if_in_viewport"] = [](sol::this_state ts) -> sol::object {
+      auto pos = Engine::Input::get_mouse_position_if_in_viewport();
+      sol::state_view lua(ts);
+      if (!pos.has_value()) {
+        return sol::make_object(lua, sol::nil);
+      }
+
+      sol::table t = lua.create_table();
+      t["x"] = pos->x;
+      t["y"] = pos->y;
       return t;
     };
 

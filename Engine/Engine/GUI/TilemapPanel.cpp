@@ -938,7 +938,7 @@ namespace TilemapPanel {
               std::sort(sorted_paths.begin(), sorted_paths.end()); // Keep frame sequence
 
               std::vector<unsigned char*> images_data;
-              int max_w = 0, max_h = 0, channels = 4;
+              int max_w = 0, max_h = 0;
               bool success = true;
               
               for (const auto& path : sorted_paths) {

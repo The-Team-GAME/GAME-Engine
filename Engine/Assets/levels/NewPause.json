@@ -5,6 +5,111 @@
                 "components": [
                     {
                         "data": {
+                            "blueprint_id": "PauseMenu",
+                            "current_state_name": "Menu",
+                            "property_anim_playing": false,
+                            "states": [
+                                {
+                                    "first": "Menu",
+                                    "second": {
+                                        "animation": null,
+                                        "audio": null,
+                                        "name": "Menu",
+                                        "on_enter_callback": {
+                                            "name": "pause_menu_menu_on_enter"
+                                        },
+                                        "on_exit_callback": {
+                                            "name": "pause_menu_menu_on_exit"
+                                        },
+                                        "on_update_callback": {
+                                            "name": "pause_menu_menu_on_update"
+                                        },
+                                        "property_animation": null
+                                    }
+                                },
+                                {
+                                    "first": "Options",
+                                    "second": {
+                                        "animation": null,
+                                        "audio": null,
+                                        "name": "Options",
+                                        "on_enter_callback": {
+                                            "name": "pause_menu_options_on_enter"
+                                        },
+                                        "on_exit_callback": {
+                                            "name": "pause_menu_options_on_exit"
+                                        },
+                                        "on_update_callback": {
+                                            "name": "pause_menu_options_on_update"
+                                        },
+                                        "property_animation": null
+                                    }
+                                },
+                                {
+                                    "first": "ConfirmRestart",
+                                    "second": {
+                                        "animation": null,
+                                        "audio": null,
+                                        "name": "ConfirmRestart",
+                                        "on_enter_callback": {
+                                            "name": "pause_menu_confirm_restart_on_enter"
+                                        },
+                                        "on_exit_callback": {
+                                            "name": "pause_menu_confirm_restart_on_exit"
+                                        },
+                                        "on_update_callback": {
+                                            "name": "pause_menu_confirm_restart_on_update"
+                                        },
+                                        "property_animation": null
+                                    }
+                                },
+                                {
+                                    "first": "ConfirmQuit",
+                                    "second": {
+                                        "animation": null,
+                                        "audio": null,
+                                        "name": "ConfirmQuit",
+                                        "on_enter_callback": {
+                                            "name": "pause_menu_confirm_quit_on_enter"
+                                        },
+                                        "on_exit_callback": {
+                                            "name": "pause_menu_confirm_quit_on_exit"
+                                        },
+                                        "on_update_callback": {
+                                            "name": "pause_menu_confirm_quit_on_update"
+                                        },
+                                        "property_animation": null
+                                    }
+                                }
+                            ]
+                        },
+                        "type": "Components::StateMachine"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1.0,
+                                "y": 1.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    }
+                ],
+                "id": 9200,
+                "layers": [
+                    "default"
+                ],
+                "name": "PauseMenuController"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
                             "a": 0.5,
                             "b": 0.0,
                             "g": 0.0,
@@ -31,13 +136,18 @@
                             }
                         },
                         "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
                     }
                 ],
-                "id": 370,
+                "id": 9201,
                 "layers": [
                     "default",
-                    "gameplay_ui_2"
-                ]
+                    "overlay_bg"
+                ],
+                "name": "PauseMenuDimmer"
             },
             {
                 "components": [
@@ -69,19 +179,338 @@
                             }
                         },
                         "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
                     }
                 ],
-                "id": 371,
+                "id": 9202,
                 "layers": [
                     "default",
-                    "gameplay_ui_3"
-                ]
+                    "overlay_items_2"
+                ],
+                "name": "PauseLeftPanel"
             },
             {
                 "components": [
                     {
                         "data": {
-                            "path": "images/UI/In-Game Pause/States/ResumeButton.png"
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "path": "images/NewMainMenu/Options/New group.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1171.6666259765625,
+                                "y": 587.5
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9203,
+                "layers": [
+                    "default",
+                    "overlay_items_1"
+                ],
+                "name": "PauseOptionsPanel"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "path": "images/NewMainMenu/Options/10.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 743.8013916015625,
+                                "y": 359.4225769042969
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 440.8333435058594,
+                                "y": 20.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "aabb": {
+                                "half_height": 10.0,
+                                "half_width": 220.4166717529297,
+                                "pos": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                }
+                            },
+                            "height": 20.0,
+                            "kinetic_friction": 1.0,
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                },
+                                "rotation": 0.0,
+                                "vertices": []
+                            },
+                            "radius": 0.0,
+                            "resolve_collisions": false,
+                            "type": "AABB",
+                            "width": 440.8333435058594
+                        },
+                        "type": "Components::BoxCollider"
+                    },
+                    {
+                        "data": {
+                            "exit_hover": {
+                                "name": ""
+                            },
+                            "on_click": {
+                                "name": "pause_bgm_bar_click"
+                            },
+                            "on_hover": {
+                                "name": ""
+                            }
+                        },
+                        "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9204,
+                "layers": [
+                    "default",
+                    "overlay_items_2"
+                ],
+                "name": "PauseOptionsBGMBar"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "path": "images/NewMainMenu/Options/10.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 744.0234985351562,
+                                "y": 468.6144104003906
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 440.8333435058594,
+                                "y": 20.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "aabb": {
+                                "half_height": 10.0,
+                                "half_width": 220.4166717529297,
+                                "pos": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                }
+                            },
+                            "height": 20.0,
+                            "kinetic_friction": 1.0,
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                },
+                                "rotation": 0.0,
+                                "vertices": []
+                            },
+                            "radius": 0.0,
+                            "resolve_collisions": false,
+                            "type": "AABB",
+                            "width": 440.8333435058594
+                        },
+                        "type": "Components::BoxCollider"
+                    },
+                    {
+                        "data": {
+                            "exit_hover": {
+                                "name": ""
+                            },
+                            "on_click": {
+                                "name": "pause_sfx_bar_click"
+                            },
+                            "on_hover": {
+                                "name": ""
+                            }
+                        },
+                        "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9205,
+                "layers": [
+                    "default",
+                    "overlay_items_2"
+                ],
+                "name": "PauseOptionsSFXBar"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "path": "images/NewMainMenu/Options/SCREEN.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 548.7061157226562,
+                                "y": 526.5672607421875
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 175.8333282470703,
+                                "y": 41.66666793823242
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9206,
+                "layers": [
+                    "default",
+                    "overlay_items_2"
+                ],
+                "name": "PauseOptionsScreenLabel"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "path": "images/NewMainMenu/Options/BGM.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 512.6046142578125,
+                                "y": 312.3576965332031
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 97.5,
+                                "y": 40.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9207,
+                "layers": [
+                    "default",
+                    "overlay_items_2"
+                ],
+                "name": "PauseOptionsBGMLabel"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/In-Game Pause/QuitGame/ARE YOU SURE.png"
                         },
                         "type": "Components::Texture"
                     },
@@ -100,57 +529,435 @@
                         "type": "Components::Transform2D"
                     },
                     {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9208,
+                "layers": [
+                    "default",
+                    "overlay_items_2"
+                ],
+                "name": "PauseConfirmPrompt"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/In-Game Pause/QuitGame/YesNotSelected.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 900.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9209,
+                "layers": [
+                    "default",
+                    "overlay_items_3"
+                ],
+                "name": "PauseConfirmQuitYes"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/In-Game Pause/QuitGame/NoNotSelected.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 900.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9210,
+                "layers": [
+                    "default",
+                    "overlay_items_3"
+                ],
+                "name": "PauseConfirmQuitNo"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "a": 1.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/In-Game Pause/RESUMEGAME/PAUSED.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 1800.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9211,
+                "layers": [
+                    "default",
+                    "overlay_items_1"
+                ],
+                "name": "PausePausedScrollA"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "a": 1.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/In-Game Pause/RESUMEGAME/PAUSED.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": -1350.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 1800.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9212,
+                "layers": [
+                    "default",
+                    "overlay_items_1"
+                ],
+                "name": "PausePausedScrollB"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/In-Game Pause/RESTART/YesNotSelected.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 1800.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9213,
+                "layers": [
+                    "default",
+                    "overlay_items_1"
+                ],
+                "name": "PauseRestartYesScrollA"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/In-Game Pause/RESTART/YesNotSelected.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": -1350.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 1800.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9214,
+                "layers": [
+                    "default",
+                    "overlay_items_1"
+                ],
+                "name": "PauseRestartYesScrollB"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/In-Game Pause/RESTART/NoGray.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 1800.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9215,
+                "layers": [
+                    "default",
+                    "overlay_items_1"
+                ],
+                "name": "PauseRestartNoScrollA"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/In-Game Pause/RESTART/NoGray.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": -1350.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 1800.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9216,
+                "layers": [
+                    "default",
+                    "overlay_items_1"
+                ],
+                "name": "PauseRestartNoScrollB"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 900.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/In-Game Pause/States/ResumeButton.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
                         "data": {
                             "aabb": {
-                                "half_height": 3.1669345293740866e-43,
-                                "half_width": -1.4020769995139077e-31,
+                                "half_height": 90.4165,
+                                "half_width": 240.0,
                                 "pos": {
                                     "x": 0.0,
                                     "y": 0.0
                                 }
                             },
-                            "height": 6.347882043391421e-43,
+                            "height": 180.833,
                             "kinetic_friction": 1.0,
                             "offset": {
-                                "x": 0.0,
-                                "y": 0.0
+                                "x": -295.0,
+                                "y": -237.917
                             },
                             "polygon": {
                                 "position": {
-                                    "x": 800.0,
-                                    "y": 450.0
+                                    "x": 505.0,
+                                    "y": 212.083
                                 },
                                 "rotation": 0.0,
                                 "vertices": [
                                     {
-                                        "x": -504.8023986816406,
-                                        "y": -354.3161315917969
+                                        "x": -240.0,
+                                        "y": -90.417
                                     },
                                     {
-                                        "x": -507.3556823730469,
-                                        "y": -167.93307495117188
+                                        "x": 240.0,
+                                        "y": -17.083
                                     },
                                     {
-                                        "x": -51.975685119628906,
-                                        "y": -165.8661346435547
+                                        "x": 240.0,
+                                        "y": 69.584
                                     },
                                     {
-                                        "x": -55.50151824951172,
-                                        "y": -250.0
+                                        "x": -240.0,
+                                        "y": 90.417
                                     }
                                 ]
                             },
                             "radius": 0.0,
                             "resolve_collisions": false,
                             "type": "POLYGON",
-                            "width": -2.8041539990278154e-31
+                            "width": 480.0
                         },
                         "type": "Components::BoxCollider"
                     },
                     {
                         "data": {
                             "exit_hover": {
-                                "name": "pause_hover_none"
+                                "name": "pause_left_button_exit_hover"
                             },
                             "on_click": {
                                 "name": "pause_menu_resume"
@@ -160,22 +967,21 @@
                             }
                         },
                         "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
                     }
                 ],
-                "id": 372,
+                "id": 9220,
                 "layers": [
                     "default",
-                    "gameplay_ui_3"
-                ]
+                    "overlay_items_3"
+                ],
+                "name": "PauseResumeButton"
             },
             {
                 "components": [
-                    {
-                        "data": {
-                            "path": "images/UI/In-Game Pause/States/RestartButton.png"
-                        },
-                        "type": "Components::Texture"
-                    },
                     {
                         "data": {
                             "position": {
@@ -192,56 +998,62 @@
                     },
                     {
                         "data": {
+                            "path": "images/UI/In-Game Pause/States/RestartButton.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
                             "aabb": {
-                                "half_height": 3.1669345293740866e-43,
-                                "half_width": -1.4020769995139077e-31,
+                                "half_height": 95.8335,
+                                "half_width": 240.0,
                                 "pos": {
                                     "x": 0.0,
                                     "y": 0.0
                                 }
                             },
-                            "height": 6.347882043391421e-43,
+                            "height": 191.667,
                             "kinetic_friction": 1.0,
                             "offset": {
-                                "x": 0.0,
-                                "y": 0.0
+                                "x": -298.333,
+                                "y": -59.166
                             },
                             "polygon": {
                                 "position": {
-                                    "x": 800.0,
-                                    "y": 450.0
+                                    "x": 501.667,
+                                    "y": 390.834
                                 },
                                 "rotation": 0.0,
                                 "vertices": [
                                     {
-                                        "x": -522.64453125,
-                                        "y": -128.81448364257813
+                                        "x": -224.167,
+                                        "y": -69.166
                                     },
                                     {
-                                        "x": -525.1974487304688,
-                                        "y": 15.015185356140137
+                                        "x": 240.0,
+                                        "y": -95.834
                                     },
                                     {
-                                        "x": -54.620059967041016,
-                                        "y": -68.02435302734375
+                                        "x": 230.0,
+                                        "y": 11.666
                                     },
                                     {
-                                        "x": -58.14589309692383,
-                                        "y": -158.23712158203125
+                                        "x": -240.0,
+                                        "y": 95.834
                                     }
                                 ]
                             },
                             "radius": 0.0,
                             "resolve_collisions": false,
                             "type": "POLYGON",
-                            "width": -2.8041539990278154e-31
+                            "width": 480.0
                         },
                         "type": "Components::BoxCollider"
                     },
                     {
                         "data": {
                             "exit_hover": {
-                                "name": "pause_hover_none"
+                                "name": "pause_left_button_exit_hover"
                             },
                             "on_click": {
                                 "name": "pause_menu_restart"
@@ -251,22 +1063,21 @@
                             }
                         },
                         "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
                     }
                 ],
-                "id": 373,
+                "id": 9221,
                 "layers": [
                     "default",
-                    "gameplay_ui_3"
-                ]
+                    "overlay_items_3"
+                ],
+                "name": "PauseRestartButton"
             },
             {
                 "components": [
-                    {
-                        "data": {
-                            "path": "images/UI/In-Game Pause/States/OptionsButtons.png"
-                        },
-                        "type": "Components::Texture"
-                    },
                     {
                         "data": {
                             "position": {
@@ -283,56 +1094,62 @@
                     },
                     {
                         "data": {
+                            "path": "images/UI/In-Game Pause/States/OptionsButtons.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
                             "aabb": {
-                                "half_height": 3.1669345293740866e-43,
-                                "half_width": -1.4020769995139077e-31,
+                                "half_height": 133.333,
+                                "half_width": 240.4165,
                                 "pos": {
                                     "x": 0.0,
                                     "y": 0.0
                                 }
                             },
-                            "height": 6.347882043391421e-43,
+                            "height": 266.666,
                             "kinetic_friction": 1.0,
                             "offset": {
-                                "x": 0.0,
-                                "y": 0.0
+                                "x": -297.916,
+                                "y": 90.0
                             },
                             "polygon": {
                                 "position": {
-                                    "x": 800.0,
-                                    "y": 450.0
+                                    "x": 502.084,
+                                    "y": 540.0
                                 },
                                 "rotation": 0.0,
                                 "vertices": [
                                     {
-                                        "x": -516.1705932617188,
-                                        "y": 209.14901733398438
+                                        "x": -217.916,
+                                        "y": -32.5
                                     },
                                     {
-                                        "x": -521.7630615234375,
-                                        "y": 55.106380462646484
+                                        "x": 240.416,
+                                        "y": -133.333
                                     },
                                     {
-                                        "x": -57.264434814453125,
-                                        "y": -43.13072204589844
+                                        "x": 230.416,
+                                        "y": -25.833
                                     },
                                     {
-                                        "x": -57.750755310058594,
-                                        "y": 52.06686782836914
+                                        "x": -240.416,
+                                        "y": 133.333
                                     }
                                 ]
                             },
                             "radius": 0.0,
                             "resolve_collisions": false,
                             "type": "POLYGON",
-                            "width": -2.8041539990278154e-31
+                            "width": 480.833
                         },
                         "type": "Components::BoxCollider"
                     },
                     {
                         "data": {
                             "exit_hover": {
-                                "name": "pause_hover_none"
+                                "name": "pause_left_button_exit_hover"
                             },
                             "on_click": {
                                 "name": "pause_menu_options"
@@ -342,22 +1159,21 @@
                             }
                         },
                         "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
                     }
                 ],
-                "id": 374,
+                "id": 9222,
                 "layers": [
                     "default",
-                    "gameplay_ui_3"
-                ]
+                    "overlay_items_3"
+                ],
+                "name": "PauseOptionsButton"
             },
             {
                 "components": [
-                    {
-                        "data": {
-                            "path": "images/UI/In-Game Pause/States/ExitButton.png"
-                        },
-                        "type": "Components::Texture"
-                    },
                     {
                         "data": {
                             "position": {
@@ -374,56 +1190,62 @@
                     },
                     {
                         "data": {
+                            "path": "images/UI/In-Game Pause/States/ExitButton.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
                             "aabb": {
-                                "half_height": 3.1669345293740866e-43,
-                                "half_width": -1.4020769995139077e-31,
+                                "half_height": 172.5,
+                                "half_width": 240.833,
                                 "pos": {
                                     "x": 0.0,
                                     "y": 0.0
                                 }
                             },
-                            "height": 6.347882043391421e-43,
+                            "height": 345.0,
                             "kinetic_friction": 1.0,
                             "offset": {
-                                "x": 0.0,
-                                "y": 0.0
+                                "x": -297.5,
+                                "y": 238.333
                             },
                             "polygon": {
                                 "position": {
-                                    "x": 800.0,
-                                    "y": 450.0
+                                    "x": 502.5,
+                                    "y": 688.333
                                 },
                                 "rotation": 0.0,
                                 "vertices": [
                                     {
-                                        "x": -518.815185546875,
-                                        "y": 386.018310546875
+                                        "x": -217.5,
+                                        "y": 2.5
                                     },
                                     {
-                                        "x": -527.4470825195313,
-                                        "y": 244.1337432861328
+                                        "x": 240.833,
+                                        "y": -172.5
                                     },
                                     {
-                                        "x": -53.82978439331055,
-                                        "y": 63.829795837402344
+                                        "x": 230.833,
+                                        "y": -61.666
                                     },
                                     {
-                                        "x": -54.31610107421875,
-                                        "y": 152.9483184814453
+                                        "x": -240.833,
+                                        "y": 172.5
                                     }
                                 ]
                             },
                             "radius": 0.0,
                             "resolve_collisions": false,
                             "type": "POLYGON",
-                            "width": -2.8041539990278154e-31
+                            "width": 481.666
                         },
                         "type": "Components::BoxCollider"
                     },
                     {
                         "data": {
                             "exit_hover": {
-                                "name": "pause_hover_none"
+                                "name": "pause_left_button_exit_hover"
                             },
                             "on_click": {
                                 "name": "pause_menu_exit"
@@ -433,13 +1255,957 @@
                             }
                         },
                         "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
                     }
                 ],
-                "id": 375,
+                "id": 9223,
                 "layers": [
                     "default",
-                    "gameplay_ui_3"
-                ]
+                    "overlay_items_3"
+                ],
+                "name": "PauseExitButton"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "position": {
+                                "x": 492.7078857421875,
+                                "y": 359.4225769042969
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 29.166666666666664,
+                                "y": 47.5
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "path": "images/NewMainMenu/Options/ArrowLeft.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "aabb": {
+                                "half_height": 23.75,
+                                "half_width": 14.583333333333332,
+                                "pos": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                }
+                            },
+                            "height": 47.5,
+                            "kinetic_friction": 1.0,
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                },
+                                "rotation": 0.0,
+                                "vertices": []
+                            },
+                            "radius": 0.0,
+                            "resolve_collisions": false,
+                            "type": "AABB",
+                            "width": 29.166666666666664
+                        },
+                        "type": "Components::BoxCollider"
+                    },
+                    {
+                        "data": {
+                            "exit_hover": {
+                                "name": ""
+                            },
+                            "on_click": {
+                                "name": "pause_bgm_decrease"
+                            },
+                            "on_hover": {
+                                "name": ""
+                            }
+                        },
+                        "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9230,
+                "layers": [
+                    "default",
+                    "overlay_items_3"
+                ],
+                "name": "PauseBGMDecreaseButton"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "position": {
+                                "x": 996.7078857421875,
+                                "y": 359.4225769042969
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 29.166666666666664,
+                                "y": 47.5
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "path": "images/NewMainMenu/Options/ArrowRight.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "aabb": {
+                                "half_height": 23.75,
+                                "half_width": 14.583333333333332,
+                                "pos": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                }
+                            },
+                            "height": 47.5,
+                            "kinetic_friction": 1.0,
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                },
+                                "rotation": 0.0,
+                                "vertices": []
+                            },
+                            "radius": 0.0,
+                            "resolve_collisions": false,
+                            "type": "AABB",
+                            "width": 29.166666666666664
+                        },
+                        "type": "Components::BoxCollider"
+                    },
+                    {
+                        "data": {
+                            "exit_hover": {
+                                "name": ""
+                            },
+                            "on_click": {
+                                "name": "pause_bgm_increase"
+                            },
+                            "on_hover": {
+                                "name": ""
+                            }
+                        },
+                        "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9231,
+                "layers": [
+                    "default",
+                    "overlay_items_3"
+                ],
+                "name": "PauseBGMIncreaseButton"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "position": {
+                                "x": 492.7078857421875,
+                                "y": 468.6144104003906
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 29.166666666666664,
+                                "y": 47.5
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "path": "images/NewMainMenu/Options/ArrowLeft.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "aabb": {
+                                "half_height": 23.75,
+                                "half_width": 14.583333333333332,
+                                "pos": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                }
+                            },
+                            "height": 47.5,
+                            "kinetic_friction": 1.0,
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                },
+                                "rotation": 0.0,
+                                "vertices": []
+                            },
+                            "radius": 0.0,
+                            "resolve_collisions": false,
+                            "type": "AABB",
+                            "width": 29.166666666666664
+                        },
+                        "type": "Components::BoxCollider"
+                    },
+                    {
+                        "data": {
+                            "exit_hover": {
+                                "name": ""
+                            },
+                            "on_click": {
+                                "name": "pause_sfx_decrease"
+                            },
+                            "on_hover": {
+                                "name": ""
+                            }
+                        },
+                        "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9232,
+                "layers": [
+                    "default",
+                    "overlay_items_3"
+                ],
+                "name": "PauseSFXDecreaseButton"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "position": {
+                                "x": 996.7078857421875,
+                                "y": 468.6144104003906
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 29.166666666666664,
+                                "y": 47.5
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "path": "images/NewMainMenu/Options/ArrowRight.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "aabb": {
+                                "half_height": 23.75,
+                                "half_width": 14.583333333333332,
+                                "pos": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                }
+                            },
+                            "height": 47.5,
+                            "kinetic_friction": 1.0,
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                },
+                                "rotation": 0.0,
+                                "vertices": []
+                            },
+                            "radius": 0.0,
+                            "resolve_collisions": false,
+                            "type": "AABB",
+                            "width": 29.166666666666664
+                        },
+                        "type": "Components::BoxCollider"
+                    },
+                    {
+                        "data": {
+                            "exit_hover": {
+                                "name": ""
+                            },
+                            "on_click": {
+                                "name": "pause_sfx_increase"
+                            },
+                            "on_hover": {
+                                "name": ""
+                            }
+                        },
+                        "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9233,
+                "layers": [
+                    "default",
+                    "overlay_items_3"
+                ],
+                "name": "PauseSFXIncreaseButton"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "position": {
+                                "x": 615.6243286132812,
+                                "y": 584.5156860351562
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 148.3333282470703,
+                                "y": 26.66666603088379
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "path": "images/NewMainMenu/Options/Windowed.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "aabb": {
+                                "half_height": 13.33333333333333,
+                                "half_width": 74.16666666666664,
+                                "pos": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                }
+                            },
+                            "height": 26.66666666666666,
+                            "kinetic_friction": 1.0,
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                },
+                                "rotation": 0.0,
+                                "vertices": []
+                            },
+                            "radius": 0.0,
+                            "resolve_collisions": false,
+                            "type": "AABB",
+                            "width": 148.3333333333333
+                        },
+                        "type": "Components::BoxCollider"
+                    },
+                    {
+                        "data": {
+                            "exit_hover": {
+                                "name": ""
+                            },
+                            "on_click": {
+                                "name": "pause_set_windowed"
+                            },
+                            "on_hover": {
+                                "name": ""
+                            }
+                        },
+                        "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9234,
+                "layers": [
+                    "default",
+                    "overlay_items_3"
+                ],
+                "name": "PauseWindowedButton"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "position": {
+                                "x": 868.1998291015625,
+                                "y": 584.5156860351562
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 160.0,
+                                "y": 26.66666603088379
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "path": "images/NewMainMenu/Options/FullscreenUnselected.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "aabb": {
+                                "half_height": 13.33333333333333,
+                                "half_width": 80.0,
+                                "pos": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                }
+                            },
+                            "height": 26.66666666666666,
+                            "kinetic_friction": 1.0,
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                },
+                                "rotation": 0.0,
+                                "vertices": []
+                            },
+                            "radius": 0.0,
+                            "resolve_collisions": false,
+                            "type": "AABB",
+                            "width": 160.0
+                        },
+                        "type": "Components::BoxCollider"
+                    },
+                    {
+                        "data": {
+                            "exit_hover": {
+                                "name": ""
+                            },
+                            "on_click": {
+                                "name": "pause_set_fullscreen"
+                            },
+                            "on_hover": {
+                                "name": ""
+                            }
+                        },
+                        "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9235,
+                "layers": [
+                    "default",
+                    "overlay_items_3"
+                ],
+                "name": "PauseFullscreenButton"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "path": "images/NewMainMenu/Options/SFX.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 506.60992431640625,
+                                "y": 413.46783447265625
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 85.83329772949219,
+                                "y": 40.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9236,
+                "layers": [
+                    "default",
+                    "overlay_items_2"
+                ],
+                "name": "PauseOptionsSFXLabel"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "position": {
+                                "x": 492.7078857421875,
+                                "y": 584.5156860351562
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 29.166666666666664,
+                                "y": 47.5
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "path": "images/NewMainMenu/Options/ArrowLeft.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "aabb": {
+                                "half_height": 23.75,
+                                "half_width": 14.583333333333332,
+                                "pos": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                }
+                            },
+                            "height": 47.5,
+                            "kinetic_friction": 1.0,
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                },
+                                "rotation": 0.0,
+                                "vertices": []
+                            },
+                            "radius": 0.0,
+                            "resolve_collisions": false,
+                            "type": "AABB",
+                            "width": 29.166666666666664
+                        },
+                        "type": "Components::BoxCollider"
+                    },
+                    {
+                        "data": {
+                            "exit_hover": {
+                                "name": ""
+                            },
+                            "on_click": {
+                                "name": "pause_set_windowed"
+                            },
+                            "on_hover": {
+                                "name": ""
+                            }
+                        },
+                        "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9237,
+                "layers": [
+                    "default",
+                    "overlay_items_3"
+                ],
+                "name": "PauseScreenLeftButton"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "position": {
+                                "x": 996.7078857421875,
+                                "y": 584.5156860351562
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 29.166666666666664,
+                                "y": 47.5
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "path": "images/NewMainMenu/Options/ArrowRight.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "aabb": {
+                                "half_height": 23.75,
+                                "half_width": 14.583333333333332,
+                                "pos": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                }
+                            },
+                            "height": 47.5,
+                            "kinetic_friction": 1.0,
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                },
+                                "rotation": 0.0,
+                                "vertices": []
+                            },
+                            "radius": 0.0,
+                            "resolve_collisions": false,
+                            "type": "AABB",
+                            "width": 29.166666666666664
+                        },
+                        "type": "Components::BoxCollider"
+                    },
+                    {
+                        "data": {
+                            "exit_hover": {
+                                "name": ""
+                            },
+                            "on_click": {
+                                "name": "pause_set_fullscreen"
+                            },
+                            "on_hover": {
+                                "name": ""
+                            }
+                        },
+                        "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9238,
+                "layers": [
+                    "default",
+                    "overlay_items_3"
+                ],
+                "name": "PauseScreenRightButton"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 900.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/In-Game Pause/QuitGame/YesHover.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "aabb": {
+                                "half_height": 57.0835,
+                                "half_width": 117.5,
+                                "pos": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                }
+                            },
+                            "height": 114.167,
+                            "kinetic_friction": 1.0,
+                            "offset": {
+                                "x": -220.0,
+                                "y": 102.0835
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 580.0,
+                                    "y": 552.0835
+                                },
+                                "rotation": 0.0,
+                                "vertices": [
+                                    {
+                                        "x": -117.5,
+                                        "y": -57.0835
+                                    },
+                                    {
+                                        "x": 117.5,
+                                        "y": -57.0835
+                                    },
+                                    {
+                                        "x": 117.5,
+                                        "y": 57.0835
+                                    },
+                                    {
+                                        "x": -117.5,
+                                        "y": 57.0835
+                                    }
+                                ]
+                            },
+                            "radius": 0.0,
+                            "resolve_collisions": false,
+                            "type": "POLYGON",
+                            "width": 235.0
+                        },
+                        "type": "Components::BoxCollider"
+                    },
+                    {
+                        "data": {
+                            "exit_hover": {
+                                "name": "pause_confirm_hover_exit"
+                            },
+                            "on_click": {
+                                "name": "pause_confirm_yes"
+                            },
+                            "on_hover": {
+                                "name": "pause_confirm_yes_hover"
+                            }
+                        },
+                        "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9240,
+                "layers": [
+                    "default",
+                    "overlay_items_3"
+                ],
+                "name": "PauseConfirmYesButton"
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 900.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/In-Game Pause/QuitGame/NoHover.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "aabb": {
+                                "half_height": 57.0835,
+                                "half_width": 85.8335,
+                                "pos": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                }
+                            },
+                            "height": 114.167,
+                            "kinetic_friction": 1.0,
+                            "offset": {
+                                "x": 211.6665,
+                                "y": 102.0835
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 1011.6665,
+                                    "y": 552.0835
+                                },
+                                "rotation": 0.0,
+                                "vertices": [
+                                    {
+                                        "x": -85.8335,
+                                        "y": -57.0835
+                                    },
+                                    {
+                                        "x": 85.8335,
+                                        "y": -57.0835
+                                    },
+                                    {
+                                        "x": 85.8335,
+                                        "y": 57.0835
+                                    },
+                                    {
+                                        "x": -85.8335,
+                                        "y": 57.0835
+                                    }
+                                ]
+                            },
+                            "radius": 0.0,
+                            "resolve_collisions": false,
+                            "type": "POLYGON",
+                            "width": 171.667
+                        },
+                        "type": "Components::BoxCollider"
+                    },
+                    {
+                        "data": {
+                            "exit_hover": {
+                                "name": "pause_confirm_hover_exit"
+                            },
+                            "on_click": {
+                                "name": "pause_confirm_no"
+                            },
+                            "on_hover": {
+                                "name": "pause_confirm_no_hover"
+                            }
+                        },
+                        "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {},
+                        "type": "Components::UI"
+                    }
+                ],
+                "id": 9241,
+                "layers": [
+                    "default",
+                    "overlay_items_3"
+                ],
+                "name": "PauseConfirmNoButton"
             }
         ]
     },

@@ -5,7 +5,7 @@
 			<value>PlayerDownSmashLand</value>
 		</property>
 		<property name="outputFormat">
-			<value>2</value>
+			<value>1</value>
 		</property>
 		<relationship name="folder">
 			<destination>{f1471c80-c6c5-42c6-a7c4-35d81a229e0e}</destination>
@@ -115,7 +115,6 @@
 	</object>
 	<object class="MixerBusEffectChain" id="{827bfd73-54ec-4345-a2be-ea17c32d68e5}">
 		<relationship name="effects">
-			<destination>{12e3851b-c6da-496e-b1af-0693c6f8602c}</destination>
 			<destination>{e3cac7fb-732c-47b0-948d-afaa5cbd4c28}</destination>
 		</relationship>
 	</object>
@@ -132,23 +131,6 @@
 		</relationship>
 	</object>
 	<object class="MixerBusPanner" id="{e41110b9-6fcc-4fc2-af15-1dfd002b4f69}" />
-	<object class="SpatialiserEffect" id="{12e3851b-c6da-496e-b1af-0693c6f8602c}">
-		<property name="minimumDistance">
-			<value>0</value>
-		</property>
-		<property name="maximumDistance">
-			<value>10000</value>
-		</property>
-		<property name="overrideRange">
-			<value>true</value>
-		</property>
-		<property name="extentMode">
-			<value>1</value>
-		</property>
-		<property name="soundSize">
-			<value>260</value>
-		</property>
-	</object>
 	<object class="MixerBusFader" id="{e3cac7fb-732c-47b0-948d-afaa5cbd4c28}" />
 	<object class="PitchShifterEffect" id="{79b92efd-349a-44c6-951b-0785b5a79e3c}">
 		<property name="pitch">

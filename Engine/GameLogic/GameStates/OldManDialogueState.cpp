@@ -8,9 +8,51 @@
 //-----------------------------------------------------------------------------------
 #include "pch.h"
 #include "OldManDialogueState.h"
+#include "GameplayOverlayInputGuard.h"
+
+void OldManDialogueState::destroy_dimmer()
+{
+  if (dimmer_id_ != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(dimmer_id_))) {
+    Engine::ECS::Entity dimmer(dimmer_id_);
+    dimmer.clear_layers();
+    Engine::ECS::destroy_entity(dimmer);
+  }
+  dimmer_id_ = 0;
+}
+
+void OldManDialogueState::recreate_dimmer()
+{
+  destroy_dimmer();
+  dimmer_id_ = Engine::UI::create_screen_dimmer(0.5f, "overlay_bg", true);
+}
+
+void OldManDialogueState::destroy_dialogue_sprite()
+{
+  if (dialogue_sprite_id_ != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(dialogue_sprite_id_))) {
+    Engine::ECS::Entity dialogue_sprite(dialogue_sprite_id_);
+    dialogue_sprite.clear_layers();
+    Engine::ECS::destroy_entity(dialogue_sprite);
+  }
+  dialogue_sprite_id_ = 0;
+}
+
+void OldManDialogueState::recreate_dialogue_sprite()
+{
+  destroy_dialogue_sprite();
+
+  dialogue_sprite_id_ = Engine::ECS::create_entity()
+    .add_component<Components::Transform2D>(SLIDE_X, SLIDE_Y, 0.0f, SLIDE_W * SLIDE_SCALE, SLIDE_H * SLIDE_SCALE)
+    .add_component<Components::Texture>(Engine::Resources::load_texture(SLIDE_PATHS[current_slide_]))
+    .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+    .add_component<Components::UI>()
+    .add_component<Components::RuntimeOnly>()
+    .add_to_layer("overlay_items_1")
+    .get_id();
+}
 
 void OldManDialogueState::load()
 {
+  GameplayOverlayInputGuard::acquire();
   Log::info("[OldManFlow] Dialogue load");
   is_open = true;
   open_tips_request = false;
@@ -18,17 +60,10 @@ void OldManDialogueState::load()
   close_enable_time_unscaled_ = Engine::Time::get_unscaled_time() + 0.12f;
   e_close_armed_ = false;
   request_tips_on_close_ = false;
+  tips_was_open_ = false;
 
-  dimmer_id_ = Engine::UI::create_screen_dimmer(0.5f);
-
-  dialogue_sprite_id_ = Engine::ECS::create_entity()
-    .add_component<Components::Transform2D>(SLIDE_X, SLIDE_Y, 0.0f, SLIDE_W * SLIDE_SCALE, SLIDE_H * SLIDE_SCALE)
-    .add_component<Components::Texture>(Engine::Resources::load_texture(SLIDE_PATHS[0]))
-    .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-    .add_component<Components::UI>()
-    .add_component<Components::RuntimeOnly>()
-    .add_to_layer("overlay_items_1")
-    .get_id();
+  recreate_dimmer();
+  recreate_dialogue_sprite();
 
   // Freeze world updates while dialogue scene is on top; dialogue uses raw/unscaled input.
   Engine::Time::set_time_scale(0.0001f);
@@ -41,8 +76,8 @@ void OldManDialogueState::update()
   // Returning from TipsBookState: restore entities and re-freeze time.
   if (tips_was_open_) {
     tips_was_open_ = false;
-    Engine::ECS::Entity(dimmer_id_).add_to_layer("overlay_bg");
-    Engine::ECS::Entity(dialogue_sprite_id_).add_to_layer("overlay_items_1");
+    recreate_dimmer();
+    recreate_dialogue_sprite();
     Engine::Time::set_time_scale(0.0001f);
     e_close_armed_ = false;
     close_enable_time_unscaled_ = Engine::Time::get_unscaled_time() + 0.30f;
@@ -54,6 +89,8 @@ void OldManDialogueState::update()
     Log::info("[OldManFlow] Dialogue close by ESC");
     request_tips_on_close_ = false;
     block_oldman_reopen_until_unscaled = Engine::Time::get_unscaled_time() + 1.0f;
+    destroy_dialogue_sprite();
+    destroy_dimmer();
     Engine::SceneManager::pop_scene();
     return;
   }
@@ -69,19 +106,15 @@ void OldManDialogueState::update()
     if (current_slide_ < SLIDE_COUNT - 1) {
       // Advance to next slide
       ++current_slide_;
-      auto* tex = Engine::ECS::Entity(dialogue_sprite_id_).get_component<Components::Texture>();
-      if (tex) {
-        tex->texture_handle = Engine::Resources::load_texture(SLIDE_PATHS[current_slide_]);
-      }
+      recreate_dialogue_sprite();
       Log::info("[OldManFlow] Advanced to slide {}", current_slide_ + 1);
 
       // After showing slide 4 (index 3), open tips book on top of dialogue
-      if (current_slide_ - 1 == TIPS_PUSH_SLIDE) {
+      if (current_slide_ == TIPS_PUSH_SLIDE) {
         TipsBookState::tips_button_id = 0; // no HUD button to return to
         Log::info("[OldManFlow] Pushing TipsBookState mid-dialogue");
-        // Hide dialogue entities so they don't show through the tips book.
-        Engine::ECS::Entity(dimmer_id_).clear_layers();
-        Engine::ECS::Entity(dialogue_sprite_id_).clear_layers();
+        destroy_dimmer();
+        destroy_dialogue_sprite();
         tips_was_open_ = true;
         Engine::SceneManager::push_scene("TipsBookState");
         // Re-arm handled in update() on return; no need to set here.
@@ -91,6 +124,8 @@ void OldManDialogueState::update()
       Log::info("[OldManFlow] Dialogue close by key press");
       suppress_oldman_reopen_once = true;
       block_oldman_reopen_until_unscaled = Engine::Time::get_unscaled_time() + 1.0f;
+      destroy_dialogue_sprite();
+      destroy_dimmer();
       Engine::SceneManager::pop_scene();
     }
   }
@@ -106,18 +141,13 @@ void OldManDialogueState::free() {}
 void OldManDialogueState::unload()
 {
   Log::info("[OldManFlow] Dialogue unload (request_tips_on_close_={})", request_tips_on_close_ ? 1 : 0);
-  if (dialogue_sprite_id_ != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(dialogue_sprite_id_))) {
-    Engine::ECS::destroy_entity(Engine::ECS::Entity(dialogue_sprite_id_));
-  }
-  dialogue_sprite_id_ = 0;
-  if (dimmer_id_ != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(dimmer_id_))) {
-    Engine::ECS::destroy_entity(Engine::ECS::Entity(dimmer_id_));
-  }
-  dimmer_id_ = 0;
+  destroy_dialogue_sprite();
+  destroy_dimmer();
 
   is_open = false;
   open_tips_request = open_tips_request || request_tips_on_close_;
   Log::info("[OldManFlow] open_tips_request now {}", open_tips_request ? 1 : 0);
   request_tips_on_close_ = false;
   Engine::Time::set_time_scale(1.0f);
+  GameplayOverlayInputGuard::release();
 }

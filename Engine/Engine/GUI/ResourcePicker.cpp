@@ -391,7 +391,7 @@ namespace ResourcePicker {
   }
 
   bool texture_picker_popup_multi(const char* popup_id, std::vector<std::string>& selected_paths,
-    const std::vector<std::string>& current_paths) {
+    const std::vector<std::string>&) {
     bool selection_made = false;
 
     ImGui::SetNextWindowSize(ImVec2(1000, 600), ImGuiCond_FirstUseEver);

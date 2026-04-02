@@ -604,7 +604,7 @@ namespace CatMonkeyStateCallbacks
   }
 
   void summon_on_enter(Engine::ECS::Entity entity) { summon_impl_on_enter(entity, 0); }
-  void summon_on_update(Engine::ECS::Entity entity) {}
+  void summon_on_update([[maybe_unused]] Engine::ECS::Entity entity) {}
 
   // Hit/Death
   void hit_on_enter(Engine::ECS::Entity entity) {
@@ -649,22 +649,24 @@ namespace CatMonkeyStateCallbacks
   void register_catmonkey_blueprint_runtime() {
     auto& registry = ::Engine::StateMachineBlueprintRegistry::instance();
 
-    ::Engine::StateMachineBlueprint bp;
-    bp.initial_state = "Idle";
+    ::Engine::StateMachineBlueprint catmonkey_bp;
+    catmonkey_bp.initial_state = "Idle";
+    {
+      auto& bp = catmonkey_bp;
+      STATE("Null", CatMonkeyStateCallbacks::null_on_enter, CatMonkeyStateCallbacks::null_on_update, NO_CALLBACK)
+      STATE("Idle", CatMonkeyStateCallbacks::idle_on_enter, CatMonkeyStateCallbacks::idle_on_update, NO_CALLBACK)
 
-    STATE("Null", CatMonkeyStateCallbacks::null_on_enter, CatMonkeyStateCallbacks::null_on_update, NO_CALLBACK)
-    STATE("Idle", CatMonkeyStateCallbacks::idle_on_enter, CatMonkeyStateCallbacks::idle_on_update, NO_CALLBACK)
+      STATE("Summon1", CatMonkeyStateCallbacks::summon1_on_enter, CatMonkeyStateCallbacks::summon1_on_update, NO_CALLBACK)
+      STATE("Summon2", CatMonkeyStateCallbacks::summon2_on_enter, CatMonkeyStateCallbacks::summon2_on_update, NO_CALLBACK)
+      STATE("Summon3", CatMonkeyStateCallbacks::summon3_on_enter, CatMonkeyStateCallbacks::summon3_on_update, NO_CALLBACK)
+      STATE("Summon4", CatMonkeyStateCallbacks::summon4_on_enter, CatMonkeyStateCallbacks::summon4_on_update, NO_CALLBACK)
+      STATE("Summon5", CatMonkeyStateCallbacks::summon5_on_enter, CatMonkeyStateCallbacks::summon5_on_update, NO_CALLBACK)
 
-    STATE("Summon1", CatMonkeyStateCallbacks::summon1_on_enter, CatMonkeyStateCallbacks::summon1_on_update, NO_CALLBACK)
-    STATE("Summon2", CatMonkeyStateCallbacks::summon2_on_enter, CatMonkeyStateCallbacks::summon2_on_update, NO_CALLBACK)
-    STATE("Summon3", CatMonkeyStateCallbacks::summon3_on_enter, CatMonkeyStateCallbacks::summon3_on_update, NO_CALLBACK)
-    STATE("Summon4", CatMonkeyStateCallbacks::summon4_on_enter, CatMonkeyStateCallbacks::summon4_on_update, NO_CALLBACK)
-    STATE("Summon5", CatMonkeyStateCallbacks::summon5_on_enter, CatMonkeyStateCallbacks::summon5_on_update, NO_CALLBACK)
+      STATE("Hit", CatMonkeyStateCallbacks::hit_on_enter, NO_CALLBACK, NO_CALLBACK)
+      STATE("Death", CatMonkeyStateCallbacks::death_on_enter, CatMonkeyStateCallbacks::death_on_update, NO_CALLBACK)
+    }
 
-    STATE("Hit", CatMonkeyStateCallbacks::hit_on_enter, NO_CALLBACK, NO_CALLBACK)
-    STATE("Death", CatMonkeyStateCallbacks::death_on_enter, CatMonkeyStateCallbacks::death_on_update, NO_CALLBACK)
-
-    registry.register_blueprint("CatMonkey", bp);
+    registry.register_blueprint("CatMonkey", catmonkey_bp);
 
     ::Engine::StateMachineBlueprint city_bp;
     city_bp.initial_state = "Active";

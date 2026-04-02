@@ -8,6 +8,7 @@
 //-----------------------------------------------------------------------------------
 #include "pch.h"
 #include "TipsBookState.h"
+#include "GameplayOverlayInputGuard.h"
 #include "../../Engine/Engine/Graphics/Renderer.h"
 
 namespace {
@@ -15,6 +16,7 @@ namespace {
     Engine::ECS::Entity found;
     Engine::ECS::for_each_entity([&](Engine::ECS::Entity entity) {
       if (found.is_valid()) return;
+      if (!Engine::ECS::is_entity_active(entity)) return;
       if (entity.get_name() == "TipsButtonHUD") {
         found = entity;
       }
@@ -24,6 +26,7 @@ namespace {
 
     Engine::ECS::for_each_entity([&](Engine::ECS::Entity entity) {
       if (found.is_valid()) return;
+      if (!Engine::ECS::is_entity_active(entity)) return;
       if (!entity.has_component<Components::UI>()) return;
       auto* tex = entity.get_component<Components::Texture>();
       if (!tex || !tex->texture_handle) return;
@@ -208,6 +211,7 @@ void TipsBookState::show_page2()
 
 void TipsBookState::load()
 {
+  GameplayOverlayInputGuard::acquire();
   is_open = true;
   ensure_nav_button();
 
@@ -284,4 +288,5 @@ void TipsBookState::unload()
     restore_hud_button();
   }
   Engine::Time::set_time_scale(1.0f);
+  GameplayOverlayInputGuard::release();
 }

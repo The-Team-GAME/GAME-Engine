@@ -314,7 +314,6 @@ namespace PlayerStateCallbacks
   {
     handle_cooldowns(entity);
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
-    Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(rigid);
 
     // we check for rigid->on_ground here because on the first few frames there is still a chance that the player will be counted as on gound

@@ -8,13 +8,20 @@
 //-----------------------------------------------------------------------------------
 #include "pch.h"
 #include "UpgradePickerState.h"
+#include "GameplayOverlayInputGuard.h"
 #include "../../Engine/UpgradeUIStateMachine.h"
 
-void UpgradePickerState::load()   {}
+void UpgradePickerState::load()
+{
+  GameplayOverlayInputGuard::acquire();
+}
 void UpgradePickerState::init()   {}
 void UpgradePickerState::draw()   {}
 void UpgradePickerState::free()   {}
-void UpgradePickerState::unload() {}
+void UpgradePickerState::unload()
+{
+  GameplayOverlayInputGuard::release();
+}
 
 void UpgradePickerState::update()
 {

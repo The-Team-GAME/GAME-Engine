@@ -53,6 +53,10 @@ namespace Engine {
     // If already open, switches to it. Calls on_exit for previous and on_init for new.
     ENGINE_API std::string open_level(const std::string& filepath, bool append_resource_path = true);
 
+    // Opens a level as a runtime-only overlay without deactivating the active level.
+    // Returns an overlay handle that can be passed to close_overlay_level().
+    ENGINE_API std::string open_overlay_level(const std::string& filepath, bool append_resource_path = true, bool mark_runtime_only = true);
+
     // Preloads a level from disk into the ECS world as inactive entities.
     // Returns the level ID (normalized path). Preloaded levels stay resident until closed.
     ENGINE_API std::string preload_level(const std::string& filepath, bool append_resource_path = true);
@@ -69,6 +73,9 @@ namespace Engine {
     // Closes a level. Returns false if it doesn't exist.
     // Switches to another open level if closing the active one.
     ENGINE_API bool close_level(const std::string& level_id);
+
+    // Closes a previously opened overlay level.
+    ENGINE_API bool close_overlay_level(const std::string& overlay_id);
 
     // Saves the level to its current path. Returns false for new unsaved levels.
     ENGINE_API bool save_level(const std::string& level_id);
@@ -110,6 +117,10 @@ namespace Engine {
 
     // Clears the preloaded snapshot for a level, destroying its deactivated entities.
     ENGINE_API void clear_preloaded_snapshot(const std::string& level_id);
+
+    // Rebuilds the active level's preloaded snapshot from the current live world.
+    // Use this after scene code adds runtime baseline entities that should survive level reload.
+    ENGINE_API void rebuild_active_snapshot();
 
     // ============================================================================
     // Lifecycle Callbacks

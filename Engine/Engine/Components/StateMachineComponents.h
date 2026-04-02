@@ -34,6 +34,8 @@
 #include "AudioComponents.h"
 #include "AnimatorComponents.h"
 #include "StateMachineBlueprintRegistry.h"
+#include "../Graphics/Renderer.h"
+#include <cmath>
 
 namespace Components
 {
@@ -277,6 +279,8 @@ namespace Components
             if (auto* t = entity.get_component<Transform2D>()) {
               Engine::AudioSystem::setEventInstancePosition(current_fmod_instance_, t->position);
             }
+            const float camera_mult = is_owner_entity_visible_for_audio() ? 1.0f : 0.1f;
+            Engine::AudioSystem::setEventInstanceVolume(current_fmod_instance_, current_state.audio->volume * camera_mult);
             if (!Engine::AudioSystem::isEventInstancePlaying(current_fmod_instance_)) {
               Engine::AudioSystem::startEventInstance(current_fmod_instance_);
             }
@@ -672,22 +676,38 @@ namespace Components
 
       // If looping, create persistent instance
       if (fmod_audio.loop) {
+        const float camera_mult = is_owner_entity_visible_for_audio() ? 1.0f : 0.1f;
+
         // Always release any pre-existing instance with this name so editor path changes take effect
         Engine::AudioSystem::stopEventInstance(instance_name, true);
         Engine::AudioSystem::releaseEventInstance(instance_name);
 
         Engine::AudioSystem::createEventInstance(instance_name, fmod_audio.event_path);
         Engine::AudioSystem::setEventInstancePosition(instance_name, entity_pos);
-        Engine::AudioSystem::setEventInstanceVolume(instance_name, fmod_audio.volume);
+        Engine::AudioSystem::setEventInstanceVolume(instance_name, fmod_audio.volume * camera_mult);
         Engine::AudioSystem::startEventInstance(instance_name);
         current_fmod_event_path_ = fmod_audio.event_path;
         return instance_name;
       }
       else {
         // One-shot event at entity's world position
-        Engine::AudioSystem::playEventAtPosition(fmod_audio.event_path, entity_pos);
+        const float camera_mult = is_owner_entity_visible_for_audio() ? 1.0f : 0.1f;
+        Engine::AudioSystem::playEventAtPosition(fmod_audio.event_path, entity_pos, 500.0f, 2000.0f, 50.0f, fmod_audio.volume * camera_mult);
         return ""; // No instance to track for one-shot
       }
+    }
+
+    bool is_owner_entity_visible_for_audio() const {
+      if (!owner_entity_) return true;
+
+      auto* t = owner_entity_->get_component<Transform2D>();
+      if (!t) return true;
+
+      Math::Vec2D approx_size = {
+        std::max(1.0f, std::abs(t->scale.x)),
+        std::max(1.0f, std::abs(t->scale.y))
+      };
+      return Engine::Graphics::is_visible(t->position, approx_size);
     }
   };
 
