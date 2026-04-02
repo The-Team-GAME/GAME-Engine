@@ -54,6 +54,13 @@ namespace Engine {
     /// Safe to call at any time (e.g. from file watcher or editor button).
     ENGINE_API void reload_scripts();
 
+    /// Restore Lua-registered functions and blueprints after a GameLogic DLL
+    /// hot-reload.  Assumes FunctionRegistry::clear_all() has already been
+    /// called (by UnregisterGameLogic), so it does NOT call unregister on
+    /// existing entries — it simply re-runs all scripts to repopulate
+    /// FunctionRegistry and StateMachineBlueprintRegistry.
+    ENGINE_API void restore_after_dll_reload();
+
     /// Check if the background file watcher detected changes and reload if so.
     /// Call once per frame from the main game loop. Lightweight — just checks
     /// an atomic flag set by the watcher thread. The actual reload happens on

@@ -41,7 +41,9 @@
 #include "GameStates/VictoryState.h"
 #include "GameStates/VideoPlaybackState.h"
 #include "GameStates/OpeningCutsceneState.h"
+#include "GameStates/CreditsCutsceneState.h"
 #include "GameStates/EnteringTrainCutsceneState.h"
+#include "GameStates/EndCutsceneState.h"
 
 // Game systems
 #include "Systems/HealthSystem.h"
@@ -69,6 +71,7 @@
 #include "Components/HealthComponents.h"
 #include "Components/InteractableComponents.h"
 #include "../Engine/LevelManager.h"
+#include "../Engine/LuaManager.h"
 
 namespace {
   static constexpr const char* PLAYER_HEARTBEAT_EVENT = "event:/SFX/PlayerHeartBeat";
@@ -522,7 +525,9 @@ static void register_scenes()
   Engine::SceneManager::register_scene<VictoryState>("VictoryState");
   Engine::SceneManager::register_scene<VideoPlaybackState>("VideoPlaybackState");
   Engine::SceneManager::register_scene<OpeningCutsceneState>("OpeningCutsceneState");
+  Engine::SceneManager::register_scene<CreditsCutsceneState>("CreditsCutsceneState");
   Engine::SceneManager::register_scene<EnteringTrainCutsceneState>("EnteringTrainCutsceneState");
+  Engine::SceneManager::register_scene<EndCutsceneState>("EndCutsceneState");
 }
 
 static void register_systems()
@@ -564,6 +569,12 @@ extern "C" __declspec(dllexport) void RegisterGameLogic()
   register_upgrade_applicators();
   register_scenes();
   register_systems();
+
+  // Re-register Lua blueprints (e.g. "MainMenu") and Lua functions that were
+  // cleared by UnregisterGameLogic's clear_all() during DLL hot-reload.
+  // Uses restore_after_dll_reload() which skips the unregister step (entries
+  // are already gone) to avoid touching dangling std::function vtables.
+  Engine::LuaManager::instance().restore_after_dll_reload();
 
   Log::info("[GameLogic] Game logic registered successfully");
 }

@@ -374,7 +374,49 @@ namespace CatMonkeyStateCallbacks
 
     // Wave management and next summon
     // [Simplified - full logic in original, extract process_tracked_minion_deaths etc]
-    if (all_waves_cleared(rt)) return;
+    if (all_waves_cleared(rt))
+    {
+      if (!rt.win_cutscene_timer_started)
+      {
+        rt.win_cutscene_timer_started = true;
+        rt.win_cutscene_trigger_time = now + 5.0f;
+
+        // Smoothly zoom the Centered camera back to its scene-load baseline over 2.5s.
+        restore_centered_camera_parent(rt);
+        ensure_centered_camera_baseline(rt);
+
+        // Sample current camera state as the start of the lerp.
+        Engine::ECS::Entity centered = find_camera_entity_by_name(k_centered_camera_name);
+        if (centered.is_valid()) {
+          if (auto* t = centered.get_component<Components::Transform2D>()) {
+            rt.post_spawn_pos_start  = t->position;
+            rt.post_spawn_rot_start  = t->rotation;
+            rt.post_spawn_zoom_start = t->scale.x;
+          }
+        }
+
+        // Baseline is the target.
+        rt.post_spawn_pos_target  = rt.centered_cam_baseline_pos;
+        rt.post_spawn_rot_target  = rt.centered_cam_baseline_rot;
+        rt.post_spawn_zoom_target = rt.centered_cam_baseline_zoom;
+
+        rt.post_spawn_cinematic_start_time = now;
+        rt.post_spawn_cinematic_end_time   = now + 2.5f;
+        rt.post_spawn_cinematic_active     = true;
+        rt.pending_summon_immediate_zoom   = false; // ensure cinematic path runs
+
+        // Keep camera override on Centered so tick_post_spawn_cinematic_camera fires.
+        rt.camera_override_active = true;
+        rt.camera_override_mode   = BossRuntime::CameraOverrideMode::Centered;
+        rt.camera_override_until  = std::numeric_limits<float>::infinity();
+        activate_centered_camera_if_present();
+      }
+      else if (now >= rt.win_cutscene_trigger_time)
+      {
+        Engine::SceneManager::load_scene("EndCutsceneState");
+      }
+      return;
+    }
 
     bool cooldown_ready = now >= rt.next_summon_allowed_time;
     if (rt.active_wave_index == -1 && cooldown_ready) {

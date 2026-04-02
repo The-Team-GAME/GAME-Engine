@@ -154,6 +154,10 @@ namespace CatMonkeyStateCallbacks
     bool debug_logged_summon5_enter = false;
     bool debug_logged_city_init = false;
     bool debug_logged_centered_camera_missing = false;
+
+    // End-game: after all waves cleared, wait 5 seconds then load EndCutsceneState.
+    bool win_cutscene_timer_started = false;
+    float win_cutscene_trigger_time = 0.0f;
   };
 
   extern std::unordered_map<Engine::ECS::EntityID, BossRuntime>& runtimes();

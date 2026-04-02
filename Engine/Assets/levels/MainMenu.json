@@ -3924,7 +3924,7 @@
                 "name": "main_menu_credits_exit"
               },
               "on_click": {
-                "name": ""
+                "name": "show_credits"
               },
               "on_hover": {
                 "name": "main_menu_credits_hover"

@@ -513,6 +513,13 @@ function start_game()
   Scene.load("OpeningCutsceneState")
 end
 
+function show_credits()
+  if options_active or options_transition ~= nil then
+    return
+  end
+  Scene.load("CreditsCutsceneState")
+end
+
 function options_menu()
   if not menu_is_ready() then
     return
