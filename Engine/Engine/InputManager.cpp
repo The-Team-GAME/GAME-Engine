@@ -43,6 +43,7 @@ namespace
   InputStateArray previousKeys{};
   InputStateArray currentVirtualKeys{};
   InputStateArray previousVirtualKeys{};
+  InputStateArray suppressedKeys{};
   bool any_key_pressed_this_frame = false;
   bool last_input_was_mouse = true;
   bool has_mouse_position = false;
@@ -78,10 +79,24 @@ namespace
     states[key_to_index(key)] = value;
   }
 
+  inline bool get_combined_state(const InputStateArray& raw_states, const InputStateArray& virtual_states, int idx)
+  {
+    return raw_states[idx] || virtual_states[idx];
+  }
+
   inline bool get_combined_state(const InputStateArray& raw_states, const InputStateArray& virtual_states, Engine::KeyCode key)
   {
-    const int idx = key_to_index(key);
-    return raw_states[idx] || virtual_states[idx];
+    return get_combined_state(raw_states, virtual_states, key_to_index(key));
+  }
+
+  inline bool get_effective_state(const InputStateArray& raw_states, const InputStateArray& virtual_states, int idx)
+  {
+    return !suppressedKeys[idx] && get_combined_state(raw_states, virtual_states, idx);
+  }
+
+  inline bool get_effective_state(const InputStateArray& raw_states, const InputStateArray& virtual_states, Engine::KeyCode key)
+  {
+    return get_effective_state(raw_states, virtual_states, key_to_index(key));
   }
 
   struct GamepadInputState
@@ -211,8 +226,8 @@ namespace
         continue;
       }
 
-      const bool current_state = currentKeys[idx] || currentVirtualKeys[idx];
-      const bool previous_state = previousKeys[idx] || previousVirtualKeys[idx];
+      const bool current_state = get_effective_state(currentKeys, currentVirtualKeys, idx);
+      const bool previous_state = get_effective_state(previousKeys, previousVirtualKeys, idx);
       if (current_state && !previous_state)
       {
         any_key_pressed_this_frame = true;
@@ -260,6 +275,26 @@ namespace
 
     return false;
   }
+
+  void clear_released_suppressed_inputs()
+  {
+    for (int idx = 0; idx < static_cast<int>(suppressedKeys.size()); ++idx)
+    {
+      if (!suppressedKeys[idx])
+      {
+        continue;
+      }
+
+      if (get_combined_state(currentKeys, currentVirtualKeys, idx))
+      {
+        continue;
+      }
+
+      suppressedKeys[idx] = false;
+      previousKeys[idx] = false;
+      previousVirtualKeys[idx] = false;
+    }
+  }
 }
 
 namespace Engine
@@ -294,6 +329,7 @@ namespace Engine
     }
 
     update_virtual_gamepad_keys();
+    clear_released_suppressed_inputs();
     update_any_key_pressed_state();
 
 
@@ -357,19 +393,27 @@ namespace Engine
 
   bool Input::is_pressed_raw(KeyCode key)
   {
-    return get_combined_state(currentKeys, currentVirtualKeys, key)
-      && !get_combined_state(previousKeys, previousVirtualKeys, key);
+    return get_effective_state(currentKeys, currentVirtualKeys, key)
+      && !get_effective_state(previousKeys, previousVirtualKeys, key);
   }
 
   bool Input::is_released_raw(KeyCode key)
   {
-    return !get_combined_state(currentKeys, currentVirtualKeys, key)
-      && get_combined_state(previousKeys, previousVirtualKeys, key);
+    return !get_effective_state(currentKeys, currentVirtualKeys, key)
+      && get_effective_state(previousKeys, previousVirtualKeys, key);
   }
 
   bool Input::is_held_raw(KeyCode key)
   {
-    return get_combined_state(currentKeys, currentVirtualKeys, key);
+    return get_effective_state(currentKeys, currentVirtualKeys, key);
+  }
+
+  void Input::suppress_current_inputs_until_release()
+  {
+    for (int idx = 0; idx < static_cast<int>(suppressedKeys.size()); ++idx)
+    {
+      suppressedKeys[idx] = suppressedKeys[idx] || get_combined_state(currentKeys, currentVirtualKeys, idx);
+    }
   }
 
   bool Input::is_any_key_pressed()

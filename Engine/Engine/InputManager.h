@@ -38,6 +38,14 @@ namespace Engine
      */
     static void update();
 
+    /**
+     * @brief Suppresses all currently active inputs until they are released.
+     *
+     * Use this when handing control back from an overlay so held keys and
+     * buttons do not leak into gameplay on the next frame.
+     */
+    static void suppress_current_inputs_until_release();
+
     // Keyboard input
     /**
      * @brief Checks if a key was just pressed in the current frame.

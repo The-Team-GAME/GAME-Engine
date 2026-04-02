@@ -14,10 +14,12 @@
 
 #include "pch.h"
 #include "VictoryState.h"
+#include "GameplayOverlayInputGuard.h"
 
 
 void VictoryState::load()
 {
+  GameplayOverlayInputGuard::acquire();
   // Get current camera position to center the UI
   Components::Transform2D camera = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
   float cam_x = camera.position.x + 800.0f;
@@ -72,4 +74,5 @@ void VictoryState::unload()
   victory_screen_id = 0;
 
   Engine::Time::set_time_scale(1.0f);
+  GameplayOverlayInputGuard::release();
 }

@@ -14,6 +14,7 @@
 #pragma once
 
 #include "pch.h"
+#include "GameplayOverlayInputGuard.h"
 
 namespace PauseStateDetail {
   void start_pause_lowpass_snapshot();
@@ -30,6 +31,7 @@ class PauseState : public Engine::Scene
 
 public:
   void load() {
+    GameplayOverlayInputGuard::acquire();
     PauseStateDetail::start_pause_lowpass_snapshot();
     Engine::AudioSystem::playEvent(PAUSE_OPEN_EVENT);
     overlay_level_id_ = Engine::LevelManager::open_overlay_level(PAUSE_OVERLAY_LEVEL);
@@ -58,5 +60,6 @@ public:
     }
 
     Engine::Time::set_time_scale(1.0f);
+    GameplayOverlayInputGuard::release();
   };
 };

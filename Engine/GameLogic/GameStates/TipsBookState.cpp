@@ -8,6 +8,7 @@
 //-----------------------------------------------------------------------------------
 #include "pch.h"
 #include "TipsBookState.h"
+#include "GameplayOverlayInputGuard.h"
 #include "../../Engine/Engine/Graphics/Renderer.h"
 
 namespace {
@@ -210,6 +211,7 @@ void TipsBookState::show_page2()
 
 void TipsBookState::load()
 {
+  GameplayOverlayInputGuard::acquire();
   is_open = true;
   ensure_nav_button();
 
@@ -286,4 +288,5 @@ void TipsBookState::unload()
     restore_hud_button();
   }
   Engine::Time::set_time_scale(1.0f);
+  GameplayOverlayInputGuard::release();
 }

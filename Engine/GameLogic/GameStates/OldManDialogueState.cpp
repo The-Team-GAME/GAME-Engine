@@ -8,6 +8,7 @@
 //-----------------------------------------------------------------------------------
 #include "pch.h"
 #include "OldManDialogueState.h"
+#include "GameplayOverlayInputGuard.h"
 
 void OldManDialogueState::destroy_dimmer()
 {
@@ -51,6 +52,7 @@ void OldManDialogueState::recreate_dialogue_sprite()
 
 void OldManDialogueState::load()
 {
+  GameplayOverlayInputGuard::acquire();
   Log::info("[OldManFlow] Dialogue load");
   is_open = true;
   open_tips_request = false;
@@ -147,4 +149,5 @@ void OldManDialogueState::unload()
   Log::info("[OldManFlow] open_tips_request now {}", open_tips_request ? 1 : 0);
   request_tips_on_close_ = false;
   Engine::Time::set_time_scale(1.0f);
+  GameplayOverlayInputGuard::release();
 }
