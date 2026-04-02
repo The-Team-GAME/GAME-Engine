@@ -660,36 +660,66 @@ namespace Engine {
         return "";
       }
 
-      EntityList entities = Resources::load_level(filepath, append_resource_path, false);
-      if (entities.empty()) {
-        Log::warning("[LevelManager] Failed to open overlay level (0 entities): {}", full_path);
-        return "";
+      std::vector<ECS::EntityID> overlay_entity_ids;
+
+      auto level_it = open_levels.find(full_path);
+      if (level_it != open_levels.end() && has_preloaded_snapshot(full_path)) {
+        overlay_entity_ids = clone_snapshot_entities(preloaded_snapshots[full_path]);
+        for (ECS::EntityID entity_id : overlay_entity_ids) {
+          ECS::activate_entity(entity_id);
+        }
+      }
+      else {
+        EntityList entities;
+        if (level_it != open_levels.end()) {
+          entities = get_preloaded_or_disk(level_it->second, full_path);
+        }
+        else {
+          entities = Resources::load_level(filepath, append_resource_path, false);
+        }
+
+        if (entities.empty()) {
+          Log::warning("[LevelManager] Failed to open overlay level (0 entities): {}", full_path);
+          return "";
+        }
+
+        std::unordered_set<ECS::EntityID> existing_ids;
+        ECS::for_each_entity([&](ECS::Entity entity) {
+          existing_ids.insert(entity.get_id());
+          });
+
+        instantiate_entities(entities, false);
+
+        ECS::for_each_entity([&](ECS::Entity entity) {
+          if (existing_ids.find(entity.get_id()) == existing_ids.end()) {
+            overlay_entity_ids.push_back(entity.get_id());
+          }
+          });
       }
 
-      std::unordered_set<ECS::EntityID> existing_ids;
-      ECS::for_each_entity([&](ECS::Entity entity) {
-        existing_ids.insert(entity.get_id());
-        });
-
-      instantiate_entities(entities, false);
+      if (overlay_entity_ids.empty()) {
+        Log::warning("[LevelManager] Failed to open overlay level (no instantiated entities): {}", full_path);
+        return "";
+      }
 
       OverlayLevelState overlay_state;
       overlay_state.source_level_id = full_path;
 
-      ECS::for_each_entity([&](ECS::Entity entity) {
-        if (existing_ids.find(entity.get_id()) != existing_ids.end()) {
-          return;
+      for (ECS::EntityID entity_id : overlay_entity_ids) {
+        ECS::Entity entity(entity_id);
+        if (!entity.is_valid()) {
+          continue;
         }
 
-        overlay_state.live_entity_ids.push_back(entity.get_id());
+        overlay_state.live_entity_ids.push_back(entity_id);
         if (overlay_state.level_entity_id == ECS::INVALID_ENTITY && entity.has_component<Components::Level>()) {
-          overlay_state.level_entity_id = entity.get_id();
+          overlay_state.level_entity_id = entity_id;
         }
 
         if (mark_runtime_only && !entity.has_component<Components::RuntimeOnly>()) {
           entity.add_component<Components::RuntimeOnly>();
         }
-        });
+      }
 
       if (overlay_state.level_entity_id != ECS::INVALID_ENTITY) {
         Engine::ECS::Entity level_entity(overlay_state.level_entity_id);

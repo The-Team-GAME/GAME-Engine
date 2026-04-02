@@ -181,6 +181,7 @@ local left_cluster_base_positions = {}
 local left_cluster_base_bounds = nil
 local left_cluster_anim = {}
 local left_cluster_has_opened = false
+local options_textures_warmed = false
 
 local function clamp(value, min_value, max_value)
   return math.min(math.max(value, min_value), max_value)
@@ -563,6 +564,35 @@ local function get_volume_bar_path(step)
   return string.format(OPTIONS_TEXTURES.bar_template, clamp(step, 0, VOLUME_MAX_STEP))
 end
 
+local function warm_options_texture_variants()
+  if options_textures_warmed then
+    return
+  end
+
+  local paths = {
+    OPTIONS_TEXTURES.panel,
+    OPTIONS_TEXTURES.bgm_label,
+    OPTIONS_TEXTURES.sfx_label,
+    OPTIONS_TEXTURES.screen_label,
+    OPTIONS_TEXTURES.arrow_left,
+    OPTIONS_TEXTURES.arrow_right,
+    OPTIONS_TEXTURES.windowed,
+    OPTIONS_TEXTURES.windowed_unselected,
+    OPTIONS_TEXTURES.fullscreen,
+    OPTIONS_TEXTURES.fullscreen_unselected,
+  }
+
+  for step = 0, VOLUME_MAX_STEP do
+    paths[#paths + 1] = get_volume_bar_path(step)
+  end
+
+  for _, path in ipairs(paths) do
+    Resources.load_texture(path)
+  end
+
+  options_textures_warmed = true
+end
+
 local function sync_options_visuals()
   set_entity_texture(OPTIONS_BGM_BAR_NAME, get_volume_bar_path(volume_to_step(Settings.get_bgm_volume())))
   set_entity_texture(OPTIONS_SFX_BAR_NAME, get_volume_bar_path(volume_to_step(Settings.get_sfx_volume())))
@@ -858,6 +888,7 @@ function pause_confirm_hover_exit(entity)
 end
 
 function pause_menu_menu_on_enter(entity)
+  warm_options_texture_variants()
   hovered_left_button = nil
   hovered_confirm_button = nil
   show_left_cluster_at_menu_position()
