@@ -2,7 +2,7 @@
 <objects serializationModel="Studio.02.03.00">
 	<object class="AudioFile" id="{4fade114-4bc5-4e44-b642-f5708cb0193a}">
 		<property name="assetPath">
-			<value>Pause-Button.wav</value>
+			<value>UpgradeButtonPress.wav</value>
 		</property>
 		<property name="frequencyInKHz">
 			<value>48</value>

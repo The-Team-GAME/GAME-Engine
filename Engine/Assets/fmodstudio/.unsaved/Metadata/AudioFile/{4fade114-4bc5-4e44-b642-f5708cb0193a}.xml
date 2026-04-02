@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <objects serializationModel="Studio.02.03.00">
-	<object class="AudioFile" id="{ebfb7d09-9540-4939-a670-52dd415f860f}">
+	<object class="AudioFile" id="{4fade114-4bc5-4e44-b642-f5708cb0193a}">
 		<property name="assetPath">
-			<value>Buzzing Noise.wav</value>
-		</property>
-		<property name="isStreaming">
-			<value>true</value>
+			<value>UpgradeButtonPress.wav</value>
 		</property>
 		<property name="frequencyInKHz">
-			<value>96</value>
+			<value>48</value>
 		</property>
 		<property name="channelCount">
-			<value>4</value>
+			<value>2</value>
 		</property>
 		<property name="length">
-			<value>11.505333333333333</value>
+			<value>2.5386666666666668</value>
 		</property>
 		<relationship name="masterAssetFolder">
 			<destination>{6705423e-ca5e-45ab-9fba-198807b0541c}</destination>

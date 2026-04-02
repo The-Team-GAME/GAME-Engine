@@ -5,7 +5,7 @@
 			<value>PlayerJump</value>
 		</property>
 		<property name="outputFormat">
-			<value>2</value>
+			<value>1</value>
 		</property>
 		<relationship name="folder">
 			<destination>{f1471c80-c6c5-42c6-a7c4-35d81a229e0e}</destination>
@@ -73,7 +73,7 @@
 	</object>
 	<object class="EventMixerMaster" id="{26131b2c-3a4c-4d24-ae72-aba2ebd6ccc9}">
 		<property name="volume">
-			<value>-6.5</value>
+			<value>3</value>
 		</property>
 		<relationship name="effectChain">
 			<destination>{ba29100b-e62f-4fb9-96c6-1ed51d27b23b}</destination>
@@ -117,7 +117,6 @@
 	</object>
 	<object class="MixerBusEffectChain" id="{ba29100b-e62f-4fb9-96c6-1ed51d27b23b}">
 		<relationship name="effects">
-			<destination>{19f43293-b4e6-4f08-9e99-8edf2bdad205}</destination>
 			<destination>{8f03252c-bd09-406d-82c8-265fd1692e6b}</destination>
 		</relationship>
 	</object>
@@ -145,23 +144,6 @@
 		</relationship>
 	</object>
 	<object class="MixerBusPanner" id="{3681ebb3-9799-4e73-8a55-e4e7822e6b4c}" />
-	<object class="SpatialiserEffect" id="{19f43293-b4e6-4f08-9e99-8edf2bdad205}">
-		<property name="minimumDistance">
-			<value>0</value>
-		</property>
-		<property name="maximumDistance">
-			<value>10000</value>
-		</property>
-		<property name="overrideRange">
-			<value>true</value>
-		</property>
-		<property name="extentMode">
-			<value>1</value>
-		</property>
-		<property name="soundSize">
-			<value>260</value>
-		</property>
-	</object>
 	<object class="MixerBusFader" id="{8f03252c-bd09-406d-82c8-265fd1692e6b}" />
 	<object class="PitchShifterEffect" id="{a92c0c69-6183-47a8-b9d5-4391a49a8b8a}">
 		<property name="pitch">
