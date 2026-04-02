@@ -187,6 +187,10 @@ local function is_confirm_pressed()
   return Input.is_pressed(Key.Enter) or Input.is_pressed(Key.Space)
 end
 
+local function should_show_selection_hover()
+  return not Input.was_last_input_mouse()
+end
+
 local function set_entity_alpha(entity_name, alpha)
   local entity = get_named_entity(entity_name)
   if not entity or not entity:is_valid() then
@@ -244,6 +248,10 @@ end
 local function sync_main_menu_button_visuals()
   reset_menu_button_textures()
 
+  if hovered_menu_button_index == nil and not should_show_selection_hover() then
+    return
+  end
+
   local entity_name = MENU_BUTTON_NAMES[get_active_menu_button_index()]
   local textures = entity_name and BUTTON_TEXTURES[entity_name]
   if textures then
@@ -275,8 +283,12 @@ local function set_menu_button_selection(index)
 end
 
 local function sync_option_focus_visuals()
+  local show_focus = should_show_selection_hover()
   for row_index, entity_names in ipairs(OPTION_ROW_ENTITIES) do
-    local alpha = row_index == selected_option_row_index and OPTION_ROW_FOCUSED_ALPHA or OPTION_ROW_UNFOCUSED_ALPHA
+    local alpha = 1.0
+    if show_focus then
+      alpha = row_index == selected_option_row_index and OPTION_ROW_FOCUSED_ALPHA or OPTION_ROW_UNFOCUSED_ALPHA
+    end
     for _, entity_name in ipairs(entity_names) do
       set_entity_alpha(entity_name, alpha)
     end

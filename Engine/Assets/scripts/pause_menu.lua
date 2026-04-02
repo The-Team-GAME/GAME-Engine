@@ -237,6 +237,10 @@ local function is_confirm_pressed()
   return Input.is_pressed(Key.Enter) or Input.is_pressed(Key.Space)
 end
 
+local function should_show_selection_hover()
+  return not Input.was_last_input_mouse()
+end
+
 local function ease_out_cubic(t)
   local u = 1.0 - t
   return 1.0 - u * u * u
@@ -618,6 +622,12 @@ end
 
 local function refresh_left_panel()
   local path = get_default_left_panel_texture()
+  if hovered_left_button == nil and not should_show_selection_hover() then
+    restore_entity_base_layer(LEFT_PANEL_NAME)
+    set_entity_texture(LEFT_PANEL_NAME, path)
+    return
+  end
+
   local active_button = get_active_left_button()
   if active_button ~= nil then
     path = LEFT_PANEL_TEXTURES[active_button] or path
@@ -715,8 +725,12 @@ local function sync_options_visuals()
 end
 
 sync_option_focus_visuals = function()
+  local show_focus = should_show_selection_hover()
   for row_index, entity_names in ipairs(OPTION_ROW_ENTITIES) do
-    local alpha = row_index == pause_options_selected_index and OPTION_ROW_FOCUSED_ALPHA or OPTION_ROW_UNFOCUSED_ALPHA
+    local alpha = 1.0
+    if show_focus then
+      alpha = row_index == pause_options_selected_index and OPTION_ROW_FOCUSED_ALPHA or OPTION_ROW_UNFOCUSED_ALPHA
+    end
     for _, entity_name in ipairs(entity_names) do
       set_entity_alpha(entity_name, alpha)
     end
@@ -754,6 +768,11 @@ local function reset_confirm_quit_visuals()
 end
 
 local function apply_confirm_visual(choice)
+  if hovered_confirm_button == nil and not should_show_selection_hover() then
+    reset_confirm_quit_visuals()
+    return
+  end
+
   local textures = get_confirm_texture_set()
 
   if choice == "yes" then
@@ -1134,6 +1153,7 @@ function pause_menu_menu_on_update(entity)
   update_left_cluster_animation()
   update_scroll_pair(MENU_SCROLL_NAMES)
   update_left_hover_from_mouse()
+  refresh_left_panel()
 
   if Input.is_pressed(Key.Escape) then
     pause_menu_resume()
@@ -1180,6 +1200,8 @@ function pause_menu_options_on_update(entity)
   update_left_cluster_animation()
   update_left_hover_from_mouse()
   update_options_hover_from_mouse()
+  refresh_left_panel()
+  sync_options_visuals()
 
   if Input.is_pressed(Key.Escape) then
     change_pause_state("Menu")
@@ -1231,6 +1253,8 @@ function pause_menu_confirm_restart_on_update(entity)
   update_left_cluster_animation()
   update_left_hover_from_mouse()
   update_confirm_hover_from_mouse()
+  refresh_left_panel()
+  apply_confirm_visual(get_active_confirm_choice())
 
   if Input.is_pressed(Key.Escape) then
     change_pause_state("Menu")
@@ -1277,6 +1301,8 @@ function pause_menu_confirm_quit_on_update(entity)
   update_left_cluster_animation()
   update_left_hover_from_mouse()
   update_confirm_hover_from_mouse()
+  refresh_left_panel()
+  apply_confirm_visual(get_active_confirm_choice())
 
   if Input.is_pressed(Key.Escape) then
     change_pause_state("Menu")

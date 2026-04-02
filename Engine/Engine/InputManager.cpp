@@ -30,12 +30,23 @@
 
 namespace
 {
+  using InputStateArray = std::array<bool, GLFW_MOUSE_BUTTON_LAST + GLFW_KEY_LAST + 2>;
+
+  constexpr float GAMEPAD_AXIS_PRESS_THRESHOLD = 0.45f;
+
   /* =================== //
   // Input state arrays  //
   // =================== */
-  std::array<bool, GLFW_MOUSE_BUTTON_LAST + GLFW_KEY_LAST + 2> currentKeys;
-  std::array<bool, GLFW_MOUSE_BUTTON_LAST + GLFW_KEY_LAST + 2> previousKeys;
+  InputStateArray currentKeys{};
+  InputStateArray previousKeys{};
+  InputStateArray currentVirtualKeys{};
+  InputStateArray previousVirtualKeys{};
   bool any_key_pressed_this_frame = false;
+  bool last_input_was_mouse = true;
+  bool has_mouse_position = false;
+  bool mouse_scrolled_this_frame = false;
+  f64 raw_mouse_x = 0.0;
+  f64 raw_mouse_y = 0.0;
 
   /* =================== //
   // Mouse state         //
@@ -59,6 +70,177 @@ namespace
       return keyInt + GLFW_MOUSE_BUTTON_LAST + 1; // Adjust for GLFW key offset
     }
   }
+
+  inline void set_virtual_key(InputStateArray& states, Engine::KeyCode key, bool value)
+  {
+    states[key_to_index(key)] = value;
+  }
+
+  inline bool get_combined_state(const InputStateArray& raw_states, const InputStateArray& virtual_states, Engine::KeyCode key)
+  {
+    const int idx = key_to_index(key);
+    return raw_states[idx] || virtual_states[idx];
+  }
+
+  struct GamepadNavigationState
+  {
+    bool up = false;
+    bool down = false;
+    bool left = false;
+    bool right = false;
+    bool confirm = false;
+    bool cancel = false;
+  };
+
+  GamepadNavigationState poll_gamepad_navigation()
+  {
+#if GLFW_HAS_GAMEPAD_API && !defined(EMSCRIPTEN_USE_EMBEDDED_GLFW3)
+    for (int joystick_id = GLFW_JOYSTICK_1; joystick_id <= GLFW_JOYSTICK_LAST; ++joystick_id)
+    {
+      if (!glfwJoystickPresent(joystick_id) || !glfwJoystickIsGamepad(joystick_id))
+      {
+        continue;
+      }
+
+      GLFWgamepadstate gamepad_state{};
+      if (!glfwGetGamepadState(joystick_id, &gamepad_state))
+      {
+        continue;
+      }
+
+      GamepadNavigationState state{};
+      state.up = gamepad_state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_UP] == GLFW_PRESS
+        || gamepad_state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y] <= -GAMEPAD_AXIS_PRESS_THRESHOLD;
+      state.down = gamepad_state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_DOWN] == GLFW_PRESS
+        || gamepad_state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y] >= GAMEPAD_AXIS_PRESS_THRESHOLD;
+      state.left = gamepad_state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] == GLFW_PRESS
+        || gamepad_state.axes[GLFW_GAMEPAD_AXIS_LEFT_X] <= -GAMEPAD_AXIS_PRESS_THRESHOLD;
+      state.right = gamepad_state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] == GLFW_PRESS
+        || gamepad_state.axes[GLFW_GAMEPAD_AXIS_LEFT_X] >= GAMEPAD_AXIS_PRESS_THRESHOLD;
+      state.confirm = gamepad_state.buttons[GLFW_GAMEPAD_BUTTON_A] == GLFW_PRESS;
+      state.cancel = gamepad_state.buttons[GLFW_GAMEPAD_BUTTON_B] == GLFW_PRESS
+        || gamepad_state.buttons[GLFW_GAMEPAD_BUTTON_BACK] == GLFW_PRESS
+        || gamepad_state.buttons[GLFW_GAMEPAD_BUTTON_START] == GLFW_PRESS;
+      return state;
+    }
+#endif
+
+    for (int joystick_id = GLFW_JOYSTICK_1; joystick_id <= GLFW_JOYSTICK_LAST; ++joystick_id)
+    {
+      if (!glfwJoystickPresent(joystick_id))
+      {
+        continue;
+      }
+
+      int axes_count = 0;
+      int buttons_count = 0;
+      const float* axes = glfwGetJoystickAxes(joystick_id, &axes_count);
+      const unsigned char* buttons = glfwGetJoystickButtons(joystick_id, &buttons_count);
+      if (axes_count <= 0 && buttons_count <= 0)
+      {
+        continue;
+      }
+
+      GamepadNavigationState state{};
+      state.up = (buttons_count > 10 && buttons[10] == GLFW_PRESS)
+        || (axes_count > 1 && axes[1] <= -GAMEPAD_AXIS_PRESS_THRESHOLD);
+      state.down = (buttons_count > 12 && buttons[12] == GLFW_PRESS)
+        || (axes_count > 1 && axes[1] >= GAMEPAD_AXIS_PRESS_THRESHOLD);
+      state.left = (buttons_count > 13 && buttons[13] == GLFW_PRESS)
+        || (axes_count > 0 && axes[0] <= -GAMEPAD_AXIS_PRESS_THRESHOLD);
+      state.right = (buttons_count > 11 && buttons[11] == GLFW_PRESS)
+        || (axes_count > 0 && axes[0] >= GAMEPAD_AXIS_PRESS_THRESHOLD);
+      state.confirm = buttons_count > 0 && buttons[0] == GLFW_PRESS;
+      state.cancel = (buttons_count > 1 && buttons[1] == GLFW_PRESS)
+        || (buttons_count > 6 && buttons[6] == GLFW_PRESS)
+        || (buttons_count > 7 && buttons[7] == GLFW_PRESS);
+      return state;
+    }
+
+    return {};
+  }
+
+  void update_virtual_gamepad_keys()
+  {
+    currentVirtualKeys.fill(false);
+
+    const GamepadNavigationState gamepad_state = poll_gamepad_navigation();
+
+    set_virtual_key(currentVirtualKeys, Engine::KeyCode::W, gamepad_state.up);
+    set_virtual_key(currentVirtualKeys, Engine::KeyCode::Up, gamepad_state.up);
+    set_virtual_key(currentVirtualKeys, Engine::KeyCode::S, gamepad_state.down);
+    set_virtual_key(currentVirtualKeys, Engine::KeyCode::Down, gamepad_state.down);
+    set_virtual_key(currentVirtualKeys, Engine::KeyCode::A, gamepad_state.left);
+    set_virtual_key(currentVirtualKeys, Engine::KeyCode::Left, gamepad_state.left);
+    set_virtual_key(currentVirtualKeys, Engine::KeyCode::D, gamepad_state.right);
+    set_virtual_key(currentVirtualKeys, Engine::KeyCode::Right, gamepad_state.right);
+    set_virtual_key(currentVirtualKeys, Engine::KeyCode::Enter, gamepad_state.confirm);
+    set_virtual_key(currentVirtualKeys, Engine::KeyCode::Space, gamepad_state.confirm);
+    set_virtual_key(currentVirtualKeys, Engine::KeyCode::Escape, gamepad_state.cancel);
+  }
+
+  void update_any_key_pressed_state()
+  {
+    any_key_pressed_this_frame = false;
+
+    const int escape_index = key_to_index(Engine::KeyCode::Escape);
+
+    for (int idx = 0; idx < static_cast<int>(currentKeys.size()); ++idx)
+    {
+      if (idx == escape_index)
+      {
+        continue;
+      }
+
+      const bool current_state = currentKeys[idx] || currentVirtualKeys[idx];
+      const bool previous_state = previousKeys[idx] || previousVirtualKeys[idx];
+      if (current_state && !previous_state)
+      {
+        any_key_pressed_this_frame = true;
+        return;
+      }
+    }
+  }
+
+  bool has_mouse_button_activity()
+  {
+    for (int button = 0; button <= GLFW_MOUSE_BUTTON_LAST; ++button)
+    {
+      if (currentKeys[button] != previousKeys[button])
+      {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  bool has_keyboard_activity()
+  {
+    for (int key = 0; key <= GLFW_KEY_LAST; ++key)
+    {
+      const int idx = key + GLFW_MOUSE_BUTTON_LAST + 1;
+      if (currentKeys[idx] != previousKeys[idx])
+      {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  bool has_virtual_key_activity()
+  {
+    for (int idx = 0; idx < static_cast<int>(currentVirtualKeys.size()); ++idx)
+    {
+      if (currentVirtualKeys[idx] != previousVirtualKeys[idx])
+      {
+        return true;
+      }
+    }
+
+    return false;
+  }
 }
 
 namespace Engine
@@ -77,15 +259,12 @@ namespace Engine
 
     // Update previous states
     previousKeys = currentKeys;
-
-    any_key_pressed_this_frame = false;
+    previousVirtualKeys = currentVirtualKeys;
 
     // Update current mouse button state
     for (int button = 0; button <= GLFW_MOUSE_BUTTON_LAST; ++button)
     {
       currentKeys[button] = (glfwGetMouseButton(window, button) == GLFW_PRESS);
-      if (currentKeys[button] && !previousKeys[button])
-        any_key_pressed_this_frame = true;
     }
 
     // Update current keyboard state
@@ -93,14 +272,32 @@ namespace Engine
     {
       int idx = key + GLFW_MOUSE_BUTTON_LAST + 1;
       currentKeys[idx] = (glfwGetKey(window, key) == GLFW_PRESS);
-      if (key != GLFW_KEY_ESCAPE && currentKeys[idx] && !previousKeys[idx])
-        any_key_pressed_this_frame = true;
     }
+
+    update_virtual_gamepad_keys();
+    update_any_key_pressed_state();
 
 
     // Update mouse position
     f64 xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
+
+    const bool mouse_moved = has_mouse_position && (xpos != raw_mouse_x || ypos != raw_mouse_y);
+    raw_mouse_x = xpos;
+    raw_mouse_y = ypos;
+    has_mouse_position = true;
+
+    const bool mouse_activity = mouse_moved || has_mouse_button_activity() || mouse_scrolled_this_frame;
+    const bool non_mouse_activity = has_keyboard_activity() || has_virtual_key_activity();
+    if (mouse_activity)
+    {
+      last_input_was_mouse = true;
+    }
+    else if (non_mouse_activity)
+    {
+      last_input_was_mouse = false;
+    }
+    mouse_scrolled_this_frame = false;
 
     //Log::info("Raw Mouse Position: ({}, {})", xpos, ypos);
 
@@ -118,8 +315,7 @@ namespace Engine
     if (ImGuiManager::is_game_input_blocked())
       return false;
 #endif
-    int idx = key_to_index(key);
-    return currentKeys[idx] && !previousKeys[idx];
+    return is_pressed_raw(key);
   }
 
   bool Input::is_released(KeyCode key)
@@ -128,8 +324,7 @@ namespace Engine
     if (ImGuiManager::is_game_input_blocked())
       return false;
 #endif
-    int idx = key_to_index(key);
-    return !currentKeys[idx] && previousKeys[idx];
+    return is_released_raw(key);
   }
 
   bool Input::is_held(KeyCode key)
@@ -138,31 +333,34 @@ namespace Engine
     if (ImGuiManager::is_game_input_blocked())
       return false;
 #endif
-    int idx = key_to_index(key);
-    return currentKeys[idx];
+    return is_held_raw(key);
   }
 
   bool Input::is_pressed_raw(KeyCode key)
   {
-    int idx = key_to_index(key);
-    return currentKeys[idx] && !previousKeys[idx];
+    return get_combined_state(currentKeys, currentVirtualKeys, key)
+      && !get_combined_state(previousKeys, previousVirtualKeys, key);
   }
 
   bool Input::is_released_raw(KeyCode key)
   {
-    int idx = key_to_index(key);
-    return !currentKeys[idx] && previousKeys[idx];
+    return !get_combined_state(currentKeys, currentVirtualKeys, key)
+      && get_combined_state(previousKeys, previousVirtualKeys, key);
   }
 
   bool Input::is_held_raw(KeyCode key)
   {
-    int idx = key_to_index(key);
-    return currentKeys[idx];
+    return get_combined_state(currentKeys, currentVirtualKeys, key);
   }
 
   bool Input::is_any_key_pressed()
   {
     return any_key_pressed_this_frame;
+  }
+
+  bool Input::was_last_input_mouse()
+  {
+    return last_input_was_mouse;
   }
 
   glm::vec2 Input::get_mouse_position()
@@ -227,5 +425,6 @@ namespace Engine
   {
     //Log::info("Scroll Offset Callback: ({}, {})", xoffset, yoffset);
     scrollOffset = { static_cast<f32>(xoffset), static_cast<f32>(yoffset) };
+    mouse_scrolled_this_frame = true;
   }
 }
