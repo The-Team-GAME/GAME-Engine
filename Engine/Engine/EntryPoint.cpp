@@ -18,7 +18,10 @@
 #include "LuaManager.h"
 
 namespace {
+  constexpr const char* PRELOADED_MAIN_MENU_LEVEL = "levels/MainMenu.json";
   constexpr const char* PRELOADED_GAMEPLAY_LEVEL = "levels/LevelOneTestingExtra.json";
+  constexpr const char* PRELOADED_LEVEL_TWO_LEVEL = "levels/LevelTwo.json";
+  constexpr const char* PRELOADED_PAUSE_LEVEL = "levels/NewPause.json";
 }
 
 /*=================================================================================
@@ -118,10 +121,19 @@ void RunGame()
   // prefab deserialization tries to look them up.
   Engine::Resources::load_all_prefabs();
 
-  // Warm the gameplay level once at startup so the first transition into gameplay
-  // can reuse the instantiated entities instead of loading from disk again.
+  // Warm frequently used levels at startup so the first transition into each
+  // scene can reuse the instantiated entities instead of loading from disk again.
+  Log::info("[EntryPoint] Requesting preload for main menu level: {}", PRELOADED_MAIN_MENU_LEVEL);
+  Engine::LevelManager::preload_level(PRELOADED_MAIN_MENU_LEVEL);
+
   Log::info("[EntryPoint] Requesting preload for gameplay level: {}", PRELOADED_GAMEPLAY_LEVEL);
   Engine::LevelManager::preload_level(PRELOADED_GAMEPLAY_LEVEL);
+
+  Log::info("[EntryPoint] Requesting preload for level two: {}", PRELOADED_LEVEL_TWO_LEVEL);
+  Engine::LevelManager::preload_level(PRELOADED_LEVEL_TWO_LEVEL);
+
+  Log::info("[EntryPoint] Requesting preload for pause overlay: {}", PRELOADED_PAUSE_LEVEL);
+  Engine::LevelManager::preload_level(PRELOADED_PAUSE_LEVEL);
 
 #ifndef GAME_BUILD
   // ── Start source file watcher ───────────────────────────────────────
