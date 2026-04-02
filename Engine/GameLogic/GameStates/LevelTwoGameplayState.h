@@ -29,9 +29,16 @@ class LevelTwoGameplayState : public Engine::Scene
   // Keep constants in sync with GameplayState
   static constexpr const char* GAMEPLAY_BGM_EVENT = "event:/BGM/LevelBGM";
   static constexpr const char* GAMEPLAY_BATTLECRY_EVENT = "event:/SFX/PlayerStartCry";
+  static constexpr const char* PAUSE_BUTTON_NAME = "PauseButtonHUD";
   static constexpr float TIPS_BUTTON_HUD_X = -227.0f;
   static constexpr float TIPS_BUTTON_HUD_Y = 92.0f;
   static constexpr float TIPS_BUTTON_HUD_SIZE = 220.0f;
+  static constexpr float PAUSE_BUTTON_HUD_X = -100.0f;
+  static constexpr float PAUSE_BUTTON_HUD_Y = 90.0f;
+  static constexpr float PAUSE_BUTTON_HUD_SIZE = 100.0f;
+  static constexpr float UPGRADE_BUTTON_HUD_X = 128.0f;
+  static constexpr float UPGRADE_BUTTON_HUD_Y = -128.0f;
+  static constexpr float UPGRADE_BUTTON_HUD_SIZE = 256.0f;
 
   // UI entity IDs
   Engine::ECS::EntityID pause_button_id = 0;
@@ -46,11 +53,51 @@ class LevelTwoGameplayState : public Engine::Scene
   int current_kills_for_upgrade_ = 0;
   float upgrade_btn_anim_time_ = 0.0f;
 
-  Engine::ECS::Entity find_tips_button_entity() {
+  bool is_matching_active_ui_entity(Engine::ECS::EntityID id, const char* texture_path) const {
+    if (id == 0) {
+      return false;
+    }
+
+    Engine::ECS::Entity entity(id);
+    if (!entity.is_valid() || !Engine::ECS::is_entity_active(entity) || !entity.has_component<Components::UI>()) {
+      return false;
+    }
+
+    auto* tex = entity.get_component<Components::Texture>();
+    return tex && tex->texture_handle && Engine::Resources::get_relative_path(tex->texture_handle->path) == texture_path;
+  }
+
+  const char* get_upgrade_button_name(int index) const {
+    static const char* names[4] = {
+      "UpgradeButtonHUD2",
+      "UpgradeButtonHUD3",
+      "UpgradeButtonHUD4",
+      "UpgradeButtonHUD5",
+    };
+    return names[index];
+  }
+
+  const char* get_upgrade_button_path(int index) const {
+    static const char* paths[4] = {
+      "images/Upgrades/skills_upgrade_2.png",
+      "images/Upgrades/skills_upgrade_3.png",
+      "images/Upgrades/skills_upgrade_4.png",
+      "images/Upgrades/skills_upgrade_5.png",
+    };
+    return paths[index];
+  }
+
+  int get_upgrade_button_frame_count(int index) const {
+    static const int frame_counts[4] = { 11, 12, 13, 14 };
+    return frame_counts[index];
+  }
+
+  Engine::ECS::Entity find_ui_entity_by_name_or_texture(const char* entity_name, const char* texture_path) {
     Engine::ECS::Entity found;
     Engine::ECS::for_each_entity([&](Engine::ECS::Entity entity) {
       if (found.is_valid()) return;
-      if (entity.get_name() == "TipsButtonHUD") {
+      if (!Engine::ECS::is_entity_active(entity)) return;
+      if (entity.get_name() == entity_name) {
         found = entity;
       }
       });
@@ -59,15 +106,218 @@ class LevelTwoGameplayState : public Engine::Scene
 
     Engine::ECS::for_each_entity([&](Engine::ECS::Entity entity) {
       if (found.is_valid()) return;
+      if (!Engine::ECS::is_entity_active(entity)) return;
       if (!entity.has_component<Components::UI>()) return;
       auto* tex = entity.get_component<Components::Texture>();
       if (!tex || !tex->texture_handle) return;
-      if (Engine::Resources::get_relative_path(tex->texture_handle->path) == "images/UI/TipsBook.png") {
+      if (Engine::Resources::get_relative_path(tex->texture_handle->path) == texture_path) {
         found = entity;
       }
       });
 
     return found;
+  }
+
+  Engine::ECS::Entity find_pause_button_entity() {
+    return find_ui_entity_by_name_or_texture(PAUSE_BUTTON_NAME, "images/UI/Pause.png");
+  }
+
+  Engine::ECS::Entity find_tips_button_entity() {
+    return find_ui_entity_by_name_or_texture("TipsButtonHUD", "images/UI/TipsBook.png");
+  }
+
+  Engine::ECS::Entity find_upgrade_button_entity(int index) {
+    return find_ui_entity_by_name_or_texture(get_upgrade_button_name(index), get_upgrade_button_path(index));
+  }
+
+  void restore_pause_button_hud(Engine::ECS::Entity pause_btn) {
+    if (!pause_btn.is_valid()) return;
+
+    pause_btn.set_name(PAUSE_BUTTON_NAME);
+    pause_btn.clear_layers().add_to_layer("gameplay_ui_2");
+
+    if (auto* tr = pause_btn.get_component<Components::Transform2D>()) {
+      tr->position.x = PAUSE_BUTTON_HUD_X;
+      tr->position.y = PAUSE_BUTTON_HUD_Y;
+      tr->scale.x = PAUSE_BUTTON_HUD_SIZE;
+      tr->scale.y = PAUSE_BUTTON_HUD_SIZE;
+    }
+    if (auto* ui = pause_btn.get_component<Components::UI>()) {
+      ui->anchor = { 1.0f, 0.0f };
+    }
+    if (auto* tex = pause_btn.get_component<Components::Texture>()) {
+      *tex = Components::Texture(Engine::Resources::load_texture("images/UI/Pause.png"));
+    }
+    if (auto* col = pause_btn.get_component<Components::Color>()) {
+      *col = Components::Color(1.0f, 1.0f, 1.0f, 1.0f);
+    }
+  }
+
+  Engine::ECS::EntityID create_pause_button_entity() {
+    auto pause_btn = Engine::ECS::create_entity()
+      .set_name(PAUSE_BUTTON_NAME)
+      .add_component<Components::Transform2D>(PAUSE_BUTTON_HUD_X, PAUSE_BUTTON_HUD_Y, 0.0f, PAUSE_BUTTON_HUD_SIZE, PAUSE_BUTTON_HUD_SIZE)
+      .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/Pause.png"))
+      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+      .add_component<Components::UI>(1.0f, 0.0f)
+      .add_component<Components::RuntimeOnly>()
+      .add_to_layer("gameplay_ui_2");
+    return pause_btn.get_id();
+  }
+
+  void restore_tips_button_hud(Engine::ECS::Entity tips_btn) {
+    if (!tips_btn.is_valid()) return;
+
+    tips_btn.set_name("TipsButtonHUD");
+    tips_btn.clear_layers().add_to_layer("gameplay_ui_2");
+
+    if (auto* tr = tips_btn.get_component<Components::Transform2D>()) {
+      tr->position.x = TIPS_BUTTON_HUD_X;
+      tr->position.y = TIPS_BUTTON_HUD_Y;
+      tr->scale.x = TIPS_BUTTON_HUD_SIZE;
+      tr->scale.y = TIPS_BUTTON_HUD_SIZE;
+    }
+    if (auto* ui = tips_btn.get_component<Components::UI>()) {
+      ui->anchor = { 1.0f, 0.0f };
+    }
+    if (auto* tex = tips_btn.get_component<Components::Texture>()) {
+      *tex = Components::Texture(Engine::Resources::load_texture("images/UI/TipsBook.png"));
+    }
+    if (auto* col = tips_btn.get_component<Components::Color>()) {
+      *col = Components::Color(1.0f, 1.0f, 1.0f, 1.0f);
+    }
+  }
+
+  Engine::ECS::EntityID create_tips_button_entity() {
+    auto tips_btn = Engine::ECS::create_entity()
+      .set_name("TipsButtonHUD")
+      .add_component<Components::Transform2D>(TIPS_BUTTON_HUD_X, TIPS_BUTTON_HUD_Y, 0.0f, TIPS_BUTTON_HUD_SIZE, TIPS_BUTTON_HUD_SIZE)
+      .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/TipsBook.png"))
+      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+      .add_component<Components::UI>(1.0f, 0.0f)
+      .add_component<Components::RuntimeOnly>()
+      .add_to_layer("gameplay_ui_2");
+    return tips_btn.get_id();
+  }
+
+  void restore_upgrade_button_hud(Engine::ECS::Entity upgrade_btn, int index) {
+    if (!upgrade_btn.is_valid()) return;
+
+    upgrade_btn.set_name(get_upgrade_button_name(index));
+    upgrade_btn.clear_layers().add_to_layer("gameplay_ui_2");
+
+    if (auto* tr = upgrade_btn.get_component<Components::Transform2D>()) {
+      tr->position.x = UPGRADE_BUTTON_HUD_X;
+      tr->position.y = UPGRADE_BUTTON_HUD_Y;
+      tr->scale.x = UPGRADE_BUTTON_HUD_SIZE;
+      tr->scale.y = UPGRADE_BUTTON_HUD_SIZE;
+    }
+    if (auto* ui = upgrade_btn.get_component<Components::UI>()) {
+      ui->anchor = { 0.0f, 1.0f };
+    }
+    if (auto* tex = upgrade_btn.get_component<Components::Texture>()) {
+      *tex = Components::Texture(Engine::Resources::load_texture(get_upgrade_button_path(index)));
+    }
+  }
+
+  Engine::ECS::EntityID create_upgrade_button_entity(int index) {
+    auto upgrade_btn = Engine::ECS::create_entity()
+      .set_name(get_upgrade_button_name(index))
+      .add_component<Components::Transform2D>(UPGRADE_BUTTON_HUD_X, UPGRADE_BUTTON_HUD_Y, 0.0f, UPGRADE_BUTTON_HUD_SIZE, UPGRADE_BUTTON_HUD_SIZE)
+      .add_component<Components::Texture>(Engine::Resources::load_texture(get_upgrade_button_path(index)))
+      .add_component<Components::TextureAtlas>(64, 64, 1, get_upgrade_button_frame_count(index), get_upgrade_button_frame_count(index))
+      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.0f)
+      .add_component<Components::UI>(0.0f, 1.0f)
+      .add_component<Components::RuntimeOnly>()
+      .add_to_layer("gameplay_ui_2");
+    return upgrade_btn.get_id();
+  }
+
+  void bind_upgrade_overlay_state() {
+    int threshold_idx = Engine::UpgradeManager::instance().get_next_threshold() - 2;
+    if (threshold_idx < 0) threshold_idx = 0;
+    if (threshold_idx > 3) threshold_idx = 3;
+
+    if (upgrade_btn_id_[threshold_idx] != 0) {
+      Engine::UpgradeUIStateMachine::instance().set_upgrade_button(upgrade_btn_id_[threshold_idx]);
+    }
+
+    Engine::UpgradeUIStateMachine::instance().set_picker_open_callback([]() {
+      Engine::SceneManager::push_scene("UpgradePickerState");
+      });
+  }
+
+  void ensure_overlay_entities() {
+    bool snapshot_needs_rebuild = false;
+    bool upgrade_binding_changed = false;
+
+    if (!is_matching_active_ui_entity(pause_button_id, "images/UI/Pause.png")) {
+      auto pause_btn = find_pause_button_entity();
+      if (pause_btn.is_valid()) {
+        if (pause_btn.get_name() != PAUSE_BUTTON_NAME) {
+          pause_btn.set_name(PAUSE_BUTTON_NAME);
+          snapshot_needs_rebuild = true;
+        }
+        restore_pause_button_hud(pause_btn);
+        pause_button_id = pause_btn.get_id();
+      }
+      else {
+        pause_button_id = create_pause_button_entity();
+        snapshot_needs_rebuild = true;
+      }
+    }
+
+    if (!is_matching_active_ui_entity(tips_button_id, "images/UI/TipsBook.png")) {
+      auto tips_btn = find_tips_button_entity();
+      if (tips_btn.is_valid()) {
+        if (tips_btn.get_name() != "TipsButtonHUD") {
+          tips_btn.set_name("TipsButtonHUD");
+          snapshot_needs_rebuild = true;
+        }
+        restore_tips_button_hud(tips_btn);
+        tips_button_id = tips_btn.get_id();
+      }
+      else {
+        tips_button_id = create_tips_button_entity();
+        snapshot_needs_rebuild = true;
+      }
+    }
+
+    for (int i = 0; i < 4; ++i) {
+      if (is_matching_active_ui_entity(upgrade_btn_id_[i], get_upgrade_button_path(i))) {
+        continue;
+      }
+
+      auto upgrade_btn = find_upgrade_button_entity(i);
+      if (upgrade_btn.is_valid()) {
+        if (upgrade_btn.get_name() != get_upgrade_button_name(i)) {
+          upgrade_btn.set_name(get_upgrade_button_name(i));
+          snapshot_needs_rebuild = true;
+        }
+        restore_upgrade_button_hud(upgrade_btn, i);
+        if (upgrade_btn_id_[i] != upgrade_btn.get_id()) {
+          upgrade_binding_changed = true;
+        }
+        upgrade_btn_id_[i] = upgrade_btn.get_id();
+      }
+      else {
+        upgrade_btn_id_[i] = create_upgrade_button_entity(i);
+        snapshot_needs_rebuild = true;
+        upgrade_binding_changed = true;
+      }
+    }
+
+    if (upgrade_binding_changed) {
+      current_upgrade_threshold_ = -1;
+      current_kills_for_upgrade_ = -1;
+      upgrade_btn_anim_time_ = 0.0f;
+    }
+
+    bind_upgrade_overlay_state();
+
+    if (snapshot_needs_rebuild) {
+      Engine::LevelManager::rebuild_active_snapshot();
+    }
   }
 
 public:
@@ -94,58 +344,26 @@ public:
       .add_to_layer("effect");
 
     // Pause button
-    auto pause_btn = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(-100.0f, 90.0f, 0.0f, 100.0f, 100.0f)
-      .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/Pause.png"))
-      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-      .add_component<Components::UI>(1.0f, 0.0f)
-      .add_component<Components::RuntimeOnly>()
-      .add_to_layer("gameplay_ui_2");
-    pause_button_id = pause_btn.get_id();
+    pause_button_id = create_pause_button_entity();
 
     // Tips book button (reuse if present)
     auto tips_btn = find_tips_button_entity();
     if (tips_btn.is_valid()) {
       tips_button_id = tips_btn.get_id();
-      set_tips_button_layer("gameplay_ui_2");
-      if (auto* ui = tips_btn.get_component<Components::UI>()) ui->anchor = { 1.0f, 0.0f };
-      set_tips_button_size(TIPS_BUTTON_HUD_SIZE);
-      set_tips_button_hud_position();
+      restore_tips_button_hud(tips_btn);
     }
     else {
-      auto tips_btn_created = Engine::ECS::create_entity()
-        .set_name("TipsButtonHUD")
-        .add_component<Components::Transform2D>(TIPS_BUTTON_HUD_X, TIPS_BUTTON_HUD_Y, 0.0f, TIPS_BUTTON_HUD_SIZE, TIPS_BUTTON_HUD_SIZE)
-        .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/TipsBook.png"))
-        .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-        .add_component<Components::UI>(1.0f, 0.0f)
-        .add_component<Components::RuntimeOnly>()
-        .add_to_layer("gameplay_ui_2");
-      tips_button_id = tips_btn_created.get_id();
+      tips_button_id = create_tips_button_entity();
     }
 
     // Upgrade buttons
-    auto make_upgrade_btn = [&](const char* img_path, int frame_w, int num_frames) -> Engine::ECS::EntityID {
-      auto e = Engine::ECS::create_entity()
-        .add_component<Components::Transform2D>(128.0f, -128.0f, 0.0f, 64.0f * 4.0f, 64.0f * 4.0f)
-        .add_component<Components::Texture>(Engine::Resources::load_texture(img_path))
-        .add_component<Components::TextureAtlas>(frame_w, frame_w, 1, num_frames, num_frames)
-        .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.0f)
-        .add_component<Components::UI>(0.0f, 1.0f)
-        .add_component<Components::RuntimeOnly>()
-        .add_to_layer("gameplay_ui_2");
-      return e.get_id();
-      };
+    for (int i = 0; i < 4; ++i) {
+      upgrade_btn_id_[i] = create_upgrade_button_entity(i);
+    }
 
-    upgrade_btn_id_[0] = make_upgrade_btn("images/Upgrades/skills_upgrade_2.png", 64, 11);
-    upgrade_btn_id_[1] = make_upgrade_btn("images/Upgrades/skills_upgrade_3.png", 64, 12);
-    upgrade_btn_id_[2] = make_upgrade_btn("images/Upgrades/skills_upgrade_4.png", 64, 13);
-    upgrade_btn_id_[3] = make_upgrade_btn("images/Upgrades/skills_upgrade_5.png", 64, 14);
+    bind_upgrade_overlay_state();
 
-    Engine::UpgradeUIStateMachine::instance().set_upgrade_button(upgrade_btn_id_[0]);
-    Engine::UpgradeUIStateMachine::instance().set_picker_open_callback([]() {
-      Engine::SceneManager::push_scene("UpgradePickerState");
-      });
+    Engine::LevelManager::rebuild_active_snapshot();
   };
 
   void init() {
@@ -158,6 +376,8 @@ public:
   };
 
   void update() {
+    ensure_overlay_entities();
+
     const float now_unscaled = Engine::Time::get_unscaled_time();
     const bool tips_scene_on_top = (Engine::SceneManager::get_current_scene_name() == "TipsBookState") || TipsBookState::is_open;
     if (OldManDialogueState::consume_open_tips_request()) {
@@ -226,7 +446,9 @@ public:
       return;
     }
 
-    if (Engine::Input::is_pressed(Engine::KeyCode::Escape)) {
+    const bool pause_shortcut_pressed = Engine::Input::is_pressed_raw(Engine::KeyCode::Escape) ||
+      Engine::Input::is_pressed(Engine::KeyCode::Escape);
+    if (pause_shortcut_pressed) {
       Engine::SceneManager::push_scene("PauseState");
       return;
     }

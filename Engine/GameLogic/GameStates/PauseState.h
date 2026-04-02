@@ -15,52 +15,48 @@
 
 #include "pch.h"
 
+namespace PauseStateDetail {
+  void start_pause_lowpass_snapshot();
+  void stop_pause_lowpass_snapshot();
+}
+
 class PauseState : public Engine::Scene
 {
-  // Entity IDs for cleanup
-  Engine::ECS::EntityID background_id = 0;
-  Engine::ECS::EntityID resume_collider_id = 0;
-  Engine::ECS::EntityID restart_collider_id = 0;
-  Engine::ECS::EntityID options_collider_id = 0;
-  Engine::ECS::EntityID exit_collider_id = 0;
+  static constexpr const char* PAUSE_OVERLAY_LEVEL = "levels/NewPause.json";
+  static constexpr const char* PAUSE_OPEN_EVENT = "event:/SFXUI/ButtonPause";
+  static constexpr const char* PAUSE_CLOSE_EVENT = "event:/SFXUI/ButtonClick";
+
+  std::string overlay_level_id_;
 
 public:
-  // Static members for hover callbacks to access
-  static Engine::ECS::EntityID menu_sprite_id;
-  static int hovered_button; // 0 = none, 1 = resume, 2 = restart, 3 = options, 4 = exit
-  static Engine::Graphics::Texture nothing_selected_tex;
-  static Engine::Graphics::Texture resume_selected_tex;
-  static Engine::Graphics::Texture restart_selected_tex;
-  static Engine::Graphics::Texture options_selected_tex;
-  static Engine::Graphics::Texture exit_selected_tex;
+  void load() {
+    PauseStateDetail::start_pause_lowpass_snapshot();
+    Engine::AudioSystem::playEvent(PAUSE_OPEN_EVENT);
+    overlay_level_id_ = Engine::LevelManager::open_overlay_level(PAUSE_OVERLAY_LEVEL);
+    Engine::Time::set_time_scale(0.0001f);
+  };
 
-  /*!
-   * @brief Loads resources needed by the pause state.
-   */
-  void load();
+  void init() {};
 
-  /*!
-   * @brief Initializes the pause state.
-   */
-  void init();
+  void update() {
+    if (overlay_level_id_.empty() && Engine::Input::is_pressed(Engine::KeyCode::Escape)) {
+      Engine::SceneManager::pop_scene();
+    }
+  };
 
-  /*!
-   * @brief Updates the pause state logic.
-   */
-  void update();
+  void draw() {};
 
-  /*!
-   * @brief Renders the pause interface.
-   */
-  void draw();
+  void free() {};
 
-  /*!
-   * @brief Frees runtime resources used by the pause state.
-   */
-  void free();
+  void unload() {
+    PauseStateDetail::stop_pause_lowpass_snapshot();
+    Engine::AudioSystem::playEvent(PAUSE_CLOSE_EVENT);
 
-  /*!
-   * @brief Unloads resources used by the pause state.
-   */
-  void unload();
+    if (!overlay_level_id_.empty()) {
+      Engine::LevelManager::close_overlay_level(overlay_level_id_);
+      overlay_level_id_.clear();
+    }
+
+    Engine::Time::set_time_scale(1.0f);
+  };
 };

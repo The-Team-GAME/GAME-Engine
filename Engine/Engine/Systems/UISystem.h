@@ -116,13 +116,13 @@ namespace Engine
         else {
           if (was_hovered) {
             hovered_entities_.erase(id);
-          }
 
-          // Call exit_hover if function is set
-          if (!clickable->exit_hover.empty()) {
-            auto exit_func = clickable->exit_hover.get<void(Engine::ECS::Entity)>();
-            if (exit_func) {
-              exit_func(entity);
+            // Only emit exit-hover when the cursor actually leaves this entity.
+            if (!clickable->exit_hover.empty()) {
+              auto exit_func = clickable->exit_hover.get<void(Engine::ECS::Entity)>();
+              if (exit_func) {
+                exit_func(entity);
+              }
             }
           }
         }
