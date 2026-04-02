@@ -170,9 +170,21 @@ local LEFT_HOVER_TARGETS = {
   { key = "quit", entity_name = EXIT_BUTTON_NAME },
 }
 
+local LEFT_HOVER_KEY_BY_ENTITY_NAME = {
+  [RESUME_BUTTON_NAME] = "resume",
+  [RESTART_BUTTON_NAME] = "restart",
+  [OPTIONS_BUTTON_NAME] = "options",
+  [EXIT_BUTTON_NAME] = "quit",
+}
+
 local CONFIRM_HOVER_TARGETS = {
   { key = "yes", entity_name = CONFIRM_YES_BUTTON_NAME },
   { key = "no", entity_name = CONFIRM_NO_BUTTON_NAME },
+}
+
+local CONFIRM_HOVER_KEY_BY_ENTITY_NAME = {
+  [CONFIRM_YES_BUTTON_NAME] = "yes",
+  [CONFIRM_NO_BUTTON_NAME] = "no",
 }
 
 local hovered_left_button = nil
@@ -463,6 +475,47 @@ local function get_mouse_screen_position()
   return mouse
 end
 
+local function point_in_polygon(point, vertices)
+  local inside = false
+  local count = #vertices
+  local j = count
+
+  for i = 1, count do
+    local vi = vertices[i]
+    local vj = vertices[j]
+    local intersects = ((vi.y > point.y) ~= (vj.y > point.y))
+      and (point.x < (vj.x - vi.x) * (point.y - vi.y) / (vj.y - vi.y) + vi.x)
+
+    if intersects then
+      inside = not inside
+    end
+
+    j = i
+  end
+
+  return inside
+end
+
+local function get_button_polygon_vertices(tr, box)
+  local polygon = box.polygon
+  if not polygon or not polygon.vertices or #polygon.vertices < 3 then
+    return nil
+  end
+
+  local center_x = tr.position.x + box.offset.x
+  local center_y = tr.position.y + box.offset.y
+  local vertices = {}
+
+  for _, vertex in ipairs(polygon.vertices) do
+    vertices[#vertices + 1] = {
+      x = center_x + vertex.x,
+      y = center_y + vertex.y,
+    }
+  end
+
+  return vertices
+end
+
 local function is_mouse_over_button(entity_name, mouse)
   local entity = get_named_entity(entity_name)
   if not entity or not entity:is_valid() then
@@ -473,6 +526,11 @@ local function is_mouse_over_button(entity_name, mouse)
   local box = entity.BoxCollider
   if not tr or not box then
     return false
+  end
+
+  local polygon_vertices = get_button_polygon_vertices(tr, box)
+  if polygon_vertices ~= nil then
+    return point_in_polygon(mouse, polygon_vertices)
   end
 
   local half_width = box.width * 0.5
@@ -634,18 +692,7 @@ local function apply_confirm_hover(choice)
 end
 
 local function update_left_hover_from_mouse()
-  local next_hover = get_hover_target(LEFT_HOVER_TARGETS)
-  if hovered_left_button == next_hover then
-    return
-  end
-
-  hovered_left_button = next_hover
-  if hovered_left_button ~= nil then
-    raise_entity_to_hover_layer(LEFT_PANEL_NAME)
-  else
-    restore_entity_base_layer(LEFT_PANEL_NAME)
-  end
-  refresh_left_panel()
+  return
 end
 
 local function update_options_hover_from_mouse()
@@ -653,17 +700,7 @@ local function update_options_hover_from_mouse()
 end
 
 local function update_confirm_hover_from_mouse()
-  if not is_pause_state("ConfirmRestart") and not is_pause_state("ConfirmQuit") then
-    apply_confirm_hover(nil)
-    return
-  end
-
-  local next_hover = get_hover_target(CONFIRM_HOVER_TARGETS)
-  if hovered_confirm_button == next_hover then
-    return
-  end
-
-  apply_confirm_hover(next_hover)
+  return
 end
 
 local function show_options_panel()
@@ -695,12 +732,16 @@ end
 
 local function set_left_hover(button_name)
   hovered_left_button = button_name
+  if button_name ~= nil then
+    raise_entity_to_hover_layer(LEFT_PANEL_NAME)
+  else
+    restore_entity_base_layer(LEFT_PANEL_NAME)
+  end
   refresh_left_panel()
 end
 
 local function clear_left_hover()
-  hovered_left_button = nil
-  refresh_left_panel()
+  set_left_hover(nil)
 end
 
 local function change_bgm_step(delta)
@@ -843,18 +884,31 @@ function pause_confirm_no()
 end
 
 function pause_hover_resume(entity)
+  set_left_hover("resume")
 end
 
 function pause_hover_restart(entity)
+  set_left_hover("restart")
 end
 
 function pause_hover_options(entity)
+  set_left_hover("options")
 end
 
 function pause_hover_exit(entity)
+  set_left_hover("quit")
 end
 
 function pause_left_button_exit_hover(entity)
+  if not entity or not entity:is_valid() then
+    clear_left_hover()
+    return
+  end
+
+  local hover_key = LEFT_HOVER_KEY_BY_ENTITY_NAME[entity:get_name()]
+  if hover_key ~= nil and hovered_left_button == hover_key then
+    clear_left_hover()
+  end
 end
 
 function pause_hover_bgm_decrease(entity)
@@ -879,12 +933,23 @@ function pause_options_hover_exit(entity)
 end
 
 function pause_confirm_yes_hover(entity)
+  apply_confirm_hover("yes")
 end
 
 function pause_confirm_no_hover(entity)
+  apply_confirm_hover("no")
 end
 
 function pause_confirm_hover_exit(entity)
+  if not entity or not entity:is_valid() then
+    apply_confirm_hover(nil)
+    return
+  end
+
+  local hover_key = CONFIRM_HOVER_KEY_BY_ENTITY_NAME[entity:get_name()]
+  if hover_key ~= nil and hovered_confirm_button == hover_key then
+    apply_confirm_hover(nil)
+  end
 end
 
 function pause_menu_menu_on_enter(entity)
