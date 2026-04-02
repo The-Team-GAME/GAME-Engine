@@ -2,10 +2,10 @@
 // file:    PlayerStateCallbacks.cpp
 // project: Monkey Stole My GPA
 //
-// author:  Cheng Ming Xian (90%)
+// author:  Cheng Ming Xian (100%)
 //          Primary author
-//          Chew Shee Yang (10%)
-//          Co-Author
+//          Chew Shee Yang
+//          Initial Author
 // 
 // email:   c.mingxian@digipen.edu
 //          chew.s@digipen.edu
