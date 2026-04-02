@@ -40,6 +40,11 @@ public:
   void unload() override;
 
 private:
+  void destroy_dimmer();
+  void recreate_dimmer();
+  void destroy_dialogue_sprite();
+  void recreate_dialogue_sprite();
+
   static constexpr float SCREEN_CENTER_X = 800.0f;
   static constexpr float SCREEN_CENTER_Y = 450.0f;
 
