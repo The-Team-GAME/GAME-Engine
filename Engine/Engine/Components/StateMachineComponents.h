@@ -34,6 +34,8 @@
 #include "AudioComponents.h"
 #include "AnimatorComponents.h"
 #include "StateMachineBlueprintRegistry.h"
+#include "../Graphics/Renderer.h"
+#include <cmath>
 
 namespace Components
 {
@@ -277,8 +279,14 @@ namespace Components
             if (auto* t = entity.get_component<Transform2D>()) {
               Engine::AudioSystem::setEventInstancePosition(current_fmod_instance_, t->position);
             }
-            if (!Engine::AudioSystem::isEventInstancePlaying(current_fmod_instance_)) {
-              Engine::AudioSystem::startEventInstance(current_fmod_instance_);
+            if (is_owner_entity_visible_for_audio()) {
+              Engine::AudioSystem::pauseEventInstance(current_fmod_instance_, false);
+              if (!Engine::AudioSystem::isEventInstancePlaying(current_fmod_instance_)) {
+                Engine::AudioSystem::startEventInstance(current_fmod_instance_);
+              }
+            }
+            else {
+              Engine::AudioSystem::pauseEventInstance(current_fmod_instance_, true);
             }
           }
         }
@@ -672,6 +680,10 @@ namespace Components
 
       // If looping, create persistent instance
       if (fmod_audio.loop) {
+        if (!is_owner_entity_visible_for_audio()) {
+          return "";
+        }
+
         // Always release any pre-existing instance with this name so editor path changes take effect
         Engine::AudioSystem::stopEventInstance(instance_name, true);
         Engine::AudioSystem::releaseEventInstance(instance_name);
@@ -685,9 +697,24 @@ namespace Components
       }
       else {
         // One-shot event at entity's world position
-        Engine::AudioSystem::playEventAtPosition(fmod_audio.event_path, entity_pos);
+        if (is_owner_entity_visible_for_audio()) {
+          Engine::AudioSystem::playEventAtPosition(fmod_audio.event_path, entity_pos);
+        }
         return ""; // No instance to track for one-shot
       }
+    }
+
+    bool is_owner_entity_visible_for_audio() const {
+      if (!owner_entity_) return true;
+
+      auto* t = owner_entity_->get_component<Transform2D>();
+      if (!t) return true;
+
+      Math::Vec2D approx_size = {
+        std::max(1.0f, std::abs(t->scale.x)),
+        std::max(1.0f, std::abs(t->scale.y))
+      };
+      return Engine::Graphics::is_visible(t->position, approx_size);
     }
   };
 
