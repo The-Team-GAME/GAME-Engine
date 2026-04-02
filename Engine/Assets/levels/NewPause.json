@@ -231,7 +231,7 @@
                 "id": 9203,
                 "layers": [
                     "default",
-                    "overlay_items_2"
+                    "overlay_items_1"
                 ],
                 "name": "PauseOptionsPanel"
             },
@@ -310,15 +310,6 @@
                             }
                         },
                         "type": "Components::Clickable"
-                    },
-                    {
-                        "data": {
-                            "a": 0.0,
-                            "b": 1.0,
-                            "g": 1.0,
-                            "r": 1.0
-                        },
-                        "type": "Components::Color"
                     },
                     {
                         "data": {},
@@ -407,15 +398,6 @@
                             }
                         },
                         "type": "Components::Clickable"
-                    },
-                    {
-                        "data": {
-                            "a": 0.0,
-                            "b": 1.0,
-                            "g": 1.0,
-                            "r": 1.0
-                        },
-                        "type": "Components::Color"
                     },
                     {
                         "data": {},
@@ -985,15 +967,6 @@
                             }
                         },
                         "type": "Components::Clickable"
-                    },
-                    {
-                        "data": {
-                            "a": 0.0,
-                            "b": 1.0,
-                            "g": 1.0,
-                            "r": 1.0
-                        },
-                        "type": "Components::Color"
                     },
                     {
                         "data": {},
