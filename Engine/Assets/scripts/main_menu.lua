@@ -12,6 +12,33 @@ local menu_anim = {}
 local options_active = false
 local options_transition = nil
 
+local MENU_BUTTON_NAMES = {
+  "PlayButton",
+  "OptionsButton",
+  "CreditsButton",
+  "ExitButton",
+}
+
+local MENU_BUTTON_INDEX_BY_NAME = {
+  PlayButton = 1,
+  OptionsButton = 2,
+  CreditsButton = 3,
+  ExitButton = 4,
+}
+
+local OPTION_ROW_ENTITIES = {
+  { "OptionsBGMLabel", "OptionsBGMBar", "OptionsBGMLeft", "OptionsBGMRight" },
+  { "OptionsSFXLabel", "OptionsSFXBar", "OptionsSFXLeft", "OptionsSFXRight" },
+  { "OptionsScreenLabel", "OptionsScreenLeft", "OptionsWindowed", "OptionsFullscreen", "OptionsScreenRight" },
+}
+
+local OPTION_ROW_FOCUSED_ALPHA = 1.0
+local OPTION_ROW_UNFOCUSED_ALPHA = 0.72
+
+local selected_menu_button_index = 1
+local hovered_menu_button_index = nil
+local selected_option_row_index = 1
+
 local MAIN_MENU_ENTITY_NAMES = {
   "Whole train",
   "BackCarriage",
@@ -143,6 +170,35 @@ local function get_named_entity(name)
   return ECS.get_entity_by_name(name)
 end
 
+local function wrap_index(index, count)
+  if count <= 0 then
+    return 1
+  end
+  if index < 1 then
+    return count
+  end
+  if index > count then
+    return 1
+  end
+  return index
+end
+
+local function is_confirm_pressed()
+  return Input.is_pressed(Key.Enter) or Input.is_pressed(Key.Space)
+end
+
+local function set_entity_alpha(entity_name, alpha)
+  local entity = get_named_entity(entity_name)
+  if not entity or not entity:is_valid() then
+    return
+  end
+
+  local color = entity.Color
+  if color then
+    color.a = alpha
+  end
+end
+
 local function get_option_target(entity_name)
   return OPTIONS_TARGETS[entity_name]
 end
@@ -179,6 +235,57 @@ local function reset_menu_button_textures()
   for entity_name, textures in pairs(BUTTON_TEXTURES) do
     set_button_texture(entity_name, textures.normal)
   end
+end
+
+local function get_active_menu_button_index()
+  return hovered_menu_button_index or selected_menu_button_index
+end
+
+local function sync_main_menu_button_visuals()
+  reset_menu_button_textures()
+
+  local entity_name = MENU_BUTTON_NAMES[get_active_menu_button_index()]
+  local textures = entity_name and BUTTON_TEXTURES[entity_name]
+  if textures then
+    set_button_texture(entity_name, textures.hovered)
+  end
+end
+
+local function set_menu_button_hover_index(index)
+  hovered_menu_button_index = index
+  if index ~= nil then
+    selected_menu_button_index = index
+  end
+  sync_main_menu_button_visuals()
+end
+
+local function clear_menu_button_hover_index(index)
+  if index ~= nil and hovered_menu_button_index ~= index then
+    return
+  end
+
+  hovered_menu_button_index = nil
+  sync_main_menu_button_visuals()
+end
+
+local function set_menu_button_selection(index)
+  hovered_menu_button_index = nil
+  selected_menu_button_index = wrap_index(index, #MENU_BUTTON_NAMES)
+  sync_main_menu_button_visuals()
+end
+
+local function sync_option_focus_visuals()
+  for row_index, entity_names in ipairs(OPTION_ROW_ENTITIES) do
+    local alpha = row_index == selected_option_row_index and OPTION_ROW_FOCUSED_ALPHA or OPTION_ROW_UNFOCUSED_ALPHA
+    for _, entity_name in ipairs(entity_names) do
+      set_entity_alpha(entity_name, alpha)
+    end
+  end
+end
+
+local function set_option_row_selection(index)
+  selected_option_row_index = wrap_index(index, #OPTION_ROW_ENTITIES)
+  sync_option_focus_visuals()
 end
 
 local function change_main_menu_state(state_name)
@@ -354,6 +461,8 @@ local function sync_options_visuals()
       "images/NewMainMenu/Options/Fullscreen.png" or
       "images/NewMainMenu/Options/FullscreenUnselected.png"
   end
+
+  sync_option_focus_visuals()
 end
 
 local function open_options_menu()
@@ -363,6 +472,8 @@ local function open_options_menu()
 
   options_active = true
   options_transition = "opening"
+  hovered_menu_button_index = nil
+  set_option_row_selection(1)
   reset_menu_button_textures()
   queue_buttons_to_start()
   queue_options_in()
@@ -409,6 +520,17 @@ function exit_game()
   App.stop()
 end
 
+local function activate_selected_menu_button()
+  local entity_name = MENU_BUTTON_NAMES[selected_menu_button_index]
+  if entity_name == "PlayButton" then
+    start_game()
+  elseif entity_name == "OptionsButton" then
+    options_menu()
+  elseif entity_name == "ExitButton" then
+    exit_game()
+  end
+end
+
 local function change_bgm_volume(delta)
   local now = Time.get_time()
   if now - last_bgm_change_time < VOLUME_CHANGE_DEBOUNCE then
@@ -431,10 +553,23 @@ local function change_sfx_volume(delta)
   sync_options_visuals()
 end
 
+local function adjust_selected_option(delta)
+  if selected_option_row_index == 1 then
+    change_bgm_volume(delta * 0.1)
+  elseif selected_option_row_index == 2 then
+    change_sfx_volume(delta * 0.1)
+  elseif delta < 0 then
+    main_menu_set_windowed()
+  elseif delta > 0 then
+    main_menu_set_fullscreen()
+  end
+end
+
 function main_menu_bgm_decrease()
   if not options_active then
     return
   end
+  set_option_row_selection(1)
   change_bgm_volume(-0.1)
 end
 
@@ -442,6 +577,7 @@ function main_menu_bgm_increase()
   if not options_active then
     return
   end
+  set_option_row_selection(1)
   change_bgm_volume(0.1)
 end
 
@@ -475,11 +611,13 @@ end
 
 function main_menu_bgm_bar_click()
   if not options_active then return end
+  set_option_row_selection(1)
   handle_bar_click("OptionsBGMBar", true)
 end
 
 function main_menu_sfx_bar_click()
   if not options_active then return end
+  set_option_row_selection(2)
   handle_bar_click("OptionsSFXBar", false)
 end
 
@@ -487,6 +625,7 @@ function main_menu_sfx_decrease()
   if not options_active then
     return
   end
+  set_option_row_selection(2)
   change_sfx_volume(-0.1)
 end
 
@@ -494,6 +633,7 @@ function main_menu_sfx_increase()
   if not options_active then
     return
   end
+  set_option_row_selection(2)
   change_sfx_volume(0.1)
 end
 
@@ -501,6 +641,7 @@ function main_menu_set_windowed()
   if not options_active then
     return
   end
+  set_option_row_selection(3)
   Settings.set_fullscreen(false)
   sync_options_visuals()
 end
@@ -509,6 +650,7 @@ function main_menu_set_fullscreen()
   if not options_active then
     return
   end
+  set_option_row_selection(3)
   Settings.set_fullscreen(true)
   sync_options_visuals()
 end
@@ -517,9 +659,14 @@ function main_menu_start_on_enter(entity)
   if is_options_controller(entity) then
     options_active = false
     options_transition = nil
+    hovered_menu_button_index = nil
+    selected_menu_button_index = 1
+    selected_option_row_index = 1
     clear_menu_animations()
     snap_options_hidden()
     reset_menu_button_textures()
+    sync_main_menu_button_visuals()
+    sync_option_focus_visuals()
   end
 end
 
@@ -630,6 +777,7 @@ function main_menu_menu_on_enter(entity)
 
   if is_options_controller(entity) and options_transition ~= "closing" then
     snap_options_hidden()
+    sync_main_menu_button_visuals()
   end
 end
 
@@ -639,9 +787,26 @@ function main_menu_menu_on_update(entity)
   end
 
   update_menu_animations()
+  sync_main_menu_button_visuals()
 
   if options_transition == "closing" and not has_menu_animations() then
     options_transition = nil
+  end
+
+  if not menu_is_ready() then
+    return
+  end
+
+  if Input.is_pressed(Key.W) or Input.is_pressed(Key.A) then
+    set_menu_button_selection(selected_menu_button_index - 1)
+  end
+
+  if Input.is_pressed(Key.S) or Input.is_pressed(Key.D) then
+    set_menu_button_selection(selected_menu_button_index + 1)
+  end
+
+  if is_confirm_pressed() then
+    activate_selected_menu_button()
   end
 end
 
@@ -660,6 +825,7 @@ function main_menu_options_on_enter(entity)
 
   if is_options_controller(entity) then
     sync_options_visuals()
+    set_option_row_selection(selected_option_row_index)
   end
 end
 
@@ -679,6 +845,26 @@ function main_menu_options_on_update(entity)
     close_options_menu()
     return
   end
+
+  if has_menu_animations() then
+    return
+  end
+
+  if Input.is_pressed(Key.W) then
+    set_option_row_selection(selected_option_row_index - 1)
+  end
+
+  if Input.is_pressed(Key.S) then
+    set_option_row_selection(selected_option_row_index + 1)
+  end
+
+  if Input.is_pressed(Key.A) then
+    adjust_selected_option(-1)
+  end
+
+  if Input.is_pressed(Key.D) then
+    adjust_selected_option(1)
+  end
 end
 
 function main_menu_options_on_exit(entity)
@@ -688,68 +874,44 @@ function main_menu_play_hover(entity)
   if options_active then
     return
   end
-  local tex = entity.Texture
-  if tex then
-    tex.path = BUTTON_TEXTURES.PlayButton.hovered
-  end
+  set_menu_button_hover_index(MENU_BUTTON_INDEX_BY_NAME.PlayButton)
 end
 
 function main_menu_play_exit(entity)
-  local tex = entity.Texture
-  if tex then
-    tex.path = BUTTON_TEXTURES.PlayButton.normal
-  end
+  clear_menu_button_hover_index(MENU_BUTTON_INDEX_BY_NAME.PlayButton)
 end
 
 function main_menu_options_hover(entity)
   if options_active then
     return
   end
-  local tex = entity.Texture
-  if tex then
-    tex.path = BUTTON_TEXTURES.OptionsButton.hovered
-  end
+  set_menu_button_hover_index(MENU_BUTTON_INDEX_BY_NAME.OptionsButton)
 end
 
 function main_menu_options_exit(entity)
-  local tex = entity.Texture
-  if tex then
-    tex.path = BUTTON_TEXTURES.OptionsButton.normal
-  end
+  clear_menu_button_hover_index(MENU_BUTTON_INDEX_BY_NAME.OptionsButton)
 end
 
 function main_menu_credits_hover(entity)
   if options_active then
     return
   end
-  local tex = entity.Texture
-  if tex then
-    tex.path = BUTTON_TEXTURES.CreditsButton.hovered
-  end
+  set_menu_button_hover_index(MENU_BUTTON_INDEX_BY_NAME.CreditsButton)
 end
 
 function main_menu_credits_exit(entity)
-  local tex = entity.Texture
-  if tex then
-    tex.path = BUTTON_TEXTURES.CreditsButton.normal
-  end
+  clear_menu_button_hover_index(MENU_BUTTON_INDEX_BY_NAME.CreditsButton)
 end
 
 function main_menu_exit_hover(entity)
   if options_active then
     return
   end
-  local tex = entity.Texture
-  if tex then
-    tex.path = BUTTON_TEXTURES.ExitButton.hovered
-  end
+  set_menu_button_hover_index(MENU_BUTTON_INDEX_BY_NAME.ExitButton)
 end
 
 function main_menu_exit_exit(entity)
-  local tex = entity.Texture
-  if tex then
-    tex.path = BUTTON_TEXTURES.ExitButton.normal
-  end
+  clear_menu_button_hover_index(MENU_BUTTON_INDEX_BY_NAME.ExitButton)
 end
 
 register_blueprint("MainMenu", {
