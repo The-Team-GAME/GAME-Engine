@@ -75,6 +75,7 @@ void RunGame()
   Engine::ECS::register_layer("overlay_items_1"); // Items rendered above the dimmer (sprites, panels, cards)
   Engine::ECS::register_layer("overlay_items_2"); // Burst particles / items above panels
   Engine::ECS::register_layer("overlay_items_3"); // Mini cards / items above particles (buttons, carets)
+  Engine::ECS::register_layer("overlay_items_hover"); // Hover sprites rendered above all pause/menu overlay items
   Engine::ECS::register_layer("scene_change_trigger"); // Invisible portal volumes (player-triggered level transitions)
 #ifndef GAME_BUILD
   Engine::ECS::register_layer("debug");

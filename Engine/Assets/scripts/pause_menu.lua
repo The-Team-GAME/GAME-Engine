@@ -31,6 +31,7 @@ local MENU_SCROLL_NAMES = { "PausePausedScrollA", "PausePausedScrollB" }
 local RESTART_YES_SCROLL_NAMES = { "PauseRestartYesScrollA", "PauseRestartYesScrollB" }
 local RESTART_NO_SCROLL_NAMES = { "PauseRestartNoScrollA", "PauseRestartNoScrollB" }
 
+local HOVER_LAYER_NAME = "overlay_items_hover"
 local FULLSCREEN_CENTER_X = 800.0
 local FULLSCREEN_CENTER_Y = 450.0
 local SCREEN_HEIGHT = 900.0
@@ -252,6 +253,27 @@ local function set_entity_visible(name, visible)
   if color then
     color.a = visible and (ENTITY_VISIBLE_ALPHA[name] or 1.0) or 0.0
   end
+end
+
+local function set_entity_layer(name, layer_name)
+  local entity = get_named_entity(name)
+  if not entity or not entity:is_valid() then
+    return
+  end
+
+  entity:clear_layers()
+  entity:add_to_layer(layer_name)
+end
+
+local function restore_entity_base_layer(name)
+  local layer_name = ENTITY_LAYER_NAMES[name]
+  if layer_name ~= nil then
+    set_entity_layer(name, layer_name)
+  end
+end
+
+local function raise_entity_to_hover_layer(name)
+  set_entity_layer(name, HOVER_LAYER_NAME)
 end
 
 local function set_entity_texture(name, path)
@@ -557,6 +579,8 @@ end
 local function reset_confirm_quit_visuals()
   set_entity_texture(CONFIRM_QUIT_YES_NAME, CONFIRM_TEXTURES.quit_yes_default)
   set_entity_texture(CONFIRM_QUIT_NO_NAME, CONFIRM_TEXTURES.quit_no_default)
+  restore_entity_base_layer(CONFIRM_QUIT_YES_NAME)
+  restore_entity_base_layer(CONFIRM_QUIT_NO_NAME)
 end
 
 local function apply_confirm_hover(choice)
@@ -566,9 +590,13 @@ local function apply_confirm_hover(choice)
     if choice == "yes" then
       set_entity_texture(CONFIRM_QUIT_YES_NAME, CONFIRM_TEXTURES.quit_yes_hover)
       set_entity_texture(CONFIRM_QUIT_NO_NAME, CONFIRM_TEXTURES.quit_no_default)
+      raise_entity_to_hover_layer(CONFIRM_QUIT_YES_NAME)
+      restore_entity_base_layer(CONFIRM_QUIT_NO_NAME)
     elseif choice == "no" then
       set_entity_texture(CONFIRM_QUIT_YES_NAME, CONFIRM_TEXTURES.quit_yes_default)
       set_entity_texture(CONFIRM_QUIT_NO_NAME, CONFIRM_TEXTURES.quit_no_hover)
+      restore_entity_base_layer(CONFIRM_QUIT_YES_NAME)
+      raise_entity_to_hover_layer(CONFIRM_QUIT_NO_NAME)
     else
       reset_confirm_quit_visuals()
     end
@@ -582,6 +610,11 @@ local function update_left_hover_from_mouse()
   end
 
   hovered_left_button = next_hover
+  if hovered_left_button ~= nil then
+    raise_entity_to_hover_layer(LEFT_PANEL_NAME)
+  else
+    restore_entity_base_layer(LEFT_PANEL_NAME)
+  end
   refresh_left_panel()
 end
 
