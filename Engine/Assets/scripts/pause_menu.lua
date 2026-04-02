@@ -2,11 +2,12 @@ local PLAYER_HEARTBEAT_EVENT = "event:/SFX/PlayerHeartBeat"
 local PAUSE_DIMMER_NAME = "PauseMenuDimmer"
 local PAUSE_CONTROLLER_NAME = "PauseMenuController"
 local LEFT_PANEL_NAME = "PauseLeftPanel"
-local OPTIONS_LABELS_NAME = "PauseOptionsLabels"
+local OPTIONS_PANEL_NAME = "PauseOptionsPanel"
+local OPTIONS_BGM_LABEL_NAME = "PauseOptionsBGMLabel"
+local OPTIONS_SFX_LABEL_NAME = "PauseOptionsSFXLabel"
+local OPTIONS_SCREEN_LABEL_NAME = "PauseOptionsScreenLabel"
 local OPTIONS_BGM_BAR_NAME = "PauseOptionsBGMBar"
 local OPTIONS_SFX_BAR_NAME = "PauseOptionsSFXBar"
-local OPTIONS_SCREEN_STATE_NAME = "PauseOptionsScreenState"
-local OPTIONS_HOVER_OVERLAY_NAME = "PauseOptionsHoverOverlay"
 local CONFIRM_PROMPT_NAME = "PauseConfirmPrompt"
 local CONFIRM_QUIT_YES_NAME = "PauseConfirmQuitYes"
 local CONFIRM_QUIT_NO_NAME = "PauseConfirmQuitNo"
@@ -19,8 +20,10 @@ local BGM_DECREASE_BUTTON_NAME = "PauseBGMDecreaseButton"
 local BGM_INCREASE_BUTTON_NAME = "PauseBGMIncreaseButton"
 local SFX_DECREASE_BUTTON_NAME = "PauseSFXDecreaseButton"
 local SFX_INCREASE_BUTTON_NAME = "PauseSFXIncreaseButton"
+local SCREEN_LEFT_BUTTON_NAME = "PauseScreenLeftButton"
 local WINDOWED_BUTTON_NAME = "PauseWindowedButton"
 local FULLSCREEN_BUTTON_NAME = "PauseFullscreenButton"
+local SCREEN_RIGHT_BUTTON_NAME = "PauseScreenRightButton"
 local CONFIRM_YES_BUTTON_NAME = "PauseConfirmYesButton"
 local CONFIRM_NO_BUTTON_NAME = "PauseConfirmNoButton"
 
@@ -33,8 +36,7 @@ local FULLSCREEN_CENTER_Y = 450.0
 local SCREEN_HEIGHT = 900.0
 local SCROLL_HEIGHT = 1800.0
 local SCROLL_SPEED = 90.0
-local VOLUME_STEPS = 10
-local LEFT_CLUSTER_TOP_MARGIN = 20.0
+local VOLUME_MAX_STEP = 10
 local LEFT_CLUSTER_HIDDEN_MARGIN = 40.0
 local LEFT_CLUSTER_SLIDE_DURATION = 0.32
 
@@ -47,17 +49,17 @@ local LEFT_PANEL_TEXTURES = {
 }
 
 local OPTIONS_TEXTURES = {
-  labels = "images/UI/In-Game Pause/Options/BGMSFXSCREEN.png",
-  bgm_bar_prefix = "images/UI/In-Game Pause/Options/BGM/BGMVolumeBar/BGM",
-  sfx_bar_prefix = "images/UI/In-Game Pause/Options/SFX/SFXVolume/SFX",
-  bgm_decrease = "images/UI/In-Game Pause/Options/BGM/BGMVolumeDecrease.png",
-  bgm_increase = "images/UI/In-Game Pause/Options/BGM/BGMVolumeIncrease.png",
-  sfx_decrease = "images/UI/In-Game Pause/Options/SFX/SFXVolumeDecrease.png",
-  sfx_increase = "images/UI/In-Game Pause/Options/SFX/SFXVolumeIncrease.png",
-  screen_left = "images/UI/In-Game Pause/Options/Screen/LeftArrowScreen.png",
-  screen_right = "images/UI/In-Game Pause/Options/Screen/RightArrowScreen.png",
-  windowed = "images/UI/In-Game Pause/Options/Screen/WindowedSelected.png",
-  fullscreen = "images/UI/In-Game Pause/Options/Screen/FullScreenSelected.png",
+  panel = "images/NewMainMenu/Options/New group.png",
+  bgm_label = "images/NewMainMenu/Options/BGM.png",
+  sfx_label = "images/NewMainMenu/Options/SFX.png",
+  screen_label = "images/NewMainMenu/Options/SCREEN.png",
+  bar_template = "images/NewMainMenu/Options/%d.png",
+  arrow_left = "images/NewMainMenu/Options/ArrowLeft.png",
+  arrow_right = "images/NewMainMenu/Options/ArrowRight.png",
+  windowed = "images/NewMainMenu/Options/Windowed.png",
+  windowed_unselected = "images/NewMainMenu/Options/WindowedUnselected.png",
+  fullscreen = "images/NewMainMenu/Options/Fullscreen.png",
+  fullscreen_unselected = "images/NewMainMenu/Options/FullscreenUnselected.png",
 }
 
 local CONFIRM_TEXTURES = {
@@ -74,11 +76,12 @@ local CONFIRM_TEXTURES = {
 }
 
 local RIGHT_PANEL_NAMES = {
-  OPTIONS_LABELS_NAME,
+  OPTIONS_PANEL_NAME,
+  OPTIONS_BGM_LABEL_NAME,
+  OPTIONS_SFX_LABEL_NAME,
+  OPTIONS_SCREEN_LABEL_NAME,
   OPTIONS_BGM_BAR_NAME,
   OPTIONS_SFX_BAR_NAME,
-  OPTIONS_SCREEN_STATE_NAME,
-  OPTIONS_HOVER_OVERLAY_NAME,
   CONFIRM_PROMPT_NAME,
   CONFIRM_QUIT_YES_NAME,
   CONFIRM_QUIT_NO_NAME,
@@ -110,8 +113,10 @@ local OPTIONS_BUTTON_NAMES = {
   BGM_INCREASE_BUTTON_NAME,
   SFX_DECREASE_BUTTON_NAME,
   SFX_INCREASE_BUTTON_NAME,
+  SCREEN_LEFT_BUTTON_NAME,
   WINDOWED_BUTTON_NAME,
   FULLSCREEN_BUTTON_NAME,
+  SCREEN_RIGHT_BUTTON_NAME,
 }
 
 local CONFIRM_BUTTON_NAMES = {
@@ -122,11 +127,12 @@ local CONFIRM_BUTTON_NAMES = {
 local ENTITY_LAYER_NAMES = {
   [PAUSE_DIMMER_NAME] = "overlay_bg",
   [LEFT_PANEL_NAME] = "overlay_items_2",
-  [OPTIONS_LABELS_NAME] = "overlay_items_2",
+  [OPTIONS_PANEL_NAME] = "overlay_items_2",
+  [OPTIONS_BGM_LABEL_NAME] = "overlay_items_2",
+  [OPTIONS_SFX_LABEL_NAME] = "overlay_items_2",
+  [OPTIONS_SCREEN_LABEL_NAME] = "overlay_items_2",
   [OPTIONS_BGM_BAR_NAME] = "overlay_items_2",
   [OPTIONS_SFX_BAR_NAME] = "overlay_items_2",
-  [OPTIONS_SCREEN_STATE_NAME] = "overlay_items_2",
-  [OPTIONS_HOVER_OVERLAY_NAME] = "overlay_items_3",
   [CONFIRM_PROMPT_NAME] = "overlay_items_2",
   [CONFIRM_QUIT_YES_NAME] = "overlay_items_3",
   [CONFIRM_QUIT_NO_NAME] = "overlay_items_3",
@@ -144,8 +150,10 @@ local ENTITY_LAYER_NAMES = {
   [BGM_INCREASE_BUTTON_NAME] = "overlay_items_3",
   [SFX_DECREASE_BUTTON_NAME] = "overlay_items_3",
   [SFX_INCREASE_BUTTON_NAME] = "overlay_items_3",
+  [SCREEN_LEFT_BUTTON_NAME] = "overlay_items_3",
   [WINDOWED_BUTTON_NAME] = "overlay_items_3",
   [FULLSCREEN_BUTTON_NAME] = "overlay_items_3",
+  [SCREEN_RIGHT_BUTTON_NAME] = "overlay_items_3",
   [CONFIRM_YES_BUTTON_NAME] = "overlay_items_3",
   [CONFIRM_NO_BUTTON_NAME] = "overlay_items_3",
 }
@@ -161,22 +169,12 @@ local LEFT_HOVER_TARGETS = {
   { key = "quit", entity_name = EXIT_BUTTON_NAME },
 }
 
-local OPTIONS_HOVER_TARGETS = {
-  { key = OPTIONS_TEXTURES.bgm_decrease, entity_name = BGM_DECREASE_BUTTON_NAME },
-  { key = OPTIONS_TEXTURES.bgm_increase, entity_name = BGM_INCREASE_BUTTON_NAME },
-  { key = OPTIONS_TEXTURES.sfx_decrease, entity_name = SFX_DECREASE_BUTTON_NAME },
-  { key = OPTIONS_TEXTURES.sfx_increase, entity_name = SFX_INCREASE_BUTTON_NAME },
-  { key = OPTIONS_TEXTURES.screen_left, entity_name = WINDOWED_BUTTON_NAME },
-  { key = OPTIONS_TEXTURES.screen_right, entity_name = FULLSCREEN_BUTTON_NAME },
-}
-
 local CONFIRM_HOVER_TARGETS = {
   { key = "yes", entity_name = CONFIRM_YES_BUTTON_NAME },
   { key = "no", entity_name = CONFIRM_NO_BUTTON_NAME },
 }
 
 local hovered_left_button = nil
-local hovered_options_overlay = nil
 local hovered_confirm_button = nil
 local left_cluster_base_positions = {}
 local left_cluster_base_bounds = nil
@@ -314,14 +312,22 @@ local function cache_left_cluster_layout()
     end
   end
 
-  for _, entity_name in ipairs(LEFT_BUTTON_NAMES) do
+  for _, entity_name in ipairs(LEFT_CLUSTER_ENTITY_NAMES) do
     local entity = get_named_entity(entity_name)
     local base = left_cluster_base_positions[entity_name]
     if entity and entity:is_valid() and base ~= nil then
+      local tr = entity.Transform2D
       local box = entity.BoxCollider
+      local top = nil
+      local bottom = nil
       if box then
-        local top = base.y + box.offset.y - box.height * 0.5
-        local bottom = base.y + box.offset.y + box.height * 0.5
+        top = base.y + box.offset.y - box.height * 0.5
+        bottom = base.y + box.offset.y + box.height * 0.5
+      elseif tr then
+        top = base.y - tr.scale.y * 0.5
+        bottom = base.y + tr.scale.y * 0.5
+      end
+      if top ~= nil and bottom ~= nil then
         if min_top == nil or top < min_top then
           min_top = top
         end
@@ -346,11 +352,7 @@ local function get_left_cluster_target_offset(mode)
   end
 
   if mode == "hidden" then
-    return (SCREEN_HEIGHT + LEFT_CLUSTER_HIDDEN_MARGIN) - bounds.top
-  end
-
-  if mode == "confirm" then
-    return LEFT_CLUSTER_TOP_MARGIN - bounds.top
+    return -LEFT_CLUSTER_HIDDEN_MARGIN - bounds.bottom
   end
 
   return 0.0
@@ -399,9 +401,9 @@ local function show_left_cluster_at_menu_position()
   set_left_cluster_mode("menu", false)
 end
 
-local function show_left_cluster_at_confirm_position()
+local function hide_left_cluster()
   left_cluster_has_opened = true
-  set_left_cluster_mode("confirm", false)
+  set_left_cluster_mode("hidden", false)
 end
 
 local function update_left_cluster_animation()
@@ -528,36 +530,28 @@ local function update_scroll_pair(entity_names)
 end
 
 local function volume_to_step(volume)
-  return clamp(math.floor(volume * (VOLUME_STEPS - 1) + 1.5), 1, VOLUME_STEPS)
+  return clamp(math.floor(volume * VOLUME_MAX_STEP + 0.5), 0, VOLUME_MAX_STEP)
 end
 
 local function step_to_volume(step)
-  return clamp((step - 1) / (VOLUME_STEPS - 1), 0.0, 1.0)
+  return clamp(step / VOLUME_MAX_STEP, 0.0, 1.0)
 end
 
-local function get_volume_bar_path(prefix, step)
-  return string.format("%s%d.png", prefix, clamp(step, 1, VOLUME_STEPS))
+local function get_volume_bar_path(step)
+  return string.format(OPTIONS_TEXTURES.bar_template, clamp(step, 0, VOLUME_MAX_STEP))
 end
 
 local function sync_options_visuals()
-  set_entity_texture(OPTIONS_BGM_BAR_NAME, get_volume_bar_path(OPTIONS_TEXTURES.bgm_bar_prefix, volume_to_step(Settings.get_bgm_volume())))
-  set_entity_texture(OPTIONS_SFX_BAR_NAME, get_volume_bar_path(OPTIONS_TEXTURES.sfx_bar_prefix, volume_to_step(Settings.get_sfx_volume())))
-  set_entity_texture(OPTIONS_SCREEN_STATE_NAME, Settings.get_fullscreen() and OPTIONS_TEXTURES.fullscreen or OPTIONS_TEXTURES.windowed)
+  set_entity_texture(OPTIONS_BGM_BAR_NAME, get_volume_bar_path(volume_to_step(Settings.get_bgm_volume())))
+  set_entity_texture(OPTIONS_SFX_BAR_NAME, get_volume_bar_path(volume_to_step(Settings.get_sfx_volume())))
+
+  local is_fullscreen = Settings.get_fullscreen()
+  set_entity_texture(WINDOWED_BUTTON_NAME, is_fullscreen and OPTIONS_TEXTURES.windowed_unselected or OPTIONS_TEXTURES.windowed)
+  set_entity_texture(FULLSCREEN_BUTTON_NAME, is_fullscreen and OPTIONS_TEXTURES.fullscreen or OPTIONS_TEXTURES.fullscreen_unselected)
 end
 
 local function hide_options_hover_overlay()
-  hovered_options_overlay = nil
-  set_entity_visible(OPTIONS_HOVER_OVERLAY_NAME, false)
-end
-
-local function show_options_hover_overlay(path)
-  if not is_pause_state("Options") then
-    return
-  end
-
-  hovered_options_overlay = path
-  set_entity_texture(OPTIONS_HOVER_OVERLAY_NAME, path)
-  set_entity_visible(OPTIONS_HOVER_OVERLAY_NAME, true)
+  return
 end
 
 local function reset_confirm_quit_visuals()
@@ -592,21 +586,7 @@ local function update_left_hover_from_mouse()
 end
 
 local function update_options_hover_from_mouse()
-  if not is_pause_state("Options") then
-    hide_options_hover_overlay()
-    return
-  end
-
-  local next_hover = get_hover_target(OPTIONS_HOVER_TARGETS)
-  if hovered_options_overlay == next_hover then
-    return
-  end
-
-  if next_hover == nil then
-    hide_options_hover_overlay()
-  else
-    show_options_hover_overlay(next_hover)
-  end
+  return
 end
 
 local function update_confirm_hover_from_mouse()
@@ -624,10 +604,12 @@ local function update_confirm_hover_from_mouse()
 end
 
 local function show_options_panel()
-  set_entity_visible(OPTIONS_LABELS_NAME, true)
+  set_entity_visible(OPTIONS_PANEL_NAME, true)
+  set_entity_visible(OPTIONS_BGM_LABEL_NAME, true)
+  set_entity_visible(OPTIONS_SFX_LABEL_NAME, true)
+  set_entity_visible(OPTIONS_SCREEN_LABEL_NAME, true)
   set_entity_visible(OPTIONS_BGM_BAR_NAME, true)
   set_entity_visible(OPTIONS_SFX_BAR_NAME, true)
-  set_entity_visible(OPTIONS_SCREEN_STATE_NAME, true)
   hide_options_hover_overlay()
   sync_options_visuals()
 end
@@ -664,7 +646,7 @@ local function change_bgm_step(delta)
   end
 
   local step = volume_to_step(Settings.get_bgm_volume()) + delta
-  Settings.set_bgm_volume(step_to_volume(clamp(step, 1, VOLUME_STEPS)))
+  Settings.set_bgm_volume(step_to_volume(clamp(step, 0, VOLUME_MAX_STEP)))
   sync_options_visuals()
 end
 
@@ -674,7 +656,38 @@ local function change_sfx_step(delta)
   end
 
   local step = volume_to_step(Settings.get_sfx_volume()) + delta
-  Settings.set_sfx_volume(step_to_volume(clamp(step, 1, VOLUME_STEPS)))
+  Settings.set_sfx_volume(step_to_volume(clamp(step, 0, VOLUME_MAX_STEP)))
+  sync_options_visuals()
+end
+
+local function handle_bar_click(entity_name, is_bgm)
+  if not is_pause_state("Options") then
+    return
+  end
+
+  local entity = get_named_entity(entity_name)
+  if not entity or not entity:is_valid() then
+    return
+  end
+
+  local tr = entity.Transform2D
+  local box = entity.BoxCollider
+  local mouse = get_mouse_screen_position()
+  if not tr or not box or mouse == nil then
+    return
+  end
+
+  local left_edge = tr.position.x + box.offset.x - box.width * 0.5
+  local ratio = clamp((mouse.x - left_edge) / box.width, 0.0, 1.0)
+  local step = math.ceil(ratio * VOLUME_MAX_STEP)
+  step = clamp(step, 1, VOLUME_MAX_STEP)
+
+  if is_bgm then
+    Settings.set_bgm_volume(step / VOLUME_MAX_STEP)
+  else
+    Settings.set_sfx_volume(step / VOLUME_MAX_STEP)
+  end
+
   sync_options_visuals()
 end
 
@@ -710,12 +723,20 @@ function pause_bgm_increase()
   change_bgm_step(1)
 end
 
+function pause_bgm_bar_click()
+  handle_bar_click(OPTIONS_BGM_BAR_NAME, true)
+end
+
 function pause_sfx_decrease()
   change_sfx_step(-1)
 end
 
 function pause_sfx_increase()
   change_sfx_step(1)
+end
+
+function pause_sfx_bar_click()
+  handle_bar_click(OPTIONS_SFX_BAR_NAME, false)
 end
 
 function pause_set_windowed()
@@ -805,7 +826,6 @@ end
 
 function pause_menu_menu_on_enter(entity)
   hovered_left_button = nil
-  hovered_options_overlay = nil
   hovered_confirm_button = nil
   show_left_cluster_at_menu_position()
   show_base_pause_entities()
@@ -831,10 +851,9 @@ end
 
 function pause_menu_options_on_enter(entity)
   hovered_left_button = nil
-  hovered_options_overlay = nil
   hovered_confirm_button = nil
-  show_left_cluster_at_menu_position()
   show_base_pause_entities()
+  hide_left_cluster()
   hide_right_panels()
   hide_state_specific_buttons()
   set_entities_visible(OPTIONS_BUTTON_NAMES, true)
@@ -860,10 +879,9 @@ end
 
 function pause_menu_confirm_restart_on_enter(entity)
   hovered_left_button = nil
-  hovered_options_overlay = nil
   hovered_confirm_button = nil
-  show_left_cluster_at_confirm_position()
   show_base_pause_entities()
+  hide_left_cluster()
   hide_right_panels()
   hide_state_specific_buttons()
   set_entities_visible(CONFIRM_BUTTON_NAMES, true)
@@ -888,10 +906,9 @@ end
 
 function pause_menu_confirm_quit_on_enter(entity)
   hovered_left_button = nil
-  hovered_options_overlay = nil
   hovered_confirm_button = nil
-  show_left_cluster_at_menu_position()
   show_base_pause_entities()
+  hide_left_cluster()
   hide_right_panels()
   hide_state_specific_buttons()
   set_entities_visible(CONFIRM_BUTTON_NAMES, true)
