@@ -492,80 +492,12 @@ static void register_function_callbacks()
 {
   auto& reg = Engine::FunctionRegistry::instance();
 
-  // Pause menu callbacks
-  reg.register_function<void()>("pause_menu_resume", std::function<void()>([]() {
-    Log::info("Resuming game from pause menu");
-    Engine::SceneManager::pop_scene();
-    }));
-  reg.register_function<void()>("pause_menu_restart", std::function<void()>([]() {
-    Log::info("Restarting level from pause menu");
-    Engine::SceneManager::pop_scene();
-    const std::string& level_id = Engine::LevelManager::get_active_level_id();
-    if (!level_id.empty()) {
-      Engine::LevelManager::reload_level(level_id);
-    }
-    }));
-  reg.register_function<void()>("pause_menu_options", std::function<void()>([]() {
-    Log::info("Opening options from pause menu");
-    }));
-  reg.register_function<void()>("pause_menu_exit", std::function<void()>([]() {
-    Log::info("Exiting to main menu from pause menu");
-    Engine::AudioSystem::stopEvent(PLAYER_HEARTBEAT_EVENT, true);
-    Engine::SceneManager::load_scene("MainMenuState");
-    }));
-
-  // Pause menu hover callbacks
-  reg.register_function<void(Engine::ECS::Entity)>("pause_hover_resume", std::function<void(Engine::ECS::Entity)>([](Engine::ECS::Entity) {
-    if (PauseState::menu_sprite_id == 0) return;
-    if (!Engine::ECS::is_entity_active(Engine::ECS::Entity(PauseState::menu_sprite_id))) return;
-    PauseState::hovered_button = 1;
-    auto* tex = Engine::ECS::Entity(PauseState::menu_sprite_id).get_component<Components::Texture>();
-    if (tex) *tex = PauseState::resume_selected_tex;
-    }));
-  reg.register_function<void(Engine::ECS::Entity)>("pause_hover_restart", std::function<void(Engine::ECS::Entity)>([](Engine::ECS::Entity) {
-    if (PauseState::menu_sprite_id == 0) return;
-    if (!Engine::ECS::is_entity_active(Engine::ECS::Entity(PauseState::menu_sprite_id))) return;
-    PauseState::hovered_button = 2;
-    auto* tex = Engine::ECS::Entity(PauseState::menu_sprite_id).get_component<Components::Texture>();
-    if (tex) *tex = PauseState::restart_selected_tex;
-    }));
-  reg.register_function<void(Engine::ECS::Entity)>("pause_hover_options", std::function<void(Engine::ECS::Entity)>([](Engine::ECS::Entity) {
-    if (PauseState::menu_sprite_id == 0) return;
-    if (!Engine::ECS::is_entity_active(Engine::ECS::Entity(PauseState::menu_sprite_id))) return;
-    PauseState::hovered_button = 3;
-    auto* tex = Engine::ECS::Entity(PauseState::menu_sprite_id).get_component<Components::Texture>();
-    if (tex) *tex = PauseState::options_selected_tex;
-    }));
-  reg.register_function<void(Engine::ECS::Entity)>("pause_hover_exit", std::function<void(Engine::ECS::Entity)>([](Engine::ECS::Entity) {
-    if (PauseState::menu_sprite_id == 0) return;
-    if (!Engine::ECS::is_entity_active(Engine::ECS::Entity(PauseState::menu_sprite_id))) return;
-    PauseState::hovered_button = 4;
-    auto* tex = Engine::ECS::Entity(PauseState::menu_sprite_id).get_component<Components::Texture>();
-    if (tex) *tex = PauseState::exit_selected_tex;
-    }));
-  reg.register_function<void(Engine::ECS::Entity)>("pause_hover_none", std::function<void(Engine::ECS::Entity)>([](Engine::ECS::Entity) {
-    }));
-
-  reg.register_function<void(Engine::ECS::Entity)>("pause_menu_button_hover", std::function<void(Engine::ECS::Entity)>([](Engine::ECS::Entity entity) {
-    auto* color = entity.get_component<Components::Color>();
-    if (color) {
-      color->a = 1.0f;
-    }
-    }));
-
   // Victory interactable callback
   reg.register_function<void(Engine::ECS::Entity, Engine::ECS::Entity)>("show_victory",
     std::function<void(Engine::ECS::Entity, Engine::ECS::Entity)>([](Engine::ECS::Entity, Engine::ECS::Entity) {
       Log::info("Victory! Player reached the goal.");
       Engine::SceneManager::push_scene("VictoryState");
       }));
-
-  reg.register_function<void(Engine::ECS::Entity)>("pause_menu_button_exit_hover", std::function<void(Engine::ECS::Entity)>([](Engine::ECS::Entity entity) {
-    auto* color = entity.get_component<Components::Color>();
-    if (color) {
-      color->a = 0.0f;
-    }
-    }));
 }
 
 // =============================================================================

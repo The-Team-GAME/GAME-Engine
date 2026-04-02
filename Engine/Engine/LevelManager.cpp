@@ -39,6 +39,15 @@ namespace {
   std::mutex preload_mutex;
   std::unordered_map<std::string, Engine::EntityList> preload_results;
 
+  struct OverlayLevelState {
+    std::string source_level_id;
+    std::vector<Engine::ECS::EntityID> live_entity_ids;
+    Engine::ECS::EntityID level_entity_id = Engine::ECS::INVALID_ENTITY;
+  };
+
+  std::unordered_map<std::string, OverlayLevelState> open_overlay_levels;
+  size_t next_overlay_instance_id = 1;
+
 
   // (Stored as a filepath relative to Resources::resource_path when append_resource_path=true.)
   std::string pending_start_level_path;
@@ -230,6 +239,81 @@ namespace {
 
     remap_cloned_hierarchy_ids(id_remap, cloned_ids);
     return cloned_ids;
+  }
+
+  void call_overlay_level_init(const OverlayLevelState& overlay_state)
+  {
+    if (overlay_state.level_entity_id == Engine::ECS::INVALID_ENTITY) {
+      return;
+    }
+
+    Engine::ECS::Entity level_entity(overlay_state.level_entity_id);
+    if (!level_entity.is_valid()) {
+      return;
+    }
+
+    auto* level_comp = level_entity.get_component<Components::Level>();
+    if (level_comp) {
+      level_comp->call_init();
+    }
+  }
+
+  void call_overlay_level_exit(const OverlayLevelState& overlay_state)
+  {
+    if (overlay_state.level_entity_id == Engine::ECS::INVALID_ENTITY) {
+      return;
+    }
+
+    Engine::ECS::Entity level_entity(overlay_state.level_entity_id);
+    if (!level_entity.is_valid()) {
+      return;
+    }
+
+    auto* level_comp = level_entity.get_component<Components::Level>();
+    if (level_comp) {
+      level_comp->call_exit();
+    }
+  }
+
+  void destroy_overlay_level_entities(OverlayLevelState& overlay_state)
+  {
+    call_overlay_level_exit(overlay_state);
+
+    for (Engine::ECS::EntityID entity_id : overlay_state.live_entity_ids) {
+      if (entity_id == overlay_state.level_entity_id) {
+        continue;
+      }
+
+      Engine::ECS::Entity entity(entity_id);
+      if (entity.is_valid()) {
+        entity.destroy();
+      }
+    }
+
+    if (overlay_state.level_entity_id != Engine::ECS::INVALID_ENTITY) {
+      Engine::ECS::Entity level_entity(overlay_state.level_entity_id);
+      if (level_entity.is_valid()) {
+        level_entity.destroy();
+      }
+    }
+
+    overlay_state.live_entity_ids.clear();
+    overlay_state.level_entity_id = Engine::ECS::INVALID_ENTITY;
+  }
+
+  void destroy_all_overlay_levels()
+  {
+    if (open_overlay_levels.empty()) {
+      return;
+    }
+
+    for (auto& [overlay_id, overlay_state] : open_overlay_levels) {
+      (void)overlay_id;
+      destroy_overlay_level_entities(overlay_state);
+    }
+
+    open_overlay_levels.clear();
+    Engine::ECS::process_housekeeping();
   }
 }
 
@@ -447,6 +531,20 @@ namespace Engine {
       }
     }
 
+    void rebuild_active_snapshot()
+    {
+      if (active_level_id.empty()) {
+        return;
+      }
+
+      auto it = open_levels.find(active_level_id);
+      if (it == open_levels.end()) {
+        return;
+      }
+
+      build_preloaded_snapshot(it->second);
+    }
+
     void build_preloaded_snapshot(LevelState& state)
     {
       (void)state;
@@ -551,6 +649,95 @@ namespace Engine {
       );
 
       return full_path;
+    }
+
+    std::string open_overlay_level(const std::string& filepath, bool append_resource_path, bool mark_runtime_only)
+    {
+      std::string full_path = normalize_level_path(filepath, append_resource_path);
+
+      if (append_resource_path && !std::filesystem::exists(full_path)) {
+        Log::warning("[LevelManager] Failed to open overlay level (file not found): {}", full_path);
+        return "";
+      }
+
+      std::vector<ECS::EntityID> overlay_entity_ids;
+
+      auto level_it = open_levels.find(full_path);
+      if (level_it != open_levels.end() && has_preloaded_snapshot(full_path)) {
+        overlay_entity_ids = clone_snapshot_entities(preloaded_snapshots[full_path]);
+        for (ECS::EntityID entity_id : overlay_entity_ids) {
+          ECS::activate_entity(entity_id);
+        }
+      }
+      else {
+        EntityList entities;
+        if (level_it != open_levels.end()) {
+          entities = get_preloaded_or_disk(level_it->second, full_path);
+        }
+        else {
+          entities = Resources::load_level(filepath, append_resource_path, false);
+        }
+
+        if (entities.empty()) {
+          Log::warning("[LevelManager] Failed to open overlay level (0 entities): {}", full_path);
+          return "";
+        }
+
+        std::unordered_set<ECS::EntityID> existing_ids;
+        ECS::for_each_entity([&](ECS::Entity entity) {
+          existing_ids.insert(entity.get_id());
+          });
+
+        instantiate_entities(entities, false);
+
+        ECS::for_each_entity([&](ECS::Entity entity) {
+          if (existing_ids.find(entity.get_id()) == existing_ids.end()) {
+            overlay_entity_ids.push_back(entity.get_id());
+          }
+          });
+      }
+
+      if (overlay_entity_ids.empty()) {
+        Log::warning("[LevelManager] Failed to open overlay level (no instantiated entities): {}", full_path);
+        return "";
+      }
+
+      OverlayLevelState overlay_state;
+      overlay_state.source_level_id = full_path;
+
+      for (ECS::EntityID entity_id : overlay_entity_ids) {
+        ECS::Entity entity(entity_id);
+        if (!entity.is_valid()) {
+          continue;
+        }
+
+        overlay_state.live_entity_ids.push_back(entity_id);
+        if (overlay_state.level_entity_id == ECS::INVALID_ENTITY && entity.has_component<Components::Level>()) {
+          overlay_state.level_entity_id = entity_id;
+        }
+
+        if (mark_runtime_only && !entity.has_component<Components::RuntimeOnly>()) {
+          entity.add_component<Components::RuntimeOnly>();
+        }
+      }
+
+      if (overlay_state.level_entity_id != ECS::INVALID_ENTITY) {
+        Engine::ECS::Entity level_entity(overlay_state.level_entity_id);
+        if (level_entity.is_valid()) {
+          auto* level_comp = level_entity.get_component<Components::Level>();
+          if (level_comp) {
+            level_comp->level_path = filepath;
+          }
+        }
+      }
+
+      std::string overlay_id = full_path + "#overlay_" + std::to_string(next_overlay_instance_id++);
+      open_overlay_levels[overlay_id] = std::move(overlay_state);
+
+      call_overlay_level_init(open_overlay_levels[overlay_id]);
+
+      Log::info("[LevelManager] Opened overlay level: {}", overlay_id);
+      return overlay_id;
     }
 
     std::string preload_level(const std::string& filepath, bool append_resource_path)
@@ -886,6 +1073,22 @@ namespace Engine {
       return true;
     }
 
+    bool close_overlay_level(const std::string& overlay_id)
+    {
+      auto it = open_overlay_levels.find(overlay_id);
+      if (it == open_overlay_levels.end()) {
+        Log::warning("[LevelManager] Cannot close overlay level - not open: {}", overlay_id);
+        return false;
+      }
+
+      destroy_overlay_level_entities(it->second);
+      open_overlay_levels.erase(it);
+      ECS::process_housekeeping();
+
+      Log::info("[LevelManager] Closed overlay level: {}", overlay_id);
+      return true;
+    }
+
     bool save_level(const std::string& level_id)
     {
       if (!is_level_open(level_id)) {
@@ -1114,6 +1317,8 @@ namespace Engine {
       active_level_id = "";
       current_level_path = "";
 
+      destroy_all_overlay_levels();
+
       ECS::for_each_entity([](ECS::Entity entity) {
         entity.destroy();
         });
@@ -1245,6 +1450,8 @@ namespace Engine {
 
       // Build old ID -> new ID remap table as we create entities
       std::unordered_map<ECS::EntityID, ECS::EntityID> id_remap;
+      std::vector<ECS::EntityID> new_entity_ids;
+      new_entity_ids.reserve(entities.size());
 
       for (const auto& entity_value : entities) {
         // Skip tile collision entities - they are temporary and rebuilt by TilemapManager
@@ -1260,6 +1467,9 @@ namespace Engine {
         }
 
         ECS::Entity new_entity = ECS::create_entity_from_generic_value(entity_value);
+        if (new_entity.is_valid()) {
+          new_entity_ids.push_back(new_entity.get_id());
+        }
 
         // Store the mapping from old ID to new ID
         if (old_id != ECS::INVALID_ENTITY && new_entity.is_valid()) {
@@ -1268,7 +1478,12 @@ namespace Engine {
       }
 
       // Fix up Parent references using the remap table
-      for (auto& entity : ECS::get_entities_with<Components::Parent>()) {
+      for (ECS::EntityID entity_id : new_entity_ids) {
+        ECS::Entity entity(entity_id);
+        if (!entity.is_valid()) {
+          continue;
+        }
+
         auto* parent_comp = entity.get_component<Components::Parent>();
         if (parent_comp && parent_comp->parent_id != ECS::INVALID_ENTITY) {
           auto it = id_remap.find(parent_comp->parent_id);
@@ -1279,7 +1494,12 @@ namespace Engine {
       }
 
       // Fix up Children references using the remap table
-      for (auto& entity : ECS::get_entities_with<Components::Children>()) {
+      for (ECS::EntityID entity_id : new_entity_ids) {
+        ECS::Entity entity(entity_id);
+        if (!entity.is_valid()) {
+          continue;
+        }
+
         auto* children_comp = entity.get_component<Components::Children>();
         if (children_comp) {
           for (auto& child_id : children_comp->child_ids) {
@@ -1291,17 +1511,27 @@ namespace Engine {
         }
       }
 
-      // Rebuild collision entities from all TileMap entities
-      for (auto& entity : ECS::get_entities_with<Components::TileMap>()) {
+      // Rebuild collision entities only for tilemaps instantiated in this call.
+      std::unordered_set<std::string> tilemap_layers_to_rebuild;
+      for (ECS::EntityID entity_id : new_entity_ids) {
+        ECS::Entity entity(entity_id);
+        if (!entity.is_valid() || !entity.has_component<Components::TileMap>()) {
+          continue;
+        }
+
         auto layers = entity.get_layers();
         for (ECS::LayerID layer_id = 0; layer_id < ECS::MAX_LAYERS; ++layer_id) {
           if (layers.test(layer_id)) {
             std::string layer_name = ECS::get_layer_name(layer_id);
             if (!layer_name.empty()) {
-              TilemapManager::rebuild_tilemap_for_layer(layer_name);
+              tilemap_layers_to_rebuild.insert(layer_name);
             }
           }
         }
+      }
+
+      for (const auto& layer_name : tilemap_layers_to_rebuild) {
+        TilemapManager::rebuild_tilemap_for_layer(layer_name);
       }
 
       // Update all prefab instances to sync with latest prefab data
@@ -1315,32 +1545,45 @@ namespace Engine {
       // Update collision world bounds after level load
       TilemapManager::broadcast_world_bounds();
 
-      // Ensure a Level entity exists (for old levels that don't have one)
-      auto level_entity = ECS::get_first_entity_with<Components::Level>();
-      if (!level_entity.is_valid()) {
+      ECS::Entity level_entity;
+      for (ECS::EntityID entity_id : new_entity_ids) {
+        ECS::Entity entity(entity_id);
+        if (entity.is_valid() && entity.has_component<Components::Level>()) {
+          level_entity = entity;
+          break;
+        }
+      }
+
+      if (!level_entity.is_valid() && clear_world) {
         Log::info("Level entity not found, creating one for compatibility.");
         level_entity = ECS::create_entity();
         level_entity.add_component<Components::Level>();
+        new_entity_ids.push_back(level_entity.get_id());
       }
 
-      // Make all root entities (entities without a parent) children of the Level entity
+      if (!level_entity.is_valid()) {
+        return;
+      }
+
+      // Make newly created root entities children of this instantiation's Level entity.
       ECS::EntityID level_entity_id = level_entity.get_id();
-      ECS::for_each_entity([level_entity_id](ECS::Entity entity) {
-        // Skip the Level entity itself
-        if (entity.has_component<Components::Level>()) {
-          return;
+      for (ECS::EntityID entity_id : new_entity_ids) {
+        ECS::Entity entity(entity_id);
+        if (!entity.is_valid()) {
+          continue;
         }
-        // Skip entities that already have a parent
+        if (entity.get_id() == level_entity_id) {
+          continue;
+        }
         if (entity.has_component<Components::Parent>()) {
-          return;
+          continue;
         }
-        // Skip tile colliders (temporary entities)
         if (entity.has_component<Components::TileCollider>()) {
-          return;
+          continue;
         }
-        // Add Parent component to make this entity a child of the Level entity
+
         entity.add_component<Components::Parent>(level_entity_id);
-        });
+      }
     }
 
   } // namespace LevelManager
