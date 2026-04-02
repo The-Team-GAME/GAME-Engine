@@ -28,7 +28,7 @@
                         0.10000000149011612
                     ],
                     "is_looping": true,
-                    "startTime": 128.63482666015625,
+                    "startTime": 84.39350128173828,
                     "totalDuration": 0.6000000238418579
                 },
                 "type": "Components::Animation"
@@ -217,7 +217,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 135.18515014648438,
+                                        "startTime": 89.52690887451172,
                                         "totalDuration": 1.700000286102295
                                     },
                                     "collider_data": {
@@ -561,7 +561,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 135.18515014648438,
+                                        "startTime": 89.52690887451172,
                                         "totalDuration": 0.6000000238418579
                                     },
                                     "collider_data": {
@@ -728,7 +728,7 @@
                                             0.5
                                         ],
                                         "is_looping": true,
-                                        "startTime": 135.18515014648438,
+                                        "startTime": 89.52690887451172,
                                         "totalDuration": 0.5
                                     },
                                     "collider_data": {
@@ -862,7 +862,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 135.18515014648438,
+                                        "startTime": 89.52690887451172,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": {
@@ -1032,7 +1032,11 @@
                                         ]
                                     }
                                 },
-                                "audio": null,
+                                "audio": {
+                                    "event_path": "event:/SFX/SprayCanMonkeySpary",
+                                    "loop": false,
+                                    "volume": 1.0
+                                },
                                 "name": "Windup",
                                 "on_enter_callback": {
                                     "name": "SprayCanMonkey::windup_on_enter"
@@ -1067,7 +1071,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 135.18515014648438,
+                                        "startTime": 89.52690887451172,
                                         "totalDuration": 0.5
                                     },
                                     "collider_data": {
@@ -1201,7 +1205,7 @@
                                             0.15000000596046448
                                         ],
                                         "is_looping": true,
-                                        "startTime": 135.18515014648438,
+                                        "startTime": 89.52690887451172,
                                         "totalDuration": 1.1999999284744263
                                     },
                                     "collider_data": {
