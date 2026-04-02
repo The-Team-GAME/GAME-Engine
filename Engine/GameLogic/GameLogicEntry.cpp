@@ -297,11 +297,18 @@ static void register_collision_callbacks()
           Log::info("Playing FMOD event: event:/SFX/PlayerHurt");
         }
         
+        
         if (previous_health > 2 && health->value > 0 && health->value <= 2)
         {
           Engine::AudioSystem::playEvent(PLAYER_HEARTBEAT_EVENT);
           Log::info("Playing FMOD event: {}", PLAYER_HEARTBEAT_EVENT);
         }
+        else if (health->value > 2)
+        {
+          Engine::AudioSystem::stopEvent(PLAYER_HEARTBEAT_EVENT, true);
+          Log::info("Stopping FMOD event: {}", PLAYER_HEARTBEAT_EVENT);
+        }
+        
 
         // Trigger death state immediately when HP reaches 0
         if (health->is_dead())

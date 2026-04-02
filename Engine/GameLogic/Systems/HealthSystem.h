@@ -34,6 +34,10 @@
 namespace Engine {
   namespace Systems
   {
+    namespace {
+      static constexpr const char* PLAYER_HEARTBEAT_EVENT = "event:/SFX/PlayerHeartBeat";
+    }
+
     // ---------------------------------------------------------------------------
     // DamageVignette: triggers a brief red vignette flash when the player is hit.
     // Call DamageVignette::trigger() from any damage callback. The HealthSystem
@@ -98,6 +102,7 @@ namespace Engine {
         if (!hp) return;
 
         const float dt = Engine::Time::get_fixed_dt();
+        const int health_before_regen = hp->value;
 
         // Regen/Drain
         if (auto* cfg = e.get_component<HealthConfig>()) {
@@ -111,6 +116,11 @@ namespace Engine {
 
           while (cfg->carry >= 1.0f) { hp->heal(1);   cfg->carry -= 1.0f; }
           while (cfg->carry <= -1.0f) { hp->damage(1); cfg->carry += 1.0f; }
+
+          // Heartbeat starts at low health (<=2). Stop it once the player regens above that threshold.
+          if (e.has_component<Player>() && hp->value > 2) {
+            Engine::AudioSystem::stopEvent(PLAYER_HEARTBEAT_EVENT, true);
+          }
         }
 
         // HUD
