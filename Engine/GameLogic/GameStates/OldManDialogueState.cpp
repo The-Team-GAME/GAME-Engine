@@ -61,6 +61,7 @@ void OldManDialogueState::load()
   e_close_armed_ = false;
   request_tips_on_close_ = false;
   tips_was_open_ = false;
+  tips_shown_mid_dialogue_ = false;
 
   recreate_dimmer();
   recreate_dialogue_sprite();
@@ -103,22 +104,22 @@ void OldManDialogueState::update()
   }
 
   if (e_close_armed_ && Engine::Input::is_any_key_pressed() && Engine::Time::get_unscaled_time() >= close_enable_time_unscaled_) {
+    if (current_slide_ == TIPS_PUSH_SLIDE && !tips_shown_mid_dialogue_) {
+      TipsBookState::tips_button_id = 0; // no HUD button to return to
+      Log::info("[OldManFlow] Pushing TipsBookState after slide {}", current_slide_ + 1);
+      destroy_dimmer();
+      destroy_dialogue_sprite();
+      tips_was_open_ = true;
+      tips_shown_mid_dialogue_ = true;
+      Engine::SceneManager::push_scene("TipsBookState");
+      return;
+    }
+
     if (current_slide_ < SLIDE_COUNT - 1) {
       // Advance to next slide
       ++current_slide_;
       recreate_dialogue_sprite();
       Log::info("[OldManFlow] Advanced to slide {}", current_slide_ + 1);
-
-      // After showing slide 4 (index 3), open tips book on top of dialogue
-      if (current_slide_ == TIPS_PUSH_SLIDE) {
-        TipsBookState::tips_button_id = 0; // no HUD button to return to
-        Log::info("[OldManFlow] Pushing TipsBookState mid-dialogue");
-        destroy_dimmer();
-        destroy_dialogue_sprite();
-        tips_was_open_ = true;
-        Engine::SceneManager::push_scene("TipsBookState");
-        // Re-arm handled in update() on return; no need to set here.
-      }
     } else {
       // Last slide — close dialogue (tips was already shown mid-conversation)
       Log::info("[OldManFlow] Dialogue close by key press");
