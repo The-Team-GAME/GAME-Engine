@@ -1053,7 +1053,7 @@
                                         "durations": [
                                             0.4000000059604645
                                         ],
-                                        "is_looping": true,
+                                        "is_looping": false,
                                         "startTime": 80.79619598388672,
                                         "totalDuration": 0.4000000059604645
                                     },
