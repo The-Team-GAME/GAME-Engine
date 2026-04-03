@@ -31,6 +31,8 @@
 
 #include "../../Engine/Graphics/PostProcessing.h"
 
+#include "../../Engine/LevelManager.h"
+
 namespace Engine {
   namespace Systems
   {
@@ -393,31 +395,57 @@ namespace Engine {
       }
 
       void update() override {
-        // Per-frame cleanup (runs once, not per-entity): remove stray
-        // EnemyHealthBar sprites.  If a bar is already playing its Death
-        // animation, let it survive until the animation finishes.  If a bar
-        // is orphaned but NOT yet in Death, transition it to Death so the
-        // animation can play before final cleanup.
+        std::vector<Engine::ECS::EntityID> tracked_bar_ids;
+        Engine::ECS::for_each_entity_with<Components::EnemyHealthBarRect>(
+          [&](Engine::ECS::Entity owner)
+          {
+            auto* bar = owner.get_component<Components::EnemyHealthBarRect>();
+            if (!bar || !bar->sprite.is_valid()) {
+              return;
+            }
+
+            tracked_bar_ids.push_back(bar->sprite.get_id());
+          }
+        );
+
+        bool removed_loaded_bars = false;
+
+        // Per-frame cleanup (runs once, not per-entity): remove any EnemyHealthBar
+        // prefab instances that are not tracked by a live enemy component. This
+        // catches stale bars accidentally serialized into levels before they can
+        // double-spawn beside the runtime-managed bar.
         Engine::ECS::for_each_entity_with<Components::StateMachine>(
-          [](Engine::ECS::Entity bar_entity)
+          [&](Engine::ECS::Entity bar_entity)
           {
             auto* sm = bar_entity.get_component<Components::StateMachine>();
-            if (!sm || sm->blueprint_id != "EnemyHealthBar") return;
+            if (!sm || sm->blueprint_id != "EnemyHealthBar") {
+              return;
+            }
+
+            const auto it = std::find(tracked_bar_ids.begin(), tracked_bar_ids.end(), bar_entity.get_id());
+            if (it != tracked_bar_ids.end()) {
+              return;
+            }
+
+            if (!bar_entity.has_component<Components::RuntimeOnly>()) {
+              bar_entity.destroy();
+              removed_loaded_bars = true;
+              return;
+            }
 
             auto* anim = bar_entity.get_component<Components::Animation>();
 
-            // Death animation finished → safe to destroy.
+            // Death animation finished -> safe to destroy runtime orphan.
             if (sm->get_current_state() == "Death" && (!anim || anim->has_ended())) {
               bar_entity.destroy();
               return;
             }
 
-            // Still playing Death animation → keep alive.
+            // Still playing Death animation -> keep alive.
             if (sm->get_current_state() == "Death" && anim && !anim->has_ended()) {
               return;
             }
 
-            // Check if the bar's parent enemy is still valid.
             bool parent_valid = false;
             auto* parent = bar_entity.get_component<Components::Parent>();
             if (parent && parent->parent_id != Engine::ECS::INVALID_ENTITY) {
@@ -428,13 +456,16 @@ namespace Engine {
               }
             }
 
-            // Orphaned bar not yet in Death → transition to Death so the
-            // animation plays before the bar is removed.
             if (!parent_valid) {
               sm->set_state_immediate("Death", bar_entity);
             }
           }
         );
+
+        if (removed_loaded_bars) {
+          Engine::ECS::process_housekeeping();
+          Engine::LevelManager::rebuild_active_snapshot();
+        }
 
         // Now run the normal per-entity update via the base class.
         System::update();
@@ -557,6 +588,10 @@ namespace Engine {
         auto prefab = Engine::Resources::load_prefab("prefabs/Enemy_HealthBar.json");
         bar.sprite = Engine::ECS::instantiate_prefab(prefab);
 
+        if (!bar.sprite.has_component<Components::RuntimeOnly>()) {
+          bar.sprite.add_component<Components::RuntimeOnly>();
+        }
+
         if (bar.sprite.has_component<Components::UI>()) {
           bar.sprite.remove_component<Components::UI>();
         }
@@ -653,8 +688,13 @@ namespace Engine {
         float anchor_y = to.position.y;
 
         if (auto* collider = owner.get_component<Components::BoxCollider>()) {
-          anchor_x += collider->offset.x;
-          anchor_y += collider->offset.y - collider->height * 0.5f;
+          Math::Vec2D collider_offset = collider->offset;
+          if (auto* flip = owner.get_component<Components::Flip>()) {
+            collider_offset.x *= flip->value.x;
+          }
+
+          anchor_x += collider_offset.x;
+          anchor_y += collider_offset.y - collider->height * 0.5f;
         }
 
         if (auto* t = bar.sprite.get_component<Components::Transform2D>()) {
