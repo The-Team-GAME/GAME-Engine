@@ -509,12 +509,14 @@ namespace Engine
           });
 
         // Keep FMOD listener in sync with the active camera center.
+        // The renderer anchors camera.position to the view transform, so the
+        // world-space center is always camera.position + virtual_size * 0.5f.
         // Pull the listener forward along Z by half the visible width so
         // FMOD computes gradual stereo panning instead of snapping to 90°.
         auto vres = Engine::Graphics::get_virtual_resolution();
         f32 half_width = vres.x * 0.5f / camera.zoom;
         Engine::AudioSystem::setListenerPosition(
-          camera.position + vres * 0.5f / camera.zoom, -half_width);
+          camera.position + vres * 0.5f, -half_width);
 
         Engine::Graphics::Camera render_camera = camera;
 

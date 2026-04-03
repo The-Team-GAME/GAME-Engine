@@ -48,6 +48,7 @@ namespace Engine {
     // 3D audio state
     static FMOD_3D_ATTRIBUTES gListenerAttributes = {};
     static float gMasterVolume = 1.0f;
+    static constexpr float WORLD_TO_FMOD_SCALE = 10.0f;
 
     // Hot-reload state
     static ::std::unordered_map<::std::string, ::std::filesystem::file_time_type> gBankTimestamps;
@@ -96,11 +97,26 @@ namespace Engine {
     // ------------------------------------------------------------
     // Convert Math::Vec2D to FMOD_VECTOR (2D in 3D space, z=0)
     // ------------------------------------------------------------
+    static float ToFMODDistance(float value)
+    {
+      return value / WORLD_TO_FMOD_SCALE;
+    }
+
+    static FMOD_VECTOR SideViewForward()
+    {
+      return { 0.0f, 0.0f, 1.0f };
+    }
+
+    static FMOD_VECTOR SideViewUp()
+    {
+      return { 0.0f, 1.0f, 0.0f };
+    }
+
     static FMOD_VECTOR ToFMODVector(const Math::Vec2D& v)
     {
       FMOD_VECTOR fv;
-      fv.x = -v.x / 10.0f;  // Negate X to match FMOD left/right orientation with world space
-      fv.y = v.y / 10.0f; // The bigger the divider value the less sensitive the volume/panning is to position changes. 
+      fv.x = ToFMODDistance(v.x);
+      fv.y = ToFMODDistance(v.y);
       fv.z = 0.0f;
       return fv;
     }
@@ -134,8 +150,8 @@ namespace Engine {
       // This makes FMOD's computed right = +X, matching the game world.
       gListenerAttributes.position = { 0.0f, 0.0f, 0.0f };
       gListenerAttributes.velocity = { 0.0f, 0.0f, 0.0f };
-      gListenerAttributes.forward = { 0.0f, 1.0f, 0.0f };
-      gListenerAttributes.up = { 0.0f, 0.0f, 1.0f };
+      gListenerAttributes.forward = SideViewForward();
+      gListenerAttributes.up = SideViewUp();
 
       if (gStudioSystem)
         gStudioSystem->setListenerAttributes(0, &gListenerAttributes);
@@ -515,8 +531,8 @@ namespace Engine {
       FMOD_3D_ATTRIBUTES attributes = {};
       attributes.position = ToFMODVector(position);
       attributes.velocity = { 0.0f, 0.0f, 0.0f };
-      attributes.forward = { 0.0f, 1.0f, 0.0f };
-      attributes.up = { 0.0f, 0.0f, 1.0f };
+      attributes.forward = SideViewForward();
+      attributes.up = SideViewUp();
 
       FMOD_Check(instance->set3DAttributes(&attributes), "set3DAttributes");
       FMOD_Check(instance->setVolume(std::max(0.0f, volume)), "setVolume");
@@ -702,7 +718,7 @@ namespace Engine {
     void setListenerPosition(const Math::Vec2D& position, float depth)
     {
       gListenerAttributes.position = ToFMODVector(position);
-      gListenerAttributes.position.z = depth;
+      gListenerAttributes.position.z = ToFMODDistance(depth);
 
       if (gStudioSystem)
         gStudioSystem->setListenerAttributes(0, &gListenerAttributes);
