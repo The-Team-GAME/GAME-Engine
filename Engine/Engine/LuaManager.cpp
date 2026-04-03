@@ -354,8 +354,8 @@ namespace Engine {
     res["load_prefab"] = [](const std::string& path) -> ECS::Prefab {
       return Resources::load_prefab(path);
     };
-    res["load_texture"] = [](const std::string& path) {
-      return Resources::load_texture(path);
+    res["load_texture"] = [](const std::string& path, sol::optional<bool> persist) {
+      return Resources::load_texture(path, true, persist.value_or(false));
     };
 
     // Upgrade table (Engine-side singleton)

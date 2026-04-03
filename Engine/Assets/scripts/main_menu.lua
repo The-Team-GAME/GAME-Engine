@@ -20,6 +20,7 @@ local options_cat_prefab = nil
 local options_cat_animation_active = false
 local options_cat_anim_started_at = 0.0
 local options_cat_intro_played = false
+local menu_button_textures_warmed = false
 
 local MENU_BUTTON_NAMES = {
   "PlayButton",
@@ -115,6 +116,19 @@ local BUTTON_START_POSITIONS = {
   CreditsButton = { x = 8713.1445, y = 1169.2300 },
   ExitButton = { x = 9109.5029, y = 4277.5044 },
 }
+
+local function warm_menu_button_textures()
+  if menu_button_textures_warmed then
+    return
+  end
+
+  for _, textures in pairs(BUTTON_TEXTURES) do
+    Resources.load_texture(textures.normal, true)
+    Resources.load_texture(textures.hovered, true)
+  end
+
+  menu_button_textures_warmed = true
+end
 
 local OPTIONS_TARGETS = {
   OptionsPanel = { x = 933.2921, y = 394.4612, delay = 0.00 },
@@ -342,7 +356,7 @@ local function set_button_texture(entity_name, path)
   end
 
   local tex = entity.Texture
-  if tex then
+  if tex and tex.path ~= path then
     tex.path = path
   end
 end
@@ -358,16 +372,17 @@ local function get_active_menu_button_index()
 end
 
 local function sync_main_menu_button_visuals()
-  reset_menu_button_textures()
-
-  if hovered_menu_button_index == nil and not should_show_selection_hover() then
-    return
+  local hovered_entity_name = nil
+  if hovered_menu_button_index ~= nil or should_show_selection_hover() then
+    hovered_entity_name = MENU_BUTTON_NAMES[get_active_menu_button_index()]
   end
 
-  local entity_name = MENU_BUTTON_NAMES[get_active_menu_button_index()]
-  local textures = entity_name and BUTTON_TEXTURES[entity_name]
-  if textures then
-    set_button_texture(entity_name, textures.hovered)
+  for entity_name, textures in pairs(BUTTON_TEXTURES) do
+    local desired_path = textures.normal
+    if entity_name == hovered_entity_name then
+      desired_path = textures.hovered
+    end
+    set_button_texture(entity_name, desired_path)
   end
 end
 
@@ -791,6 +806,7 @@ end
 
 function main_menu_start_on_enter(entity)
   if is_options_controller(entity) then
+    warm_menu_button_textures()
     ensure_main_menu_options_cat()
     options_cat_animation_active = false
     options_cat_anim_started_at = 0.0
