@@ -22,6 +22,7 @@
 #include "../Components/HealthComponents.h"
 #include "../../Engine/UpgradeManager.h"
 #include "../../Engine/LevelManager.h"
+#include "../../Engine/SceneManager.h"
 
 using namespace Engine;
 namespace {
@@ -1028,25 +1029,53 @@ namespace PlayerStateCallbacks
     auto* player = entity.get_component<Components::Player>();
     if (!player) return;
 
+    const std::string& scene_name = Engine::SceneManager::get_current_scene_name();
+
+    // LevelTwo should always restart from the beginning on death.
+    if (scene_name == "LevelTwoGameplayState") {
+      const std::string& level_path = Engine::LevelManager::get_current_level_path();
+      const std::string restart_level = !level_path.empty()
+        ? level_path
+        : std::string("levels/LevelTwo.json");
+      const bool append_resource_path =
+        restart_level.find(':') == std::string::npos &&
+        !restart_level.starts_with("/") &&
+        !restart_level.starts_with("\\");
+
+      Log::info("Player: Restarting LevelTwo after death (level={})", restart_level);
+      Engine::LevelManager::set_pending_start_level(restart_level, append_resource_path);
+      Engine::SceneManager::load_scene("LevelTwoGameplayState");
+      return;
+    }
+
     // If no checkpoint is set, restart the whole level.
-    // Using SceneManager::load_scene here can clear the world without re-opening
-    // the active level in GAME_BUILD, resulting in a blank map.
+    // Reload the active gameplay scene and carry the current level path through
+    // the scene clear so scene-local LevelOne/LevelTwo state is reset as well.
     if (!player->has_checkpoint) {
+      const std::string& level_path = Engine::LevelManager::get_current_level_path();
       const std::string& level_id = Engine::LevelManager::get_active_level_id();
-      if (!level_id.empty()) {
+
+      const std::string restart_level = !level_path.empty() ? level_path : level_id;
+      if (!restart_level.empty() && scene_name != "No current scene") {
+        const bool append_resource_path =
+          restart_level.find(':') == std::string::npos &&
+          !restart_level.starts_with("/") &&
+          !restart_level.starts_with("\\");
+
+        Log::info("Player: Restarting scene after death (scene={}, level={})", scene_name, restart_level);
+        Engine::LevelManager::set_pending_start_level(restart_level, append_resource_path);
+        Engine::SceneManager::load_scene(scene_name);
+      }
+      else if (!level_id.empty()) {
         Log::info("Player: Restarting level after death (level_id={})", level_id);
         Engine::LevelManager::reload_level(level_id);
       }
+      else if (!level_path.empty()) {
+        Log::info("Player: Restarting level after death (level_path={})", level_path);
+        Engine::Resources::open_level(level_path, false);
+      }
       else {
-        // Fallback: try to reload by current level path if an ID isn't available.
-        const std::string& level_path = Engine::LevelManager::get_current_level_path();
-        if (!level_path.empty()) {
-          Log::info("Player: Restarting level after death (level_path={})", level_path);
-          Engine::Resources::open_level(level_path);
-        }
-        else {
-          Log::warning("Player: Could not restart level after death (no active level id/path)");
-        }
+        Log::warning("Player: Could not restart level after death (no active scene/id/path)");
       }
 
       // Important: don't touch components after initiating a level reload.

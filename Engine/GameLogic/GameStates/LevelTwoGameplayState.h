@@ -323,7 +323,14 @@ class LevelTwoGameplayState : public Engine::Scene
 public:
   void load() {
     // LevelTwoGameplayState is LevelTwo-only.
-    if (Engine::LevelManager::get_current_level_path().empty()) {
+    // Scene reloads clear LevelManager state before Scene::load(), so consume any
+    // pending level path first before falling back to the LevelTwo default.
+    bool append_resource_path = true;
+    std::string start_level_path = Engine::LevelManager::consume_pending_start_level(&append_resource_path);
+    if (!start_level_path.empty()) {
+      Engine::Resources::open_level(start_level_path, append_resource_path);
+    }
+    else if (Engine::LevelManager::get_current_level_path().empty()) {
       Engine::Resources::open_level(DEFAULT_LEVEL_PATH);
     }
 
