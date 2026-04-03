@@ -22,6 +22,7 @@
 #include "TipsBookState.h"
 #include "UpgradePickerState.h"
 #include "OldManDialogueState.h"
+#include "../States/PlayerStateCallbacks.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/InteractableComponents.h"
 #include "../Components/HealthComponents.h"
@@ -347,6 +348,22 @@ public:
     // TODO: REMOVE 
     player_entity.add_component<Components::Health>(5, 5);
     // player_entity.add_component<Components::HeartHUDSprite>();
+
+    // If this load was triggered by a checkpoint death, place the player at the checkpoint
+    // and re-apply the upgrade state that was snapshotted when the checkpoint was hit.
+    {
+      glm::vec2 checkpoint_pos;
+      if (PlayerStateCallbacks::consume_pending_checkpoint_respawn(checkpoint_pos)) {
+        if (auto* t = player_entity.get_component<Components::Transform2D>()) {
+          t->position = checkpoint_pos;
+        }
+        if (auto* p = player_entity.get_component<Components::Player>()) {
+          p->has_checkpoint = true;
+          p->respawn_point = checkpoint_pos;
+        }
+        Engine::UpgradeManager::instance().apply_current_upgrades();
+      }
+    }
 
     // Victory zone - triggers victory screen when player enters
     // TODO: Position this at the end of the level

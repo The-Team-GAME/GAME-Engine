@@ -575,6 +575,8 @@ public:
   void free() {
     Engine::UpgradeUIStateMachine::instance().set_picker_open_callback({});
     Engine::UpgradeUIStateMachine::instance().reset();
+    // NOTE: upgrades are intentionally NOT reset here so they survive the Level 2
+    // reload cycle. MainMenuState::load() handles the full reset on menu return.
     upgrade_btn_anim_time_ = 0.0f;
     ambient_shake_next_time_ = 0.0f;
     train_rumble_next_time_  = 0.0f;
