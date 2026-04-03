@@ -200,6 +200,15 @@ static void register_collision_callbacks()
         if (!attack->should_apply_damage(enemy_entity)) { return; }
 
         int damage = attack->damage;
+        if (auto* parent_comp = attack_entity.get_component<Components::Parent>()) {
+          auto attack_owner = Engine::ECS::get_entity(parent_comp->parent_id);
+          if (attack_owner.is_valid()) {
+            if (auto* player_comp = attack_owner.get_component<Components::Player>(); player_comp && player_comp->god_mode) {
+              damage = 999;
+            }
+          }
+        }
+
         enemy_health->take_damage(damage);
         Engine::Systems::add_camera_shake(0.2f);
         Log::info("camera shake requested on enemy hit");
