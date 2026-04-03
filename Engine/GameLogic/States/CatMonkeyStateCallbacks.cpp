@@ -21,6 +21,8 @@
 #include "../Components/CatMonkeyBossComponent.h"
 #include "../Components/CatMonkeySummonWaveHealthBarsComponent.h"
 #include "../Components/CatMonkeySummonHealthBarComponent.h"
+#include "../Components/GameplayComponent.h"
+#include "../Components/HealthComponents.h"
 using namespace CatMonkeyStateCallbacks;
 
 namespace CatMonkeyStateCallbacks
@@ -381,7 +383,14 @@ namespace CatMonkeyStateCallbacks
         rt.win_cutscene_timer_started = true;
         rt.win_cutscene_trigger_time = now + 5.0f;
 
-        
+        // Restore player to full health.
+        Engine::ECS::Entity player = Engine::ECS::get_first_entity_with<Components::Player>();
+        if (player.is_valid()) {
+          if (auto* player_hp = player.get_component<Components::Health>()) {
+            player_hp->value = player_hp->max;
+          }
+        }
+
         ensure_centered_camera_baseline(rt);
 
         // Sample current camera state as the start of the lerp.
@@ -394,8 +403,8 @@ namespace CatMonkeyStateCallbacks
           }
         }
 
-        // Baseline is the target.
-        rt.post_spawn_pos_target  = rt.centered_cam_baseline_pos;
+        // Zoom target: fixed position (-284, 100) at baseline zoom.
+        rt.post_spawn_pos_target  = { -284.0f, 100.0f };
         rt.post_spawn_rot_target  = rt.centered_cam_baseline_rot;
         rt.post_spawn_zoom_target = rt.centered_cam_baseline_zoom;
 
