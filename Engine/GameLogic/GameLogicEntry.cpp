@@ -53,6 +53,7 @@
 #include "Systems/HeartrateSystem.h"
 #include "Systems/DebugHitboxRenderSystem.h"
 #include "Systems/InteractableSystem.h"
+#include "Systems/CheatOverlaySystem.h"
 
 // Interactable callbacks
 #include "InteractableCallbacks/OldMan.h"
@@ -536,6 +537,7 @@ static void register_systems()
   Engine::ECS::add_system<Engine::Systems::HeartHUDSpriteSystem>();
   Engine::ECS::add_system<Engine::Systems::CatMonkeySummonHealthBarSystem>();
   Engine::ECS::add_system<Engine::Systems::CatMonkeySummonWaveHealthBarsSystem>();
+  Engine::ECS::add_system<Engine::Systems::CheatOverlaySystem>();
 }
 
 static void unregister_systems()
@@ -549,6 +551,7 @@ static void unregister_systems()
   Engine::ECS::remove_system<Engine::Systems::HeartHUDSpriteSystem>();
   Engine::ECS::remove_system<Engine::Systems::CatMonkeySummonHealthBarSystem>();
   Engine::ECS::remove_system<Engine::Systems::CatMonkeySummonWaveHealthBarsSystem>();
+  Engine::ECS::remove_system<Engine::Systems::CheatOverlaySystem>();
 }
 
 // =============================================================================

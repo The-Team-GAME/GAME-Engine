@@ -37,21 +37,21 @@ static const char* cd_to_state(float cd)
 // One update callback per skill — drives the state machine purely from
 // the cd_timer value, switching states whenever the bucket changes.
 // ========================================================================
-#define DEFINE_UPDATE(skill_name, get_cd_expr)                                   \
+#define DEFINE_UPDATE(skill_name, is_ready_expr, get_cd_expr)                    \
   static void skill_name##_update(Engine::ECS::Entity entity)                    \
   {                                                                               \
     auto* p = get_player();                                                       \
     if (!p) return;                                                               \
-    float cd = (get_cd_expr);                                                     \
+    float cd = (is_ready_expr) ? 0.f : (get_cd_expr);                             \
     const char* target = cd_to_state(cd);                                        \
     auto* sm = entity.get_component<Components::StateMachine>();                  \
     if (sm && !sm->is_in_state(target))                                           \
       sm->change_state(target);                                                   \
   }
 
-DEFINE_UPDATE(dash,     p->dash.cd_timer)
-DEFINE_UPDATE(smash,    p->smash.cd_timer)
-DEFINE_UPDATE(uppercut, p->uppercut.cd_timer)
+DEFINE_UPDATE(dash,     p->dash_ready(),     p->dash.cd_timer)
+DEFINE_UPDATE(smash,    p->smash_ready(),    p->smash.cd_timer)
+DEFINE_UPDATE(uppercut, p->uppercut_ready(), p->uppercut.cd_timer)
 
 // ========================================================================
 // Blueprint Registration
