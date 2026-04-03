@@ -92,12 +92,35 @@ namespace Engine
     ENGINE_API void set_upgrade_level(const std::string& upgrade_id, int level);
     ENGINE_API bool is_upgrade_eligible(int upgrade_index) const;
 
+    // Reapplies the current picked upgrades to the active player entity.
+    // Use this after loading a fresh player prefab while preserving run state.
+    ENGINE_API void apply_current_upgrades();
+
+    // ---- LevelTwo entry snapshot ----
+
+    // Captures the current run state so LevelTwo can restart from its entry state.
+    ENGINE_API void capture_level_two_entry_state();
+    ENGINE_API bool has_level_two_entry_state() const;
+    ENGINE_API void restore_level_two_entry_state();
+    ENGINE_API void clear_level_two_entry_state();
+
     // ---- Reset ----
 
     ENGINE_API void reset();
 
   private:
+    struct SavedState {
+      int current_points = 0;
+      int picks_done = 0;
+      std::unordered_map<std::string, int> current_levels;
+      bool cards_rolled = false;
+      int rolled_indices[2] = { -1, -1 };
+    };
+
     UpgradeManager() = default;
+
+    SavedState capture_state() const;
+    void restore_state(const SavedState& state);
 
     // Stat applicator map
     std::unordered_map<std::string, StatApplicator> stat_applicators_;
@@ -110,6 +133,9 @@ namespace Engine
     // Rolled cards
     bool cards_rolled_ = false;
     int rolled_indices_[2] = { -1, -1 };
+
+    SavedState level_two_entry_state_{};
+    bool has_level_two_entry_state_ = false;
   };
 
 } // namespace Engine

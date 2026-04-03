@@ -19,7 +19,7 @@
                         0.30000001192092896
                     ],
                     "is_looping": true,
-                    "startTime": 289.8988342285156,
+                    "startTime": 146.0573272705078,
                     "totalDuration": 0.9000000357627869
                 },
                 "type": "Components::Animation"
@@ -46,8 +46,8 @@
                         "half_height": 48.827919006347656,
                         "half_width": 67.96481323242188,
                         "pos": {
-                            "x": 878.76806640625,
-                            "y": 1456.893798828125
+                            "x": 2279.9423828125,
+                            "y": 1136.7947998046875
                         }
                     },
                     "collided": false,
@@ -103,7 +103,7 @@
                         "x": 0.0,
                         "y": 0.0
                     },
-                    "air_time": 0.0,
+                    "air_time": 134.46128845214844,
                     "apply_force": true,
                     "gravity": {
                         "x": 0.0,
@@ -129,6 +129,188 @@
                     "current_state_name": "Turret",
                     "property_anim_playing": false,
                     "states": [
+                        {
+                            "first": "Attacking",
+                            "second": {
+                                "animation": {
+                                    "animation": {
+                                        "atlas_indices": [
+                                            0,
+                                            1,
+                                            2,
+                                            3,
+                                            4,
+                                            5
+                                        ],
+                                        "before_times": [
+                                            0.0,
+                                            0.0,
+                                            0.0,
+                                            0.0,
+                                            0.10000000149011612,
+                                            0.20000000298023224
+                                        ],
+                                        "durations": [
+                                            0.0,
+                                            0.0,
+                                            0.0,
+                                            0.10000000149011612,
+                                            0.10000000149011612,
+                                            0.10000000149011612
+                                        ],
+                                        "is_looping": true,
+                                        "startTime": 146.0573272705078,
+                                        "totalDuration": 0.30000001192092896
+                                    },
+                                    "collider_data": {
+                                        "height": 84.70646667480469,
+                                        "offset": {
+                                            "x": -3.89923095703125,
+                                            "y": 25.146766662597656
+                                        },
+                                        "type": "AABB",
+                                        "vertices": [],
+                                        "width": 92.9373779296875
+                                    },
+                                    "scale": {
+                                        "x": 135.0,
+                                        "y": 135.0
+                                    },
+                                    "texture": {
+                                        "path": "images/TurretMonkeySpriteSheets/atk.png"
+                                    },
+                                    "texture_atlas": {
+                                        "drawIndex": -1,
+                                        "tex_coords_list": [
+                                            [
+                                                {
+                                                    "x": 0.0,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.1666666716337204,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.1666666716337204,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.0,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.1666666716337204,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.3333333432674408,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.3333333432674408,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.1666666716337204,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.3333333432674408,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.5,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.5,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.3333333432674408,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.5,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.6666666865348816,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.6666666865348816,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.5,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.6666666865348816,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.8333333134651184,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.8333333134651184,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.6666666865348816,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.8333333134651184,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 1.0,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 1.0,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.8333333134651184,
+                                                    "y": 0.0
+                                                }
+                                            ]
+                                        ]
+                                    }
+                                },
+                                "audio": {
+                                    "event_path": "event:/SFX/TurretMonkeyAttack",
+                                    "loop": false,
+                                    "volume": 0.6000000238418579
+                                },
+                                "name": "Attacking",
+                                "on_enter_callback": {
+                                    "name": "TurretMonkeyStateCallbacks::attacking_on_enter"
+                                },
+                                "on_exit_callback": {
+                                    "name": "TurretMonkeyStateCallbacks::attacking_on_exit"
+                                },
+                                "on_update_callback": {
+                                    "name": "TurretMonkeyStateCallbacks::attacking_on_update"
+                                },
+                                "property_animation": null
+                            }
+                        },
                         {
                             "first": "Idle",
                             "second": {
@@ -171,7 +353,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 291.9651794433594,
+                                        "startTime": 146.0573272705078,
                                         "totalDuration": 1.0000001192092896
                                     },
                                     "collider_data": {
@@ -392,188 +574,6 @@
                             }
                         },
                         {
-                            "first": "Attacking",
-                            "second": {
-                                "animation": {
-                                    "animation": {
-                                        "atlas_indices": [
-                                            0,
-                                            1,
-                                            2,
-                                            3,
-                                            4,
-                                            5
-                                        ],
-                                        "before_times": [
-                                            0.0,
-                                            0.0,
-                                            0.0,
-                                            0.0,
-                                            0.10000000149011612,
-                                            0.20000000298023224
-                                        ],
-                                        "durations": [
-                                            0.0,
-                                            0.0,
-                                            0.0,
-                                            0.10000000149011612,
-                                            0.10000000149011612,
-                                            0.10000000149011612
-                                        ],
-                                        "is_looping": true,
-                                        "startTime": 291.9651794433594,
-                                        "totalDuration": 0.30000001192092896
-                                    },
-                                    "collider_data": {
-                                        "height": 84.70646667480469,
-                                        "offset": {
-                                            "x": -3.89923095703125,
-                                            "y": 25.146766662597656
-                                        },
-                                        "type": "AABB",
-                                        "vertices": [],
-                                        "width": 92.9373779296875
-                                    },
-                                    "scale": {
-                                        "x": 135.0,
-                                        "y": 135.0
-                                    },
-                                    "texture": {
-                                        "path": "images/TurretMonkeySpriteSheets/atk.png"
-                                    },
-                                    "texture_atlas": {
-                                        "drawIndex": -1,
-                                        "tex_coords_list": [
-                                            [
-                                                {
-                                                    "x": 0.0,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.1666666716337204,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.1666666716337204,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.0,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.1666666716337204,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.3333333432674408,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.3333333432674408,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.1666666716337204,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.3333333432674408,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.5,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.5,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.3333333432674408,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.5,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.6666666865348816,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.6666666865348816,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.5,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.6666666865348816,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.8333333134651184,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.8333333134651184,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.6666666865348816,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.8333333134651184,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 1.0,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 1.0,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.8333333134651184,
-                                                    "y": 0.0
-                                                }
-                                            ]
-                                        ]
-                                    }
-                                },
-                                "audio": {
-                                    "event_path": "event:/SFX/TurretMonkeyAttack",
-                                    "loop": false,
-                                    "volume": 0.6000000238418579
-                                },
-                                "name": "Attacking",
-                                "on_enter_callback": {
-                                    "name": "TurretMonkeyStateCallbacks::attacking_on_enter"
-                                },
-                                "on_exit_callback": {
-                                    "name": "TurretMonkeyStateCallbacks::attacking_on_exit"
-                                },
-                                "on_update_callback": {
-                                    "name": "TurretMonkeyStateCallbacks::attacking_on_update"
-                                },
-                                "property_animation": null
-                            }
-                        },
-                        {
                             "first": "Chasing",
                             "second": {
                                 "animation": {
@@ -615,7 +615,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 291.9651794433594,
+                                        "startTime": 146.0573272705078,
                                         "totalDuration": 1.0000001192092896
                                     },
                                     "collider_data": {
@@ -866,7 +866,7 @@
                                             0.25
                                         ],
                                         "is_looping": false,
-                                        "startTime": 291.9651794433594,
+                                        "startTime": 146.0573272705078,
                                         "totalDuration": 1.25
                                     },
                                     "collider_data": {
@@ -1012,17 +1012,17 @@
                                         ],
                                         "before_times": [
                                             0.0,
-                                            0.15000000596046448,
-                                            0.30000001192092896
+                                            0.10000000149011612,
+                                            0.20000000298023224
                                         ],
                                         "durations": [
-                                            0.15000000596046448,
-                                            0.15000000596046448,
-                                            0.15000000596046448
+                                            0.10000000149011612,
+                                            0.10000000149011612,
+                                            0.10000000149011612
                                         ],
-                                        "is_looping": true,
-                                        "startTime": 291.9651794433594,
-                                        "totalDuration": 0.45000001788139343
+                                        "is_looping": false,
+                                        "startTime": 146.0573272705078,
+                                        "totalDuration": 0.30000001192092896
                                     },
                                     "collider_data": {
                                         "height": 84.70646667480469,
@@ -1140,7 +1140,7 @@
                                             0.30000001192092896
                                         ],
                                         "is_looping": true,
-                                        "startTime": 291.9651794433594,
+                                        "startTime": 146.0573272705078,
                                         "totalDuration": 0.9000000357627869
                                     },
                                     "collider_data": {
@@ -1318,7 +1318,7 @@
                                             0.30000001192092896
                                         ],
                                         "is_looping": true,
-                                        "startTime": 291.9651794433594,
+                                        "startTime": 146.0573272705078,
                                         "totalDuration": 0.7000000476837158
                                     },
                                     "collider_data": {
@@ -1491,7 +1491,7 @@
                                             1.0
                                         ],
                                         "is_looping": true,
-                                        "startTime": 291.9651794433594,
+                                        "startTime": 146.0573272705078,
                                         "totalDuration": 2.2059998512268066
                                     },
                                     "collider_data": {
@@ -1606,7 +1606,7 @@
                                             0.5
                                         ],
                                         "is_looping": true,
-                                        "startTime": 291.9651794433594,
+                                        "startTime": 146.0573272705078,
                                         "totalDuration": 0.8999999761581421
                                     },
                                     "collider_data": {
@@ -1712,7 +1712,7 @@
             },
             {
                 "data": {
-                    "drawIndex": 5,
+                    "drawIndex": 4,
                     "tex_coords_list": [
                         [
                             {
@@ -1829,8 +1829,8 @@
             {
                 "data": {
                     "position": {
-                        "x": 860.624267578125,
-                        "y": 1477.0703125
+                        "x": 2261.798583984375,
+                        "y": 1156.9713134765625
                     },
                     "rotation": 0.0,
                     "scale": {

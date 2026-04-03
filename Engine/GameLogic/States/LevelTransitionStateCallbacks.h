@@ -16,6 +16,7 @@
 
 #include "pch.h"
 #include "../../Engine/LevelManager.h"
+#include "../../Engine/UpgradeManager.h"
 #include "../../Engine/EventManager/EventManager.h"
 #include "../../Engine/Events/EngineEvents.h"
 #include "../../Engine/SceneManager.h"
@@ -63,6 +64,8 @@ namespace LevelTransitionStateCallbacks
       Engine::Events::ToastType::Info,
       2.0f
     );
+
+    Engine::UpgradeManager::instance().capture_level_two_entry_state();
 
     // Prevent repeated firing if the player keeps overlapping the volume.
     // Note: the level load will clear entities anyway; this just makes it robust.

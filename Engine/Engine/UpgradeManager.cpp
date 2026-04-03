@@ -77,6 +77,28 @@ namespace Engine
     current_points_ = amount;
   }
 
+  UpgradeManager::SavedState UpgradeManager::capture_state() const
+  {
+    SavedState state;
+    state.current_points = current_points_;
+    state.picks_done = picks_done_;
+    state.current_levels = current_levels_;
+    state.cards_rolled = cards_rolled_;
+    state.rolled_indices[0] = rolled_indices_[0];
+    state.rolled_indices[1] = rolled_indices_[1];
+    return state;
+  }
+
+  void UpgradeManager::restore_state(const SavedState& state)
+  {
+    current_points_ = state.current_points;
+    picks_done_ = state.picks_done;
+    current_levels_ = state.current_levels;
+    cards_rolled_ = state.cards_rolled;
+    rolled_indices_[0] = state.rolled_indices[0];
+    rolled_indices_[1] = state.rolled_indices[1];
+  }
+
   // ---- Threshold ----
 
   int UpgradeManager::get_next_threshold() const
@@ -280,6 +302,64 @@ namespace Engine
     return get_upgrade_level(upg.id) < upg.max_level;
   }
 
+  void UpgradeManager::apply_current_upgrades()
+  {
+    auto& settings = FileIO::SettingsManager<FileIO::UpgradeSettings>::get();
+    for (const auto& upg : settings.upgrades)
+    {
+      const int level = get_upgrade_level(upg.id);
+      if (level <= 0)
+        continue;
+
+      auto it = stat_applicators_.find(upg.stat_name);
+      if (it == stat_applicators_.end())
+      {
+        Log::warning("[UpgradeManager] Cannot reapply '{}' - no stat applicator registered for '{}'",
+          upg.display_name, upg.stat_name);
+        continue;
+      }
+
+      for (int i = 0; i < level; ++i)
+      {
+        it->second(upg.type, upg.value);
+      }
+    }
+
+    Log::info("[UpgradeManager] Reapplied current upgrades to active player");
+  }
+
+  void UpgradeManager::capture_level_two_entry_state()
+  {
+    level_two_entry_state_ = capture_state();
+    has_level_two_entry_state_ = true;
+    Log::info("[UpgradeManager] Captured LevelTwo entry snapshot (points={}, picks={})",
+      level_two_entry_state_.current_points, level_two_entry_state_.picks_done);
+  }
+
+  bool UpgradeManager::has_level_two_entry_state() const
+  {
+    return has_level_two_entry_state_;
+  }
+
+  void UpgradeManager::restore_level_two_entry_state()
+  {
+    if (!has_level_two_entry_state_)
+    {
+      Log::warning("[UpgradeManager] No LevelTwo entry snapshot to restore");
+      return;
+    }
+
+    restore_state(level_two_entry_state_);
+    Log::info("[UpgradeManager] Restored LevelTwo entry snapshot (points={}, picks={})",
+      current_points_, picks_done_);
+  }
+
+  void UpgradeManager::clear_level_two_entry_state()
+  {
+    has_level_two_entry_state_ = false;
+    level_two_entry_state_ = SavedState{};
+  }
+
   // ---- Reset ----
 
   void UpgradeManager::reset()
@@ -290,6 +370,7 @@ namespace Engine
     cards_rolled_ = false;
     rolled_indices_[0] = -1;
     rolled_indices_[1] = -1;
+    clear_level_two_entry_state();
   }
 
 } // namespace Engine
