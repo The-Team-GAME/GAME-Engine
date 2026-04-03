@@ -381,8 +381,7 @@ namespace CatMonkeyStateCallbacks
         rt.win_cutscene_timer_started = true;
         rt.win_cutscene_trigger_time = now + 5.0f;
 
-        // Smoothly zoom the Centered camera back to its scene-load baseline over 2.5s.
-        restore_centered_camera_parent(rt);
+        
         ensure_centered_camera_baseline(rt);
 
         // Sample current camera state as the start of the lerp.
