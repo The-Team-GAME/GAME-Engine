@@ -43,11 +43,13 @@ namespace {
     log_cheat_toggle(cheat_name, cheat_flag);
   }
 
-  void toggle_cooldown_cheat(Components::Action& action, bool& cheat_flag, const char* cheat_name)
+  void toggle_no_cooldown_cheat(Components::Player& player_comp, const char* cheat_name)
   {
-    cheat_flag = !cheat_flag;
-    action.cd_timer = 0.f;
-    log_cheat_toggle(cheat_name, cheat_flag);
+    player_comp.no_cooldown_cheat = !player_comp.no_cooldown_cheat;
+    player_comp.dash.cd_timer = 0.f;
+    player_comp.uppercut.cd_timer = 0.f;
+    player_comp.smash.cd_timer = 0.f;
+    log_cheat_toggle(cheat_name, player_comp.no_cooldown_cheat);
   }
 
 
@@ -65,27 +67,23 @@ namespace PlayerStateCallbacks
     assert(player_comp);
 
     // Handling cooldowns
-    if (player_comp->dash_cooldown_cheat)
+    if (player_comp->no_cooldown_cheat)
     {
       player_comp->dash.cd_timer = 0.f;
+      player_comp->uppercut.cd_timer = 0.f;
+      player_comp->smash.cd_timer = 0.f;
+      return;
     }
-    else if (!player_comp->dash.ready())
+
+    if (!player_comp->dash.ready())
     {
       player_comp->dash.cd_timer -= Time::get_fixed_dt();
     }
-    if (player_comp->uppercut_cooldown_cheat)
-    {
-      player_comp->uppercut.cd_timer = 0.f;
-    }
-    else if (!player_comp->uppercut.ready())
+    if (!player_comp->uppercut.ready())
     {
       player_comp->uppercut.cd_timer -= Time::get_fixed_dt();
     }
-    if (player_comp->smash_cooldown_cheat)
-    {
-      player_comp->smash.cd_timer = 0.f;
-    }
-    else if (!player_comp->smash.ready())
+    if (!player_comp->smash.ready())
     {
       player_comp->smash.cd_timer -= Time::get_fixed_dt();
     }
@@ -98,17 +96,9 @@ namespace PlayerStateCallbacks
       Log::error("PlayerStateCallbacks: Missing Player component on entity {}", entity.get_id());
       return;
     }
-    if (Engine::Input::is_pressed(Engine::KeyCode::F5))
-    {
-      toggle_cooldown_cheat(player_comp->dash, player_comp->dash_cooldown_cheat, "Dash Cooldown Cheat");
-    }
-    if (Engine::Input::is_pressed(Engine::KeyCode::F6))
-    {
-      toggle_cooldown_cheat(player_comp->uppercut, player_comp->uppercut_cooldown_cheat, "Uppercut Cooldown Cheat");
-    }
     if (Engine::Input::is_pressed(Engine::KeyCode::F7))
     {
-      toggle_cooldown_cheat(player_comp->smash, player_comp->smash_cooldown_cheat, "Smash Cooldown Cheat");
+      toggle_no_cooldown_cheat(*player_comp, "No Cooldown");
     }
     if (Engine::Input::is_pressed(Engine::KeyCode::F8))
     {

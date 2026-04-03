@@ -85,9 +85,7 @@ namespace Components
     Vec2D knockback_recieved{ 100'000.f, 50'000.f };
     bool damage_immune = false;
     bool god_mode = false;
-    bool dash_cooldown_cheat = false;
-    bool uppercut_cooldown_cheat = false;
-    bool smash_cooldown_cheat = false;
+    bool no_cooldown_cheat = false;
     bool input_lock = false; // prevents the player from moving from keyboard inputs
 
     Vec2D respawn_point{ 0.0f, 0.0f };
@@ -114,17 +112,17 @@ namespace Components
 
     bool dash_ready() const
     {
-      return dash_cooldown_cheat || dash.ready();
+      return no_cooldown_cheat || dash.ready();
     }
 
     bool uppercut_ready() const
     {
-      return uppercut_cooldown_cheat || uppercut.ready();
+      return no_cooldown_cheat || uppercut.ready();
     }
 
     bool smash_ready() const
     {
-      return smash_cooldown_cheat || smash.ready();
+      return no_cooldown_cheat || smash.ready();
     }
 
   };

@@ -35,10 +35,8 @@ namespace Engine {
           return;
         }
 
-        const std::array<std::pair<std::string, bool>, 4> cheat_states = {{
-          { "F5 Dash CD: " + status_text(player_comp->dash_cooldown_cheat), player_comp->dash_cooldown_cheat },
-          { "F6 Uppercut CD: " + status_text(player_comp->uppercut_cooldown_cheat), player_comp->uppercut_cooldown_cheat },
-          { "F7 Smash CD: " + status_text(player_comp->smash_cooldown_cheat), player_comp->smash_cooldown_cheat },
+        const std::array<std::pair<std::string, bool>, 2> cheat_states = {{
+          { "F7 No Cooldown: " + status_text(player_comp->no_cooldown_cheat), player_comp->no_cooldown_cheat },
           { "F8 God Mode: " + status_text(player_comp->god_mode), player_comp->god_mode }
         }};
 
