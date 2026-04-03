@@ -32,6 +32,24 @@ namespace {
   bool attacking = false;
   bool on_ground_last_frame = true;
 
+  void log_cheat_toggle(const char* cheat_name, bool enabled)
+  {
+    Log::info("Player: {} {}", cheat_name, enabled ? "Enabled" : "Disabled");
+  }
+
+  void toggle_bool_cheat(bool& cheat_flag, const char* cheat_name)
+  {
+    cheat_flag = !cheat_flag;
+    log_cheat_toggle(cheat_name, cheat_flag);
+  }
+
+  void toggle_cooldown_cheat(Components::Action& action, bool& cheat_flag, const char* cheat_name)
+  {
+    cheat_flag = !cheat_flag;
+    action.cd_timer = 0.f;
+    log_cheat_toggle(cheat_name, cheat_flag);
+  }
+
 
 
 }
@@ -47,15 +65,27 @@ namespace PlayerStateCallbacks
     assert(player_comp);
 
     // Handling cooldowns
-    if (!player_comp->dash.ready())
+    if (player_comp->dash_cooldown_cheat)
+    {
+      player_comp->dash.cd_timer = 0.f;
+    }
+    else if (!player_comp->dash.ready())
     {
       player_comp->dash.cd_timer -= Time::get_fixed_dt();
     }
-    if (!player_comp->uppercut.ready())
+    if (player_comp->uppercut_cooldown_cheat)
+    {
+      player_comp->uppercut.cd_timer = 0.f;
+    }
+    else if (!player_comp->uppercut.ready())
     {
       player_comp->uppercut.cd_timer -= Time::get_fixed_dt();
     }
-    if (!player_comp->smash.ready())
+    if (player_comp->smash_cooldown_cheat)
+    {
+      player_comp->smash.cd_timer = 0.f;
+    }
+    else if (!player_comp->smash.ready())
     {
       player_comp->smash.cd_timer -= Time::get_fixed_dt();
     }
@@ -68,21 +98,22 @@ namespace PlayerStateCallbacks
       Log::error("PlayerStateCallbacks: Missing Player component on entity {}", entity.get_id());
       return;
     }
-#ifndef GAME_BUILD // God Mode for game showcase
+    if (Engine::Input::is_pressed(Engine::KeyCode::F5))
+    {
+      toggle_cooldown_cheat(player_comp->dash, player_comp->dash_cooldown_cheat, "Dash Cooldown Cheat");
+    }
+    if (Engine::Input::is_pressed(Engine::KeyCode::F6))
+    {
+      toggle_cooldown_cheat(player_comp->uppercut, player_comp->uppercut_cooldown_cheat, "Uppercut Cooldown Cheat");
+    }
+    if (Engine::Input::is_pressed(Engine::KeyCode::F7))
+    {
+      toggle_cooldown_cheat(player_comp->smash, player_comp->smash_cooldown_cheat, "Smash Cooldown Cheat");
+    }
     if (Engine::Input::is_pressed(Engine::KeyCode::F8))
     {
-      if (player_comp->god_mode)
-      {
-        player_comp->god_mode = false;
-        Log::info("Player: God Mode Toggled Off");
-      }
-      else
-      {
-        player_comp->god_mode = true;
-        Log::info("Player: God Mode Toggled On");
-      }
+      toggle_bool_cheat(player_comp->god_mode, "God Mode");
     }
-#endif
     if (player_comp->input_lock)
     { // This is for when the player enters a menu of sorts and is not supposed to press anything that will affect their payer controls in game
       return;
@@ -109,13 +140,13 @@ namespace PlayerStateCallbacks
     }
 
     if (Engine::Input::is_pressed(Engine::KeyCode::K)
-      && player_comp->uppercut.ready())
+      && player_comp->uppercut_ready())
     {
       state_machine->change_state("PreUppercut");
       return true;
     }
     if (Engine::Input::is_pressed(Engine::KeyCode::L)
-      && player_comp->smash.ready())
+      && player_comp->smash_ready())
     {
       if (player_rigid->on_ground || player_rigid->air_time < player_comp->coyote_jump_buffer)
       {
@@ -147,7 +178,7 @@ namespace PlayerStateCallbacks
       return false;
     }
     if (Input::is_held(KeyCode::ShiftLeft)
-      && player_comp->dash.ready())
+      && player_comp->dash_ready())
     {
       state_machine->change_state("Dash");
       return true;

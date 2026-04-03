@@ -210,7 +210,7 @@ inline void ConfigurationPanel()
       ImGui::BeginTooltip();
       ImGui::Text("Automatically rebuild and reload GameLogic.dll");
       ImGui::Text("when .cpp/.h files are saved.");
-      ImGui::Text("When disabled, press F5 to manually reload.");
+      ImGui::Text("When disabled, press F4 to manually reload.");
       ImGui::EndTooltip();
     }
   }
