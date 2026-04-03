@@ -3,6 +3,10 @@ local PAUSE_DIMMER_NAME = "PauseMenuDimmer"
 local PAUSE_CONTROLLER_NAME = "PauseMenuController"
 local LEFT_PANEL_NAME = "PauseLeftPanel"
 local OPTIONS_PANEL_NAME = "PauseOptionsPanel"
+local OPTIONS_CAT_NAME = "PauseOptionsCat"
+local OPTIONS_CAT_FRAME_DURATION = 0.08
+local OPTIONS_CAT_TOTAL_FRAMES = 26
+local OPTIONS_CAT_LOOP_START_FRAME = 4
 local OPTIONS_BGM_LABEL_NAME = "PauseOptionsBGMLabel"
 local OPTIONS_SFX_LABEL_NAME = "PauseOptionsSFXLabel"
 local OPTIONS_SCREEN_LABEL_NAME = "PauseOptionsScreenLabel"
@@ -76,8 +80,11 @@ local CONFIRM_TEXTURES = {
   paused_scroll = "images/UI/In-Game Pause/RESUMEGAME/PAUSED.png",
 }
 
+local OPTIONS_CAT_PREFAB_PATH = "prefabs/cat_options_idle.json"
+
 local RIGHT_PANEL_NAMES = {
   OPTIONS_PANEL_NAME,
+  OPTIONS_CAT_NAME,
   OPTIONS_BGM_LABEL_NAME,
   OPTIONS_SFX_LABEL_NAME,
   OPTIONS_SCREEN_LABEL_NAME,
@@ -129,6 +136,7 @@ local ENTITY_LAYER_NAMES = {
   [PAUSE_DIMMER_NAME] = "overlay_bg",
   [LEFT_PANEL_NAME] = "overlay_items_2",
   [OPTIONS_PANEL_NAME] = "overlay_items_1",
+  [OPTIONS_CAT_NAME] = "overlay_items_2",
   [OPTIONS_BGM_LABEL_NAME] = "overlay_items_2",
   [OPTIONS_SFX_LABEL_NAME] = "overlay_items_2",
   [OPTIONS_SCREEN_LABEL_NAME] = "overlay_items_2",
@@ -206,6 +214,10 @@ local left_cluster_base_bounds = nil
 local left_cluster_anim = {}
 local left_cluster_has_opened = false
 local options_textures_warmed = false
+local options_cat_prefab = nil
+local options_cat_animation_active = false
+local options_cat_anim_started_at = 0.0
+local options_cat_intro_played = false
 
 local function clamp(value, min_value, max_value)
   return math.min(math.max(value, min_value), max_value)
@@ -248,6 +260,121 @@ end
 
 local function get_named_entity(name)
   return ECS.get_entity_by_name(name)
+end
+
+local function get_options_cat_prefab()
+  if options_cat_prefab == nil then
+    options_cat_prefab = Resources.load_prefab(OPTIONS_CAT_PREFAB_PATH)
+  end
+  return options_cat_prefab
+end
+
+local function set_pause_options_cat_frame(frame_index)
+  local cat = get_named_entity(OPTIONS_CAT_NAME)
+  if not cat or not cat:is_valid() then
+    return
+  end
+
+  local atlas = cat.TextureAtlas
+  if atlas then
+    atlas.drawIndex = clamp(frame_index, 0, OPTIONS_CAT_TOTAL_FRAMES - 1)
+  end
+end
+
+local function start_pause_options_cat_animation()
+  options_cat_animation_active = true
+  options_cat_anim_started_at = Time.get_unscaled_time()
+
+  if options_cat_intro_played then
+    set_pause_options_cat_frame(OPTIONS_CAT_LOOP_START_FRAME)
+  else
+    set_pause_options_cat_frame(0)
+  end
+end
+
+local function stop_pause_options_cat_animation()
+  options_cat_animation_active = false
+end
+
+local function update_pause_options_cat_animation()
+  if not options_cat_animation_active then
+    return
+  end
+
+  local cat = get_named_entity(OPTIONS_CAT_NAME)
+  if not cat or not cat:is_valid() then
+    return
+  end
+
+  local elapsed = Time.get_unscaled_time() - options_cat_anim_started_at
+
+  if not options_cat_intro_played then
+    local intro_frame = math.floor(elapsed / OPTIONS_CAT_FRAME_DURATION)
+    if intro_frame < OPTIONS_CAT_LOOP_START_FRAME then
+      set_pause_options_cat_frame(intro_frame)
+      return
+    end
+
+    options_cat_intro_played = true
+    options_cat_anim_started_at = Time.get_unscaled_time()
+    elapsed = 0.0
+  end
+
+  local loop_frame_count = OPTIONS_CAT_TOTAL_FRAMES - OPTIONS_CAT_LOOP_START_FRAME
+  local loop_frame = math.floor(elapsed / OPTIONS_CAT_FRAME_DURATION) % loop_frame_count
+  set_pause_options_cat_frame(OPTIONS_CAT_LOOP_START_FRAME + loop_frame)
+end
+
+local function ensure_pause_options_cat()
+  local cat = get_named_entity(OPTIONS_CAT_NAME)
+  if cat and cat:is_valid() then
+    if cat:has("Animation") then
+      cat:remove("Animation")
+    end
+
+    local tr = cat.Transform2D
+    if tr then
+      tr.position.x = 128.0
+      tr.position.y = 715.0
+      tr.scale.x = 400.0
+      tr.scale.y = 400.0
+    end
+
+    return cat
+  end
+
+  cat = ECS.instantiate_prefab(get_options_cat_prefab())
+  if not cat or not cat:is_valid() then
+    return nil
+  end
+
+  cat:set_name(OPTIONS_CAT_NAME)
+
+  if cat:has("Animation") then
+    cat:remove("Animation")
+  end
+
+  if not cat:has("UI") then
+    cat:add("UI")
+  end
+
+  local ui = cat.UI
+  if ui then
+    ui.anchor.x = 0.0
+    ui.anchor.y = 0.0
+  end
+
+  local tr = cat.Transform2D
+  if tr then
+    tr.position.x = 120.0
+    tr.position.y = 785.0
+    tr.scale.x = 400.0
+    tr.scale.y = 400.0
+  end
+
+  cat:clear_layers()
+  cat:add_to_layer(ENTITY_LAYER_NAMES[OPTIONS_CAT_NAME] or "overlay_items_2")
+  return cat
 end
 
 local function get_pause_controller()
@@ -818,6 +945,8 @@ local function update_confirm_hover_from_mouse()
 end
 
 local function show_options_panel()
+  ensure_pause_options_cat()
+  set_entity_visible(OPTIONS_CAT_NAME, true)
   set_entity_visible(OPTIONS_PANEL_NAME, true)
   set_entity_visible(OPTIONS_BGM_LABEL_NAME, true)
   set_entity_visible(OPTIONS_SFX_LABEL_NAME, true)
@@ -1133,6 +1262,7 @@ function pause_confirm_hover_exit(entity)
 end
 
 function pause_menu_menu_on_enter(entity)
+  ensure_pause_options_cat()
   warm_options_texture_variants()
   hovered_left_button = nil
   hovered_confirm_button = nil
@@ -1177,6 +1307,8 @@ function pause_menu_menu_on_exit(entity)
 end
 
 function pause_menu_options_on_enter(entity)
+  ensure_pause_options_cat()
+  start_pause_options_cat_animation()
   hovered_left_button = nil
   hovered_confirm_button = nil
   selected_left_button = "options"
@@ -1198,6 +1330,7 @@ function pause_menu_options_on_update(entity)
   end
 
   update_left_cluster_animation()
+  update_pause_options_cat_animation()
   update_left_hover_from_mouse()
   update_options_hover_from_mouse()
   refresh_left_panel()
@@ -1226,6 +1359,7 @@ function pause_menu_options_on_update(entity)
 end
 
 function pause_menu_options_on_exit(entity)
+  stop_pause_options_cat_animation()
   hide_options_hover_overlay()
 end
 

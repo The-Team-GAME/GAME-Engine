@@ -44,6 +44,29 @@ std::vector<Engine::Resources::Resource> Engine::Resources::persistent_resources
 
 std::string Engine::Resources::resource_path = "";
 
+namespace {
+  void persist_texture_resource(const Engine::Graphics::Texture& texture)
+  {
+    if (!texture) {
+      return;
+    }
+
+    const bool already_persistent = std::any_of(
+      Engine::Resources::persistent_resources.begin(),
+      Engine::Resources::persistent_resources.end(),
+      [&](const Engine::Resources::Resource& resource)
+      {
+        const auto* persistent_texture = std::get_if<Engine::Graphics::Texture>(&resource);
+        return persistent_texture && *persistent_texture == texture;
+      }
+    );
+
+    if (!already_persistent) {
+      Engine::Resources::persistent_resources.push_back(texture);
+    }
+  }
+}
+
 bool Engine::Resources::init(const std::string& initial_resource_path)
 {
   Log::info("Resource manager initialized");
@@ -316,6 +339,10 @@ Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& fil
     // Try to lock the weak_ptr
     if (auto cached = it->second.lock())
     {
+      if (persist)
+      {
+        persist_texture_resource(cached);
+      }
       // Log::info("Texture loaded from cache: " + full_path);
       return cached;
     }
@@ -335,7 +362,7 @@ Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& fil
     texture_cache[full_path] = texture;
     if (persist)
     {
-      persistent_resources.push_back(texture);
+      persist_texture_resource(texture);
       Log::info("Texture loaded (persistent): {}", full_path);
     }
     else

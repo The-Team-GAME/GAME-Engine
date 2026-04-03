@@ -6,11 +6,21 @@ local SPLASH_SFX_SNORE_EVENT = "event:/SFX/SplashSnoreSFX"
 local SPLASH_SFX_TRAIN_EVENT = "event:/SFX/SplashTrainSFX"
 
 local OPTIONS_CONTROLLER_NAME = "Whole train"
+local OPTIONS_CAT_PREFAB_PATH = "prefabs/cat_options_idle.json"
+local MAIN_MENU_OPTIONS_CAT_NAME = "MainMenuOptionsCat"
+local OPTIONS_CAT_FRAME_DURATION = 0.08
+local OPTIONS_CAT_TOTAL_FRAMES = 26
+local OPTIONS_CAT_LOOP_START_FRAME = 4
 
 local button_anim = {}
 local menu_anim = {}
 local options_active = false
 local options_transition = nil
+local options_cat_prefab = nil
+local options_cat_animation_active = false
+local options_cat_anim_started_at = 0.0
+local options_cat_intro_played = false
+local menu_button_textures_warmed = false
 
 local MENU_BUTTON_NAMES = {
   "PlayButton",
@@ -58,6 +68,7 @@ local MAIN_MENU_ENTITY_NAMES = {
 
 local OPTIONS_ENTITY_NAMES = {
   "OptionsPanel",
+  MAIN_MENU_OPTIONS_CAT_NAME,
   "OptionsBGMLabel",
   "OptionsSFXLabel",
   "OptionsScreenLabel",
@@ -106,8 +117,22 @@ local BUTTON_START_POSITIONS = {
   ExitButton = { x = 9109.5029, y = 4277.5044 },
 }
 
+local function warm_menu_button_textures()
+  if menu_button_textures_warmed then
+    return
+  end
+
+  for _, textures in pairs(BUTTON_TEXTURES) do
+    Resources.load_texture(textures.normal, true)
+    Resources.load_texture(textures.hovered, true)
+  end
+
+  menu_button_textures_warmed = true
+end
+
 local OPTIONS_TARGETS = {
   OptionsPanel = { x = 933.2921, y = 394.4612, delay = 0.00 },
+  MainMenuOptionsCat = { x = 276.0, y = 562.0, delay = 0.02 },
   OptionsBGMLabel = { x = 645.8967, y = 256.8189, delay = 0.03 },
   OptionsBGMBar = { x = 877.0935, y = 303.8838, delay = 0.05 },
   OptionsBGMLeft = { x = 626.0000, y = 303.8838, delay = 0.07 },
@@ -170,6 +195,107 @@ local function get_named_entity(name)
   return ECS.get_entity_by_name(name)
 end
 
+local function get_options_cat_prefab()
+  if options_cat_prefab == nil then
+    options_cat_prefab = Resources.load_prefab(OPTIONS_CAT_PREFAB_PATH)
+  end
+  return options_cat_prefab
+end
+
+local function set_main_menu_options_cat_frame(frame_index)
+  local cat = get_named_entity(MAIN_MENU_OPTIONS_CAT_NAME)
+  if not cat or not cat:is_valid() then
+    return
+  end
+
+  local atlas = cat.TextureAtlas
+  if atlas then
+    atlas.drawIndex = clamp(frame_index, 0, OPTIONS_CAT_TOTAL_FRAMES - 1)
+  end
+end
+
+local function start_main_menu_options_cat_animation()
+  options_cat_animation_active = true
+  options_cat_anim_started_at = Time.get_time()
+
+  if options_cat_intro_played then
+    set_main_menu_options_cat_frame(OPTIONS_CAT_LOOP_START_FRAME)
+  else
+    set_main_menu_options_cat_frame(0)
+  end
+end
+
+local function stop_main_menu_options_cat_animation()
+  options_cat_animation_active = false
+end
+
+local function update_main_menu_options_cat_animation()
+  if not options_cat_animation_active then
+    return
+  end
+
+  local elapsed = Time.get_time() - options_cat_anim_started_at
+
+  if not options_cat_intro_played then
+    local intro_frame = math.floor(elapsed / OPTIONS_CAT_FRAME_DURATION)
+    if intro_frame < OPTIONS_CAT_LOOP_START_FRAME then
+      set_main_menu_options_cat_frame(intro_frame)
+      return
+    end
+
+    options_cat_intro_played = true
+    options_cat_anim_started_at = Time.get_time()
+    elapsed = 0.0
+  end
+
+  local loop_frame_count = OPTIONS_CAT_TOTAL_FRAMES - OPTIONS_CAT_LOOP_START_FRAME
+  local loop_frame = math.floor(elapsed / OPTIONS_CAT_FRAME_DURATION) % loop_frame_count
+  set_main_menu_options_cat_frame(OPTIONS_CAT_LOOP_START_FRAME + loop_frame)
+end
+
+local function ensure_main_menu_options_cat()
+  local cat = get_named_entity(MAIN_MENU_OPTIONS_CAT_NAME)
+  if cat and cat:is_valid() then
+    if cat:has("Animation") then
+      cat:remove("Animation")
+    end
+
+    local tr = cat.Transform2D
+    if tr then
+      tr.scale.x = 384.0
+      tr.scale.y = 384.0
+    end
+
+    cat:clear_layers()
+    cat:add_to_layer("default")
+    cat:add_to_layer("main_menu_character")
+    return cat
+  end
+
+  cat = ECS.instantiate_prefab(get_options_cat_prefab())
+  if not cat or not cat:is_valid() then
+    return nil
+  end
+
+  cat:set_name(MAIN_MENU_OPTIONS_CAT_NAME)
+
+  if cat:has("Animation") then
+    cat:remove("Animation")
+  end
+
+  local tr = cat.Transform2D
+  if tr then
+    tr.scale.x = 384.0
+    tr.scale.y = 384.0
+  end
+
+  cat:clear_layers()
+  cat:add_to_layer("default")
+  cat:add_to_layer("main_menu_character")
+  set_main_menu_options_cat_frame(0)
+  return cat
+end
+
 local function wrap_index(index, count)
   if count <= 0 then
     return 1
@@ -230,7 +356,7 @@ local function set_button_texture(entity_name, path)
   end
 
   local tex = entity.Texture
-  if tex then
+  if tex and tex.path ~= path then
     tex.path = path
   end
 end
@@ -246,16 +372,17 @@ local function get_active_menu_button_index()
 end
 
 local function sync_main_menu_button_visuals()
-  reset_menu_button_textures()
-
-  if hovered_menu_button_index == nil and not should_show_selection_hover() then
-    return
+  local hovered_entity_name = nil
+  if hovered_menu_button_index ~= nil or should_show_selection_hover() then
+    hovered_entity_name = MENU_BUTTON_NAMES[get_active_menu_button_index()]
   end
 
-  local entity_name = MENU_BUTTON_NAMES[get_active_menu_button_index()]
-  local textures = entity_name and BUTTON_TEXTURES[entity_name]
-  if textures then
-    set_button_texture(entity_name, textures.hovered)
+  for entity_name, textures in pairs(BUTTON_TEXTURES) do
+    local desired_path = textures.normal
+    if entity_name == hovered_entity_name then
+      desired_path = textures.hovered
+    end
+    set_button_texture(entity_name, desired_path)
   end
 end
 
@@ -482,6 +609,8 @@ local function open_options_menu()
     return
   end
 
+  ensure_main_menu_options_cat()
+  start_main_menu_options_cat_animation()
   options_active = true
   options_transition = "opening"
   hovered_menu_button_index = nil
@@ -498,6 +627,7 @@ local function close_options_menu()
     return
   end
 
+  stop_main_menu_options_cat_animation()
   options_active = false
   options_transition = "closing"
   reset_menu_button_textures()
@@ -676,6 +806,12 @@ end
 
 function main_menu_start_on_enter(entity)
   if is_options_controller(entity) then
+    warm_menu_button_textures()
+    ensure_main_menu_options_cat()
+    options_cat_animation_active = false
+    options_cat_anim_started_at = 0.0
+    options_cat_intro_played = false
+    set_main_menu_options_cat_frame(0)
     options_active = false
     options_transition = nil
     hovered_menu_button_index = nil
@@ -854,6 +990,7 @@ function main_menu_options_on_update(entity)
   end
 
   update_menu_animations()
+  update_main_menu_options_cat_animation()
   sync_options_visuals()
 
   if options_transition == "opening" and not has_menu_animations() then

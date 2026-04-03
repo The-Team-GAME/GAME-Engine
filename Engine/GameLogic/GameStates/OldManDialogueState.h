@@ -55,7 +55,7 @@ private:
   static constexpr float SLIDE_X = SCREEN_CENTER_X;                                           // horizontally centred
   static constexpr float SLIDE_Y = 900.0f - (SLIDE_H * SLIDE_SCALE) * 0.5f;                  // anchored to bottom
   static constexpr int   SLIDE_COUNT      = 6;
-  static constexpr int   TIPS_PUSH_SLIDE  = 3; // after showing this slide (index 3 = slide 4), push TipsBookState
+  static constexpr int   TIPS_PUSH_SLIDE  = 3; // show this slide first (index 3 = slide 4), then open TipsBookState on the next confirm
 
   static constexpr const char* SLIDE_PATHS[SLIDE_COUNT] = {
     "images/Dialogue/1_Bro_dialogue.png",
@@ -73,4 +73,5 @@ private:
   bool  e_close_armed_              = false;
   bool  request_tips_on_close_      = false;
   bool  tips_was_open_              = false; // true while TipsBookState is stacked on top
+  bool  tips_shown_mid_dialogue_    = false;
 };

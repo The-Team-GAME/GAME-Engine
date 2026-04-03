@@ -16,6 +16,7 @@ namespace {
   static constexpr const char* CUTSCENE_MPG = "videos/Cutscene_Entering_Train.mpg";
   //static constexpr const char* CUTSCENE_MP4 = "videos/Cutscene_Entering_Train.mp4";
   static constexpr const char* LEVEL_TWO_PATH = "levels/LevelTwo.json";
+  static constexpr const char* PLAYER_HEARTBEAT_EVENT = "event:/SFX/PlayerHeartBeat";
 }
 
 void EnteringTrainCutsceneState::set_next_level_to_open(const std::string& level_path)
@@ -30,6 +31,9 @@ void EnteringTrainCutsceneState::load()
 
 void EnteringTrainCutsceneState::init()
 {
+  // Cutscene should not inherit low-health heartbeat from gameplay.
+  Engine::AudioSystem::stopEvent(PLAYER_HEARTBEAT_EVENT, true);
+
   // Default next level for this cutscene.
   // (Can be overridden via set_next_level_to_open if needed.)
   if (next_level_to_open.empty()) {

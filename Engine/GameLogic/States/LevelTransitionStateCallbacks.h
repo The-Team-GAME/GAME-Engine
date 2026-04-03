@@ -25,6 +25,7 @@
 namespace LevelTransitionStateCallbacks
 {
   static constexpr const char* LEVEL_TWO_PATH = "levels/LevelTwo.json";
+  static constexpr const char* PLAYER_HEARTBEAT_EVENT = "event:/SFX/PlayerHeartBeat";
 
   inline void to_level_two(Engine::ECS::Entity trigger_entity, Engine::ECS::Entity player_entity)
   {
@@ -66,6 +67,9 @@ namespace LevelTransitionStateCallbacks
     // Prevent repeated firing if the player keeps overlapping the volume.
     // Note: the level load will clear entities anyway; this just makes it robust.
     trigger_entity.destroy();
+
+    // Ensure low-health heartbeat does not bleed into the level transition cutscene.
+    Engine::AudioSystem::stopEvent(PLAYER_HEARTBEAT_EVENT, true);
 
     // Switch to the cutscene scene; it will load LevelTwo when done.
     Engine::SceneManager::load_scene("EnteringTrainCutsceneState");
