@@ -294,8 +294,8 @@ namespace Engine
         }
 
 #ifndef GAME_BUILD
-        // Manual hot-reload: F5 triggers build + reload even when auto-reload is off
-        if (Engine::Input::is_pressed_raw(KeyCode::F5))
+        // Manual hot-reload: F4 triggers build + reload even when auto-reload is off
+        if (Engine::Input::is_pressed_raw(KeyCode::F4))
         {
           Engine::HotReload::request_manual_reload();
         }

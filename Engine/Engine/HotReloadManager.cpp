@@ -651,12 +651,12 @@ namespace Engine
       if (s_build_in_progress)
       {
         // Cancel the running build and restart, same as mid-build source change
-        Log::info("[HotReload] Manual reload requested (F5) — restarting build...");
+        Log::info("[HotReload] Manual reload requested (F4) — restarting build...");
         request_build_restart();
       }
       else
       {
-        Log::info("[HotReload] Manual reload requested (F5) — building...");
+        Log::info("[HotReload] Manual reload requested (F4) — building...");
         build_game_logic_async();
       }
     }
