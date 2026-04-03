@@ -27,6 +27,8 @@
 using namespace Engine;
 namespace {
   f32 terminal_vel_placeholder;
+  constexpr const char* LEVEL_TWO_SCENE = "LevelTwoGameplayState";
+  constexpr const char* LEVEL_TWO_PATH = "levels/LevelTwo.json";
   // This bool default_states is for when we want the player still be able to give inputs (and possibly exit the state) but still keep the animation of the state
   bool default_state = false;
   bool attacking = false;
@@ -50,6 +52,13 @@ namespace {
     player_comp.uppercut.cd_timer = 0.f;
     player_comp.smash.cd_timer = 0.f;
     log_cheat_toggle(cheat_name, player_comp.no_cooldown_cheat);
+  }
+
+  void jump_to_level_two_cheat()
+  {
+    Engine::UpgradeManager::instance().clear_level_two_entry_state();
+    Engine::LevelManager::set_pending_start_level(LEVEL_TWO_PATH, true);
+    Engine::SceneManager::load_scene(LEVEL_TWO_SCENE);
   }
 
 
@@ -94,6 +103,11 @@ namespace PlayerStateCallbacks
     if (!player_comp)
     {
       Log::error("PlayerStateCallbacks: Missing Player component on entity {}", entity.get_id());
+      return;
+    }
+    if (Engine::Input::is_pressed(Engine::KeyCode::F5))
+    {
+      jump_to_level_two_cheat();
       return;
     }
     if (Engine::Input::is_pressed(Engine::KeyCode::F7))
