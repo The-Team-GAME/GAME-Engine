@@ -44,13 +44,17 @@ function Write-JsonFile {
 
 $repoRoot = $PSScriptRoot
 $solutionPath = Join-Path $repoRoot "GAME.sln"
-$engineSettingsPath = Join-Path $repoRoot "Engine\Assets\settings\engine_settings.json"
-$gameSettingsPath = Join-Path $repoRoot "Engine\Assets\settings\game_settings.json"
+$buildOutputPath = Join-Path $repoRoot (Join-Path $Platform $Configuration)
+$engineSettingsPath = Join-Path $buildOutputPath "Assets\settings\engine_settings.json"
+$gameSettingsPath = Join-Path $buildOutputPath "Assets\settings\game_settings.json"
 
-foreach ($path in @($solutionPath, $engineSettingsPath, $gameSettingsPath)) {
-    if (-not (Test-Path $path)) {
-        throw "Required file not found: $path"
-    }
+if (-not (Test-Path -LiteralPath $solutionPath)) {
+    throw "Required file not found: $solutionPath"
+}
+
+if (Test-Path -LiteralPath $buildOutputPath) {
+    Write-Host "Removing existing build output at $buildOutputPath..."
+    Remove-Item -LiteralPath $buildOutputPath -Recurse -Force
 }
 
 $msbuildPath = Get-MSBuildPath
@@ -59,6 +63,12 @@ Write-Host "Building $solutionPath ($Configuration|$Platform)..."
 & $msbuildPath $solutionPath "/m" "/nologo" "/t:Build" "/p:Configuration=$Configuration" "/p:Platform=$Platform"
 if ($LASTEXITCODE -ne 0) {
     throw "Build failed with exit code $LASTEXITCODE."
+}
+
+foreach ($path in @($engineSettingsPath, $gameSettingsPath)) {
+    if (-not (Test-Path -LiteralPath $path)) {
+        throw "Expected build output file not found: $path"
+    }
 }
 
 $engineSettings = Get-Content -Raw $engineSettingsPath | ConvertFrom-Json
@@ -73,4 +83,4 @@ $gameSettings.vsync = $true
 Write-JsonFile -Path $gameSettingsPath -Data $gameSettings
 
 Write-Host "Build completed successfully."
-Write-Host "Updated Engine/Assets/settings/engine_settings.json and Engine/Assets/settings/game_settings.json."
+Write-Host "Updated $engineSettingsPath and $gameSettingsPath."
