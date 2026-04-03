@@ -1000,7 +1000,6 @@ namespace PlayerStateCallbacks
   inline void death_on_enter([[maybe_unused]] ECS::Entity entity)
   {
     Log::info("Player: Died!");
-    Engine::UpgradeManager::instance().reset();
   }
 
   inline void death_on_update(ECS::Entity entity)
@@ -1030,9 +1029,18 @@ namespace PlayerStateCallbacks
     if (!player) return;
 
     const std::string& scene_name = Engine::SceneManager::get_current_scene_name();
+    auto& upgrade_manager = Engine::UpgradeManager::instance();
 
     // LevelTwo should always restart from the beginning on death.
     if (scene_name == "LevelTwoGameplayState") {
+      if (upgrade_manager.has_level_two_entry_state()) {
+        upgrade_manager.restore_level_two_entry_state();
+      }
+      else {
+        Log::warning("Player: LevelTwo death had no saved entry snapshot; resetting upgrades instead");
+        upgrade_manager.reset();
+      }
+
       const std::string& level_path = Engine::LevelManager::get_current_level_path();
       const std::string restart_level = !level_path.empty()
         ? level_path
@@ -1052,6 +1060,8 @@ namespace PlayerStateCallbacks
     // Reload the active gameplay scene and carry the current level path through
     // the scene clear so scene-local LevelOne/LevelTwo state is reset as well.
     if (!player->has_checkpoint) {
+      upgrade_manager.reset();
+
       const std::string& level_path = Engine::LevelManager::get_current_level_path();
       const std::string& level_id = Engine::LevelManager::get_active_level_id();
 

@@ -15,6 +15,7 @@
 #include "UpgradePickerState.h"
 #include "OldManDialogueState.h"
 #include "GameplayState.h" // for shared UI/gameplay patterns and dependencies
+#include "../../Engine/UpgradeManager.h"
 
 // NOTE:
 // GameplayState is header-only and contains substantial gameplay/UI logic.
@@ -338,10 +339,16 @@ public:
     current_kills_for_upgrade_ = 0;
     upgrade_btn_anim_time_ = 0.0f;
 
+    auto& upgrade_manager = Engine::UpgradeManager::instance();
+    if (!upgrade_manager.has_level_two_entry_state()) {
+      upgrade_manager.capture_level_two_entry_state();
+    }
+
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
 
     // TODO: REMOVE
     player_entity.add_component<Components::Health>(5, 5);
+    upgrade_manager.apply_current_upgrades();
 
     // Victory zone - triggers victory screen when player enters
     Engine::ECS::create_entity()
