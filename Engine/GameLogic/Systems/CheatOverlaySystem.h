@@ -11,6 +11,7 @@
 #include "../Components/GameplayComponent.h"
 
 #include <array>
+#include <cstddef>
 #include <string>
 
 namespace Engine {
@@ -24,8 +25,8 @@ namespace Engine {
           return;
         }
 
-        auto* player = player_entity.get_component<Components::Player>();
-        if (!player) {
+        auto* player_comp = player_entity.get_component<Components::Player>();
+        if (!player_comp) {
           return;
         }
 
@@ -35,10 +36,10 @@ namespace Engine {
         }
 
         const std::array<std::pair<std::string, bool>, 4> cheat_states = {{
-          { "F5 Dash CD: " + status_text(player->dash_cooldown_cheat), player->dash_cooldown_cheat },
-          { "F6 Uppercut CD: " + status_text(player->uppercut_cooldown_cheat), player->uppercut_cooldown_cheat },
-          { "F7 Smash CD: " + status_text(player->smash_cooldown_cheat), player->smash_cooldown_cheat },
-          { "F8 God Mode: " + status_text(player->god_mode), player->god_mode }
+          { "F5 Dash CD: " + status_text(player_comp->dash_cooldown_cheat), player_comp->dash_cooldown_cheat },
+          { "F6 Uppercut CD: " + status_text(player_comp->uppercut_cooldown_cheat), player_comp->uppercut_cooldown_cheat },
+          { "F7 Smash CD: " + status_text(player_comp->smash_cooldown_cheat), player_comp->smash_cooldown_cheat },
+          { "F8 God Mode: " + status_text(player_comp->god_mode), player_comp->god_mode }
         }};
 
         constexpr f32 scale = 0.7f;
@@ -47,19 +48,33 @@ namespace Engine {
         const Math::Vec2D virtual_resolution = Engine::Graphics::get_virtual_resolution();
 
         f32 total_height = 0.f;
+        std::size_t enabled_cheat_count = 0;
         for (const auto& [text, enabled] : cheat_states) {
-          (void)enabled;
+          if (!enabled) {
+            continue;
+          }
+
+          ++enabled_cheat_count;
           total_height += Engine::Graphics::measure_text(font, text, scale).y;
         }
-        total_height += line_spacing * static_cast<f32>(cheat_states.size() - 1);
+
+        if (enabled_cheat_count == 0) {
+          return;
+        }
+
+        if (enabled_cheat_count > 1) {
+          total_height += line_spacing * static_cast<f32>(enabled_cheat_count - 1);
+        }
 
         f32 y = virtual_resolution.y - total_height - padding;
         for (const auto& [text, enabled] : cheat_states) {
+          if (!enabled) {
+            continue;
+          }
+
           const Math::Vec2D text_size = Engine::Graphics::measure_text(font, text, scale);
           const f32 x = virtual_resolution.x - text_size.x - padding;
-          const Math::Vec4D color = enabled
-            ? Math::Vec4D(0.45f, 1.0f, 0.55f, 1.0f)
-            : Math::Vec4D(0.90f, 0.90f, 0.90f, 0.9f);
+          const Math::Vec4D color = Math::Vec4D(0.45f, 1.0f, 0.55f, 1.0f);
           Engine::Graphics::draw_text_ui(font, text, { x, y }, scale, color);
           y += text_size.y + line_spacing;
         }
