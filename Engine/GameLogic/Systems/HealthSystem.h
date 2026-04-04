@@ -108,7 +108,6 @@ namespace Engine {
         const bool is_player = e.has_component<Player>();
 
         const float dt = Engine::Time::get_fixed_dt();
-        const int health_before_regen = hp->value;
 
         // Regen/Drain
         if (auto* cfg = e.get_component<HealthConfig>()) {
