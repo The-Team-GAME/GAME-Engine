@@ -365,8 +365,23 @@ namespace Engine {
     };
     upgrade["restart_reset"] = []() {
       auto& upgrade_manager = UpgradeManager::instance();
-      if (SceneManager::get_current_scene_name() == "LevelTwoGameplayState" &&
-          upgrade_manager.has_level_two_entry_state()) {
+      bool level_two_on_stack = SceneManager::get_current_scene_name() == "LevelTwoGameplayState";
+      if (!level_two_on_stack) {
+        for (auto& scene : SceneManager::scene_stack) {
+          for (auto& [name, ptr] : SceneManager::scenes) {
+            if (ptr.get() == scene.get() && name == "LevelTwoGameplayState") {
+              level_two_on_stack = true;
+              break;
+            }
+          }
+
+          if (level_two_on_stack) {
+            break;
+          }
+        }
+      }
+
+      if (level_two_on_stack && upgrade_manager.has_level_two_entry_state()) {
         upgrade_manager.restore_level_two_entry_state();
         return;
       }
