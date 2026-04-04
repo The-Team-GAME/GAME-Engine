@@ -364,7 +364,14 @@ namespace Engine {
       UpgradeManager::instance().reset();
     };
     upgrade["restart_reset"] = []() {
-      UpgradeManager::instance().reset();
+      auto& upgrade_manager = UpgradeManager::instance();
+      if (SceneManager::get_current_scene_name() == "LevelTwoGameplayState" &&
+          upgrade_manager.has_level_two_entry_state()) {
+        upgrade_manager.restore_level_two_entry_state();
+        return;
+      }
+
+      upgrade_manager.reset();
     };
     upgrade["get_points"] = []() -> int {
       return UpgradeManager::instance().get_points();
