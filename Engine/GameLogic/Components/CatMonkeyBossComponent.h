@@ -2,7 +2,13 @@
 // file:    CatMonkeyBossComponent.h
 // project: Monkey Stole My GPA
 //
+// author:  Ryan Ang An Kiat (100%)
+//
+// email:   a.ryanankiat@digipen.edu
+//
 // brief:   Editor-exposed component for tuning the Cat Monkey boss.
+// 
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 

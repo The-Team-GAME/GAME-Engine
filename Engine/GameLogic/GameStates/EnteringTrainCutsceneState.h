@@ -2,8 +2,14 @@
 // file:    EnteringTrainCutsceneState.h
 // project: Monkey Stole My GPA
 //
+// author:  Ryan Ang An Kiat (100%)
+//
+// email:   a.ryanankiat@digipen.edu
+//
 // brief:   Plays the "entering train" cutscene, then returns to the underlying
 //          scene and opens the next level when the cutscene finishes.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 

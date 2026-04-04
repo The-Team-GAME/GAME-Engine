@@ -2,8 +2,14 @@
 // file:    LevelTwoGameplayState.h
 // project: Monkey Stole My GPA
 //
+// author:  Ryan Ang An Kiat (100%)
+//
+// email:   a.ryanankiat@digipen.edu
+//
 // brief:   Dedicated gameplay scene for LevelTwo.
 //          This is intentionally separate from GameplayState (LevelOne).
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
@@ -17,12 +23,7 @@
 #include "GameplayState.h" // for shared UI/gameplay patterns and dependencies
 #include "../../Engine/UpgradeManager.h"
 
-// NOTE:
-// GameplayState is header-only and contains substantial gameplay/UI logic.
-// We intentionally keep a separate scene for LevelTwo so LevelOne and LevelTwo
-// do not run under the same scene name/state.
-//
-// This class mirrors GameplayState but uses a different default level path.
+
 class LevelTwoGameplayState : public Engine::Scene
 {
   static constexpr const char* DEFAULT_LEVEL_PATH = "levels/LevelTwo.json";
