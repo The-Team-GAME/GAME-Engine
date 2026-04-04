@@ -640,6 +640,7 @@ function start_game()
   if options_active or options_transition ~= nil then
     return
   end
+  Upgrade.reset()
   Scene.load("OpeningCutsceneState")
 end
 

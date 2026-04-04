@@ -1149,10 +1149,15 @@ end
 function pause_confirm_yes()
   set_confirm_selection("yes")
   if is_pause_state("ConfirmRestart") then
-    local level_id = Level.get_active_id()
-    Scene.pop()
-    if level_id ~= "" then
-      Level.reload(level_id)
+    Upgrade.restart_reset()
+    local level_path = Level.get_current_path()
+    if level_path ~= "" then
+      Level.set_pending_path(level_path)
+    end
+    if Scene.on_stack("LevelTwoGameplayState") then
+      Scene.load("LevelTwoGameplayState")
+    else
+      Scene.load("GameplayState")
     end
     return
   end

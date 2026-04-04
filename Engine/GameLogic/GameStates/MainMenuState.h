@@ -12,6 +12,7 @@
 #pragma once
 
 #include "pch.h"
+#include "../../Engine/UpgradeManager.h"
 
 class MainMenuState : public Engine::Scene
 {
@@ -22,6 +23,11 @@ class MainMenuState : public Engine::Scene
 
 public:
   void load() {
+    auto& upgrade_manager = Engine::UpgradeManager::instance();
+    if (upgrade_manager.get_picks_done() > 0 || upgrade_manager.get_points() > 0) {
+      upgrade_manager.reset();
+    }
+
     Engine::LevelManager::open_level("levels/MainMenu.json");
 
     Engine::AudioSystem::stopEvent(MAIN_MENU_HEARTBEAT_EVENT, true);

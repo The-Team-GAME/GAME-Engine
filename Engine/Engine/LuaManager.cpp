@@ -363,6 +363,31 @@ namespace Engine {
     upgrade["reset"] = []() {
       UpgradeManager::instance().reset();
     };
+    upgrade["restart_reset"] = []() {
+      auto& upgrade_manager = UpgradeManager::instance();
+      bool level_two_on_stack = SceneManager::get_current_scene_name() == "LevelTwoGameplayState";
+      if (!level_two_on_stack) {
+        for (auto& scene : SceneManager::scene_stack) {
+          for (auto& [name, ptr] : SceneManager::scenes) {
+            if (ptr.get() == scene.get() && name == "LevelTwoGameplayState") {
+              level_two_on_stack = true;
+              break;
+            }
+          }
+
+          if (level_two_on_stack) {
+            break;
+          }
+        }
+      }
+
+      if (level_two_on_stack && upgrade_manager.has_level_two_entry_state()) {
+        upgrade_manager.restore_level_two_entry_state();
+        return;
+      }
+
+      upgrade_manager.reset();
+    };
     upgrade["get_points"] = []() -> int {
       return UpgradeManager::instance().get_points();
     };
@@ -879,6 +904,15 @@ namespace Engine {
     scene["pop"]       = []()                         { Engine::SceneManager::pop_scene();       };
     scene["current"]   = []() -> std::string          { return Engine::SceneManager::get_current_scene_name(); };
     scene["get_all"]   = []() -> std::vector<std::string> { return Engine::SceneManager::get_all_scene_names(); };
+    // Returns true if `name` is anywhere in the scene stack (not just the top).
+    scene["on_stack"]  = [](const std::string& name) -> bool {
+      for (auto& s : Engine::SceneManager::scene_stack) {
+        for (auto& [n, ptr] : Engine::SceneManager::scenes) {
+          if (ptr.get() == s.get() && n == name) return true;
+        }
+      }
+      return false;
+    };
   }
 
   // ============================================================================
@@ -897,6 +931,14 @@ namespace Engine {
     level["get_current_path"] = []() -> std::string       { return Engine::LevelManager::get_current_level_path(); };
     level["get_active_id"]    = []() -> std::string       { return Engine::LevelManager::get_active_level_id(); };
     level["is_open"]       = [](const std::string& id)   { return Engine::LevelManager::is_level_open(id); };
+    // Set a level path that the next scene load will consume as its starting level.
+    // Automatically detects absolute vs relative paths (same as C++ death path logic).
+    level["set_pending_path"] = [](const std::string& path) {
+      const bool append = path.find(':') == std::string::npos &&
+                          !path.starts_with("/") &&
+                          !path.starts_with("\\");
+      Engine::LevelManager::set_pending_start_level(path, append);
+    };
   }
 
   // ============================================================================

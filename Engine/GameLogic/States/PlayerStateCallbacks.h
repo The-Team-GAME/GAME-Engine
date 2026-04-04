@@ -9,7 +9,7 @@
 //
 // brief:   Player state machine callback declarations (serializable)
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 #include "../Components/GameplayComponent.h"
@@ -26,4 +26,9 @@ namespace PlayerStateCallbacks
 	// Prevents the player from moving through keyboard inputs when we dont want them to
 	void player_input_lock();
 	void player_input_unlock();
+
+	// After a checkpoint death the scene is reloaded; call this in GameplayState::load()
+	// to retrieve the stored checkpoint position and place the player there.
+	// Returns true (and clears the pending value) if a checkpoint respawn is pending.
+	bool consume_pending_checkpoint_respawn(glm::vec2& out_pos);
 }
