@@ -1,8 +1,9 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    LevelTwoGameplayState.h
 // project: Monkey Stole My GPA
 //
 // author:  Ryan Ang An Kiat (100%)
+//          Primary author
 //
 // email:   a.ryanankiat@digipen.edu
 //
@@ -587,3 +588,4 @@ public:
     Engine::AudioSystem::stopSceneMusic(true);
   };
 };
+

@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    TileColliderEditorPanel.cpp
 // project: Monkey Stole My GPA
 //
@@ -371,3 +371,4 @@ void TileColliderEditorPanel() {
   ImGui::Columns(1);
   ImGui::End();
 }
+

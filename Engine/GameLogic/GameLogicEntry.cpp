@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    GameLogicEntry.cpp
 // project: Monkey Stole My GPA
 //
@@ -6,11 +6,10 @@
 //          Primary author
 //          Cheng Ming Xian (15%)
 //          Co-Author
-// 
 //
 // email:   chew.s@digipen.edu
 //          c.mingxian@digipen.edu
-// 
+//
 // brief:   DLL entry point for GameLogic hot-reload. Exports RegisterGameLogic()
 //          and UnregisterGameLogic() functions called by the Engine's
 //          HotReloadManager. RegisterGameLogic sets up all game-specific
@@ -18,7 +17,6 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
 #include "pch.h"
 #include "../Engine/HotReloadManager.h"
 #include "../Engine/Random.h"
@@ -634,3 +632,4 @@ extern "C" __declspec(dllexport) void UnregisterGameLogic()
 
   Log::info("[GameLogic] Game logic unregistered");
 }
+

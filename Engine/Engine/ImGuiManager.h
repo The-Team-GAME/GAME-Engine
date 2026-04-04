@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    ImGuiManager.h
 // project: Monkey Stole My GPA
 //
@@ -62,4 +62,5 @@ namespace ImGuiManager {
 	void load_layout(const std::string& name);
 	std::vector<std::string> get_available_layouts();
 }
+
 

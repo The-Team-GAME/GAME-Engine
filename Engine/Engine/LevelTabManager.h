@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    LevelTabManager.h
 // project: Monkey Stole My GPA
 //
@@ -93,3 +93,4 @@ namespace Engine {
   } // namespace LevelTabManager
 
 } // namespace Engine
+

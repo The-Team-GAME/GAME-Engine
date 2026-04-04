@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    ParticleSystem.cpp
 // project: Monkey Stole My GPA
 //
@@ -7,11 +7,11 @@
 //
 // email:   o.ziming@digipen.edu
 //
-// brief:   Implementation of the listener-based particle system. 
-//          Each particle uses the engine's rect texture; 
+// brief:   Implementation of the listener-based particle system.
+//          Each particle uses the engine's rect texture;
 //          entities are destroyed as they fade out.
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "ParticleSystem.h"
 #include <random>

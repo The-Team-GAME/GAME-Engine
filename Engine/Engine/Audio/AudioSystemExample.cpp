@@ -1,3 +1,19 @@
+﻿//-----------------------------------------------------------------------------------
+// file:    AudioSystem.h
+// project: Monkey Stole My GPA
+//
+// author:  How Hong Chin Ryan (100%)
+//          Primary author
+//
+// email:   hongchinryan.how@digipen.edu
+//
+// brief:   Public interface for the FMOD-based audio system. Provides sound
+//          loading, playback control, and spatial audio functionality.
+//          Supports 2D and 3D audio positioning with volume and looping controls.
+//          Integrates with the resource management system for automatic cleanup.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 // Example usage of the AudioSystem
 // This file shows how to integrate FMOD Studio into your game
 
@@ -366,3 +382,5 @@ Engine::AudioSystem::startEventInstance("music");
 Engine::AudioSystem::shutdown();
 
 */
+
+

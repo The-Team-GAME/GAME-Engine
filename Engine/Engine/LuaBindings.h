@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    LuaBindings.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Header-only template utilities for automatically binding reflected C++
 //          types to Sol2/Lua. Provides:
@@ -10,7 +15,7 @@
 //            - Recursive field-type discovery & binding
 //            - bound_types tracking set to avoid double-binding
 //
-// Copyright (c) 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
@@ -357,3 +362,5 @@ namespace Engine::LuaBindings {
   }
 
 } // namespace Engine::LuaBindings
+
+

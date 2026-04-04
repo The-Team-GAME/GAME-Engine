@@ -1,16 +1,16 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    BananaProjectileCallbacks.cpp
 // project: Monkey Stole My GPA
 //
 // author:  Ong Zi Ming (100%)
+//          Primary author
 //
 // email:   o.ziming@digipen.edu
 //
 // brief:   Banana projectile state machine callbacks
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
 #include "pch.h"
 #include "../Components/GameplayComponent.h"
 #include "./Components/HealthComponents.h"

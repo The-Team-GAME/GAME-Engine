@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    ReflectionFieldWidgets.cpp
 // project: Monkey Stole My GPA
 //
@@ -13,7 +13,6 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
 #include "../../Precompiled.h"
 #include "ReflectionFieldWidgets.h"
 #include "TextureAtlasWidget.h"
@@ -1865,3 +1864,4 @@ namespace ImGuiWidgets {
   }
 
 } // namespace ImGuiWidgets
+

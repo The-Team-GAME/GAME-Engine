@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    CatMonkeyBossRuntime.cpp
 // project: Monkey Stole My GPA
 //
@@ -9,7 +9,7 @@
 //
 // brief:   Runtime logic and helpers for Cat Monkey boss fight.
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "pch.h"
 #include <random>
@@ -552,4 +552,5 @@ namespace CatMonkeyStateCallbacks
     t->scale = {z, z};
   }
 }
+
 

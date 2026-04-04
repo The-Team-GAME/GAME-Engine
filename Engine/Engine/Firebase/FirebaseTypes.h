@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    FirebaseTypes.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Shared types for the Firebase Realtime Database integration.
 //          Defines callback signatures, HTTP response structures, and pending
@@ -44,3 +49,5 @@ namespace Engine
 
   } // namespace Firebase
 } // namespace Engine
+
+

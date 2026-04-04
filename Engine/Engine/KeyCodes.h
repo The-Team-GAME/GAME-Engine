@@ -1,8 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    KeyCodes.h
 // project: Monkey Stole My GPA
 //
-// author:  Generated for InputManager refactoring
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Defines enums for keyboard keys and mouse buttons, mapped to GLFW values
 //          for internal use. This abstracts GLFW enums from the public API.

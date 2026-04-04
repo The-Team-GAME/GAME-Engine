@@ -1,6 +1,6 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    ShowcaseState.cpp
-// project: Monkey Stoke My GPA
+// project: Monkey Stole My GPA
 //
 // author:  Chew Shee Yang (100%)
 //          Primary author

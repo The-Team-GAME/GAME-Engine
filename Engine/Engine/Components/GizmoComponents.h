@@ -1,10 +1,10 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    GizmoComponents.h
 // project: Monkey Stole My GPA
 //
 // author:  Chew Shee Yang (30%)
 //          Primary author
-// 
+//
 //          Ong Zi Ming (70%)
 //          Secondary author
 //
@@ -94,3 +94,4 @@ namespace Components
 }
 
 //REGISTER_COMPONENT(Components::Gizmo, is_dragging, drag_offset, outline_color, outline_thickness)
+

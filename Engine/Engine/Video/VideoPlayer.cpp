@@ -1,3 +1,16 @@
+﻿//-----------------------------------------------------------------------------------
+// file:    VideoPlayer.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Implementation of the MPEG video player with OpenGL frame uploads and FMOD audio playback.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "VideoPlayer.h"
 #include "../Audio/AudioSystem.h"
 #include "../Resources.h"

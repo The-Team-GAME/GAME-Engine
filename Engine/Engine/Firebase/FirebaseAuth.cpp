@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    FirebaseAuth.cpp
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Google Sign-In implementation. Uses a local loopback TCP server
 //          (WinSock2) to receive the OAuth 2.0 redirect, exchanges the
@@ -771,3 +776,5 @@ namespace Engine
     } // namespace Auth
   } // namespace Firebase
 } // namespace Engine
+
+

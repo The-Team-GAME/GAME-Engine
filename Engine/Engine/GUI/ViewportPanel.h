@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    ViewportPanel.h
 // project: Monkey Stole My GPA
 //
@@ -119,3 +119,4 @@ namespace ViewportPanel {
   bool is_viewport_focused();
 
 } // namespace ViewportPanel
+

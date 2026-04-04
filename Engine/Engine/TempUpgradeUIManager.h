@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    TempUpgradeUIManager.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   ENGINE_API bridge so the GameLogic DLL can trigger the in-game upgrade
 //          picker UI without calling ImGui directly. All ImGui work is executed
@@ -21,3 +26,5 @@ namespace Engine
     ENGINE_API static void draw();
   };
 }
+
+

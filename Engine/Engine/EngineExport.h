@@ -1,8 +1,9 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    EngineExport.h
 // project: Monkey Stole My GPA
 //
 // author:  Chew Shee Yang
+//          Primary author
 //
 // email:   chew.s@digipen.edu
 //
@@ -19,3 +20,4 @@
 #else
 #define ENGINE_API __declspec(dllimport)
 #endif
+

@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    UpgradePickerState.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Overlay scene pushed by UpgradeUIStateMachine when the card picker
 //          opens. Owns the per-frame FSM update so no other scene ever sees input
@@ -23,3 +28,5 @@ public:
   void free()   override;
   void unload() override;
 };
+
+

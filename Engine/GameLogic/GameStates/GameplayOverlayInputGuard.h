@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    GameplayOverlayInputGuard.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Shared helper for pushed overlay scenes to lock player gameplay input
 //          while UI overlays are active and to swallow held inputs on resume.

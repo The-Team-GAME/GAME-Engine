@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    InteractableComponents.h
 // project: Monkey Stole My GPA
 //
@@ -63,3 +63,4 @@ namespace Components
 }
 
 REGISTER_COMPONENT(Components::Interactable, radius, on_enter, on_update, on_exit)
+

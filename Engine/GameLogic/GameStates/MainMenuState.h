@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    MainMenuState.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Main menu scene that loads MainMenu.json as its level.
 //          All visuals, animations, and state transitions (Start -> Menu) are
@@ -52,3 +57,5 @@ public:
     Engine::AudioSystem::stopSceneMusic(true);
   };
 };
+
+

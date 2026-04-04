@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    LucideIcons.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Auto-generated C++ bindings for Lucide icon font codepoints.
 //          DO NOT EDIT MANUALLY — regenerate with gen_lucide_icons.py
@@ -2418,3 +2423,5 @@ namespace LucideIcons {
   inline const char DatabaseSearch[]                  = "\xee\x9a\xb1";  // database-search (U+E6B1)
 }
 // clang-format on
+
+

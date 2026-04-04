@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    UndoManager.h
 // project: Monkey Stole My GPA
 //
@@ -11,7 +11,6 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
 #pragma once
 #include <functional>
 #include <deque>
@@ -107,3 +106,4 @@ namespace Engine {
     }
   }
 }
+

@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    PauseState.cpp
 // project: Monkey Stole My GPA
 //
@@ -7,7 +7,7 @@
 //
 // email:   chew.s@digipen.edu
 //
-// brief:   
+// brief:   Implementation details for the pause overlay scene and its audio snapshot helpers.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------

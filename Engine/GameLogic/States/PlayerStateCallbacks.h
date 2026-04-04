@@ -1,15 +1,15 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    PlayerStateCallbacks.h
 // project: Monkey Stole My GPA
 //
 // author:  Cheng Ming Xian (90%)
 //          Primary author
-// 
+//
 // email:   c.mingxian@digipen.edu
 //
 // brief:   Player state machine callback declarations (serializable)
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 #include "../Components/GameplayComponent.h"

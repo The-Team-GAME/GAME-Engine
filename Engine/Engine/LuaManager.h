@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    LuaManager.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Singleton that owns the Lua/Sol2 runtime. Responsibilities:
 //            - Create and configure the sol::state
@@ -13,7 +18,7 @@
 //            - Event-driven hot-reload via ReadDirectoryChangesW when .lua files
 //              are modified on disk
 //
-// Copyright (c) 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
@@ -155,3 +160,5 @@ namespace Engine {
   };
 
 } // namespace Engine
+
+

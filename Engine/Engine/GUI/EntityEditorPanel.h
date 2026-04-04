@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    EntityEditorPanel.h
 // project: Monkey Stole My GPA
 //
@@ -38,3 +38,4 @@ namespace EntityEditorPanelHelpers {
 };
 
 void EntityEditorPanel();
+

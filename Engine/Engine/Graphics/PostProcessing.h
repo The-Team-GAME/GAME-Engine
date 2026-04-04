@@ -1,13 +1,18 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    PostProcessing.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Modular post-processing pipeline for the graphics renderer. Provides
 //          FBO-based scene capture, Kawase bloom, 3D LUT color grading, and gamma
 //          correction. Designed for easy extension with future effects (vignette,
 //          chromatic aberration, CRT emulation, color quantization).
 //
-// Copyright  2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
@@ -169,3 +174,5 @@ namespace Engine::Graphics::PostProcessing {
   int get_height();
 
 } // namespace Engine::Graphics::PostProcessing
+
+

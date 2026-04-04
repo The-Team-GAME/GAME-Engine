@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    CatMonkeySpawnSystem.h
 // project: Monkey Stole My GPA
 //
@@ -9,9 +9,8 @@
 //
 // brief:   System and helpers for spawning Cat Monkey boss fight summons. Loads spawn sets
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
 #pragma once
 
 #include "pch.h"
@@ -44,4 +43,5 @@ namespace CatMonkeyStateCallbacks
   std::vector<Summon5SpawnItem> interleave_items_by_prefab(std::vector<Summon5SpawnItem> items, std::mt19937& rng);
   void randomize_summon5_spawn_order(Engine::ECS::Entity boss, std::vector<std::string>& prefabs, std::vector<Math::Vec2D>* positions, std::vector<int>* max_hps);
 }
+
 

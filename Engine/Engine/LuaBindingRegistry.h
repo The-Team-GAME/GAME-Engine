@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    LuaBindingRegistry.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Side registry that collects component-binding callbacks at static
 //          initialization time. Each REGISTER_COMPONENT / REGISTER_COMPONENT_CUSTOM
@@ -10,7 +15,7 @@
 //          This file includes sol/sol.hpp directly for type-safe binder and
 //          getter signatures.
 //
-// Copyright (c) 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
@@ -72,3 +77,5 @@ namespace Engine {
   };
 
 } // namespace Engine
+
+

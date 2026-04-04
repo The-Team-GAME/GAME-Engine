@@ -1,8 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    EndCutsceneState.cpp
 // project: Monkey Stole My GPA
 //
 // author:  Ryan Ang An Kiat (100%)
+//          Primary author
+//
+// email:   a.ryanankiat@digipen.edu
 //
 // brief:   Plays VictoryCutscene.mpg then EndCutscene.mpg back-to-back before
 //          transitioning to CreditsCutsceneState.
@@ -146,3 +149,5 @@ void EndCutsceneState::unload()
 {
   player_.close();
 }
+
+

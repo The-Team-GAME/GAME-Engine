@@ -1,3 +1,16 @@
+﻿//-----------------------------------------------------------------------------------
+// file:    HealthBarStateCallbacks.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   State machine callbacks that drive player health bar states and transition animations.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "pch.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/HealthComponents.h"

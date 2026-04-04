@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    LogicSystem.h
 // project: Monkey Stole My GPA
 //
@@ -10,9 +10,8 @@
 // brief:   This file defines a system that handles the prototype state machine testing
 //          for the player and NPCs
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
 #pragma once
 #include "../ECS/ECS.h"
 #include "../Components/Components.h"
@@ -92,6 +91,7 @@ namespace Engine {
     };
   }
 }
+
 
 
 

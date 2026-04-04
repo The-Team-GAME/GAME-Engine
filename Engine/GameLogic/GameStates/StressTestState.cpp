@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    StressTestState.cpp
 // project: Monkey Stole My GPA
 //
@@ -116,3 +116,4 @@ void StressTestState::unload() {
   // Clear unused resources from cache
   Engine::Resources::clear_unused_resources();
 }
+

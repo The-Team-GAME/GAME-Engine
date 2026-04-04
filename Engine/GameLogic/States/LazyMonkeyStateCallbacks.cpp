@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    LazyMonkeyStateCallbacks.cpp
 // project: Monkey Stole My GPA
 //
@@ -11,7 +11,6 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
 #include "pch.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/EnemyHealthComponent.h"
@@ -440,3 +439,4 @@ namespace LazyMonkeyStateCallbacks
 //   STATE("Hit", LazyMonkeyStateCallbacks::hit_on_enter, LazyMonkeyStateCallbacks::hit_on_update, LazyMonkeyStateCallbacks::hit_on_exit)
 //   STATE("Death", LazyMonkeyStateCallbacks::death_on_enter, LazyMonkeyStateCallbacks::death_on_update, LazyMonkeyStateCallbacks::death_on_exit)
 // )
+

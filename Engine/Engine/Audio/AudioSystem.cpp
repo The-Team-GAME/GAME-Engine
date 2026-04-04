@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    AudioSystem.cpp
 // project: Monkey Stole My GPA
 //
@@ -15,7 +15,6 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
 #include "AudioSystem.h"
 
 #include <fmod_studio.hpp>
@@ -1073,3 +1072,4 @@ namespace Engine {
 
   } // namespace AudioSystem
 } // namespace Engine
+

@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    SpatialComponents.h
 // project: Monkey Stole My GPA
 //
@@ -40,3 +40,4 @@ namespace Components
 }
 
 REGISTER_COMPONENT(Components::Transform2D, position, rotation, scale)
+

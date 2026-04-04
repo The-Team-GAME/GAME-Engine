@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    Settings.h
 // project: Monkey Stole My GPA
 //
@@ -285,3 +285,4 @@ REFLECT_FIELDS(Engine::FileIO::CardAnimSettings,
   enable_mini_tilt, mini_tilt_amplitude, mini_tilt_speed, mini_tilt_phase,
   enable_mini_hover, mini_hover_lift, mini_hover_scale, mini_hover_speed, mini_hover_tilt_deg, mini_hover_tilt_speed,
   enable_smash_ripple, ripple_amplitude, ripple_speed, ripple_decay)
+

@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    Vector4D.h
 // project: Monkey Stole My GPA
 //
@@ -12,7 +12,7 @@
 //          I implemented this file as i thought that it might be needed for graphics
 //          calculations down the line.
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 

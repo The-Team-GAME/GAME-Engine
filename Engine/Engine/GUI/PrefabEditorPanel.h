@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    PrefabEditorPanel.h
 // project: Monkey Stole My GPA
 //
@@ -40,3 +40,4 @@ namespace PrefabEditorPanelHelpers {
 };
 
 void PrefabEditorPanel();
+

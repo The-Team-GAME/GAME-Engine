@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    PauseState.h
 // project: Monkey Stole My GPA
 //
@@ -7,7 +7,7 @@
 //
 // email:   chew.s@digipen.edu
 //
-// brief:    
+// brief:   Pause overlay scene that loads the pause menu level and manages pause and resume flow.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------

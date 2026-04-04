@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    AnimatorComponents.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Property animation data types for the StateMachine Animator system.
 //          Provides keyframe-based animation tracks that can animate any numeric
@@ -212,3 +217,5 @@ REFLECT_ENUM(Components::EasingType,
 REFLECT_FIELDS(Components::Keyframe, time, value)
 REFLECT_FIELDS(Components::AnimationTrack, target_component, target_field_path, keyframes, easing)
 REFLECT_FIELDS(Components::PropertyAnimationClip, duration, is_looping, tracks)
+
+

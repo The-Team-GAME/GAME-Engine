@@ -1,12 +1,18 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    TurretMonkeyStateCallbacks.h
 // project: Monkey Stole My GPA
+//
+// author:  Ryan Ang An Kiat (100%)
+//          Primary author
+//
+// email:   a.ryanankiat@digipen.edu
 //
 // brief:   Declarations for Turret Monkey state machine callbacks.
 //          Implementation and blueprint registration live in
 //          TurretMonkeyStateCallbacks.cpp.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
 #pragma once
 
 namespace Engine::ECS {
@@ -49,3 +55,5 @@ namespace TurretMonkeyStateCallbacks
   void death_on_update(Engine::ECS::Entity entity);
   void death_on_exit(Engine::ECS::Entity entity);
 }
+
+

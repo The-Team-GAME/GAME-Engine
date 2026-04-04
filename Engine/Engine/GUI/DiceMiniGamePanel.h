@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    DiceMiniGamePanel.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   ImGui panel for the Dice Mini Game demo. Demonstrates Firebase
 //          Live Update: dice rolls are written to the leaderboard collection
@@ -14,3 +19,5 @@ namespace DiceMiniGamePanel
 {
   void draw_panel();
 }
+
+

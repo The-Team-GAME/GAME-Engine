@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    AnimatorTimelinePanel.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   ImGui panel for editing property animation clips within state machine
 //          states. Provides a visual timeline with keyframe editing, track management,
@@ -26,3 +31,5 @@ namespace AnimatorTimeline {
 
 /// Main ImGui draw function for the Animator Timeline panel
 void AnimatorTimelinePanel();
+
+

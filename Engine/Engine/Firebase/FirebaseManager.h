@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    FirebaseManager.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Public interface for the Firebase Realtime Database integration.
 //          Follows the engine namespace-with-free-functions pattern (like
@@ -93,3 +98,5 @@ namespace Engine
 
     } // namespace Firebase
 } // namespace Engine
+
+

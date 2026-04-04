@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    GraphicsComponents.h
 // project: Monkey Stole My GPA
 //
@@ -604,3 +604,4 @@ REGISTER_COMPONENT_CUSTOM(Components::Font, path, font_size)
 REGISTER_COMPONENT_CUSTOM(Components::TextureAtlas, tex_coords_list, drawIndex)
 REGISTER_COMPONENT_CUSTOM(Components::Animation, durations, before_times, atlas_indices, startTime, totalDuration, is_looping)
 REGISTER_COMPONENT(Components::Parallax, scroll_factor, tiling, tile_size)
+

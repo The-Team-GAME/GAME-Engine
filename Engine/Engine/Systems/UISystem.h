@@ -1,10 +1,10 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    UISystem.h
 // project: Monkey Stole My GPA
 //
 // author:  Ong Zi Ming (40%)
 //          Primary author
-// 
+//
 //          Ryan Ang (60%)
 //          Secondary author
 //
@@ -15,10 +15,8 @@
 //          object was clicked. (Ryan) It also handles the dynamic scaling animation when the mouse
 //          hovers over the clickable entity.
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
-
 #pragma once
 
 #include "../ECS/ECS.h"

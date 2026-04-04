@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    GameplayState.h
 // project: Monkey Stole My GPA
 //
@@ -9,7 +9,7 @@
 //
 // email:   chew.s@digipen.edu
 //
-// brief:   
+// brief:   Main gameplay scene that loads levels, manages HUD buttons, upgrades, and in-game overlays.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
@@ -602,3 +602,4 @@ public:
     Engine::AudioSystem::stopSceneMusic(true);
   };
 };
+

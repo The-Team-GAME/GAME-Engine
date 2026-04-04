@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    ViewportToolbar.h
 // project: Monkey Stole My GPA
 //
@@ -65,3 +65,4 @@ namespace ViewportToolbar {
   void* get_icon_font();
 
 } // namespace ViewportToolbar
+

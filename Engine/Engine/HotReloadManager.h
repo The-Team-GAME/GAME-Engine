@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    HotReloadManager.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Manages loading, unloading, and hot-reloading of the GameLogic DLL
 //          at runtime. Watches for file changes and automatically reloads the
@@ -153,3 +158,5 @@ namespace Engine
     ENGINE_API void request_build_restart();
   }
 }
+
+

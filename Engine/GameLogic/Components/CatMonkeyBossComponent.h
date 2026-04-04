@@ -1,13 +1,14 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    CatMonkeyBossComponent.h
 // project: Monkey Stole My GPA
 //
 // author:  Ryan Ang An Kiat (100%)
+//          Primary author
 //
 // email:   a.ryanankiat@digipen.edu
 //
 // brief:   Editor-exposed component for tuning the Cat Monkey boss.
-// 
+//
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
@@ -79,3 +80,4 @@ REGISTER_COMPONENT(Components::CatMonkeyBoss,
   summon1_prefabs, summon2_prefabs, summon3_prefabs, summon4_prefabs, summon5_prefabs,
   summon1_spawn_marker_prefix, summon2_spawn_marker_prefix, summon3_spawn_marker_prefix, summon4_spawn_marker_prefix, summon5_spawn_marker_prefix,
   summon1_spawn_offsets, summon2_spawn_offsets, summon3_spawn_offsets, summon4_spawn_offsets, summon5_spawn_offsets)
+

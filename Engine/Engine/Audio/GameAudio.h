@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    GameAudio.h
 // project: Monkey Stole My GPA
+//
+// author:  How Hong Chin Ryan (100%)
+//          Primary author
+//
+// email:   hongchinryan.how@digipen.edu
 //
 // brief:   Simple helper functions for playing game sounds using FMOD Studio.
 //          Just include this file and call the functions anywhere in your game!
@@ -138,3 +143,5 @@ namespace Engine {
 
   } // namespace GameAudio
 } // namespace Engine
+
+

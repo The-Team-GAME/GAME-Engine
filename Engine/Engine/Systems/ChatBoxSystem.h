@@ -1,8 +1,8 @@
 ﻿//-----------------------------------------------------------------------------------
-// file:    ShowcaseState.cpp
-// project: Monkey Stoke My GPA
+// file:    ChatBoxSystem.h
+// project: Monkey Stole My GPA
 //
-// author:  Ryan Ang An Kiat(100%)
+// author:  Ryan Ang An Kiat (100%)
 //          Primary author
 //
 // email:   a.ryanankiat@digipen.edu

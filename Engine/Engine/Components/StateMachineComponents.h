@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    StateMachineComponents.h
 // project: Monkey Stole My GPA
 //
@@ -717,3 +717,4 @@ REFLECT_FIELDS(Components::ColliderData, type, width, height, offset, vertices)
 REFLECT_FIELDS(Components::State, name, on_enter_callback, on_update_callback, on_exit_callback, animation, audio, property_animation)
 REFLECT_FIELDS(Components::StateAnimation, texture, texture_atlas, animation, scale, collider_data)
 REGISTER_COMPONENT(Components::StateMachine, states, current_state_name, blueprint_id, property_anim_playing)
+

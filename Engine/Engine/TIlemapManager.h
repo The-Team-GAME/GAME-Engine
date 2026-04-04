@@ -1,5 +1,5 @@
-//-----------------------------------------------------------------------------------
-// file:    TilemapManager.h
+﻿//-----------------------------------------------------------------------------------
+// file:    TIlemapManager.h
 // project: Monkey Stole My GPA
 //
 // author:  Chew Shee Yang (100%)
@@ -232,3 +232,4 @@ namespace TilemapManager {
   void move_all_tiles_to_layer(const std::string& source_layer, const std::string& dest_layer);
 
 } // namespace TilemapManager
+

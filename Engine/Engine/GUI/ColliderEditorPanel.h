@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    ColliderEditorPanel.h
 // project: Monkey Stole My GPA
 //
@@ -28,3 +28,4 @@ namespace ColliderEditor {
 }
 
 void ColliderEditorPanel();
+

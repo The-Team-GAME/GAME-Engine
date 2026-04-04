@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    EnemyHealthComponent.h
 // project: Monkey Stole My GPA
 //
@@ -43,3 +43,4 @@ LUA_BIND_METHODS(Components::EnemyHealth, {
     lua["EnemyHealth"]["heal"]        = &Components::EnemyHealth::heal;
     lua["EnemyHealth"]["is_dead"]     = &Components::EnemyHealth::is_dead;
 })
+

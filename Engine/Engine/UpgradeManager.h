@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    UpgradeManager.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Runtime manager for the roguelike upgrade system. Holds transient
 //          per-run state (points, picked levels, stat applicators) and provides
@@ -151,3 +156,5 @@ namespace Engine
   };
 
 } // namespace Engine
+
+

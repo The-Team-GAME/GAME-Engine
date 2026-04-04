@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    CatMonkeySpawnSystem.cpp
 // project: Monkey Stole My GPA
 //
@@ -9,7 +9,7 @@
 //
 // brief:   System and helpers for spawning Cat Monkey boss fight summons. Loads spawn sets
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "pch.h"
 #include "CatMonkeySpawnSystem.h"
@@ -618,4 +618,5 @@ namespace CatMonkeyStateCallbacks
     }
   }
 }
+
 

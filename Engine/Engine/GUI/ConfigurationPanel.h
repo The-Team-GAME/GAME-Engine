@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    ConfigurationPanel.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   This file defines an ImGui panel for viewing and modifying engine and
 //          game configuration settings. Changes to game settings (audio volumes,
@@ -251,3 +256,5 @@ inline void ConfigurationPanel()
 
   ImGui::End();
 }
+
+

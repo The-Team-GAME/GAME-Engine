@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    TileColliderEditorPanel.h
 // project: Monkey Stole My GPA
 //
@@ -44,3 +44,4 @@ Where to call it:
 Register this with ImGuiManager to be called every frame.
 ==================================================================================*/
 void TileColliderEditorPanel();
+

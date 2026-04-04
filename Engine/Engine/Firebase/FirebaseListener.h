@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    FirebaseListener.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   SSE (Server-Sent Events) listener for Firebase Realtime Database.
 //          Each watch spawns a background thread that holds an SSE connection
@@ -43,3 +48,5 @@ namespace Engine
     } // namespace Listener
   } // namespace Firebase
 } // namespace Engine
+
+

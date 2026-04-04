@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    UpgradeUIStateMachine.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Dedicated state machine for the entity-based upgrade picker UI.
 //          Manages the full upgrade flow: idle -> available -> rolling -> picker
@@ -156,3 +161,5 @@ namespace Engine
   };
 
 } // namespace Engine
+
+

@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    EntryPoint.cpp
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Main entry point for the Engine executable. Initializes the core
 //          engine, loads GameLogic.dll via the HotReloadManager, and runs the
@@ -8,7 +13,6 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
 #include "MonkeyEngine.h"
 #include "HotReloadManager.h"
 #include "ECS/ECS.h"

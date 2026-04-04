@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    PhysicsSystem.cpp
 // project: Monkey Stole My GPA
 //
@@ -7,7 +7,7 @@
 //
 // email:   c.mingxian@digipen.edu
 //
-// brief:   This file defines a system that handles the physics updates for all 
+// brief:   This file defines a system that handles the physics updates for all
 //          entities tht contain rigidbody and transform2d components.
 //          Entities will have their rigidbody updated which in turn updates the
 //          transform2d component as well.
@@ -131,3 +131,4 @@ void phy2D::add_force(Components::RigidBody& rigid, Vec2D force)
 {
   rigid.force += force;
 }
+

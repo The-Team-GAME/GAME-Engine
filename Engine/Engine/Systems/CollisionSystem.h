@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------------
-// file:    CollisionSystem.cpp
+// file:    CollisionSystem.h
 // project: Monkey Stole My GPA
 //
 // author:  Cheng Ming Xian (100%)
@@ -7,14 +7,14 @@
 //
 // email:   c.mingxian@digipen.edu
 //
-// brief:   This file declares the functions in the system that handles the 
-//          collision detection and collision resolution for entities that contain 
+// brief:   This file declares the functions in the system that handles the
+//          collision detection and collision resolution for entities that contain
 //          the components of Transform2D, RigidBody and BoxCollider.
-//          As well as the declaration of a QuadTree class that is to be used for 
-//          spatial partitioning to ease the number of collision checks that the 
+//          As well as the declaration of a QuadTree class that is to be used for
+//          spatial partitioning to ease the number of collision checks that the
 //          engine needs to run.
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
@@ -191,3 +191,4 @@ namespace Engine {
     };
   }
 }
+

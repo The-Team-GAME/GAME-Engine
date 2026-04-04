@@ -1,8 +1,9 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    StateMachineBlueprintRegistry.cpp
 // project: Monkey Stole My GPA
 //
 // author:  Chew Shee Yang
+//          Primary author
 //
 // email:   chew.s@digipen.edu
 //
@@ -10,7 +11,7 @@
 //          Defined in a .cpp so the static local lives in exactly one module
 //          (the Engine EXE) and is shared with any loaded DLLs via ENGINE_API.
 //
-// Copyright  2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "../Reflection/ReflectionLibrary.h"
 #include "StateMachineBlueprintRegistry.h"
@@ -30,3 +31,4 @@ namespace Engine {
     }
 
 } // namespace Engine
+

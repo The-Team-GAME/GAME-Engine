@@ -1,10 +1,10 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    Core.h
 // project: Monkey Stole My GPA
 //
 // author:  Chew Shee Yang (50%)
 //          Cheng Ming Xian (50%)
-
+//
 // email:   chew.s@digipen.edu, c.mingxian@digipen.edu
 //
 // brief:   This file defines the Core class which is the main entry point for the

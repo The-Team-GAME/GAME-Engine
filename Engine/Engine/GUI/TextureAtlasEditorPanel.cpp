@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    TextureAtlasEditorPanel.cpp
 // project: Monkey Stole My GPA
 //
@@ -579,3 +579,4 @@ void TextureAtlasEditorPanel() {
     TextureAtlasEditor::Close();
   }
 }
+

@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    LayerRegistry.h
 // project: Monkey Stole My GPA
 //
@@ -285,3 +285,4 @@ namespace Engine {
     } // namespace LayerRegistry
   } // namespace ECS
 } // namespace Engine
+

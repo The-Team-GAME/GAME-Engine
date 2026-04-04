@@ -1,10 +1,16 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    FPSOverlay.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   This file defines a simple overlay for displaying FPS using the game's
 //          rendering system (draw_text_ui).
 //
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 #include "Graphics/Renderer.h"
@@ -68,3 +74,5 @@ namespace Engine {
 
   }
 }
+
+

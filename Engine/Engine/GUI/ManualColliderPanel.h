@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    ManualColliderPanel.h
 // project: Monkey Stole My GPA
 //
@@ -37,3 +37,4 @@ namespace ManualColliderPanel {
   void update();
 
 } // namespace ManualColliderPanel
+

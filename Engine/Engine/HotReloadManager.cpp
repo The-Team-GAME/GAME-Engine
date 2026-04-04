@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    HotReloadManager.cpp
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Implementation of the hot-reload system for GameLogic DLL.
 //          Uses Win32 LoadLibrary/FreeLibrary for DLL management and
@@ -8,7 +13,6 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
 #include "HotReloadManager.h"
 #include "Logger.h"
 #include "SceneManager.h"
@@ -864,3 +868,5 @@ namespace Engine
     }
   }
 }
+
+

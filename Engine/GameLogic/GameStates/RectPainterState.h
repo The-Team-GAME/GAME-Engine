@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    RectPainterState.h
 // project: Monkey Stole My GPA
 //
@@ -9,7 +9,7 @@
 //
 // brief:   Header file for the ImGuistate that handles object creation and deletion.
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 

@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    BuildSizeAnalyzerPanel.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Declares the Build Size Analyzer ImGui panel. This panel lets users
 //          review project assets, auto-detect level dependencies, select assets
@@ -20,3 +25,5 @@ Where to call it:
 Register with ImGuiManager::register_panel() in RegisterAllPanels.h.
 ==================================================================================*/
 void BuildSizeAnalyzerPanel();
+
+

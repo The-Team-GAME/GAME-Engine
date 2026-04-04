@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    Logger.h
 // project: Monkey Stole My GPA
 //
@@ -9,7 +9,7 @@
 //
 // brief:   This file defines logging functions for outputting warnings, info, and crash messages.
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
@@ -99,4 +99,5 @@ namespace Log {
 		detail::crash_impl(std::format(fmt, std::forward<Args>(args)...));
 	}
 }
+
 

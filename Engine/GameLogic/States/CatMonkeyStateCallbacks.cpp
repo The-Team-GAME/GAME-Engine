@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    CatMonkeyStateCallbacks.cpp
 // project: Monkey Stole My GPA
 //
@@ -9,7 +9,7 @@
 //
 // brief:   State machine logic and helpers for Cat Monkey boss fight.
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "pch.h"
 #include <random>
@@ -745,6 +745,7 @@ namespace {
   REGISTER_FUNCTION(Cat_monkey_idle_update)
   // ... all others
 }
+
 
 
 

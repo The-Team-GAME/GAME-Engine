@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    GizmoUtils.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Shared utility functions and constants for the gizmo systems.
 //          Consolidates math helpers, draw dispatchers, AABB computation, and
@@ -221,3 +226,5 @@ namespace GizmoUtil {
 } // namespace GizmoUtil
 } // namespace Systems
 } // namespace Engine
+
+

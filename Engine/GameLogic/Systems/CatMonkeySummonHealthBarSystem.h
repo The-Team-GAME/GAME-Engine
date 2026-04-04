@@ -1,9 +1,16 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    CatMonkeySummonHealthBarSystem.h
 // project: Monkey Stole My GPA
 //
+// author:  Ryan Ang An Kiat (100%)
+//          Primary author
+//
+// email:   a.ryanankiat@digipen.edu
+//
 // brief:   Draws a screen-space rectangle health bar representing the combined
 //          HP pool of Cat Monkey's currently-summoned enemies.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
@@ -63,3 +70,5 @@ namespace Engine::Systems
     }
   };
 }
+
+

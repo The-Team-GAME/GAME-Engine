@@ -1,11 +1,16 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    CatMonkeySummonWaveHealthBarsSystem.h
 // project: Monkey Stole My GPA
 //
 // author:  Ryan Ang An Kiat (100%)
+//          Primary author
+//
+// email:   a.ryanankiat@digipen.edu
 //
 // brief:   Draws 5 bottom-screen health bars (enemy healthbar sprite), one per
 //          Cat Monkey summon wave.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
@@ -123,3 +128,5 @@ namespace Engine::Systems
     }
   };
 }
+
+

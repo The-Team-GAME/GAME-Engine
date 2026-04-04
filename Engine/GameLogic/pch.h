@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    pch.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Precompiled header for GameLogic DLL. Includes the main engine
 //          header which pulls in all core engine types and third-party
@@ -37,3 +42,5 @@
 #include <utility>
 #include <variant>
 #include <vector>
+
+

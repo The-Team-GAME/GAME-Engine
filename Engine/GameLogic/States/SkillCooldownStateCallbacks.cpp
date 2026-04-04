@@ -1,3 +1,16 @@
+﻿//-----------------------------------------------------------------------------------
+// file:    SkillCooldownStateCallbacks.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   State machine callbacks that map player skill cooldown timers to UI states.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "pch.h"
 #include "../Components/GameplayComponent.h"
 
@@ -98,3 +111,5 @@ REGISTER_STATE_MACHINE_BLUEPRINT(UppercutCooldown, "READY",
   STATE("CD_TRANSITION",NO_CALLBACK, uppercut_update, NO_CALLBACK)
   STATE("READY",        NO_CALLBACK, uppercut_update, NO_CALLBACK)
 )
+
+

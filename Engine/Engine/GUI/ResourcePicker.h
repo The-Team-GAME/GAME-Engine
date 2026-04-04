@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    ResourcePicker.h
 // project: Monkey Stole My GPA
 //
@@ -142,3 +142,4 @@ namespace ResourcePicker {
   bool prefab_picker_popup(const char* popup_id, std::string& selected_path, bool& is_new_file);
 
 } // namespace ResourcePicker
+

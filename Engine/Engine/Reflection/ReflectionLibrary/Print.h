@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    Print.h
 // project: Monkey Stole My GPA
 //
@@ -111,3 +111,4 @@ namespace ReflectionLibrary
       { print_value(name, value, nest_level); }, 0);
   }
 } // namespace ReflectionLibrary
+

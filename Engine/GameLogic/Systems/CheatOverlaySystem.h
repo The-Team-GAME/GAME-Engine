@@ -1,9 +1,15 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    CheatOverlaySystem.h
 // project: Monkey Stole My GPA
 //
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
 // brief:   Draws the runtime cheat status overlay in the bottom-right corner.
 //
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 

@@ -1,8 +1,9 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    StateMachineBlueprintRegistry.h
 // project: Monkey Stole My GPA
 //
 // author:  Chew Shee Yang
+//          Primary author
 //
 // email:   chew.s@digipen.edu
 //
@@ -229,3 +230,4 @@ namespace Engine::detail {
       }; \
       static BlueprintRegistrar_##ID blueprint_registrar_##ID##_; \
     }
+

@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    FirebasePanel.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   ImGui editor panel for managing the Firebase Cloud Firestore database.
 //          Provides collection browsing, document viewing/editing, and an activity
@@ -15,3 +20,5 @@ namespace FirebasePanel
 {
     void draw_panel();
 }
+
+

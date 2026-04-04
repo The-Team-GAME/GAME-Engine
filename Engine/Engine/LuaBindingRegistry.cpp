@@ -1,12 +1,16 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    LuaBindingRegistry.cpp
 // project: Monkey Stole My GPA
 //
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
 // brief:   Implementation of the LuaBindingRegistry singleton.
 //
-// Copyright (c) 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
 #include "Precompiled.h"
 #include "LuaBindingRegistry.h"
 
@@ -24,3 +28,5 @@ namespace Engine {
   }
 
 } // namespace Engine
+
+

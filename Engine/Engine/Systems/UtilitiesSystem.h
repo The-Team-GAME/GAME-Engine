@@ -1,5 +1,5 @@
-//-----------------------------------------------------------------------------------
-// file:    LifetimeSystem.h
+﻿//-----------------------------------------------------------------------------------
+// file:    UtilitiesSystem.h
 // project: Monkey Stole My GPA
 //
 // author:  Chew Shee Yang (100%)
@@ -15,7 +15,6 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
 #pragma once
 
 #include "../ECS/ECS.h"
@@ -69,3 +68,4 @@ namespace Engine
 
   } // namespace Systems
 } // namespace Engine
+

@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    UpgradePanel.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   ImGui panel for editing roguelike upgrade definitions (rarities,
 //          upgrades, thresholds) and controlling the live card-pick upgrade
@@ -1033,3 +1038,5 @@ inline void UpgradePanel()
 
   ImGui::End();
 }
+
+

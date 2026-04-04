@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    TurretMonkeyStateCallbacks.cpp
 // project: Monkey Stole My GPA
 //
@@ -9,9 +9,8 @@
 //
 // brief:   Turret Monkey state machine callback implementations (serializable)
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
 #include "pch.h"
 #include "../../Engine/Engine/Systems/CollisionSystem.h"
 #include "../../Engine/Engine/Systems/PhysicsSystem.h"
@@ -826,3 +825,4 @@ REGISTER_STATE_MACHINE_BLUEPRINT(TurretMonkey, "Idle",
   STATE("Hit", TurretMonkeyStateCallbacks::hit_on_enter, TurretMonkeyStateCallbacks::hit_on_update, TurretMonkeyStateCallbacks::hit_on_exit)
   STATE("Death", TurretMonkeyStateCallbacks::death_on_enter, TurretMonkeyStateCallbacks::death_on_update, TurretMonkeyStateCallbacks::death_on_exit)
 )
+

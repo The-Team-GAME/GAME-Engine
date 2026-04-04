@@ -1,11 +1,16 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    CubeLUT.cpp
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Implementation of .cube LUT file parser and identity LUT generator.
 //          Reads standard .cube format: TITLE, LUT_3D_SIZE, and float RGB triplets.
 //
-// Copyright  2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "CubeLUT.h"
 #include "../Logger.h"
@@ -94,3 +99,5 @@ namespace Engine::Graphics {
   }
 
 } // namespace Engine::Graphics
+
+

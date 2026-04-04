@@ -1,17 +1,16 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    EnemyHealthBarStateCallbacks.cpp
 // project: Monkey Stole My GPA
 //
 // author:  Ryan Ang An Kiat (100%)
 //          Primary author
 //
-// email:   a.ryanankiat.edu
+// email:   a.ryanankiat@digipen.edu
 //
 // brief:   Enemy Health Bar state machine callback implementations (serializable)
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
 #include "pch.h"
 #include "../Components/EnemyHealthComponent.h"
 #include "../../Engine/Components/HierarchyComponents.h"

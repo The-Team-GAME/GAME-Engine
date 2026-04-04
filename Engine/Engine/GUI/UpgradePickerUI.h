@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    UpgradePickerUI.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   In-game upgrade picker overlay. Every frame:
 //            - If an upgrade is available, draws a 64x64 Upgrade.png button at
@@ -222,3 +227,5 @@ inline void UpgradePickerUI()
     s_was_paused = false;
   }
 }
+
+

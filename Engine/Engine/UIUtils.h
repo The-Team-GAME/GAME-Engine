@@ -2,6 +2,11 @@
 // file:    UIUtils.h
 // project: Monkey Stole My GPA
 //
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
 // brief:   Shared UI utility helpers for creating common ECS-based UI elements
 //          (screen dimmers, overlays, etc.) to avoid duplicating boilerplate.
 //
@@ -42,3 +47,5 @@ namespace Engine::UI
     return e.get_id();
   }
 } // namespace Engine::UI
+
+

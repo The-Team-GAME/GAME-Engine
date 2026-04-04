@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    VictoryState.cpp
 // project: Monkey Stole My GPA
 //
@@ -11,7 +11,6 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
 #include "pch.h"
 #include "VictoryState.h"
 #include "GameplayOverlayInputGuard.h"
@@ -76,3 +75,4 @@ void VictoryState::unload()
   Engine::Time::set_time_scale(1.0f);
   GameplayOverlayInputGuard::release();
 }
+

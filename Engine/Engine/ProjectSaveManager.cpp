@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    ProjectSaveManager.cpp
 // project: Monkey Stole My GPA
 //
@@ -263,3 +263,4 @@ void Engine::ProjectSaveManager::save_single_dirty(size_t index)
   // Remove the saved state from the list
   dirty_states.erase(dirty_states.begin() + static_cast<std::ptrdiff_t>(index));
 }
+

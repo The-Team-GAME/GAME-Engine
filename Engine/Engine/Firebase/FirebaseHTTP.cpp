@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    FirebaseHTTP.cpp
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   WinHTTP implementation for HTTPS requests. Uses the Windows-native
 //          WinHTTP API so there are zero external dependencies — TLS is handled
@@ -394,3 +399,5 @@ namespace Engine
         } // namespace HTTP
     } // namespace Firebase
 } // namespace Engine
+
+

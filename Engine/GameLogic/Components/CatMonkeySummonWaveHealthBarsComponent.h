@@ -1,9 +1,16 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    CatMonkeySummonWaveHealthBarsComponent.h
 // project: Monkey Stole My GPA
 //
+// author:  Ryan Ang An Kiat (100%)
+//          Primary author
+//
+// email:   a.ryanankiat@digipen.edu
+//
 // brief:   Bottom-screen health bars (enemy-style sprite) for Cat Monkey summon
 //          waves. One bar per summon state (Summon1..Summon5).
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
@@ -64,3 +71,5 @@ REGISTER_COMPONENT(Components::CatMonkeySummonWaveHealthBars,
   wave4_current_hp, wave4_max_hp, wave4_spawned, wave4_cleared, wave4_cleared_time,
   wave5_current_hp, wave5_max_hp, wave5_spawned, wave5_cleared, wave5_cleared_time,
   visible)
+
+

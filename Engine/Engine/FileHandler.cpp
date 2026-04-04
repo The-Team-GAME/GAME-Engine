@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    FileHandler.cpp
 // project: Monkey Stole My GPA
 //
@@ -7,11 +7,11 @@
 //
 // email:   c.mingxian@digipen.edu, chew.s@digipen.edu
 //
-// brief:   This file uses the rapidjson library to parse a filestream into a 
-//					rapidjson::Document type and then use the other functions in this file
-//					to read from and write to(wip) the json file.
+// brief:   This file uses the rapidjson library to parse a filestream into a
+//          rapidjson::Document type and then use the other functions in this file
+//          to read from and write to(wip) the json file.
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "rapidjson/document.h"
 #include "rapidjson/filereadstream.h"
@@ -118,4 +118,5 @@ namespace FileHandler {
       : default_string;
   }
 }
+
 

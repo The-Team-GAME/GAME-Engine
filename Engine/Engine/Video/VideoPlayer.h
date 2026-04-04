@@ -1,3 +1,16 @@
+﻿//-----------------------------------------------------------------------------------
+// file:    VideoPlayer.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Public interface for MPEG video playback with integrated audio and rendering controls.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "../EngineExport.h"
@@ -58,3 +71,5 @@ namespace Engine {
 
   } // namespace Video
 } // namespace Engine
+
+

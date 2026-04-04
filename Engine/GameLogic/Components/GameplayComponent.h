@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    GameplayComponent.h
 // project: Monkey Stole My GPA
 //
@@ -6,7 +6,6 @@
 //          Primary author
 //          Cheng Ming Xian (30%)
 //          Co-Author
-// 
 //
 // email:   chew.s@digipen.edu
 //          c.mingxian@digipen.edu

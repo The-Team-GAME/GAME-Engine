@@ -1,10 +1,15 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    EnteringTrainCutsceneState.cpp
 // project: Monkey Stole My GPA
 //
 // author:  Ryan Ang An Kiat (100%)
+//          Primary author
+//
+// email:   a.ryanankiat@digipen.edu
 //
 // brief:   Implementation of the LevelTwo "entering train" cutscene.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "pch.h"
 #include "EnteringTrainCutsceneState.h"
@@ -136,3 +141,5 @@ void EnteringTrainCutsceneState::unload()
 {
   player.close();
 }
+
+

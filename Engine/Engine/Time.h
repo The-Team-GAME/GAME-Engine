@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    Time.h
 // project: Monkey Stole My GPA
 //
@@ -7,10 +7,10 @@
 //
 // email:   c.mingxian@digipen.edu
 //
-// brief:   Header file for the time system for the engine to keep track of the gameloop 
-//					delta time and all the calculations and getters that go with it
+// brief:   Header file for the time system for the engine to keep track of the gameloop
+//          delta time and all the calculations and getters that go with it
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 #include "TypeDef.h"

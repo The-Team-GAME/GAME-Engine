@@ -1,17 +1,17 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    Core.cpp
 // project: Monkey Stole My GPA
 //
 // author:  Chew Shee Yang (50%)
 //          Cheng Ming Xian (50%)
-
+//
 // email:   chew.s@digipen.edu, c.mingxian@digipen.edu
 //
 // brief:   This file implements the Core class which manages the main game loop.
 //          Handles fixed timestep updates, rendering, input processing, and
 //          coordinates all major engine subsystems.
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "Core.h"
 #include "Precompiled.h"

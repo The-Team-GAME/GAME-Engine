@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    CollisionSystem.cpp
 // project: Monkey Stole My GPA
 //
@@ -11,7 +11,7 @@
 //          collision resolution for entities that contain the components of
 //          Transform2D, RigidBody and BoxCollider
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "CollisionSystem.h"
 #include "PhysicsSystem.h"

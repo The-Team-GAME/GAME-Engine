@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    CollisionComponents.h
 // project: Monkey Stole My GPA
 //
@@ -10,7 +10,7 @@
 // brief:   This file contains the definition of the data structures that will be
 //          needed for collision related logic / calculations
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 #include "../Math/Vector2D.h"

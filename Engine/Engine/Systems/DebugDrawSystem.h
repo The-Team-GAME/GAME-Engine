@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    DebugDrawSystem.h
 // project: Monkey Stole My GPA
 //
@@ -7,8 +7,8 @@
 //
 // email:   c.mingxian@digipen.edu
 //
-// brief:   This file declares a system containing functions that will allow the 
-//					developers to debug the engine using visual aids.
+// brief:   This file declares a system containing functions that will allow the
+//          developers to debug the engine using visual aids.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
@@ -25,3 +25,4 @@ namespace Engine {
     };
   }
 }
+

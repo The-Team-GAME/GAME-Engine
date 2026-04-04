@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    AudioComponents.h
 // project: Monkey Stole My GPA
 //
@@ -110,3 +110,4 @@ namespace Components
 REGISTER_COMPONENT(Components::FMODEvent, event_path)
 REGISTER_COMPONENT(Components::FMODEventInstance, event_path, instance_name, auto_play, is_playing)
 REGISTER_COMPONENT(Components::FMODStateAudio, event_path, loop, volume)
+

@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    FirebaseListener.cpp
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   SSE listener implementation. Each watch target gets a dedicated thread
 //          that opens a streaming GET request with "Accept: text/event-stream" and
@@ -364,3 +369,5 @@ namespace Engine
     } // namespace Listener
   } // namespace Firebase
 } // namespace Engine
+
+

@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    LevelComponent.h
 // project: Monkey Stole My GPA
 //
@@ -58,3 +58,4 @@ namespace Components
 }
 
 REGISTER_COMPONENT(Components::Level, level_path, on_init, on_update, on_exit)
+

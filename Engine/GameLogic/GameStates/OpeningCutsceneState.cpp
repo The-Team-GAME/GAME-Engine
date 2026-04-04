@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    OpeningCutsceneState.cpp
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Implementation of the opening cutscene state that plays before gameplay.
 //
@@ -86,3 +91,5 @@ void OpeningCutsceneState::unload()
 {
   player.close();
 }
+
+

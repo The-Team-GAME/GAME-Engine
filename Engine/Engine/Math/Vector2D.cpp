@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    Vector2D.cpp
 // project: Monkey Stole My GPA
 //
@@ -10,7 +10,7 @@
 // brief:   This file defines a 2D vector class and all of the operations that can
 //          act on a 2D vector.
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "Vector2D.h"
 #include "Math.h"
@@ -141,4 +141,5 @@ namespace Math {
     return os;
   }
 }
+
 

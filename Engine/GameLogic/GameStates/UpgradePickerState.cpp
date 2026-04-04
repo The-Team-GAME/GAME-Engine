@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    UpgradePickerState.cpp
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   See UpgradePickerState.h
 //
@@ -39,3 +44,5 @@ void UpgradePickerState::update()
     Engine::SceneManager::pop_scene();
   }
 }
+
+

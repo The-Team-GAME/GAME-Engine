@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    RectPainterState.cpp
 // project: Monkey Stole My GPA
 //
@@ -7,14 +7,13 @@
 //
 // email:   o.ziming@digipen.edu
 //
-// brief:   Defines functions that creates and deletes rectangle objects that can be 
-// edited to change position, size and color. Multiple objects can be created or 
-// deleted and collision detection is present. Object collision can also be turned off.
-// Objects can also be duplicated.
+// brief:   Defines functions that creates and deletes rectangle objects that can be
+//          edited to change position, size and color. Multiple objects can be created or
+//          deleted and collision detection is present. Object collision can also be turned off.
+//          Objects can also be duplicated.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
 #include "RectPainterState.h"
 #include "pch.h"
 #include "Precompiled.h"

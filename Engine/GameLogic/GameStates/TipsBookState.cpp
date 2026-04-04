@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    TipsBookState.cpp
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   See TipsBookState.h
 //
@@ -290,3 +295,5 @@ void TipsBookState::unload()
   Engine::Time::set_time_scale(1.0f);
   GameplayOverlayInputGuard::release();
 }
+
+

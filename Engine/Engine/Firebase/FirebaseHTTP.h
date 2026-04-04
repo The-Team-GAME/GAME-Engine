@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    FirebaseHTTP.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Low-level WinHTTP wrapper for making HTTPS requests to Firebase
 //          Realtime Database REST API. Each function is synchronous — the caller
@@ -64,3 +69,5 @@ namespace Engine
     } // namespace HTTP
   } // namespace Firebase
 } // namespace Engine
+
+

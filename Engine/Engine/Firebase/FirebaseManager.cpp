@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    FirebaseManager.cpp
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Implementation of the Firebase Realtime Database manager. Coordinates
 //          settings loading, WinHTTP session lifecycle, async CRUD dispatch, and
@@ -342,3 +347,5 @@ namespace Engine
 
   } // namespace Firebase
 } // namespace Engine
+
+

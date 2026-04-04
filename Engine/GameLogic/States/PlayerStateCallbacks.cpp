@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    PlayerStateCallbacks.cpp
 // project: Monkey Stole My GPA
 //
-// author:  Cheng Ming Xian (100%)
+// author:  Cheng Ming Xian (90%)
 //          Primary author
-//          Chew Shee Yang
+//          Chew Shee Yang (10%)
 //          Initial Author
-// 
+//
 // email:   c.mingxian@digipen.edu
 //          chew.s@digipen.edu
 //
@@ -14,7 +14,6 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
 #include "pch.h"
 #include "PlayerStateCallbacks.h"
 #include "../Components/GameplayComponent.h"

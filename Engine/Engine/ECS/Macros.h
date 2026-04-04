@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    Macros.h
 // project: Monkey Stole My GPA
 //
@@ -145,3 +145,4 @@ HOW THESE MACROS WORK:
 #define REGISTER_COMPONENT_CUSTOM_LUA(CLASS_NAME, ...) \
     REFLECT_CUSTOM(CLASS_NAME, __VA_ARGS__) \
     REGISTER_COMPONENT_CUSTOM_IMPL(CLASS_NAME, __COUNTER__)
+

@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    Reflection.h
 // project: Monkey Stole My GPA
 //
@@ -283,3 +283,4 @@ namespace Engine {
     } // namespace Serialization
   } // namespace ECS
 } // namespace Engine
+

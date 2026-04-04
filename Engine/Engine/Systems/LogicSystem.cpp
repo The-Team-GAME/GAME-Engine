@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    LogicSystem.cpp
 // project: Monkey Stole My GPA
 //
@@ -10,7 +10,7 @@
 // brief:   This file defines a system that handles the prototype state machine testing
 //          for the player and NPCs
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "LogicSystem.h"
 #include "../Math/Vector2D.h"
@@ -234,6 +234,7 @@ void logi::jump(Components::RigidBody& rigid)
   rigid.on_ground = false;
   phy2D::add_force(rigid, jumping_force);
 }
+
 
 
 

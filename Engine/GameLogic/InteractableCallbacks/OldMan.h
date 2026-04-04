@@ -1,4 +1,16 @@
-
+﻿//-----------------------------------------------------------------------------------
+// file:    OldMan.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Old Man interaction callbacks for spawning dialogue and the on-screen prompt.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "pch.h"
 #include "../../Engine/ECS/ECS.h"
 #include "../../Engine/InputManager.h"

@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    DiceMiniGamePanel.cpp
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Dice Mini Game ImGui panel. Players enter a name and roll dice;
 //          each roll is written to Firebase "leaderboard" collection.
@@ -492,3 +497,5 @@ void DiceMiniGamePanel::draw_panel()
 
   ImGui::End();
 }
+
+

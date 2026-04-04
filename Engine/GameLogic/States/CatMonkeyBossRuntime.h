@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    CatMonkeyBossRuntime.h
 // project: Monkey Stole My GPA
 //
@@ -9,9 +9,8 @@
 //
 // brief:   Runtime state and helpers for Cat Monkey boss fight.
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
 #pragma once
 
 #include "pch.h"
@@ -193,4 +192,5 @@ namespace CatMonkeyStateCallbacks
   void set_entity_alpha_if_present(Engine::ECS::Entity entity, float alpha);
   void detach_from_parent_if_present(Engine::ECS::Entity entity);
 }
+
 

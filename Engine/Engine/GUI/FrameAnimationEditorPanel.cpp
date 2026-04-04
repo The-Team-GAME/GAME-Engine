@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    FrameAnimationEditorPanel.cpp
 // project: Monkey Stole My GPA
 //
@@ -895,3 +895,4 @@ void FrameAnimationEditorPanel() {
     FrameAnimationEditor::Close();
   }
 }
+

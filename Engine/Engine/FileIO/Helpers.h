@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    Helpers.h
 // project: Monkey Stole My GPA
 //
@@ -56,3 +56,4 @@ namespace Engine
     bool write_string_to_file(const std::string& file_path, const std::string& content);
   }
 }
+

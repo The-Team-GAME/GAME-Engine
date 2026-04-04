@@ -1,15 +1,16 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    CatMonkeySummonHealthBarComponent.h
 // project: Monkey Stole My GPA
 //
 // author:  Ryan Ang An Kiat (100%)
+//          Primary author
 //
 // email:   a.ryanankiat@digipen.edu
 //
 // brief:   Screen-space health bar for Cat Monkey summons. The bar represents the
 //          combined HP pool of the currently-summoned enemies.
 //
-//// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
@@ -36,3 +37,4 @@ REGISTER_COMPONENT(Components::CatMonkeySummonHealthBar,
   total_current_hp, total_max_hp,
   center_ui, size_ui,
   border_thickness_px, visible)
+

@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    FirebasePanel.cpp
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Firebase Realtime Database CRUD panel with Live Update.
 //          Sections: Connection Status, Collection Browser, Document Editor,
@@ -1581,3 +1586,5 @@ void FirebasePanel::draw_panel()
 
   ImGui::End();
 }
+
+

@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    DebugHitboxRenderSystem.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   System for rendering hitboxes (colliders) when the debug layer is active.
 //
@@ -114,3 +119,5 @@ namespace Engine {
 
   } // namespace Systems
 } // namespace Engine
+
+

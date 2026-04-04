@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    FirebaseAuth.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Google Sign-In via OAuth 2.0 for Firebase Realtime Database.
 //          Uses a local loopback HTTP server to receive the OAuth redirect,
@@ -60,3 +65,5 @@ namespace Engine
         } // namespace Auth
     } // namespace Firebase
 } // namespace Engine
+
+

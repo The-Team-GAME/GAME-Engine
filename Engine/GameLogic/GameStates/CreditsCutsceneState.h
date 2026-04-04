@@ -1,8 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    CreditsCutsceneState.h
 // project: Monkey Stole My GPA
 //
 // author:  Ryan Ang An Kiat (100%)
+//          Primary author
+//
+// email:   a.ryanankiat@digipen.edu
 //
 // brief:   Plays the ending/credits cutscene video before transitioning back to
 //          the main menu.
@@ -28,3 +31,5 @@ public:
   void free();
   void unload();
 };
+
+

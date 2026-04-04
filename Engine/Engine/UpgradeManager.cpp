@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    UpgradeManager.cpp
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Implementation of the UpgradeManager singleton. Handles runtime
 //          upgrade state, card rolling with rarity-weighted random, and
@@ -409,3 +414,5 @@ namespace Engine
   }
 
 } // namespace Engine
+
+

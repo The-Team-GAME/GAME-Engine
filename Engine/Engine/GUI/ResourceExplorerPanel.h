@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    ResourceExplorerPanel.h
 // project: Monkey Stole My GPA
 //
@@ -33,3 +33,4 @@ Where to call it:
 Called during the ImGui rendering phase, typically registered with ImGuiManager.
 ==================================================================================*/
 void ResourceExplorerPanel();
+

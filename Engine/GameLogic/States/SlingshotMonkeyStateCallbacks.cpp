@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    SlingshotMonkeyStateCallbacks.cpp
 // project: Monkey Stole My GPA
 //
@@ -9,9 +9,8 @@
 //
 // brief:   Slingshot Monkey state machine callback implementations (serializable)
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
 #include "pch.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/EnemyHealthComponent.h"
@@ -732,3 +731,4 @@ REGISTER_STATE_MACHINE_BLUEPRINT(SlingshotMonkey, "Idle",
   STATE("Hit", SlingshotMonkeyStateCallbacks::hit_on_enter, SlingshotMonkeyStateCallbacks::hit_on_update, SlingshotMonkeyStateCallbacks::hit_on_exit)
   STATE("Death", SlingshotMonkeyStateCallbacks::death_on_enter, SlingshotMonkeyStateCallbacks::death_on_update, SlingshotMonkeyStateCallbacks::death_on_exit)
 )
+

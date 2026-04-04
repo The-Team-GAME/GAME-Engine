@@ -1,18 +1,18 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    FileHandler.h
 // project: Monkey Stole My GPA
 //
 // author:  Cheng Ming Xian (70%)
 //          Primary author
-//					Shee Yang (30%)
+//          Chew Shee Yang (30%)
 //
 // email:   c.mingxian@digipen.edu, chew.s@digipen.edu
 //
-// brief:   This file uses the rapidjson library to parse a filestream into a 
-//					rapidjson::Document type and then use the other functions in this file
-//					to read from and write to(wip) the json file.
+// brief:   This file uses the rapidjson library to parse a filestream into a
+//          rapidjson::Document type and then use the other functions in this file
+//          to read from and write to(wip) the json file.
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 #include <string>
@@ -72,3 +72,4 @@ namespace FileHandler {
 	std::string get_string(const std::string& key);
 	// End of getter functions
 }
+

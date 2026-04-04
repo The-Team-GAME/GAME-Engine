@@ -1,11 +1,16 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    CubeLUT.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Parser for .cube LUT files. Reads LUT_3D_SIZE and RGB triplet data
 //          into a flat float array suitable for uploading to GL_TEXTURE_3D.
 //
-// Copyright  2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
@@ -27,3 +32,5 @@ namespace Engine::Graphics {
   CubeLUTData generate_identity_lut(int size = 16);
 
 } // namespace Engine::Graphics
+
+

@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    TextureAtlasWidget.cpp
 // project: Monkey Stole My GPA
 //
@@ -12,7 +12,6 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
 #include "../../Precompiled.h"
 #include "TextureAtlasWidget.h"
 #include <algorithm>
@@ -451,3 +450,4 @@ namespace ImGuiWidgets {
   }
 
 } // namespace ImGuiWidgets
+

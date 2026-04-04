@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    TipsBookState.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Tips book overlay scene, pushed on top of the active game state.
 //          Because it is a separate pushed scene, the underlying state's update()
@@ -55,3 +60,5 @@ public:
   void free()   override;
   void unload() override;
 };
+
+

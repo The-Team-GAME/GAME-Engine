@@ -1,15 +1,15 @@
-//-----------------------------------------------------------------------------------
-// file:    PlayerStateCallbacks.h
+﻿//-----------------------------------------------------------------------------------
+// file:    PunchingBagStateCallbacks.cpp
 // project: Monkey Stole My GPA
 //
 // author:  Cheng Ming Xian (100%)
 //          Primary author
-// 
+//
 // email:   c.mingxian@digipen.edu
 //
 // brief:   Punching Bag state machine callback implementations (serializable)
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "pch.h"
 #include "../Components/GameplayComponent.h"
@@ -81,3 +81,4 @@ REGISTER_STATE_MACHINE_BLUEPRINT(PunchingBag, "Idle",
   STATE("Right", NO_CALLBACK, PunchingBagStateCallbacks::right_on_update, NO_CALLBACK)
   STATE("Death", PunchingBagStateCallbacks::death_on_enter, NO_CALLBACK, NO_CALLBACK)
 )
+

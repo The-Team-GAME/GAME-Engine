@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    PrefabMergeUtils.cpp
 // project: Monkey Stole My GPA
 //
@@ -153,3 +153,4 @@ namespace Engine {
     } // namespace PrefabMergeUtils
   } // namespace ECS
 } // namespace Engine
+

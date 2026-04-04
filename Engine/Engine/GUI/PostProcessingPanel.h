@@ -1,6 +1,11 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    PostProcessingPanel.h
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   ImGui panel for live-editing post-processing settings: enable/disable,
 //          gamma, Kawase bloom (threshold, intensity, iterations), 3D LUT color
@@ -8,7 +13,7 @@
 //          color quantization, film grain, tone mapping, sharpen, and preset
 //          save/load.
 //
-// Copyright  2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
@@ -508,3 +513,5 @@ inline void PostProcessingPanel()
 
   ImGui::End();
 }
+
+

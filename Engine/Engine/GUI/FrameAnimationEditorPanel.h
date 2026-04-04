@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    FrameAnimationEditorPanel.h
 // project: Monkey Stole My GPA
 //
@@ -80,3 +80,4 @@ Where to call it:
 Called during the ImGui phase of the main game loop via panel registration.
 ==================================================================================*/
 void FrameAnimationEditorPanel();
+

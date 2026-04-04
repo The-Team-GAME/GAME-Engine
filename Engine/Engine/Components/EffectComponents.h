@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    EffectComponents.h
 // project: Monkey Stole My GPA
 //
@@ -45,3 +45,4 @@ namespace Components {
 
 REGISTER_COMPONENT(Components::Trail, interval, lifetime, start_alpha, end_alpha)
 REGISTER_COMPONENT(Components::FadeOut, duration, start_time, start_alpha, end_alpha)
+

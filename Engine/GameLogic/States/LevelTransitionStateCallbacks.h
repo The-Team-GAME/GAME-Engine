@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    LevelTransitionStateCallbacks.h
 // project: Monkey Stole My GPA
 //
@@ -9,9 +9,8 @@
 //
 // brief:   Level Transition state machine callback implementations (serializable)
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
 #pragma once
 
 #include "pch.h"
@@ -108,3 +107,4 @@ namespace {
 
   inline LevelTransitionLegacyAliasRegistration s_level_transition_legacy_alias_registration;
 } // namespace
+

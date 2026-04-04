@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    RendererInternal.cpp
 // project: Monkey Stole My GPA
 //
@@ -311,5 +311,6 @@ Engine::Graphics::FontData::FontData(const std::string& path, unsigned int size)
 
   Log::info("Font atlas created: {}x{} with {} glyphs", atlas_width, atlas_height, glyphs.size());
 }
+
 
 

@@ -1,13 +1,18 @@
-//-----------------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------------
 // file:    PostProcessing.cpp
 // project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
 //
 // brief:   Implementation of the modular post-processing pipeline. Manages FBOs
 //          for scene capture and Kawase bloom (downsample/upsample mip chain),
 //          3D LUT texture for color grading, and gamma correction. All effects
 //          are composited in a single final pass.
 //
-// Copyright  2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "PostProcessing.h"
 #include "Shader.h"
@@ -853,3 +858,5 @@ namespace Engine::Graphics::PostProcessing {
   }
 
 } // namespace Engine::Graphics::PostProcessing
+
+
