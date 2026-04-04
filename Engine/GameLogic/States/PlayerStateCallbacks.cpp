@@ -36,6 +36,54 @@ namespace {
   bool s_has_pending_checkpoint_respawn = false;
   glm::vec2 s_pending_checkpoint_pos = {0.0f, 0.0f};
 
+  // Restore transient player state without reloading the scene so defeated enemies stay dead.
+  void respawn_player_at_checkpoint(ECS::Entity entity, const Math::Vec2D& respawn_point)
+  {
+    auto* transform = entity.get_component<Components::Transform2D>();
+    auto* rigid = entity.get_component<Components::RigidBody>();
+    auto* health = entity.get_component<Components::Health>();
+    auto* player = entity.get_component<Components::Player>();
+
+    if (transform) {
+      transform->position = respawn_point;
+    }
+
+    if (rigid) {
+      rigid->force = Math::Vec2D();
+      rigid->acceleration = Math::Vec2D();
+      rigid->velocity = Math::Vec2D();
+      rigid->air_time = 0.0f;
+      rigid->angular_velocity = 0.0f;
+      rigid->on_ground = false;
+      rigid->is_jumping = false;
+      rigid->apply_force = true;
+    }
+
+    if (health) {
+      health->value = health->max;
+    }
+
+    if (player) {
+      player->input_lock = false;
+      player->damage_immune = false;
+      player->knockback_value = Math::Vec2D();
+      player->dash.timer = 0.0f;
+      player->dash.cd_timer = 0.0f;
+      player->stunned.timer = 0.0f;
+      player->uppercut.timer = 0.0f;
+      player->uppercut.cd_timer = 0.0f;
+      player->smash.timer = 0.0f;
+      player->smash.cd_timer = 0.0f;
+      player->attack1.timer = 0.0f;
+      player->attack2.timer = 0.0f;
+      player->attack3.timer = 0.0f;
+      player->leap.timer = 0.0f;
+    }
+
+    default_state = false;
+    on_ground_last_frame = true;
+  }
+
   void log_cheat_toggle(const char* cheat_name, bool enabled)
   {
     Log::info("Player: {} {}", cheat_name, enabled ? "Enabled" : "Disabled");
@@ -1066,9 +1114,11 @@ namespace PlayerStateCallbacks
     const std::string& scene_name = Engine::SceneManager::get_current_scene_name();
     auto& upgrade_manager = Engine::UpgradeManager::instance();
 
-    // LevelTwo death: preserve all current upgrades through the reload.
-    // load() calls apply_current_upgrades() so they will be re-applied.
+    // LevelTwo death: restore the upgrade state captured when the player first
+    // entered LevelTwo, then reload the scene so the new player gets that state.
     if (scene_name == "LevelTwoGameplayState") {
+      upgrade_manager.restore_level_two_entry_state();
+
       const std::string& level_path = Engine::LevelManager::get_current_level_path();
       const std::string restart_level = !level_path.empty()
         ? level_path
@@ -1084,72 +1134,52 @@ namespace PlayerStateCallbacks
       return;
     }
 
-    // If no checkpoint is set, restart the whole level.
-    // Reload the active gameplay scene and carry the current level path through
-    // the scene clear so scene-local LevelOne/LevelTwo state is reset as well.
-    if (!player->has_checkpoint) {
-      upgrade_manager.reset();
-
-      const std::string& level_path = Engine::LevelManager::get_current_level_path();
-      const std::string& level_id = Engine::LevelManager::get_active_level_id();
-
-      const std::string restart_level = !level_path.empty() ? level_path : level_id;
-      if (!restart_level.empty() && scene_name != "No current scene") {
-        const bool append_resource_path =
-          restart_level.find(':') == std::string::npos &&
-          !restart_level.starts_with("/") &&
-          !restart_level.starts_with("\\");
-
-        Log::info("Player: Restarting scene after death (scene={}, level={})", scene_name, restart_level);
-        Engine::LevelManager::set_pending_start_level(restart_level, append_resource_path);
-        Engine::SceneManager::load_scene(scene_name);
-      }
-      else if (!level_id.empty()) {
-        Log::info("Player: Restarting level after death (level_id={})", level_id);
-        Engine::LevelManager::reload_level(level_id);
-      }
-      else if (!level_path.empty()) {
-        Log::info("Player: Restarting level after death (level_path={})", level_path);
-        Engine::Resources::open_level(level_path, false);
-      }
-      else {
-        Log::warning("Player: Could not restart level after death (no active scene/id/path)");
-      }
-
-      // Important: don't touch components after initiating a level reload.
+    // LevelOne checkpoint deaths respawn the player in-place so defeated enemies
+    // stay dead and the current live upgrade state is preserved.
+    if (player->has_checkpoint) {
+      respawn_player_at_checkpoint(entity, player->respawn_point);
+      Log::info("Player: Respawned at checkpoint ({}, {}) without reloading the level",
+        player->respawn_point.x,
+        player->respawn_point.y);
       return;
     }
 
-    // Checkpoint death: restore upgrades to the snapshot taken at checkpoint time,
-    // then do a full level reload so all stats are re-applied clean from that state.
-    s_pending_checkpoint_pos = player->respawn_point;
-    s_has_pending_checkpoint_respawn = true;
-    upgrade_manager.restore_checkpoint_state();
-    {
-      const std::string& level_path = Engine::LevelManager::get_current_level_path();
-      const std::string& level_id   = Engine::LevelManager::get_active_level_id();
-      const std::string restart_level = !level_path.empty() ? level_path : level_id;
-      if (!restart_level.empty() && scene_name != "No current scene") {
-        const bool append_resource_path =
-          restart_level.find(':') == std::string::npos &&
-          !restart_level.starts_with("/") &&
-          !restart_level.starts_with("\\");
-        Log::info("Player: Restarting scene after checkpoint death (scene={}, level={})", scene_name, restart_level);
-        Engine::LevelManager::set_pending_start_level(restart_level, append_resource_path);
-        Engine::SceneManager::load_scene(scene_name);
-      }
-      else if (!level_id.empty()) {
-        Log::info("Player: Restarting level after checkpoint death (level_id={})", level_id);
-        Engine::LevelManager::reload_level(level_id);
-      }
-      else if (!level_path.empty()) {
-        Log::info("Player: Restarting level after checkpoint death (level_path={})", level_path);
-        Engine::Resources::open_level(level_path, false);
-      }
-      else {
-        Log::warning("Player: Could not restart level after checkpoint death (no active scene/id/path)");
-      }
+    // No checkpoint: restart the whole level and clear the run upgrades.
+    // Reload the active gameplay scene and carry the current level path through
+    // the scene clear so scene-local state is reset as well.
+    upgrade_manager.reset();
+
+    const std::string& level_path = Engine::LevelManager::get_current_level_path();
+    const std::string& level_id = Engine::LevelManager::get_active_level_id();
+
+    const std::string restart_level = !level_path.empty() ? level_path : level_id;
+    if (!restart_level.empty() && scene_name != "No current scene") {
+      const bool append_resource_path =
+        restart_level.find(':') == std::string::npos &&
+        !restart_level.starts_with("/") &&
+        !restart_level.starts_with("\\");
+
+      Log::info("Player: Restarting scene after death (scene={}, level={})", scene_name, restart_level);
+      Engine::LevelManager::set_pending_start_level(restart_level, append_resource_path);
+      Engine::SceneManager::load_scene(scene_name);
     }
+
+    if (!level_id.empty()) {
+      Log::info("Player: Restarting level after death (level_id={})", level_id);
+      Engine::LevelManager::reload_level(level_id);
+    }
+
+    else if (!level_path.empty()) {
+      Log::info("Player: Restarting level after death (level_path={})", level_path);
+      Engine::Resources::open_level(level_path, false);
+    }
+
+    else {
+      Log::warning("Player: Could not restart level after death (no active scene/id/path)");
+    }
+
+    // Important: don't touch components after initiating a level reload.
+    return;
   }
 #pragma endregion
 

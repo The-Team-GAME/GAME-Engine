@@ -363,17 +363,8 @@ namespace Engine {
     upgrade["reset"] = []() {
       UpgradeManager::instance().reset();
     };
-    // Restores upgrades appropriately when restarting a level.
-    // Level 2: upgrades are preserved (load() re-applies them automatically).
-    // Level 1: resets all upgrades so the run starts fresh.
     upgrade["restart_reset"] = []() {
-      auto& mgr = UpgradeManager::instance();
-      const std::string scene = SceneManager::get_current_scene_name();
-      if (scene == "LevelTwoGameplayState") {
-        // Keep current upgrades — LevelTwoGameplayState::load() re-applies them.
-        return;
-      }
-      mgr.reset();
+      UpgradeManager::instance().reset();
     };
     upgrade["get_points"] = []() -> int {
       return UpgradeManager::instance().get_points();
