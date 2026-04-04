@@ -1149,17 +1149,6 @@ end
 function pause_confirm_yes()
   set_confirm_selection("yes")
   if is_pause_state("ConfirmRestart") then
-    if Scene.on_stack("LevelTwoGameplayState") then
-      -- Mirror the death path exactly: set pending level path and reload via Scene.load()
-      -- so LevelTwoGameplayState::load() runs and re-applies current upgrades.
-      local level_path = Level.get_current_path()
-      if level_path ~= "" then
-        Level.set_pending_path(level_path)
-      end
-      Scene.load("LevelTwoGameplayState")
-      return
-    end
-    Upgrade.restart_reset()
     local level_id = Level.get_active_id()
     Scene.pop()
     if level_id ~= "" then

@@ -360,40 +360,6 @@ namespace Engine
     level_two_entry_state_ = SavedState{};
   }
 
-  // ---- Checkpoint snapshot ----
-
-  void UpgradeManager::capture_checkpoint_state()
-  {
-    checkpoint_state_ = capture_state();
-    has_checkpoint_state_ = true;
-    Log::info("[UpgradeManager] Captured checkpoint upgrade snapshot (points={}, picks={})",
-      checkpoint_state_.current_points, checkpoint_state_.picks_done);
-  }
-
-  bool UpgradeManager::has_checkpoint_state() const
-  {
-    return has_checkpoint_state_;
-  }
-
-  void UpgradeManager::restore_checkpoint_state()
-  {
-    if (!has_checkpoint_state_)
-    {
-      Log::warning("[UpgradeManager] No checkpoint snapshot to restore; resetting instead");
-      reset();
-      return;
-    }
-    restore_state(checkpoint_state_);
-    Log::info("[UpgradeManager] Restored checkpoint upgrade snapshot (points={}, picks={})",
-      current_points_, picks_done_);
-  }
-
-  void UpgradeManager::clear_checkpoint_state()
-  {
-    has_checkpoint_state_ = false;
-    checkpoint_state_ = SavedState{};
-  }
-
   // ---- Reset ----
 
   void UpgradeManager::reset()
@@ -405,7 +371,6 @@ namespace Engine
     rolled_indices_[0] = -1;
     rolled_indices_[1] = -1;
     clear_level_two_entry_state();
-    clear_checkpoint_state();
   }
 
 } // namespace Engine

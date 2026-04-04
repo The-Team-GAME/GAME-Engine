@@ -8,13 +8,12 @@
 //
 // brief:   checkpoint callback
 //
-// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 
 #include "pch.h"
 #include "../Components/GameplayComponent.h"
 #include "./Components/HealthComponents.h"
-#include "../../Engine/UpgradeManager.h"
 
 namespace CheckpointCallbacks
 {
@@ -55,9 +54,6 @@ namespace CheckpointCallbacks
     player->respawn_point = checkpoint_transform->position;
     player->respawn_point.y -= 50.0f; //ground offset
     player->has_checkpoint = true;
-
-    // Snapshot the current upgrade state so dying here restores these upgrades.
-    Engine::UpgradeManager::instance().capture_checkpoint_state();
 
     Log::info("Checkpoint reached at ({}, {})",
       checkpoint_transform->position.x,

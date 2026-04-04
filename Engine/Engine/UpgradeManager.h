@@ -104,15 +104,6 @@ namespace Engine
     ENGINE_API void restore_level_two_entry_state();
     ENGINE_API void clear_level_two_entry_state();
 
-    // ---- Checkpoint snapshot (Level 1) ----
-
-    // Captures upgrade state at the moment a checkpoint is activated.
-    // On death the state is restored so the player keeps those upgrades.
-    ENGINE_API void capture_checkpoint_state();
-    ENGINE_API bool has_checkpoint_state() const;
-    ENGINE_API void restore_checkpoint_state();
-    ENGINE_API void clear_checkpoint_state();
-
     // ---- Reset ----
 
     ENGINE_API void reset();
@@ -145,9 +136,6 @@ namespace Engine
 
     SavedState level_two_entry_state_{};
     bool has_level_two_entry_state_ = false;
-
-    SavedState checkpoint_state_{};
-    bool has_checkpoint_state_ = false;
   };
 
 } // namespace Engine
